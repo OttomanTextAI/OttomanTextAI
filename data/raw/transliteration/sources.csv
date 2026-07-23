@@ -1,1 +1,2 @@
 source_id,title,author,date,source_type,license,url_or_location,notes
+place_names_hf,"Ottoman Turkish Place Names Gazetteer","Gökhan Usta",2026,dataset,CC-BY-NC-4.0,"Hugging Face: OttomanNLP/ottoman-place-names-gazetteer","Yardımcı veri kaynağıdır; yalnızca yer adları içerir ve project_v1 standardına göre gözden geçirilecektir."

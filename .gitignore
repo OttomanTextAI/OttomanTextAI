@@ -1,2 +1,29 @@
 
 .venv/
+
+data/raw/transliteration/external/
+
+# Downloaded datasets and external corpora
+data/raw/transliteration/external/
+data/raw/ocr/external/
+data/raw/simplification/external/
+
+# Large processed datasets
+data/processed/**
+data/splits/**
+
+# Model files and checkpoints
+data/models/**
+outputs/**/checkpoints/
+experiments/**/checkpoints/
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.ckpt
+
+data/processed/
+
+# Python cache
+__pycache__/
+*.pyc
