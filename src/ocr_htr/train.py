@@ -30,7 +30,6 @@ def build_ketos_train_command(config: dict) -> list[str]:
         "--resize", "union",
         "-o", config["output_model_prefix"],
         "--epochs", str(config.get("epochs", 50)),
-        "--workers", "0",
         "-f", "alto",
         train_glob,
     ]
