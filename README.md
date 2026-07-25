@@ -11,7 +11,8 @@ Bu proje, tarihî ve matbu Osmanlıca belgelerin okunması ve anlaşılması sü
 * 🔍 **Arap Harfli Osmanlıca OCR:** Matbu metinler üzerinde optimize edilmiş karakter tanıma motoru.
 * 🔤 **Aşamalı Transkripsiyon:** Kural tabanlı ve LLM destekli melez yapısıyla Osmanlıca metni Latin harflerine aktarma.
 * 🤖 **LLM Sadeleştirme:** Eski kelimeleri ve karmaşık cümle yapılarını günümüz Türkçesine dönüştürme.
-* ✍️ **Kullanıcı Onaylı Düzenleme (Human-in-the-Loop):** Her aşamada kullanıcının çıktılara müdahale edebildiği ve düzeltebildiği esnek arayüz. ??????
+✍️ **Kullanıcı Onaylı Düzenleme (Human-in-the-Loop):**
+Kullanıcı, OCR, transkripsiyon ve sadeleştirme çıktılarını inceleyebilir, gerekli düzeltmeleri yapabilir ve sonraki aşamaya onay vererek ilerleyebilir.
 * 📱 **Uçtan Uca Mobil Deneyim:** React Native (Expo) ile geliştirilmiş, hızlı ve kullanıcı dostu arayüz.
 
 ## 🏗️ Sistem Mimarisi 
@@ -26,10 +27,67 @@ data/
         └── ham_dergi_sayfasi_2.jpg
 
 
+Image Enhancement Pipeline
+Image
+  │
+Perspective Correction
+  │
+Deskew
+  │
+Grayscale
+  │
+CLAHE
+  │
+Threshold
+  │
+Enhanced Image
 
+## 🛠️ Technologies
 
+- Python 3.11
+- OpenCV
+- NumPy
+- PyYAML
+- Pytest
+- Docker
+- React Native
+- Kraken OCR
+- LLM
 
+## 📒 Experiments
 
+Image enhancement experiments are available in:
 
-KURULUM İÇİN 
-pip install -r requirements/image_enhancement.txt
+notebooks/01_image_enhancement/
+
+## 🚀 Kurulum
+
+```bash
+git clone <repo-url>
+cd Osmanl-caCeviri
+```
+
+Sanal ortam oluşturun:
+
+```bash
+python -m venv .venv
+```
+
+Aktifleştirin:
+
+```powershell
+.venv\Scripts\Activate.ps1
+```
+
+Bağımlılıkları yükleyin:
+
+```bash
+pip install -r requirements.txt
+```
+
+Docker ile çalıştırmak için:
+
+```bash
+docker compose build
+docker compose up
+```
