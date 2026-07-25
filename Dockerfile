@@ -12,4 +12,4 @@ RUN pip install --no-cache-dir kraken jiwer pyyaml
 
 COPY . .
 
-CMD ["python", "src/ocr_htr/train.py"]
+CMD ["python", "-u", "src/ocr_htr/train.py"]

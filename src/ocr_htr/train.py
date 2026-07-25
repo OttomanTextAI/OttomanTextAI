@@ -2,11 +2,10 @@
 src/ocr_htr/train.py
 Kraken fine-tuning'ini başlatan wrapper script.
 
-Kraken 7.0 değişiklikleri:
-- --device artık `ketos` komutunun GLOBAL seçeneği (train'den önce gelir)
-- Verimiz ALTO XML formatında olduğu için -f alto kullanıyoruz,
-  ve glob olarak .xml dosyalarını veriyoruz (Kraken içindeki koordinatlardan
-  satırları kendisi kırpıyor)
+RESUME DESTEĞİ:
+configs/ocr_htr.yaml içinde `resume_from` alanı varsa (ve dolu ise),
+eğitim o checkpoint'ten devam eder (sıfırdan başlamaz).
+Boş/yoksa, `base_model`den sıfırdan (fine-tuning olarak) başlar.
 """
 
 import subprocess
@@ -22,14 +21,26 @@ def load_config(config_path: str = "configs/ocr_htr.yaml") -> dict:
 def build_ketos_train_command(config: dict) -> list[str]:
     train_glob = str(Path(config["train_data_dir"]) / "*.xml")
 
+    resume_from = config.get("resume_from")
+
     command = [
         "ketos",
         "--device", config.get("device", "cpu"),
         "train",
-        "-i", config["base_model"],
-        "--resize", "union",
+    ]
+
+    if resume_from:
+        # Devam modu: checkpoint'ten kaldığı yerden devam eder
+        command += ["--resume", resume_from]
+        print(f"RESUME MODU: '{resume_from}' checkpoint'inden devam edilecek.")
+    else:
+        # İlk çalıştırma: temel modelden fine-tuning başlatır
+        command += ["-i", config["base_model"], "--resize", "union"]
+        print("İLK ÇALIŞTIRMA: base_model'den fine-tuning başlatılıyor.")
+
+    command += [
         "-o", config["output_model_prefix"],
-        "--epochs", str(config.get("epochs", 50)),
+        "--epochs", str(config.get("epochs", 5)),
         "-f", "alto",
         train_glob,
     ]
@@ -42,16 +53,14 @@ def run_training(config_path: str = "configs/ocr_htr.yaml") -> None:
 
     print("Çalıştırılacak komut:")
     print(" ".join(command))
+    print("---- ketos train çıktısı aşağıda canlı akacak ----\n")
 
-    result = subprocess.run(command, capture_output=True, text=True)
+    result = subprocess.run(command)
 
-    print(result.stdout)
     if result.returncode != 0:
-        print("HATA:")
-        print(result.stderr)
-        raise RuntimeError("ketos train başarısız oldu, yukarıdaki hata mesajına bak.")
+        raise RuntimeError(f"ketos train başarısız oldu (exit code {result.returncode}).")
 
-    print(f"Eğitim tamamlandı. Model çıktısı: {config['output_model_prefix']}")
+    print(f"\nEğitim tamamlandı. Model çıktısı: {config['output_model_prefix']}")
 
 
 if __name__ == "__main__":

@@ -4,7 +4,7 @@ val_data_dir: "data/processed/ocr_htr/val"
 test_data_dir: "data/processed/ocr_htr/test"
 output_model_prefix: "models/ocr_htr/ottoman_v1"
 
-epochs: 50
+epochs: 5
 device: "cpu"
 
 predictions_dir: "experiments/ocr_htr/predictions"
