@@ -3,6 +3,8 @@
 from pathlib import Path
 
 import numpy as np
+from src.image_enhancement.deskew import deskew_image
+from src.image_enhancement.perspective import correct_perspective
 
 from src.image_enhancement.enhance import (
     apply_clahe,
@@ -50,8 +52,21 @@ def preprocess_image(
         threshold_method
     )
 
-    grayscale_image = convert_to_grayscale(image)
-    enhanced_image = apply_clahe(grayscale_image)
+    perspective_corrected_image = correct_perspective(
+        image
+    )
+
+    deskewed_image = deskew_image(
+        perspective_corrected_image
+    )
+
+    grayscale_image = convert_to_grayscale(
+        deskewed_image
+    )
+
+    enhanced_image = apply_clahe(
+        grayscale_image
+    )
 
     if normalized_threshold_method == "otsu":
         return apply_otsu_threshold(enhanced_image)

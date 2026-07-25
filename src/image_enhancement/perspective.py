@@ -19,6 +19,9 @@ def correct_perspective(
     """
     Correct the perspective distortion of a document image.
 
+    If document corners cannot be detected, the original image
+    is returned unchanged.
+
     Args:
         image: Input document image.
 
@@ -27,9 +30,16 @@ def correct_perspective(
     """
     validate_image(image)
 
-    document_corners = _detect_document_corners(
-        image
-    )
+    try:
+        document_corners = _detect_document_corners(
+            image
+        )
+
+    # Documents that are already scanned may not expose
+    # detectable page boundaries. In such cases, skip
+    # perspective correction and continue preprocessing.
+    except ValueError:
+        return image
 
     ordered_corners = _order_corner_points(
         document_corners
@@ -45,10 +55,7 @@ def correct_perspective(
         [
             [0.0, 0.0],
             [output_width - 1.0, 0.0],
-            [
-                output_width - 1.0,
-                output_height - 1.0,
-            ],
+            [output_width - 1.0, output_height - 1.0],
             [0.0, output_height - 1.0],
         ],
         dtype=np.float32,
@@ -62,13 +69,11 @@ def correct_perspective(
     return cv2.warpPerspective(
         image,
         transform_matrix,
-        (
-            output_width,
-            output_height,
-        ),
+        (output_width, output_height),
         flags=cv2.INTER_CUBIC,
         borderMode=cv2.BORDER_REPLICATE,
     )
+
 
 def _order_corner_points(
     corners: np.ndarray,
@@ -259,3 +264,4 @@ def _detect_document_corners(
     raise ValueError(
         "Document corners could not be detected."
     )
+
