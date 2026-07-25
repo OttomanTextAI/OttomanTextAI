@@ -1,0 +1,20 @@
+version: "3.9"
+
+services:
+  image-enhancement:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: image-enhancement
+
+    volumes:
+      - .:/app
+
+    working_dir: /app
+
+    environment:
+      PYTHONPATH: /app
+
+    command: >
+      python -m experiments.image_enhancement.run_pipeline
