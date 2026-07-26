@@ -1,4 +1,5 @@
 base_model: "models/base/ottoman_best.mlmodel"
+fine_tuned_model: "models/ocr_htr/ottoman_v1_kaggle/ottoman_v1_best.safetensors"
 train_data_dir: "data/processed/ocr_htr/train"
 val_data_dir: "data/processed/ocr_htr/val"
 test_data_dir: "data/processed/ocr_htr/test"
