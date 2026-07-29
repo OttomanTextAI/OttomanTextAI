@@ -150,10 +150,26 @@ def cmd_segment() -> None:
 
 def _load(page_name: str):
     xml_path = OUTPUT_DIR / (page_name + ".xml")
+    # Değişiklikten önce yedek al (bir önceki hal .bak'ta saklanır)
+    backup_path = OUTPUT_DIR / (page_name + ".xml.bak")
+    if xml_path.exists():
+        shutil.copy(xml_path, backup_path)
     tree = ET.parse(xml_path)
     root = tree.getroot()
     ns = {"alto": ALTO_NS}
     return xml_path, tree, root, ns
+
+
+def cmd_undo(page_name: str) -> None:
+    """Son değişikliği geri alır (bir önceki .xml haline döner)."""
+    xml_path = OUTPUT_DIR / (page_name + ".xml")
+    backup_path = OUTPUT_DIR / (page_name + ".xml.bak")
+    if not backup_path.exists():
+        print("HATA: Geri alınacak bir yedek bulunamadı.")
+        return
+    shutil.copy(backup_path, xml_path)
+    print(f"{page_name}: Son değişiklik geri alındı.")
+    _refresh_preview(page_name, xml_path)
 
 
 def _refresh_preview(page_name: str, xml_path: Path) -> None:
@@ -324,5 +340,7 @@ if __name__ == "__main__":
         cmd_merge(sys.argv[2], int(sys.argv[3]), int(sys.argv[4]))
     elif action == "fill":
         cmd_fill(sys.argv[2])
+    elif action == "undo":
+        cmd_undo(sys.argv[2])
     else:
         print(f"Bilinmeyen komut: {action}")
