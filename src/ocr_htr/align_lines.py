@@ -57,14 +57,18 @@ def segment_page(image_path: Path, output_xml_path: Path) -> bool:
 
 
 def get_baseline_points(tl_elem, ns) -> list[tuple[float, float]]:
-    """TextLine elementinden baseline koordinatlarını çıkarır."""
+    """
+    TextLine elementinden baseline koordinatlarını çıkarır.
+    Gerçek format: "x1 y1 x2 y2 x3 y3 ..." (virgülsüz, boşlukla ayrılmış sayılar)
+    """
     baseline_str = tl_elem.get("BASELINE", "")
+    numbers = baseline_str.split()
     points = []
-    coords = baseline_str.split()
-    for coord in coords:
+    for i in range(0, len(numbers) - 1, 2):
         try:
-            x, y = coord.split(",")
-            points.append((float(x), float(y)))
+            x = float(numbers[i])
+            y = float(numbers[i + 1])
+            points.append((x, y))
         except ValueError:
             continue
     return points
