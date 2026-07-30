@@ -113,9 +113,9 @@ def draw_numbered_preview(image_path: Path, xml_path: Path, output_path: Path) -
     return len(text_lines)
 
 
-def cmd_segment() -> None:
+def cmd_segment(raw_dir: Path = RAW_DIR) -> None:
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-    image_files = sorted(RAW_DIR.glob("*.png")) + sorted(RAW_DIR.glob("*.jpg"))
+    image_files = sorted(raw_dir.glob("*.png")) + sorted(raw_dir.glob("*.jpg"))
 
     for image_path in image_files:
         target_image = OUTPUT_DIR / image_path.name
@@ -294,9 +294,9 @@ def cmd_merge(page_name: str, num1: int, num2: int) -> None:
     _refresh_preview(page_name, xml_path)
 
 
-def cmd_fill(page_name: str) -> None:
+def cmd_fill(page_name: str, raw_dir: Path = RAW_DIR) -> None:
     xml_path, tree, root, ns = _load(page_name)
-    txt_path = RAW_DIR / (page_name + ".txt")
+    txt_path = raw_dir / (page_name + ".txt")
 
     remaining = len(root.findall(".//alto:TextLine", ns))
     with open(txt_path, "r", encoding="utf-8") as f:
@@ -319,6 +319,40 @@ def cmd_fill(page_name: str) -> None:
         print("\n⚠️ Sayılar hâlâ uyuşmuyor. 'reorder', 'swap', 'merge' veya 'remove' ile devam et.")
 
 
+def cmd_check_all() -> None:
+    """Tüm sayfaların gerçekten 'metin dolu' (eğitime hazır) olup olmadığını kontrol eder."""
+    ns = {"alto": ALTO_NS}
+    xml_files = sorted(OUTPUT_DIR.glob("*.xml"))
+
+    ready = []
+    not_ready = []
+
+    for xml_path in xml_files:
+        if xml_path.name.endswith(".bak"):
+            continue
+        tree = ET.parse(xml_path)
+        root = tree.getroot()
+        text_lines = root.findall(".//alto:TextLine", ns)
+        filled = [tl for tl in text_lines if tl.find("alto:String", ns) is not None
+                  and tl.find("alto:String", ns).get("CONTENT", "").strip()]
+
+        page_name = xml_path.stem
+        if text_lines and len(filled) == len(text_lines):
+            ready.append((page_name, len(text_lines)))
+        else:
+            not_ready.append((page_name, len(filled), len(text_lines)))
+
+    print("=== EĞİTİME HAZIR (tüm satırlar dolu) ===")
+    for name, count in ready:
+        print(f"  ✅ {name} ({count} satır)")
+
+    print("\n=== HAZIR DEĞİL (hâlâ eksik/boş satır var) ===")
+    for name, filled_count, total in not_ready:
+        print(f"  ⚠️ {name} ({filled_count}/{total} satır dolu)")
+
+    print(f"\nToplam: {len(ready)} sayfa hazır, {len(not_ready)} sayfa hazır değil.")
+
+
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Kullanım: python align_lines.py [segment|reorder|remove|swap|merge|fill] ...")
@@ -327,7 +361,8 @@ if __name__ == "__main__":
     action = sys.argv[1]
 
     if action == "segment":
-        cmd_segment()
+        folder = Path(sys.argv[2]) if len(sys.argv) > 2 else RAW_DIR
+        cmd_segment(folder)
     elif action == "reorder":
         cmd_reorder(sys.argv[2])
     elif action == "remove":
@@ -339,8 +374,12 @@ if __name__ == "__main__":
     elif action == "merge":
         cmd_merge(sys.argv[2], int(sys.argv[3]), int(sys.argv[4]))
     elif action == "fill":
-        cmd_fill(sys.argv[2])
+        page = sys.argv[2]
+        folder = Path(sys.argv[3]) if len(sys.argv) > 3 else RAW_DIR
+        cmd_fill(page, folder)
     elif action == "undo":
         cmd_undo(sys.argv[2])
+    elif action == "check-all":
+        cmd_check_all()
     else:
         print(f"Bilinmeyen komut: {action}")
