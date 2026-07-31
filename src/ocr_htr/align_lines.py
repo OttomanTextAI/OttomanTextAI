@@ -353,6 +353,32 @@ def cmd_check_all() -> None:
     print(f"\nToplam: {len(ready)} sayfa hazır, {len(not_ready)} sayfa hazır değil.")
 
 
+def cmd_fix_rotation(raw_dir: Path) -> None:
+    """Klasördeki tüm görüntülere EXIF rotasyon düzeltmesi uygular."""
+    from PIL import ImageOps
+
+    image_files = sorted(raw_dir.glob("*.png")) + sorted(raw_dir.glob("*.jpg"))
+    fixed_count = 0
+
+    for image_path in image_files:
+        try:
+            img = Image.open(image_path)
+            original_size = img.size
+            fixed_img = ImageOps.exif_transpose(img)
+            if fixed_img is not None and fixed_img.size != original_size:
+                fixed_img.save(image_path)
+                print(f"Döndürüldü: {image_path.name} ({original_size} -> {fixed_img.size})")
+                fixed_count += 1
+            else:
+                # EXIF farkı yoksa bile, EXIF verisini "gömmek" için yine de kaydedelim
+                if fixed_img is not None:
+                    fixed_img.save(image_path)
+        except Exception as e:
+            print(f"HATA: {image_path.name} işlenemedi -- {e}")
+
+    print(f"\nToplam {len(image_files)} görüntü kontrol edildi, {fixed_count} tanesi döndürüldü.")
+
+
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Kullanım: python align_lines.py [segment|reorder|remove|swap|merge|fill] ...")
@@ -381,5 +407,8 @@ if __name__ == "__main__":
         cmd_undo(sys.argv[2])
     elif action == "check-all":
         cmd_check_all()
+    elif action == "fix-rotation":
+        folder = Path(sys.argv[2]) if len(sys.argv) > 2 else RAW_DIR
+        cmd_fix_rotation(folder)
     else:
         print(f"Bilinmeyen komut: {action}")
