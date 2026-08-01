@@ -379,6 +379,45 @@ def cmd_fix_rotation(raw_dir: Path) -> None:
     print(f"\nToplam {len(image_files)} görüntü kontrol edildi, {fixed_count} tanesi döndürüldü.")
 
 
+def cmd_fill_all(raw_dir: Path) -> None:
+    """Sayısı zaten eşleşen TÜM sayfaları otomatik doldurur, uyuşmayanları atlar."""
+    ns = {"alto": ALTO_NS}
+    xml_files = sorted(OUTPUT_DIR.glob("*.xml"))
+
+    filled_count = 0
+    skipped_count = 0
+
+    for xml_path in xml_files:
+        if xml_path.name.endswith(".bak"):
+            continue
+        page_name = xml_path.stem
+        txt_path = raw_dir / (page_name + ".txt")
+        if not txt_path.exists():
+            continue  # bu batch'e ait değil, atla
+
+        tree = ET.parse(xml_path)
+        root = tree.getroot()
+        text_lines = root.findall(".//alto:TextLine", ns)
+
+        with open(txt_path, "r", encoding="utf-8") as f:
+            text_content = [l.strip() for l in f if l.strip()]
+
+        if len(text_lines) == len(text_content):
+            for tl_elem, text in zip(text_lines, text_content):
+                string_elem = tl_elem.find("alto:String", ns)
+                if string_elem is None:
+                    string_elem = ET.SubElement(tl_elem, f"{{{ALTO_NS}}}String")
+                string_elem.set("CONTENT", text)
+            save_xml(tree, xml_path, root, ns)
+            print(f"✅ {page_name}: dolduruldu ({len(text_lines)} satır)")
+            filled_count += 1
+        else:
+            print(f"⏭️  {page_name}: atlandı (tespit={len(text_lines)}, metin={len(text_content)})")
+            skipped_count += 1
+
+    print(f"\nToplam: {filled_count} sayfa dolduruldu, {skipped_count} sayfa hâlâ düzeltme bekliyor.")
+
+
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         print("Kullanım: python align_lines.py [segment|reorder|remove|swap|merge|fill] ...")
@@ -410,5 +449,8 @@ if __name__ == "__main__":
     elif action == "fix-rotation":
         folder = Path(sys.argv[2]) if len(sys.argv) > 2 else RAW_DIR
         cmd_fix_rotation(folder)
+    elif action == "fill-all":
+        folder = Path(sys.argv[2]) if len(sys.argv) > 2 else RAW_DIR
+        cmd_fill_all(folder)
     else:
         print(f"Bilinmeyen komut: {action}")
