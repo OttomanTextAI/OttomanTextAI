@@ -1,0 +1,32 @@
+# Görüntü iyileştirme pipeline konfigürasyonu
+# Sıra sabit: denoise -> contrast -> deskew -> threshold
+# Her adım enabled: false ile ayrı ayrı kapatılıp test edilebilir.
+
+denoise:
+  enabled: true
+  method: fastNlMeans        # fastNlMeans | median | gaussian
+  h: 10
+  template_window_size: 7
+  search_window_size: 21
+
+contrast:
+  enabled: true
+  method: clahe               # clahe | hist_eq
+  clip_limit: 2.0
+  tile_grid_size: [8, 8]
+
+deskew:
+  enabled: true
+  method: hough                # hough | projection
+  max_angle: 15
+  angle_step: 0.5
+
+threshold:
+  enabled: true
+  method: otsu                  # otsu | adaptive | sauvola
+  adaptive_block_size: 31
+  adaptive_C: 15
+
+output:
+  format: png
+  save_intermediate: false      # true yapılırsa her adımın çıktısı ayrı klasöre kaydedilir (debug amaçlı)
