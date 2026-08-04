@@ -1,62 +1,162 @@
-"""
-Image enhancement modülü için yardımcı fonksiyonlar.
-Görüntü okuma/yazma, klasör tarama ve görsel karşılaştırma işlemleri.
-"""
+"""Utility functions for image input, output, and validation."""
+
 from pathlib import Path
-from typing import List, Union
 
 import cv2
 import numpy as np
 
 
-def load_image(path: Union[str, Path], grayscale: bool = True) -> np.ndarray:
-    """Diskten bir görüntüyü okur. Kraken satır bazlı OCR için genelde
-    grayscale yeterli ve daha hızlıdır."""
-    path = str(path)
-    flag = cv2.IMREAD_GRAYSCALE if grayscale else cv2.IMREAD_COLOR
-    img = cv2.imread(path, flag)
-    if img is None:
-        raise FileNotFoundError(f"Görüntü okunamadı: {path}")
-    return img
+def validate_image(image: np.ndarray) -> None:
+    """
+    Validate that the given value is a supported image array.
+
+    Args:
+        image: Image represented as a NumPy array.
+
+    Raises:
+        TypeError: If image is not a NumPy array.
+        ValueError: If image is empty or has an unsupported shape.
+    """
+    if image is None:
+        raise ValueError("Image cannot be None.")
+
+    if not isinstance(image, np.ndarray):
+        raise TypeError("Image must be a NumPy array.")
+
+    if image.size == 0:
+        raise ValueError("Image cannot be empty.")
+
+    if image.ndim not in (2, 3):
+        raise ValueError(
+            "Image must have 2 or 3 dimensions."
+        )
+
+    if image.ndim == 3 and image.shape[2] not in (1, 3, 4):
+        raise ValueError(
+            "Image must have 1, 3, or 4 channels."
+        )
 
 
-def save_image(img: np.ndarray, path: Union[str, Path]) -> None:
-    """Görüntüyü diske kaydeder, gerekirse klasörleri oluşturur."""
-    path = Path(path)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    cv2.imwrite(str(path), img)
+def read_image(image_path: str | Path) -> np.ndarray:
+    """
+    Read an image from disk in BGR format.
+
+    Args:
+        image_path: Path of the image to read.
+
+    Returns:
+        Image as a NumPy array.
+
+    Raises:
+        FileNotFoundError: If the image path does not exist.
+        IsADirectoryError: If the given path points to a directory.
+        ValueError: If OpenCV cannot decode the image.
+    """
+    path = Path(image_path)
+
+    if not path.exists():
+        raise FileNotFoundError(f"Image file not found: {path}")
+
+    if path.is_dir():
+        raise IsADirectoryError(
+            f"Expected an image file, but received a directory: {path}"
+        )
+
+    image = cv2.imread(str(path), cv2.IMREAD_COLOR)
+
+    if image is None:
+        raise ValueError(f"Failed to read image: {path}")
+
+    validate_image(image)
+
+    return image
 
 
-def list_images(
-    folder: Union[str, Path],
-    extensions: tuple = (".png", ".jpg", ".jpeg", ".tif", ".tiff"),
-) -> List[Path]:
-    """Bir klasördeki (alt klasörler dahil) tüm görüntü dosyalarını listeler."""
-    folder = Path(folder)
-    return sorted(p for p in folder.rglob("*") if p.suffix.lower() in extensions)
+def save_image(
+    image: np.ndarray,
+    output_path: str | Path,
+) -> Path:
+    """
+    Save an image to disk.
+
+    The output directory is created automatically if it does not exist.
+
+    Args:
+        image: Image represented as a NumPy array.
+        output_path: Destination path of the image.
+
+    Returns:
+        Path of the saved image.
+
+    Raises:
+        OSError: If OpenCV cannot save the image.
+    """
+    validate_image(image)
+
+    path = Path(output_path)
+    _create_parent_directory(path)
+
+    is_saved = cv2.imwrite(str(path), image)
+
+    if not is_saved:
+        raise OSError(f"Failed to save image: {path}")
+
+    return path
 
 
-def to_grayscale(img: np.ndarray) -> np.ndarray:
-    """Renkli görüntüyü gri tonlamaya çevirir; zaten griyse dokunmaz."""
-    if img.ndim == 3:
-        return cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    return img
+def is_grayscale(image: np.ndarray) -> bool:
+    """
+    Check whether an image is grayscale.
+
+    Args:
+        image: Image represented as a NumPy array.
+
+    Returns:
+        True if the image is grayscale, otherwise False.
+    """
+    validate_image(image)
+
+    return image.ndim == 2 or (
+        image.ndim == 3 and image.shape[2] == 1
+    )
 
 
-def side_by_side(img1: np.ndarray, img2: np.ndarray) -> np.ndarray:
-    """İki görüntüyü yan yana birleştirir. Öncesi/sonrası karşılaştırmasını
-    notebook'ta görsel olarak kontrol etmek için kullanılır."""
-    def _to_bgr(im: np.ndarray) -> np.ndarray:
-        return cv2.cvtColor(im, cv2.COLOR_GRAY2BGR) if im.ndim == 2 else im
+def validate_odd_kernel_size(
+    kernel_size: int,
+    parameter_name: str = "kernel_size",
+) -> None:
+    """
+    Validate that a kernel size is a positive odd integer.
 
-    a, b = _to_bgr(img1), _to_bgr(img2)
-    h = max(a.shape[0], b.shape[0])
+    Args:
+        kernel_size: Kernel size to validate.
+        parameter_name: Name used in error messages.
 
-    def _pad(im: np.ndarray) -> np.ndarray:
-        if im.shape[0] != h:
-            im = cv2.copyMakeBorder(
-                im, 0, h - im.shape[0], 0, 0, cv2.BORDER_CONSTANT, value=(255, 255, 255)
-            )
-        return im
+    Raises:
+        TypeError: If kernel_size is not an integer.
+        ValueError: If kernel_size is not positive or odd.
+    """
+    if isinstance(kernel_size, bool) or not isinstance(kernel_size, int):
+        raise TypeError(
+            f"{parameter_name} must be an integer."
+        )
 
-    return np.hstack([_pad(a), _pad(b)])
+    if kernel_size <= 0:
+        raise ValueError(
+            f"{parameter_name} must be greater than zero."
+        )
+
+    if kernel_size % 2 == 0:
+        raise ValueError(
+            f"{parameter_name} must be an odd number."
+        )
+
+
+def _create_parent_directory(file_path: Path) -> None:
+    """
+    Create the parent directory of a file path if necessary.
+
+    Args:
+        file_path: Path whose parent directory will be created.
+    """
+    file_path.parent.mkdir(parents=True, exist_ok=True)
