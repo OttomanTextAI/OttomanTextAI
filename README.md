@@ -16,6 +16,7 @@ Kullanıcı, OCR, transkripsiyon ve sadeleştirme çıktılarını inceleyebilir
 * 📱 **Uçtan Uca Mobil Deneyim:** React Native (Expo) ile geliştirilmiş, hızlı ve kullanıcı dostu arayüz.
 
 ## 🏗️ Sistem Mimarisi 
+<<<<<<< Updated upstream
 data/
 └── raw/
     ├── ground_truth/
@@ -91,3 +92,6 @@ Docker ile çalıştırmak için:
 docker compose build
 docker compose up
 ```
+=======
+find . -not -path '*/.*'
+>>>>>>> Stashed changes
