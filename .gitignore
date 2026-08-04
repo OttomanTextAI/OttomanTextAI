@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 # Python virtual environment
 .venv/
 venv/
@@ -21,3 +22,9 @@ data/raw/
 data/processed/
 data/ground_truth/
 models/
+=======
+venv/
+__pycache__/
+*.pyc
+.DS_Store
+>>>>>>> Stashed changes
