@@ -3,6 +3,7 @@
 from pathlib import Path
 
 import numpy as np
+import cv2
 
 from src.common.config import load_yaml_config
 from src.image_enhancement.deskew import deskew_image
@@ -16,6 +17,12 @@ from src.image_enhancement.preprocess import preprocess_image_file
 from src.image_enhancement.threshold import (
     apply_adaptive_threshold,
     apply_otsu_threshold,
+)
+from src.image_enhancement.enhance import (
+    apply_clahe,
+    convert_to_grayscale,
+    enhance_image,
+    reduce_noise,
 )
 from src.image_enhancement.utils import read_image
 
@@ -162,3 +169,32 @@ def test_load_image_enhancement_config() -> None:
     assert denoise_config["sigma_space"] > 0
     assert clahe_config["clip_limit"] > 0
     assert len(clahe_config["tile_grid_size"]) == 2
+
+def test_enhance_image_bytes() -> None:
+    """Test the byte-based image enhancement integration function."""
+    image = read_image(INPUT_PATH)
+
+    encoding_succeeded, encoded_image = cv2.imencode(
+        ".png",
+        image,
+    )
+
+    assert encoding_succeeded
+
+    output_bytes = enhance_image(
+        encoded_image.tobytes()
+    )
+
+    assert isinstance(output_bytes, bytes)
+    assert len(output_bytes) > 0
+
+    decoded_output = cv2.imdecode(
+        np.frombuffer(
+            output_bytes,
+            dtype=np.uint8,
+        ),
+        cv2.IMREAD_UNCHANGED,
+    )
+
+    assert decoded_output is not None
+    assert decoded_output.size > 0

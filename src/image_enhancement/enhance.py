@@ -214,3 +214,73 @@ def _validate_tile_grid_size(
         raise ValueError(
             "tile_grid_size values must be greater than zero."
         )
+def enhance_image(
+    image_bytes: bytes,
+) -> bytes:
+    """
+    Enhance an Ottoman document image provided as raw bytes.
+
+    This function acts as the integration entry point for the complete
+    image-enhancement pipeline. It decodes the input bytes into an OpenCV
+    image, applies preprocessing, and encodes the result as PNG bytes.
+
+    Args:
+        image_bytes: Encoded input image data.
+
+    Returns:
+        Preprocessed image encoded as PNG bytes.
+
+    Raises:
+        TypeError: If image_bytes is not a bytes-like object.
+        ValueError: If the input cannot be decoded or the output cannot
+            be encoded.
+    """
+    if not isinstance(
+        image_bytes,
+        (bytes, bytearray),
+    ):
+        raise TypeError(
+            "image_bytes must be bytes or bytearray."
+        )
+
+    if not image_bytes:
+        raise ValueError(
+            "image_bytes cannot be empty."
+        )
+
+    encoded_input = np.frombuffer(
+        image_bytes,
+        dtype=np.uint8,
+    )
+
+    decoded_image = cv2.imdecode(
+        encoded_input,
+        cv2.IMREAD_COLOR,
+    )
+
+    if decoded_image is None:
+        raise ValueError(
+            "Input image bytes could not be decoded."
+        )
+
+    # Local import prevents a circular import because preprocess.py
+    # already imports enhancement functions from this module.
+    from src.image_enhancement.preprocess import (
+        preprocess_image,
+    )
+
+    processed_image = preprocess_image(
+        decoded_image
+    )
+
+    encoding_succeeded, encoded_output = cv2.imencode(
+        ".png",
+        processed_image,
+    )
+
+    if not encoding_succeeded:
+        raise ValueError(
+            "Processed image could not be encoded."
+        )
+
+    return encoded_output.tobytes()
