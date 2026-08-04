@@ -62,7 +62,15 @@ def read_image(image_path: str | Path) -> np.ndarray:
             f"Expected an image file, but received a directory: {path}"
         )
 
-    image = cv2.imread(str(path), cv2.IMREAD_COLOR)
+    image_data = np.fromfile(
+        path,
+        dtype=np.uint8,
+    )
+
+    image = cv2.imdecode(
+        image_data,
+        cv2.IMREAD_COLOR,
+    )
 
     if image is None:
         raise ValueError(f"Failed to read image: {path}")

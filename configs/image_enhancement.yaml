@@ -1,4 +1,9 @@
 enhancement:
+  denoise:
+    diameter: 5
+    sigma_color: 30.0
+    sigma_space: 30.0
+
   clahe:
     clip_limit: 2.0
     tile_grid_size:
