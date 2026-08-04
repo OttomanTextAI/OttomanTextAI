@@ -1,14 +1,11 @@
-# configs/ocr_htr.yaml
-# Kraken fine-tuning ayarları
-
 base_model: "models/base/ottoman_best.mlmodel"
+fine_tuned_model: "models/ocr_htr/ottoman_v2_best/bestOne.ckpt"
 train_data_dir: "data/processed/ocr_htr/train"
 val_data_dir: "data/processed/ocr_htr/val"
 test_data_dir: "data/processed/ocr_htr/test"
 output_model_prefix: "models/ocr_htr/ottoman_v1"
 
-epochs: 50
-device: "cpu"   # GPU varsa "cuda:0" yap
+epochs: 5
+device: "cpu"
 
-# Değerlendirme
 predictions_dir: "experiments/ocr_htr/predictions"
