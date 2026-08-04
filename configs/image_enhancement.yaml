@@ -1,32 +1,59 @@
-# Görüntü iyileştirme pipeline konfigürasyonu
-# Sıra sabit: denoise -> contrast -> deskew -> threshold
-# Her adım enabled: false ile ayrı ayrı kapatılıp test edilebilir.
+enhancement:
+  denoise:
+    diameter: 5
+    sigma_color: 30.0
+    sigma_space: 30.0
 
-denoise:
-  enabled: true
-  method: fastNlMeans        # fastNlMeans | median | gaussian
-  h: 10
-  template_window_size: 7
-  search_window_size: 21
-
-contrast:
-  enabled: true
-  method: clahe               # clahe | hist_eq
-  clip_limit: 2.0
-  tile_grid_size: [8, 8]
-
-deskew:
-  enabled: true
-  method: hough                # hough | projection
-  max_angle: 15
-  angle_step: 0.5
+  clahe:
+    clip_limit: 2.0
+    tile_grid_size:
+      - 8
+      - 8
 
 threshold:
-  enabled: true
-  method: otsu                  # otsu | adaptive | sauvola
-  adaptive_block_size: 31
-  adaptive_C: 15
+  default_method: otsu
 
-output:
-  format: png
-  save_intermediate: false      # true yapılırsa her adımın çıktısı ayrı klasöre kaydedilir (debug amaçlı)
+  adaptive:
+    block_size: 11
+    constant: 2
+
+deskew:
+  minimum_text_line_count: 2
+  minimum_aspect_ratio: 1.5
+  maximum_accepted_angle: 25.0
+
+  contour:
+    minimum_width: 30
+    minimum_height: 5
+    minimum_width_ratio: 0.08
+    maximum_width_ratio: 0.98
+    minimum_height_ratio: 0.005
+    maximum_height_ratio: 0.15
+
+  morphology:
+    minimum_kernel_width: 9
+    kernel_width_ratio: 0.025
+    minimum_border_size: 5
+    border_size_ratio: 0.02
+
+  outlier:
+    minimum_allowed_deviation: 1.0
+    mad_multiplier: 3.0
+
+perspective:
+  minimum_document_area_ratio: 0.20
+  approximation_epsilon_ratio: 0.02
+
+  canny:
+    lower_threshold: 50
+    upper_threshold: 150
+
+  gaussian_kernel_size:
+    - 5
+    - 5
+
+  morphology:
+    kernel_size:
+      - 7
+      - 7
+    iterations: 2

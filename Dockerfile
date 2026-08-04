@@ -1,15 +1,14 @@
-FROM python:3.10-slim
+FROM python:3.11-slim
 
 WORKDIR /app
 
-# Kraken ve gerekli sistem bağımlılıkları
-RUN apt-get update && apt-get install -y \
-    libgl1 \
-    libglib2.0-0 \
-    && rm -rf /var/lib/apt/lists/*
+COPY requirements.txt .
 
-RUN pip install --no-cache-dir kraken jiwer pyyaml
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-CMD ["python", "-u", "src/ocr_htr/train.py"]
+ENV PYTHONPATH=/app
+
+CMD ["python", "-m", "experiments.image_enhancement.run_pipeline"]
