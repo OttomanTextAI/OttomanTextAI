@@ -1,14 +1,20 @@
 """Preprocessing pipelines for Ottoman document images."""
 
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 from src.image_enhancement.deskew import deskew_image
 from src.image_enhancement.perspective import correct_perspective
 
+
+from src.common.config import load_yaml_config
+
+
 from src.image_enhancement.enhance import (
     apply_clahe,
     convert_to_grayscale,
+    reduce_noise,
 )
 from src.image_enhancement.threshold import (
     apply_adaptive_threshold,
@@ -25,16 +31,27 @@ SUPPORTED_THRESHOLD_METHODS = {
     "adaptive",
 }
 
+DEFAULT_CONFIG_PATH = (
+    Path(__file__).resolve().parents[2]
+    / "configs"
+    / "image_enhancement.yaml"
+)
+
 
 def preprocess_image(
     image: np.ndarray,
     threshold_method: str = "otsu",
+    config_path: str | Path | None = None,
 ) -> np.ndarray:
     """
     Apply the default preprocessing pipeline to an image.
 
-    The pipeline consists of grayscale conversion, CLAHE enhancement,
+    The pipeline consists of perspective correction, deskewing,
+    grayscale conversion, noise reduction, CLAHE enhancement,
     and thresholding.
+
+    config_path: Optional path to an image enhancement
+            configuration file.
 
     Args:
         image: Input document image.
@@ -52,6 +69,22 @@ def preprocess_image(
         threshold_method
     )
 
+    config = _load_preprocessing_config(
+        config_path
+    )
+
+    enhancement_config = config[
+        "enhancement"
+    ]
+
+    denoise_config = enhancement_config[
+        "denoise"
+    ]
+
+    clahe_config = enhancement_config[
+        "clahe"
+    ]
+
     perspective_corrected_image = correct_perspective(
         image
     )
@@ -64,8 +97,19 @@ def preprocess_image(
         deskewed_image
     )
 
+    denoised_image = reduce_noise(
+        grayscale_image,
+        diameter=denoise_config["diameter"],
+        sigma_color=denoise_config["sigma_color"],
+        sigma_space=denoise_config["sigma_space"],
+    )
+
     enhanced_image = apply_clahe(
-        grayscale_image
+        denoised_image,
+        clip_limit=clahe_config["clip_limit"],
+        tile_grid_size=tuple(
+            clahe_config["tile_grid_size"]
+        ),
     )
 
     if normalized_threshold_method == "otsu":
@@ -131,6 +175,8 @@ def _validate_threshold_method(
         threshold_method.strip().lower()
     )
 
+
+
     if normalized_threshold_method not in SUPPORTED_THRESHOLD_METHODS:
         supported_methods = ", ".join(
             sorted(SUPPORTED_THRESHOLD_METHODS)
@@ -143,3 +189,25 @@ def _validate_threshold_method(
         )
 
     return normalized_threshold_method
+
+def _load_preprocessing_config(
+    config_path: str | Path | None = None,
+) -> dict[str, Any]:
+    """
+    Load image enhancement configuration values.
+
+    Args:
+        config_path: Optional custom configuration file path.
+
+    Returns:
+        Parsed image enhancement configuration.
+    """
+    resolved_config_path = (
+        DEFAULT_CONFIG_PATH
+        if config_path is None
+        else Path(config_path)
+    )
+
+    return load_yaml_config(
+        resolved_config_path
+    )

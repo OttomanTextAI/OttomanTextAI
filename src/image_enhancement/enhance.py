@@ -12,6 +12,10 @@ from src.image_enhancement.utils import (
 DEFAULT_CLAHE_CLIP_LIMIT = 2.0
 DEFAULT_CLAHE_TILE_GRID_SIZE = (8, 8)
 
+DEFAULT_DENOISE_DIAMETER = 5
+DEFAULT_DENOISE_SIGMA_COLOR = 30.0
+DEFAULT_DENOISE_SIGMA_SPACE = 30.0
+
 
 def convert_to_grayscale(image: np.ndarray) -> np.ndarray:
     """
@@ -45,6 +49,77 @@ def convert_to_grayscale(image: np.ndarray) -> np.ndarray:
         f"Unsupported channel count for grayscale conversion: {channel_count}"
     )
 
+def reduce_noise(
+    image: np.ndarray,
+    diameter: int = DEFAULT_DENOISE_DIAMETER,
+    sigma_color: float = DEFAULT_DENOISE_SIGMA_COLOR,
+    sigma_space: float = DEFAULT_DENOISE_SIGMA_SPACE,
+) -> np.ndarray:
+    """
+    Reduce document noise while preserving character edges.
+
+    Bilateral filtering smooths paper texture and small intensity
+    variations while preserving the edges of Ottoman characters.
+
+    Args:
+        image: Grayscale input image.
+        diameter: Diameter of the pixel neighbourhood.
+        sigma_color: Filter strength for intensity differences.
+        sigma_space: Filter strength for spatial distance.
+
+    Returns:
+        Noise-reduced grayscale image.
+
+    Raises:
+        ValueError: If the image is not grayscale or parameters are invalid.
+        TypeError: If parameter types are invalid.
+    """
+    validate_image(image)
+
+    if not is_grayscale(image):
+        raise ValueError(
+            "Noise reduction requires a grayscale image."
+        )
+
+    if isinstance(diameter, bool) or not isinstance(diameter, int):
+        raise TypeError(
+            "diameter must be an integer."
+        )
+
+    if diameter <= 0:
+        raise ValueError(
+            "diameter must be greater than zero."
+        )
+
+    for parameter_name, parameter_value in (
+        ("sigma_color", sigma_color),
+        ("sigma_space", sigma_space),
+    ):
+        if (
+            isinstance(parameter_value, bool)
+            or not isinstance(parameter_value, (int, float))
+        ):
+            raise TypeError(
+                f"{parameter_name} must be numeric."
+            )
+
+        if parameter_value <= 0:
+            raise ValueError(
+                f"{parameter_name} must be greater than zero."
+            )
+
+    grayscale_image = (
+        image.squeeze(axis=2)
+        if image.ndim == 3
+        else image
+    )
+
+    return cv2.bilateralFilter(
+        grayscale_image,
+        diameter,
+        sigma_color,
+        sigma_space,
+    )
 
 def apply_clahe(
     image: np.ndarray,
