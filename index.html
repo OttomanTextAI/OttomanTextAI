@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Osmanlıca Çeviri Sistemi - Yapay Zeka Destekli Belge Analizi</title>
+    <meta name="description" content="Osmanlıca matbu belgelerinizi ve el yazmalarınızı yapay zeka teknolojisi ile anında dijitalleştirin ve modern Türkçeye çevirin.">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=Noto+Naskh+Arabic:wght@400;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <!-- Custom Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Header Navigation Bar -->
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="#" class="brand-logo">
+                <div class="logo-crest">
+                    <svg viewBox="0 0 40 40" width="34" height="34" fill="none" stroke="#D4AF37" stroke-width="1.8">
+                        <polygon points="20,2 38,20 20,38 2,20" stroke="#D4AF37" fill="rgba(212, 175, 55, 0.08)"/>
+                        <circle cx="20" cy="20" r="10" stroke="#D4AF37"/>
+                        <path d="M20,6 L20,34 M6,20 L34,20" stroke="#C5A059" stroke-opacity="0.6"/>
+                        <circle cx="20" cy="20" r="4" fill="#D4AF37"/>
+                    </svg>
+                </div>
+                <div class="brand-text">
+                    <span class="brand-title">OSMANLICA</span>
+                    <span class="brand-subtitle">ÇEVİRİ SİSTEMİ</span>
+                </div>
+            </a>
+
+            <nav class="nav-menu">
+                <a href="#home" class="nav-link active" data-modal="home">Ana Sayfa</a>
+                <a href="#documents" class="nav-link" data-modal="documentsModal">Belgelerim</a>
+                <a href="#about" class="nav-link" data-modal="aboutModal">Hakkında</a>
+                <a href="#model" class="nav-link" data-modal="modelModal">Modelimiz</a>
+                <a href="#contact" class="nav-link" data-modal="contactModal">İletişim</a>
+            </nav>
+
+            <div class="nav-actions">
+                <button class="icon-btn theme-toggle-btn" id="themeToggleBtn" title="Karanlık/Aydınlık Tema">
+                    <span class="theme-icon">🌙</span>
+                </button>
+                <button class="icon-btn settings-btn" id="settingsBtn" title="API / Sistem Ayarları">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                </button>
+                <button class="icon-btn profile-btn" id="profileBtn" title="Kullanıcı Profili">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main App Container -->
+    <main class="page-wrapper" id="home">
+        
+        <!-- Hero Section -->
+        <section class="hero-section">
+            <div class="hero-container">
+                <div class="hero-content">
+                    <h1 class="hero-title">Osmanlıca<br>Çeviri Sistemi</h1>
+                    <div class="hero-ornament-line"></div>
+                    <p class="hero-subtitle">
+                        Osmanlıca metinlerinizi yapay zeka teknolojisi ile anında modern Türkçeye çevirin.
+                    </p>
+                    <div class="hero-actions">
+                        <button class="btn btn-primary" id="heroUploadBtn">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="17 8 12 3 7 8"></polyline>
+                                <line x1="12" y1="3" x2="12" y2="15"></line>
+                            </svg>
+                            <span>Resim Yükle</span>
+                        </button>
+                        <button class="btn btn-outline" id="howItWorksBtn">
+                            <span>Nasıl Kullanılır?</span>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="9 18 15 12 9 6"></polyline>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="hero-visual">
+                    <div class="hero-art-frame">
+                        <img src="assets/hero_manuscript.png" alt="Osmanlıca Yazma Belge ve Divit Mürekkep" class="hero-img">
+                        <div class="hero-art-glow"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Interactive Workbench Card -->
+        <section class="workbench-section">
+            <div class="workbench-card">
+                
+                <!-- Column 1: Image Drag & Drop Area -->
+                <div class="workbench-col col-upload">
+                    <div class="upload-zone" id="dropZone">
+                        <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp" class="file-input-hidden">
+                        
+                        <div class="upload-idle-state" id="uploadIdleState">
+                            <div class="upload-icon-container">
+                                <svg width="54" height="54" viewBox="0 0 24 24" fill="none" stroke="#A89B8C" stroke-width="1.5">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14 2 14 8 20 8"></polyline>
+                                    <circle cx="10" cy="13" r="2"></circle>
+                                    <polyline points="18 20 14 15 9 20"></polyline>
+                                </svg>
+                                <div class="icon-plus-badge">+</div>
+                            </div>
+                            <h3 class="upload-heading">Resminizi buraya sürükleyin</h3>
+                            <p class="upload-subtext">veya bilgisayarınızdan seçin</p>
+                            
+                            <button class="btn btn-primary btn-select-file" id="selectFileBtn">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                    <polyline points="17 8 12 3 7 8"></polyline>
+                                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                                </svg>
+                                <span>Dosya Seç</span>
+                            </button>
+
+                            <span class="upload-hint">JPG, PNG, WEBP formatları desteklenir (Maks. 10MB)</span>
+                        </div>
+
+                        <!-- Active Preview State -->
+                        <div class="upload-active-state hidden" id="uploadActiveState">
+                            <div class="preview-img-wrapper">
+                                <img id="previewImage" src="" alt="Yüklenen Belge Görseli">
+                                <div class="image-scan-line" id="scanLine"></div>
+                            </div>
+                            <div class="preview-meta">
+                                <span class="file-name" id="fileName">belge.jpg</span>
+                                <span class="file-size" id="fileSize">1.2 MB</span>
+                            </div>
+                            <div class="preview-actions">
+                                <button class="btn-sm btn-subtle" id="reselectBtn">Yeniden Seç</button>
+                                <button class="btn-sm btn-danger" id="removeFileBtn">Kaldır</button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Center Divider with Gold Crest -->
+                <div class="workbench-divider">
+                    <div class="divider-line"></div>
+                    <div class="divider-crest">❖</div>
+                    <div class="divider-line"></div>
+                </div>
+
+                <!-- Column 2: Ottoman Text Extraction -->
+                <div class="workbench-col col-ocr">
+                    <div class="box-header">
+                        <div class="box-title">
+                            <span class="box-icon">✍️</span>
+                            <h2>OSMANLICA METİN</h2>
+                        </div>
+                        <div class="box-tools hidden" id="ocrTools">
+                            <button class="tool-btn" id="copyOcrBtn" title="Metni Kopyala">📋</button>
+                            <button class="tool-btn" id="toggleDirectionBtn" title="Metin Yönü (RTL/LTR)">⇄</button>
+                        </div>
+                    </div>
+                    <div class="box-content ocr-content-area" id="ocrOutputBox">
+                        <div class="empty-state" id="ocrEmptyState">
+                            <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#D1C4B0" stroke-width="1.4">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                                <line x1="16" y1="13" x2="8" y2="13"></line>
+                                <line x1="16" y1="17" x2="8" y2="17"></line>
+                            </svg>
+                            <p>Yüklediğiniz görseldeki Osmanlıca metin burada görüntülenecek.</p>
+                        </div>
+                        <div class="text-display hidden" id="ocrTextDisplay" contenteditable="true" dir="rtl" lang="ota"></div>
+                    </div>
+                </div>
+
+                <!-- Column 3: Turkish Translation Output -->
+                <div class="workbench-col col-translation">
+                    <div class="box-header">
+                        <div class="box-title">
+                            <span class="box-icon">📖</span>
+                            <h2>TÜRKÇE ÇEVİRİ</h2>
+                        </div>
+                        <div class="box-tools hidden" id="transTools">
+                            <button class="tool-btn" id="copyTransBtn" title="Çeviriyi Kopyala">📋</button>
+                            <button class="tool-btn" id="ttsBtn" title="Sesli Oku">🔊</button>
+                            <button class="tool-btn" id="downloadReportBtn" title="Rapor İndir">📥</button>
+                        </div>
+                    </div>
+                    <div class="box-content trans-content-area" id="transOutputBox">
+                        <div class="empty-state" id="transEmptyState">
+                            <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#D1C4B0" stroke-width="1.4">
+                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                            </svg>
+                            <p>Çeviri sonucu burada görüntülenecek.</p>
+                        </div>
+                        <div class="text-display hidden" id="transTextDisplay" contenteditable="true" lang="tr"></div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Translate Command Bar / Status Footer -->
+            <div class="action-bar-container">
+                <button class="btn btn-action-translate" id="triggerTranslateBtn" disabled>
+                    <span class="btn-spinner hidden" id="actionSpinner"></span>
+                    <span id="translateBtnLabel">✨ Yapay Zeka Çeviriyi Başlat</span>
+                </button>
+                <div class="status-badge hidden" id="statusBadge">
+                    <span class="status-dot pulsing"></span>
+                    <span id="statusMessage">Görsel işleniyor...</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Process Steps Workflow Section -->
+        <section class="workflow-section">
+            <div class="workflow-header">
+                <div class="section-decor-line"></div>
+                <h2 class="workflow-title">ÇEVİRİ SÜRECİ</h2>
+                <div class="section-decor-line"></div>
+            </div>
+
+            <div class="steps-grid">
+                
+                <!-- Step 1 -->
+                <div class="step-card active" id="stepCard1">
+                    <div class="step-icon-wrapper">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                            <polyline points="21 15 16 10 5 21"></polyline>
+                        </svg>
+                    </div>
+                    <div class="step-info">
+                        <h3>1. Resim Yükleme</h3>
+                        <p>Osmanlıca belgenizin fotoğrafını yükleyin.</p>
+                    </div>
+                </div>
+
+                <div class="step-arrow">
+                    <svg width="24" height="12" viewBox="0 0 24 12" fill="none" stroke="#C5A059" stroke-width="1.5" stroke-dasharray="3 3">
+                        <path d="M0 6h20M15 1l5 5-5 5"/>
+                    </svg>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="step-card" id="stepCard2">
+                    <div class="step-icon-wrapper">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            <line x1="11" y1="8" x2="11" y2="14"></line>
+                            <line x1="8" y1="11" x2="14" y2="11"></line>
+                        </svg>
+                    </div>
+                    <div class="step-info">
+                        <h3>2. OCR İşleme</h3>
+                        <p>Yapay zeka metni tanır ve dijitalleştirir.</p>
+                    </div>
+                </div>
+
+                <div class="step-arrow">
+                    <svg width="24" height="12" viewBox="0 0 24 12" fill="none" stroke="#C5A059" stroke-width="1.5" stroke-dasharray="3 3">
+                        <path d="M0 6h20M15 1l5 5-5 5"/>
+                    </svg>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="step-card" id="stepCard3">
+                    <div class="step-icon-wrapper">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z"/>
+                            <path d="M12 6v6l4 2"/>
+                        </svg>
+                    </div>
+                    <div class="step-info">
+                        <h3>3. AI Çeviri</h3>
+                        <p>Özel dil modelimiz ile çeviri yapılır.</p>
+                    </div>
+                </div>
+
+                <div class="step-arrow">
+                    <svg width="24" height="12" viewBox="0 0 24 12" fill="none" stroke="#C5A059" stroke-width="1.5" stroke-dasharray="3 3">
+                        <path d="M0 6h20M15 1l5 5-5 5"/>
+                    </svg>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="step-card" id="stepCard4">
+                    <div class="step-icon-wrapper">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <path d="M9 15l2 2 4-4"></path>
+                        </svg>
+                    </div>
+                    <div class="step-info">
+                        <h3>4. Sonuç</h3>
+                        <p>Modern Türkçe çevirinizi anında görüntüleyin.</p>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Sample Documents Section for Instant Demo -->
+        <section class="samples-section">
+            <h2 class="samples-title">📜 Örnek Osmanlıca Belgeler İle Dene</h2>
+            <p class="samples-subtitle">Kendi belgeniz yoksa aşağıdaki hazır matbu veya yazma belgelerden birini seçerek çeviriyi test edebilirsiniz:</p>
+            <div class="samples-grid">
+                <div class="sample-card" data-sample="2">
+                    <div class="sample-img-container">
+                        <img src="assets/sample_ottoman_2.png" alt="Tefsir & Kelam Yazma Belge">
+                    </div>
+                    <div class="sample-details">
+                        <h4>Tefsir & Kelam El Yazması (Tam Sayfa)</h4>
+                        <span class="sample-tag">Osmanlıca El Yazması Belge</span>
+                    </div>
+                </div>
+                <div class="sample-card" data-sample="1">
+                    <div class="sample-img-container">
+                        <img src="assets/sample_ottoman_1.png" alt="Yazma El Yazması Örneği">
+                    </div>
+                    <div class="sample-details">
+                        <h4>Tarihî El Yazması Sayfası</h4>
+                        <span class="sample-tag">Tezhip & Süslemeli El Yazması</span>
+                    </div>
+                </div>
+                <div class="sample-card" data-sample="hero">
+                    <div class="sample-img-container">
+                        <img src="assets/hero_manuscript.png" alt="Matbu Ferman Örneği">
+                    </div>
+                    <div class="sample-details">
+                        <h4>Hatt-ı Hümayun Belgesi</h4>
+                        <span class="sample-tag">Matbu & Resmi Belge</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+        <div class="footer-container">
+            <p>© 2026 Osmanlıca Çeviri Sistemi — Yapay Zeka & Derin Öğrenme Destekli Transkripsiyon Projesi.</p>
+            <div class="footer-links">
+                <a href="#" data-modal="aboutModal">Sistem Mimarisi</a> • 
+                <a href="#" data-modal="modelModal">mT5 + LoRA Modeli</a> • 
+                <a href="#" data-modal="settingsBtn">API Ayarları</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- MODALS -->
+
+    <!-- How It Works Modal -->
+    <div class="modal-overlay hidden" id="howItWorksModal">
+        <div class="modal-card">
+            <button class="modal-close" data-close="howItWorksModal">&times;</button>
+            <h2 class="modal-title">📌 Osmanlıca Çeviri Sistemi Nasıl Çalışır?</h2>
+            <div class="modal-body">
+                <ol class="guide-steps">
+                    <li><strong>Görsel Yükleyin:</strong> Belgenizin mevkisini ve netliğini kontrol edip sisteme JPG, PNG veya WEBP formatında yükleyin.</li>
+                    <li><strong>Görüntü İyileştirme (OpenCV):</strong> Sistem belgedeki gölgeleri temizler, eğiklikleri düzeltir ve netliği artırır.</li>
+                    <li><strong>Arap Harfli OCR:</strong> Görsel üzerindeki Osmanlıca karakterler ve kelimeler otomatik tespit edilir.</li>
+                    <li><strong>Yapay Zeka Sadeleştirme:</strong> Derin öğrenme dil modelimiz (mT5-small / Gemini Vision) Osmanlıca metni çözümler ve modern Türkçe karşılığını oluşturur.</li>
+                </ol>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" data-close="howItWorksModal">Anladım</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Documents Modal -->
+    <div class="modal-overlay hidden" id="documentsModal">
+        <div class="modal-card modal-lg">
+            <button class="modal-close" data-close="documentsModal">&times;</button>
+            <h2 class="modal-title">📂 Geçmiş Belgelerim</h2>
+            <div class="modal-body">
+                <div class="history-list" id="historyList">
+                    <p class="empty-history-text">Henüz kaydedilmiş bir belge bulunmuyor. Yeni bir çeviri yaptığınızda burada listelenecektir.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-danger-subtle" id="clearHistoryBtn">Geçmişi Temizle</button>
+                <button class="btn btn-primary" data-close="documentsModal">Kapat</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- About Project Modal -->
+    <div class="modal-overlay hidden" id="aboutModal">
+        <div class="modal-card modal-lg">
+            <button class="modal-close" data-close="aboutModal">&times;</button>
+            <h2 class="modal-title">📜 Proje Hakkında</h2>
+            <div class="modal-body">
+                <p>Bu proje, tarihî ve matbu Osmanlıca belgelerin okunması ve anlaşılması süreçlerindeki zorlukları çözmek amacıyla geliştirilmiştir.</p>
+                <br>
+                <h3>🌟 Sistem Özellikleri</h3>
+                <ul class="feature-list">
+                    <li><strong>OpenCV Ön İşleme:</strong> Eğiklik düzeltme (Deskew), perspektif hizalama ve gürültü temizleme.</li>
+                    <li><strong>Arap Harfli OCR:</strong> Matbu metinler üzerinde optimize edilmiş karakter tanıma.</li>
+                    <li><strong>mT5 & LoRA Sadeleştirme:</strong> Eski kelimeleri ve karmaşık cümle yapılarını günümüz Türkçesine dönüştürme.</li>
+                    <li><strong>Human-in-the-Loop:</strong> Kullanıcının çıktıları anında düzenleyebildiği esnek arayüz.</li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" data-close="aboutModal">Tamam</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Model Details Modal -->
+    <div class="modal-overlay hidden" id="modelModal">
+        <div class="modal-card">
+            <button class="modal-close" data-close="modelModal">&times;</button>
+            <h2 class="modal-title">🤖 Yapay Zeka Model Mimarisi</h2>
+            <div class="modal-body">
+                <div class="model-badge-row">
+                    <span class="badge badge-gold">mT5-Small</span>
+                    <span class="badge badge-navy">LoRA Fine-Tuning</span>
+                    <span class="badge badge-accent">ByT5-Small Evaluator</span>
+                </div>
+                <p>Sistemimiz metinden metne (seq2seq) transkripsiyon için <strong>google/mt5-small</strong> altyapısını kullanmaktadır. UTF-8 bayt düzeyinde dayanıklılık testleri için <strong>ByT5</strong> mimarisi ile karşılaştırılmaktadır.</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" data-close="modelModal">Tamam</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Modal -->
+    <div class="modal-overlay hidden" id="contactModal">
+        <div class="modal-card">
+            <button class="modal-close" data-close="contactModal">&times;</button>
+            <h2 class="modal-title">✉️ İletişim & Geri Bildirim</h2>
+            <div class="modal-body">
+                <form id="contactForm">
+                    <div class="form-group">
+                        <label for="contactName">Ad Soyad</label>
+                        <input type="text" id="contactName" class="form-input" placeholder="Adınız" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="contactEmail">E-posta</label>
+                        <input type="email" id="contactEmail" class="form-input" placeholder="eposta@ornek.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="contactMsg">Mesajınız</label>
+                        <textarea id="contactMsg" class="form-input" rows="3" placeholder="Görüş ve önerileriniz..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Gönder</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- API Settings Modal -->
+    <div class="modal-overlay hidden" id="settingsModal">
+        <div class="modal-card">
+            <button class="modal-close" data-close="settingsModal">&times;</button>
+            <h2 class="modal-title">⚙️ API Entegrasyon Ayarları</h2>
+            <div class="modal-body">
+                <p class="modal-hint">Gerçek zamanlı Osmanlıca OCR ve Çeviri için Gemini API Key girebilir veya Dahili Simülatör Modunda çalıştırabilirsiniz.</p>
+                <div class="form-group">
+                    <label for="apiKeyInput">Gemini API Key (Opsiyonel)</label>
+                    <input type="password" id="apiKeyInput" class="form-input" placeholder="AIzaSy...">
+                </div>
+                <div class="form-group">
+                    <label for="modelSelect">Varsayılan Çeviri Motoru</label>
+                    <select id="modelSelect" class="form-input">
+                        <option value="gemini-flash">Gemini Vision AI (Canlı API / Simülatör)</option>
+                        <option value="mt5-custom">Özel Eğitilmiş mT5-small Model (Local Server)</option>
+                        <option value="auto-demo">Otomatik Demo / Akıllı Simülasyon</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" id="saveSettingsBtn">Ayarları Kaydet</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom JavaScript -->
+    <script src="app.js"></script>
+</body>
+</html>
