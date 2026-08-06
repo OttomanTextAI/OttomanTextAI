@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
         isProcessing: false,
         ocrText: '',
         transText: '',
-        apiKey: localStorage.getItem('gemini_api_key') || atob('QVEuQWI4Uk42TGFJRThYcnowWHpQaVN5N3h2cFdIUXI3ZHVOMWNyS20xWDBtZWxMeVY4Y1E='),
+        apiKey: localStorage.getItem('gemini_api_key') || '',
         engine: localStorage.getItem('translation_engine') || 'gemini-flash',
         history: JSON.parse(localStorage.getItem('translation_history') || '[]')
     };
