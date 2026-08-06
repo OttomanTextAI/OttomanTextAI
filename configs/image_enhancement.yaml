@@ -9,7 +9,8 @@ enhancement:
     tile_grid_size:
       - 8
       - 8
-
+  background_normalization:
+    kernel_size: 31
 threshold:
   default_method: otsu
 

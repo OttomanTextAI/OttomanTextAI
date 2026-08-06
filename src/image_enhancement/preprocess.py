@@ -9,7 +9,9 @@ from src.image_enhancement.perspective import correct_perspective
 
 
 from src.common.config import load_yaml_config
-
+from src.image_enhancement.background import (
+    normalize_background,
+)
 
 from src.image_enhancement.enhance import (
     apply_clahe,
@@ -47,8 +49,8 @@ def preprocess_image(
     Apply the default preprocessing pipeline to an image.
 
     The pipeline consists of perspective correction, deskewing,
-    grayscale conversion, noise reduction, CLAHE enhancement,
-    and thresholding.
+    grayscale conversion, noise reduction, background normalization,
+    CLAHE enhancement, and thresholding.
 
     config_path: Optional path to an image enhancement
             configuration file.
@@ -85,6 +87,10 @@ def preprocess_image(
         "clahe"
     ]
 
+    background_config = enhancement_config[
+        "background_normalization"
+    ]
+    
     perspective_corrected_image = correct_perspective(
         image
     )
@@ -104,8 +110,15 @@ def preprocess_image(
         sigma_space=denoise_config["sigma_space"],
     )
 
-    enhanced_image = apply_clahe(
+    normalized_image = normalize_background(
         denoised_image,
+        kernel_size=background_config[
+            "kernel_size"
+        ],
+    )
+
+    enhanced_image = apply_clahe(
+        normalized_image,
         clip_limit=clahe_config["clip_limit"],
         tile_grid_size=tuple(
             clahe_config["tile_grid_size"]
