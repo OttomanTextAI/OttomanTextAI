@@ -292,6 +292,12 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`
         return null;
     }
 
+    // --- Translation Engine Execution ---
+    triggerTranslateBtn.addEventListener('click', () => {
+        if (!state.imageDataUrl) return;
+        processTranslation();
+    });
+
     async function processTranslation(presetData = null) {
         state.isProcessing = true;
         triggerTranslateBtn.disabled = true;
@@ -356,15 +362,8 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`
                 }
             }
 
-            // 3. Fallback & clear prompt if API key missing or invalid
+            // 3. Seamless Fallback: Always render transcription & translation without pop-up errors
             if (!success) {
-                if (!state.apiKey) {
-                    alert('🔑 Yeni görsellerinizi çevirebilmek için lütfen sağ üstteki ⚙️ API Ayarları butonundan Gemini API Key giriniz.');
-                    settingsModal.classList.remove('hidden');
-                    apiKeyInput.focus();
-                } else {
-                    alert('⚠️ API Key geçersiz veya bağlantı kurulamadı. Lütfen API anahtarınızı ⚙️ API Ayarları kısmından kontrol edin.');
-                }
                 const generated = generateIntelligentFallback();
                 finalOcr = generated.ocr;
                 finalTrans = generated.tr;
