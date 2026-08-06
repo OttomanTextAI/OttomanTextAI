@@ -294,7 +294,10 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`
 
     // --- Translation Engine Execution ---
     triggerTranslateBtn.addEventListener('click', () => {
-        if (!state.imageDataUrl) return;
+        if (!state.imageDataUrl) {
+            fileInput.click();
+            return;
+        }
         processTranslation();
     });
 
