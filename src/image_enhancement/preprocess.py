@@ -9,8 +9,23 @@ from src.image_enhancement.perspective import correct_perspective
 
 
 from src.common.config import load_yaml_config
+
+from src.image_enhancement.bleed_through import (
+    suppress_bleed_through,
+)
+
+from src.image_enhancement.text_region import (
+    crop_to_text_region,
+)
+
 from src.image_enhancement.background import (
     normalize_background,
+    suppress_stains,
+)
+
+from src.image_enhancement.morphology import (
+    clean_binary_noise,
+    remove_isolated_speckles,
 )
 
 from src.image_enhancement.enhance import (
@@ -42,8 +57,9 @@ DEFAULT_CONFIG_PATH = (
 
 def preprocess_image(
     image: np.ndarray,
-    threshold_method: str = "otsu",
+    threshold_method: str | None = None,
     config_path: str | Path | None = None,
+    profile: str = "printed",
 ) -> np.ndarray:
     """
     Apply the default preprocessing pipeline to an image.
@@ -59,7 +75,8 @@ def preprocess_image(
         image: Input document image.
         threshold_method: Thresholding method to apply. Supported values
             are "otsu" and "adaptive".
-
+            profile: Preprocessing profile. Supported values are
+            "printed" and "manuscript".
     Returns:
         Preprocessed binary image.
 
@@ -67,14 +84,41 @@ def preprocess_image(
         TypeError: If threshold_method is not a string.
         ValueError: If threshold_method is unsupported.
     """
-    normalized_threshold_method = _validate_threshold_method(
-        threshold_method
-    )
+   
+
+   
 
     config = _load_preprocessing_config(
         config_path
     )
 
+    profiles = config["profiles"]
+
+    normalized_profile = profile.strip().lower()
+
+    if normalized_profile not in profiles:
+        supported_profiles = ", ".join(
+            sorted(profiles)
+        )
+
+        raise ValueError(
+            f"Unsupported profile: {profile!r}. "
+            f"Supported profiles: {supported_profiles}."
+        )
+
+    profile_config = profiles[
+        normalized_profile
+    ]
+
+    selected_threshold_method = (
+                profile_config["threshold_method"]
+                if threshold_method is None
+                else threshold_method
+            )
+    normalized_threshold_method = _validate_threshold_method(
+                selected_threshold_method
+            )
+    
     enhancement_config = config[
         "enhancement"
     ]
@@ -90,17 +134,61 @@ def preprocess_image(
     background_config = enhancement_config[
         "background_normalization"
     ]
+
+    stain_config = enhancement_config[
+    "stain_suppression"
+    ]
+    
+    morphology_config = enhancement_config[
+    "morphology"
+    ]
+
+    speckle_config = enhancement_config[
+    "speckle_removal"
+    ]
+
+    bleed_through_config = enhancement_config[
+    "bleed_through"
+    ]
+
+    text_region_config = enhancement_config[
+    "text_region"
+    ]
     
     perspective_corrected_image = correct_perspective(
         image
     )
 
-    deskewed_image = deskew_image(
-        perspective_corrected_image
-    )
+    try:
+        deskewed_image = deskew_image(
+            perspective_corrected_image
+        )
+    except ValueError:
+        deskewed_image = (
+            perspective_corrected_image.copy()
+        )
+
+    text_region_image = deskewed_image
+
+    if profile_config["text_region_enabled"]:
+        text_region_image = crop_to_text_region(
+            deskewed_image,
+            horizontal_kernel_width=text_region_config[
+                "horizontal_kernel_width"
+            ],
+            vertical_kernel_height=text_region_config[
+                "vertical_kernel_height"
+            ],
+            min_region_area_ratio=text_region_config[
+                "min_region_area_ratio"
+            ],
+            padding=text_region_config[
+                "padding"
+            ],
+        )
 
     grayscale_image = convert_to_grayscale(
-        deskewed_image
+        text_region_image
     )
 
     denoised_image = reduce_noise(
@@ -117,18 +205,87 @@ def preprocess_image(
         ],
     )
 
+    bleed_suppressed_image = normalized_image
+
+    if  profile_config["bleed_through_enabled"]:
+        bleed_suppressed_image = suppress_bleed_through(
+            normalized_image,
+            background_kernel_size=bleed_through_config[
+                "background_kernel_size"
+            ],
+            min_contrast=bleed_through_config[
+                "min_contrast"
+            ],
+            foreground_gain=bleed_through_config[
+                "foreground_gain"
+            ],
+        )
+
+
+    stain_suppressed_image = (
+            bleed_suppressed_image
+        )
+
+    if profile_config[
+            "stain_suppression_enabled"
+        ]:
+
+        stain_suppressed_image = suppress_stains(
+                bleed_suppressed_image,
+                kernel_size=stain_config[
+                    "kernel_size"
+                ],
+            )
+
     enhanced_image = apply_clahe(
-        normalized_image,
+        stain_suppressed_image,
         clip_limit=clahe_config["clip_limit"],
         tile_grid_size=tuple(
             clahe_config["tile_grid_size"]
         ),
     )
 
-    if normalized_threshold_method == "otsu":
-        return apply_otsu_threshold(enhanced_image)
+    if not profile_config["threshold_enabled"]:
+        return enhanced_image
 
-    return apply_adaptive_threshold(enhanced_image)
+    if normalized_threshold_method == "otsu":
+        binary_image = apply_otsu_threshold(
+            enhanced_image
+        )
+    else:
+        binary_image = apply_adaptive_threshold(
+            enhanced_image
+        )
+
+    if profile_config["morphology_enabled"]:
+        binary_image = clean_binary_noise(
+            binary_image,
+            kernel_size=morphology_config[
+                "kernel_size"
+            ],
+            iterations=morphology_config[
+                "iterations"
+            ],
+        )
+
+    if profile_config["speckle_removal_enabled"]:
+        binary_image = remove_isolated_speckles(
+            binary_image,
+            min_area=speckle_config[
+                "min_area"
+            ],
+            anchor_area=speckle_config[
+                "anchor_area"
+            ],
+            horizontal_distance=speckle_config[
+                "horizontal_distance"
+            ],
+            vertical_distance=speckle_config[
+                "vertical_distance"
+            ],
+        )
+
+    return binary_image
 
 
 def preprocess_image_file(
@@ -139,11 +296,13 @@ def preprocess_image_file(
     """
     Read, preprocess, and save a document image.
 
-    Args:
-        input_path: Path of the input image.
-        output_path: Path where the processed image will be saved.
-        threshold_method: Thresholding method to apply. Supported values
-            are "otsu" and "adaptive".
+   Args:
+    image: Input document image.
+    threshold_method: Optional thresholding method. Supported values
+        are "otsu" and "adaptive".
+    config_path: Optional configuration file path.
+    profile: Preprocessing profile. Supported values are
+        "printed" and "manuscript".
 
     Returns:
         Preprocessed binary image.

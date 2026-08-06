@@ -4,14 +4,43 @@ enhancement:
     sigma_color: 30.0
     sigma_space: 30.0
 
+  background_normalization:
+    kernel_size: 31
+
+  stain_suppression:
+    kernel_size: 51
+
   clahe:
     clip_limit: 2.0
     tile_grid_size:
       - 8
       - 8
-  background_normalization:
-    kernel_size: 31
+  morphology:
+    enabled: false
+    kernel_size: 2
+    iterations: 1
+
+  speckle_removal:
+    enabled: false
+    min_area: 12
+    anchor_area: 35
+    horizontal_distance: 18
+    vertical_distance: 8
+
+  bleed_through:
+    enabled: fasle
+    background_kernel_size: 31
+    min_contrast: 12
+    foreground_gain: 3.0
+
+  text_region:
+    enabled: false
+    horizontal_kernel_width: 35
+    vertical_kernel_height: 5
+    min_region_area_ratio: 0.05
+    padding: 15
 threshold:
+  enabled: true
   default_method: otsu
 
   adaptive:
@@ -58,3 +87,27 @@ perspective:
       - 7
       - 7
     iterations: 2
+
+  speckle_removal:
+    enabled: true
+    min_area: 12
+    line_kernel_width: 25
+
+profiles:
+  printed:
+    threshold_enabled: true
+    threshold_method: otsu
+    text_region_enabled: true
+    bleed_through_enabled: true
+    stain_suppression_enabled: true
+    morphology_enabled: true
+    speckle_removal_enabled: true
+
+  manuscript:
+    threshold_enabled: false
+    threshold_method: otsu
+    text_region_enabled: false
+    bleed_through_enabled: false
+    stain_suppression_enabled: false
+    morphology_enabled: false
+    speckle_removal_enabled: false

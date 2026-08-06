@@ -8,15 +8,15 @@ from src.image_enhancement.preprocess import (
 
 
 INPUT_PATH = Path(
-    "data/raw/ground_truth/sample_03.png"
+    "data/raw/ground_truth/sample_02.png"
 )
 
 OTSU_OUTPUT_PATH = Path(
-    "data/processed/sample_03_preprocessed_otsu.png"
+    "data/processed/sample_02_preprocessed_otsu.png"
 )
 
 ADAPTIVE_OUTPUT_PATH = Path(
-    "data/processed/sample_03_preprocessed_adaptive.png"
+    "data/processed/sample_02_preprocessed_adaptive.png"
 )
 
 

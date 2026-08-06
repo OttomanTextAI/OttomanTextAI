@@ -91,13 +91,49 @@ def deskew_image(
 
     height, width = image.shape[:2]
 
-    return cv2.warpAffine(
+    border_value = (
+        (255, 255, 255)
+        if image.ndim == 3
+        else 255
+    )
+
+    rotated_image = cv2.warpAffine(
         image,
         rotation_matrix,
         (width, height),
-        flags=cv2.INTER_CUBIC,
-        borderMode=cv2.BORDER_REPLICATE,
+        flags=cv2.INTER_LINEAR,
+        borderMode=cv2.BORDER_CONSTANT,
+        borderValue=border_value,
     )
+
+    valid_mask = np.full(
+        (height, width),
+        255,
+        dtype=np.uint8,
+    )
+
+    valid_mask = cv2.warpAffine(
+        valid_mask,
+        rotation_matrix,
+        (width, height),
+        flags=cv2.INTER_NEAREST,
+        borderMode=cv2.BORDER_CONSTANT,
+        borderValue=0,
+    )
+
+    # Döndürme sınırındaki ince interpolasyon izlerini de dışarıda bırak.
+    valid_mask = cv2.erode(
+        valid_mask,
+        np.ones((3, 3), dtype=np.uint8),
+        iterations=1,
+    )
+
+    if rotated_image.ndim == 3:
+        rotated_image[valid_mask == 0] = (255, 255, 255)
+    else:
+        rotated_image[valid_mask == 0] = 255
+
+    return rotated_image
 
 def _compute_rotation_matrix(
     image_shape: tuple[int, ...],

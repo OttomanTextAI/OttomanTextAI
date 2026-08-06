@@ -216,6 +216,7 @@ def _validate_tile_grid_size(
         )
 def enhance_image(
     image_bytes: bytes,
+    profile: str = "printed",
 ) -> bytes:
     """
     Enhance an Ottoman document image provided as raw bytes.
@@ -270,7 +271,8 @@ def enhance_image(
     )
 
     processed_image = preprocess_image(
-        decoded_image
+        decoded_image,
+        profile=profile,
     )
 
     encoding_succeeded, encoded_output = cv2.imencode(

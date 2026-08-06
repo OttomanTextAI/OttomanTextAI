@@ -12,6 +12,17 @@ from src.image_enhancement.enhance import (
     convert_to_grayscale,
     reduce_noise,
 )
+
+from src.image_enhancement.morphology import (
+    clean_binary_noise,
+    remove_isolated_speckles,
+)
+
+from src.image_enhancement.text_region import (
+    crop_to_text_region,
+    detect_text_region,
+)
+
 from src.image_enhancement.perspective import correct_perspective
 from src.image_enhancement.preprocess import preprocess_image_file
 from src.image_enhancement.threshold import (
@@ -198,3 +209,104 @@ def test_enhance_image_bytes() -> None:
 
     assert decoded_output is not None
     assert decoded_output.size > 0
+
+
+def test_clean_binary_noise() -> None:
+    """Test that morphological cleaning preserves image properties."""
+    binary_image = np.full(
+        (50, 50),
+        255,
+        dtype=np.uint8,
+    )
+
+    binary_image[20:30, 10:40] = 0
+    binary_image[5, 5] = 0
+
+    cleaned_image = clean_binary_noise(
+        binary_image
+    )
+
+    assert cleaned_image.shape == binary_image.shape
+    assert cleaned_image.dtype == np.uint8
+    assert cleaned_image.size > 0
+
+def test_remove_isolated_speckles() -> None:
+    """Test that isolated dots are removed while nearby text dots remain."""
+    binary_image = np.full(
+        (80, 120),
+        255,
+        dtype=np.uint8,
+    )
+
+    # Ana metin bileşeni
+    binary_image[35:45, 35:85] = 0
+
+    # Metne yakın küçük nokta: korunmalı
+    binary_image[29:31, 55:57] = 0
+
+    # Metinden uzak küçük nokta: silinmeli
+    binary_image[5:7, 5:7] = 0
+
+    cleaned_image = remove_isolated_speckles(
+        binary_image,
+        min_area=12,
+        anchor_area=35,
+        horizontal_distance=18,
+        vertical_distance=8,
+    )
+
+    assert cleaned_image[30, 56] == 0
+    assert cleaned_image[6, 6] == 255
+    assert cleaned_image.shape == binary_image.shape
+
+def test_detect_text_region() -> None:
+    """Test that a dominant synthetic text region is detected."""
+    image = np.full(
+        (200, 300),
+        255,
+        dtype=np.uint8,
+    )
+
+    cv2.rectangle(
+        image,
+        (60, 50),
+        (240, 150),
+        0,
+        thickness=-1,
+    )
+
+    x, y, width, height = detect_text_region(
+        image,
+        min_region_area_ratio=0.05,
+    )
+
+    assert width > 0
+    assert height > 0
+    assert x >= 0
+    assert y >= 0
+
+
+def test_crop_to_text_region() -> None:
+    """Test that cropping returns a valid smaller image."""
+    image = np.full(
+        (200, 300),
+        255,
+        dtype=np.uint8,
+    )
+
+    cv2.rectangle(
+        image,
+        (60, 50),
+        (240, 150),
+        0,
+        thickness=-1,
+    )
+
+    cropped_image = crop_to_text_region(
+        image,
+        min_region_area_ratio=0.05,
+    )
+
+    assert cropped_image.size > 0
+    assert cropped_image.shape[0] <= image.shape[0]
+    assert cropped_image.shape[1] <= image.shape[1]

@@ -5,6 +5,8 @@
 .venv/
 venv/
 
+#key
+.env
 # Python cache
 __pycache__/
 *.py[cod]

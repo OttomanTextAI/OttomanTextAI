@@ -71,7 +71,8 @@ def correct_perspective(
         transform_matrix,
         (output_width, output_height),
         flags=cv2.INTER_CUBIC,
-        borderMode=cv2.BORDER_REPLICATE,
+        borderMode=cv2.BORDER_CONSTANT,
+        borderValue=(255, 255, 255),
     )
 
 
