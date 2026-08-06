@@ -251,7 +251,7 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`
     // --- Direct Client-Side Gemini Vision API Call (for GitHub Pages static hosting) ---
     async function callDirectGeminiApi(imageDataUrl, apiKey) {
         const cleanB64 = imageDataUrl.split(',')[1] || imageDataUrl;
-        const models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash', 'gemini-1.5-pro'];
+        const models = ['gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-flash-latest', 'gemini-2.5-flash', 'gemini-2.0-flash'];
         const prompt = "Lütfen bu Osmanlıca belgenin TÜM SATIRLARINI VE PARAGRAFLARINI eksiksiz transkribe et ve çevir. " +
             "DİKKAT: 'ocr' alanına KESİNLİKLE Latin harfi karıştırma; metni %100 Orijinal Arap Harfli Osmanlıca (Osmanlı Türkçesi) olarak yaz. " +
             "'trans' alanına ise tam metnin günümüz Türkçesi sadeleştirmesini ver. " +
