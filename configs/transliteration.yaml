@@ -1,0 +1,142 @@
+project:
+  name: osmanlica-ceviri
+  module: transliteration
+  owner: irem
+  description: >
+    Arap harfli Osmanlı Türkçesi metinlerini,
+    tarihî biçimi koruyarak Latin harflerine aktaran
+    sequence-to-sequence model modülü.
+
+task:
+  type: seq2seq_transliteration
+  source_language: ottoman_turkish_arabic_script
+  target_language: ottoman_turkish_latin_script
+
+  # Bu modül sadeleştirme veya modern Türkçe çeviri yapmaz.
+  preserve_historical_language: true
+  perform_simplification: false
+  perform_translation: false
+
+transcription_scheme:
+  name: project_v1
+  status: draft
+  unicode_normalization: NFC
+
+  preserve:
+    - historical_vocabulary
+    - izafet_constructions
+    - proper_names
+    - long_vowels
+    - punctuation_when_reliable
+
+  long_vowels:
+    a: "â"
+    i: "î"
+    u: "û"
+
+  notes:
+    - "Akademik işaretlerin nihai listesi ekip ve danışman onayıyla kesinleştirilecektir."
+    - "Ayn, hemze ve Arapça-Farsça kökenli ünsüzlerin gösterimi henüz taslak durumdadır."
+    - "Aynı sözcük veri setinin tamamında tek biçimde yazılmalıdır."
+
+model:
+  base_model: google/mt5-small
+  tokenizer: google/mt5-small
+  architecture: encoder_decoder
+  task_prefix: "Osmanlıca metni Latin harflerine aktar: "
+
+  max_source_length: 256
+  max_target_length: 256
+
+  use_lora: true
+
+  lora:
+    task_type: SEQ_2_SEQ_LM
+    rank: 8
+    alpha: 16
+    dropout: 0.10
+    bias: none
+    target_modules:
+      - q
+      - v
+
+data:
+  raw_file: data/raw/transliteration/pairs.jsonl
+  processed_directory: data/processed/transliteration
+  split_directory: data/splits
+
+  source_column: source_ottoman
+  target_column: target_latin
+  id_column: id
+  group_column: document_id
+
+  required_columns:
+    - id
+    - document_id
+    - source_ottoman
+    - target_latin
+    - scheme
+    - domain
+    - quality
+    - source_name
+
+  split:
+    method: document_level
+    train_ratio: 0.80
+    validation_ratio: 0.10
+    test_ratio: 0.10
+    random_seed: 42
+
+  filtering:
+    remove_empty_pairs: true
+    remove_exact_duplicates: true
+    strip_outer_whitespace: true
+    normalize_unicode: true
+    reject_identical_source_target: true
+
+training:
+  output_directory: outputs/transliteration/checkpoints
+  experiment_directory: experiments/transliteration
+
+  seed: 42
+  learning_rate: 0.0002
+  number_of_epochs: 5
+
+  per_device_train_batch_size: 2
+  per_device_eval_batch_size: 2
+  gradient_accumulation_steps: 8
+
+  weight_decay: 0.01
+  warmup_ratio: 0.10
+
+  evaluation_strategy: epoch
+  save_strategy: epoch
+  logging_steps: 10
+
+  load_best_model_at_end: true
+  metric_for_best_model: cer
+  greater_is_better: false
+
+  fp16: false
+  bf16: false
+  device: auto
+
+generation:
+  max_new_tokens: 256
+  number_of_beams: 4
+  early_stopping: true
+
+evaluation:
+  primary_metric: cer
+
+  metrics:
+    - cer
+    - wer
+    - exact_match
+    - chrf
+    - bleu
+
+  save_predictions: true
+  predictions_file: outputs/transliteration/predictions.jsonl
+  metrics_file: outputs/transliteration/metrics.json
+  error_analysis_file: outputs/transliteration/error_analysis.csv

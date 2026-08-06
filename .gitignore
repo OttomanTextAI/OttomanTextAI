@@ -1,4 +1,6 @@
-<<<<<<< Updated upstream
+# macOS
+.DS_Store
+
 # Python virtual environment
 .venv/
 venv/
@@ -6,6 +8,7 @@ venv/
 # Python cache
 __pycache__/
 *.py[cod]
+*.pyc
 
 # VS Code
 .vscode/
@@ -13,18 +16,30 @@ __pycache__/
 # Jupyter
 .ipynb_checkpoints/
 
-# Processed outputs
-data/processed/
-data/output/
-
-# Veri ve model dosyaları (büyük, GitHub'a gitmesin)
+# Veri ve model dosyaları
 data/raw/
 data/processed/
 data/ground_truth/
+
+# Harici veri setleri
+data/raw/transliteration/external/
+data/raw/ocr/external/
+data/raw/simplification/external/
+
+# Dataset splitleri
+data/splits/
+
+# Model dosyaları
 models/
-=======
-venv/
-__pycache__/
-*.pyc
-.DS_Store
->>>>>>> Stashed changes
+data/models/
+
+# Eğitim çıktıları
+outputs/**/checkpoints/
+experiments/**/checkpoints/
+
+# Model ağırlıkları
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.ckpt
