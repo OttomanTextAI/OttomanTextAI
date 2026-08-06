@@ -192,36 +192,60 @@ def draw_numbered_preview(image_path: Path, xml_path: Path, output_path: Path) -
     return total_lines
 
 
+def _process_one_page(image_path: Path, raw_dir: Path) -> None:
+    """Tek bir sayfayı segmentler, XML/önizleme üretir. cmd_segment ve
+    cmd_segment_one tarafından ortak kullanılır."""
+    target_image = OUTPUT_DIR / image_path.name
+    target_xml = OUTPUT_DIR / (image_path.stem + ".xml")
+    preview_path = OUTPUT_DIR / (image_path.stem + "_preview.png")
+
+    shutil.copy(image_path, target_image)
+    if not segment_page(target_image, target_xml):
+        return
+
+    tree = ET.parse(target_xml)
+    root = tree.getroot()
+    ns = {"alto": ALTO_NS}
+    save_xml(tree, target_xml, root, ns)
+
+    count = draw_numbered_preview(target_image, target_xml, preview_path)
+
+    txt_path = image_path.with_suffix(".txt")
+    expected = 0
+    if txt_path.exists():
+        with open(txt_path, "r", encoding="utf-8") as f:
+            expected = len([l for l in f if l.strip()])
+
+    status = "OK" if count == expected else f"FARK VAR (tespit={count}, metin={expected})"
+    print(f"{image_path.stem}: {status} -> önizleme: {preview_path}")
+
+
 def cmd_segment(raw_dir: Path = RAW_DIR) -> None:
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     image_files = sorted(raw_dir.glob("*.png")) + sorted(raw_dir.glob("*.jpg"))
 
     for image_path in image_files:
-        target_image = OUTPUT_DIR / image_path.name
-        target_xml = OUTPUT_DIR / (image_path.stem + ".xml")
-        preview_path = OUTPUT_DIR / (image_path.stem + "_preview.png")
-
-        shutil.copy(image_path, target_image)
-        if not segment_page(target_image, target_xml):
-            continue
-
-        tree = ET.parse(target_xml)
-        root = tree.getroot()
-        ns = {"alto": ALTO_NS}
-        save_xml(tree, target_xml, root, ns)
-
-        count = draw_numbered_preview(target_image, target_xml, preview_path)
-
-        txt_path = image_path.with_suffix(".txt")
-        expected = 0
-        if txt_path.exists():
-            with open(txt_path, "r", encoding="utf-8") as f:
-                expected = len([l for l in f if l.strip()])
-
-        status = "OK" if count == expected else f"FARK VAR (tespit={count}, metin={expected})"
-        print(f"{image_path.stem}: {status} -> önizleme: {preview_path}")
+        _process_one_page(image_path, raw_dir)
 
     print(f"\nTüm önizlemeler '{OUTPUT_DIR}' klasöründe.")
+
+
+def cmd_segment_one(page_name: str, raw_dir: Path = RAW_DIR) -> None:
+    """
+    SADECE tek bir sayfayı yeniden segmentler -- klasördeki diğer sayfaların
+    XML'lerine hiç dokunmaz. Bir sayfayı sıfırdan (region/merge/remove
+    işlemlerinden önceki hâline) baştan başlatmak istediğinde kullanılır.
+    """
+    image_path = raw_dir / (page_name + ".png")
+    if not image_path.exists():
+        image_path = raw_dir / (page_name + ".jpg")
+    if not image_path.exists():
+        print(f"HATA: '{page_name}' için görüntü dosyası bulunamadı ({raw_dir} içinde).")
+        return
+
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    _process_one_page(image_path, raw_dir)
+    print(f"\nSadece '{page_name}' yeniden segmentlendi, diğer sayfalara dokunulmadı.")
 
 
 # ---------- Düzeltme komutları ----------
@@ -1038,6 +1062,10 @@ if __name__ == "__main__":
     if action == "segment":
         folder = Path(sys.argv[2]) if len(sys.argv) > 2 else RAW_DIR
         cmd_segment(folder)
+    elif action == "segment-one":
+        page = sys.argv[2]
+        folder = Path(sys.argv[3]) if len(sys.argv) > 3 else RAW_DIR
+        cmd_segment_one(page, folder)
     elif action == "reorder":
         cmd_reorder(sys.argv[2])
     elif action == "remove":
