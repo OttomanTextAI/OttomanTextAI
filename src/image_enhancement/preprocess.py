@@ -5,7 +5,6 @@ from typing import Any
 
 import numpy as np
 import cv2
-import os
 
 from src.image_enhancement.deskew import deskew_image
 from src.image_enhancement.perspective import correct_perspective
@@ -219,8 +218,13 @@ def preprocess_image(
 
     height, width = text_region_image.shape[:2]
 
-    if width < 1000:
-        scale = 2.0
+    if (
+        profile_config["upscale_enabled"]
+        and width < 1000
+    ):
+        scale = profile_config[
+            "upscale_factor"
+        ]
 
         text_region_image = cv2.resize(
             text_region_image,
@@ -243,14 +247,17 @@ def preprocess_image(
 
     
       
-    # normalized_image = normalize_background(
-    #     denoised_image,
-    #     kernel_size=background_config[
-    #         "kernel_size"
-    #     ],
-    # )
+    normalized_image = denoised_image
 
-    normalized_image = denoised_image.copy()
+    if profile_config[
+        "background_normalization_enabled"
+    ]:
+        normalized_image = normalize_background(
+            denoised_image,
+            kernel_size=background_config[
+                "kernel_size"
+            ],
+        )
 
     bleed_suppressed_image = normalized_image
 
@@ -290,14 +297,20 @@ def preprocess_image(
                 ],
             )
 
-    # enhanced_image = apply_clahe(
-    #     stain_suppressed_image,
-    #     clip_limit=clahe_config["clip_limit"],
-    #     tile_grid_size=tuple(
-    #         clahe_config["tile_grid_size"]
-    #     ),
-    # )
-    enhanced_image = stain_suppressed_image.copy()
+    enhanced_image = stain_suppressed_image
+
+    if profile_config["clahe_enabled"]:
+        enhanced_image = apply_clahe(
+            stain_suppressed_image,
+            clip_limit=clahe_config[
+                "clip_limit"
+            ],
+            tile_grid_size=tuple(
+                clahe_config[
+                    "tile_grid_size"
+                ]
+            ),
+        )
 
     line_cleaned_image = enhanced_image
 
@@ -318,6 +331,7 @@ def preprocess_image(
             ],
         )
 
+
     if not profile_config["threshold_enabled"]:
         return line_cleaned_image
 
@@ -335,6 +349,7 @@ def preprocess_image(
                 "constant"
             ],
         )
+
 
     if profile_config["morphology_enabled"]:
         binary_image = clean_binary_noise(
@@ -404,34 +419,6 @@ def preprocess_image(
         )
 
       
-
-    os.makedirs("debug_outputs", exist_ok=True)
-
-    cv2.imwrite(
-        "debug_outputs/01_text_region.png",
-        text_region_image
-    )
-
-    cv2.imwrite(
-        "debug_outputs/02_grayscale.png",
-        grayscale_image
-    )
-
-    cv2.imwrite(
-        "debug_outputs/03_denoised.png",
-        denoised_image
-    )
-
-    cv2.imwrite(
-        "debug_outputs/04_before_threshold.png",
-        line_cleaned_image
-    )
-
-    cv2.imwrite(
-        "debug_outputs/05_binary.png",
-        binary_image
-    )
-
     return binary_image
 
 

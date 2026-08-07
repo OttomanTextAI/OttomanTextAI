@@ -8,7 +8,7 @@ enhancement:
     kernel_size: 31
 
   stain_suppression:
-    kernel_size: 51
+    kernel_size: 31
 
   clahe:
     clip_limit: 2.0
@@ -79,8 +79,8 @@ threshold:
   default_method: otsu
 
   adaptive:
-    block_size: 11
-    constant: 2
+    block_size: 31
+    constant: 6
 
 deskew:
   minimum_text_line_count: 2
@@ -132,15 +132,63 @@ profiles:
   printed:
     threshold_enabled: true
     threshold_method: otsu
+
+    upscale_enabled: false
+    upscale_factor: 2.0
+
+    background_normalization_enabled: true
+    clahe_enabled: true
+
     text_region_enabled: false
     bleed_through_enabled: false
     stain_suppression_enabled: false
     morphology_enabled: false
     speckle_removal_enabled: false
 
+
+  printed-degraded:
+    threshold_enabled: true
+    threshold_method: adaptive
+
+    upscale_enabled: false
+    upscale_factor: 2.0
+
+    background_normalization_enabled: true
+    clahe_enabled: true
+
+    text_region_enabled: false
+    bleed_through_enabled: false
+    stain_suppression_enabled: true
+    morphology_enabled: false
+    speckle_removal_enabled: false
+
+  delicate:
+    threshold_enabled: true
+    threshold_method: adaptive
+
+    upscale_enabled: true
+    upscale_factor: 2.0
+
+    background_normalization_enabled: false
+    clahe_enabled: false
+
+    text_region_enabled: false
+    bleed_through_enabled: false
+    stain_suppression_enabled: false
+    morphology_enabled: false
+    speckle_removal_enabled: false
+
+
   manuscript:
     threshold_enabled: false
     threshold_method: otsu
+
+    upscale_enabled: true
+    upscale_factor: 2.0
+
+    background_normalization_enabled: false
+    clahe_enabled: true
+
     text_region_enabled: false
     bleed_through_enabled: false
     stain_suppression_enabled: false
