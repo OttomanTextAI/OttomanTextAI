@@ -300,8 +300,8 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`
             statusMessage.textContent =
                 'Görüntü iyileştiriliyor...';
 
-            const selectedProfile =
-    documentProfile.value;
+        const selectedProfile =
+                documentProfile.value;
 
         const enhancedResult =
             await enhanceUploadedImage(
