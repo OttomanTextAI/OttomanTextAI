@@ -15,19 +15,26 @@ from src.transliteration.inference import transliterate
 from src.simplification.inference import simplify
 
 
-def process_photo(image_bytes: bytes) -> dict:
-    """
-    Fotoğraf girişi için tam pipeline:
-    görsel -> iyileştirme -> OCR -> transliterasyon -> sadeleştirme
-    """
-    print("\n=== PIPELINE BAŞLADI (giriş türü: fotoğraf) ===")
+def process_photo(
+    image_bytes: bytes,
+    profile: str = "printed",
+) -> dict:
+    enhanced = enhance_image(
+        image_bytes,
+        profile=profile,
+    )
 
-    enhanced = enhance_image(image_bytes)
-    ottoman_arabic = run_ocr(enhanced)
-    latin_ottoman = transliterate(ottoman_arabic)
-    result = simplify(latin_ottoman)
+    ottoman_arabic = run_ocr(
+        enhanced
+    )
 
-    print("=== PIPELINE BİTTİ ===\n")
+    latin_ottoman = transliterate(
+        ottoman_arabic
+    )
+
+    result = simplify(
+        latin_ottoman
+    )
 
     return {
         "ocr_output": ottoman_arabic,
@@ -59,12 +66,16 @@ def process_typed_text(latin_ottoman_text: str) -> dict:
     }
 
 
-def process(input_type: str, data):
-    """
-    Tek giriş noktası. input_type: "photo" | "document" | "text"
-    """
+def process(
+    input_type: str,
+    data,
+    profile: str = "printed",
+):
     if input_type == "photo":
-        return process_photo(data)
+        return process_photo(
+            data,
+            profile=profile,
+        )
     elif input_type == "document":
         return process_document(data)
     elif input_type == "text":

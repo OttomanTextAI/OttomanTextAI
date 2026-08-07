@@ -36,7 +36,7 @@ enhancement:
     max_isolated_distance: 8
   
   speckle_removal_v3:
-    enabled: true
+    enabled: false
     min_area: 14
     line_kernel_width: 35
     line_kernel_height: 3
@@ -52,7 +52,7 @@ enhancement:
     connectivity_kernel_size: 5
   
   line_removal:
-    enabled: true
+    enabled: false
     min_line_length_ratio: 0.45
     max_line_gap: 20
     hough_threshold: 80
@@ -134,7 +134,7 @@ profiles:
     threshold_method: otsu
     text_region_enabled: false
     bleed_through_enabled: false
-    stain_suppression_enabled: true
+    stain_suppression_enabled: false
     morphology_enabled: false
     speckle_removal_enabled: false
 
