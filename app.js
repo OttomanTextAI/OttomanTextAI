@@ -540,18 +540,31 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`
     }
 
             // 2. If static hosting (GitHub Pages) or local server unreachable, call Gemini API directly from browser
-            //if (!success && state.apiKey) {
-              //  try {
-               //     const directData = await callDirectGeminiApi(state.imageDataUrl, state.apiKey);
-                //    if (directData && directData.ocr && directData.trans) {
-                //        finalOcr = directData.ocr;
-                //        finalTrans = directData.trans;
-                 //       success = true;
-                 //   }
-               // } catch (geminiErr) {
-               //     console.warn('Direct Gemini API error:', geminiErr);
+           /*
+        if (!success && state.apiKey) {
+            try {
+                const directData = await callDirectGeminiApi(
+                    state.imageDataUrl,
+                    state.apiKey
+                );
+
+                if (
+                    directData &&
+                    directData.ocr &&
+                    directData.trans
+                ) {
+                    finalOcr = directData.ocr;
+                    finalTrans = directData.trans;
+                    success = true;
                 }
-            //}
+            } catch (geminiErr) {
+                console.warn(
+                    'Direct Gemini API error:',
+                    geminiErr
+                );
+            }
+        }
+        */
 
             // 3. Seamless Fallback: Always render transcription & translation without pop-up errors
             if (!success) {
