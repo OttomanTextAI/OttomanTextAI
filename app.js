@@ -233,7 +233,7 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`
     );
 
     const response = await fetch(
-        https://ottoman-text-ai.onrender.com/api/enhance,
+        'https://ottoman-text-ai.onrender.com/api/enhance',
         {
             method: 'POST',
             body: formData
