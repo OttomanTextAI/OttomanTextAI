@@ -467,7 +467,26 @@ Böylece Yüce Allah'ı tanımak ve bilmek (marifetullah), ilimlerin en yücesi 
         });
     }
 
-    // Fail-safe Fluent Text-To-Speech Function
+    // Ottoman Arabic Script to Turkish Phonetic Transliteration Converter for TTS
+    function convertOttomanScriptToTurkish(text) {
+        if (!text) return '';
+        const map = {
+            'ا': 'a', 'آ': 'a', 'أ': 'a', 'إ': 'i', 'ب': 'b', 'پ': 'p', 'ت': 't', 'ث': 's',
+            'ج': 'c', 'چ': 'ç', 'ح': 'h', 'خ': 'h', 'د': 'd', 'ذ': 'z', 'ر': 'r', 'ز': 'z',
+            'ژ': 'j', 'س': 's', 'ش': 'ş', 'ص': 's', 'ض': 'z', 'ط': 't', 'ظ': 'z', 'ع': 'a',
+            'غ': 'g', 'ف': 'f', 'ق': 'k', 'ك': 'k', 'گ': 'g', 'ڭ': 'n', 'ل': 'l', 'م': 'm',
+            'ن': 'n', 'و': 'v', 'ه': 'h', 'ی': 'y', 'ي': 'y', 'ة': 't', 'ء': '', 'ئ': 'y',
+            'ؤ': 'o'
+        };
+        let res = '';
+        for (let i = 0; i < text.length; i++) {
+            const ch = text[i];
+            res += map[ch] !== undefined ? map[ch] : ch;
+        }
+        return res;
+    }
+
+    // Fail-safe Text-To-Speech Function
     function speakTextWithVoice(rawText, mode) {
         if (!rawText || !rawText.trim()) return;
         if (!('speechSynthesis' in window)) {
@@ -481,31 +500,24 @@ Böylece Yüce Allah'ı tanımak ve bilmek (marifetullah), ilimlerin en yücesi 
             window.speechSynthesis.resume();
         }
 
-        const cleanText = rawText.trim();
-        const utterance = new SpeechSynthesisUtterance(cleanText);
-        utterance.rate = 0.88;
+        const finalText = mode === 'ottoman' ? convertOttomanScriptToTurkish(rawText) : rawText;
+        const utterance = new SpeechSynthesisUtterance(finalText.trim());
+        utterance.rate = 0.9;
         utterance.volume = 1.0;
         utterance.pitch = 1.0;
 
         const speak = () => {
             const voices = window.speechSynthesis.getVoices();
             if (voices && voices.length > 0) {
-                let matchVoice = null;
-                if (mode === 'ottoman') {
-                    // Match Arabic/Ottoman voice or Turkish voice for fluent sentence speech
-                    matchVoice = voices.find(v => v.lang.toLowerCase().startsWith('ar') || v.name.toLowerCase().includes('arabic')) ||
-                                 voices.find(v => v.lang.toLowerCase().startsWith('tr'));
+                const trVoice = voices.find(v => v.lang.toLowerCase().includes('tr') || v.name.toLowerCase().includes('turkish') || v.name.includes('Yelda') || v.name.includes('Cem'));
+                if (trVoice) {
+                    utterance.voice = trVoice;
+                    utterance.lang = trVoice.lang;
                 } else {
-                    matchVoice = voices.find(v => v.lang.toLowerCase().startsWith('tr') || v.name.toLowerCase().includes('turkish'));
-                }
-                if (matchVoice) {
-                    utterance.voice = matchVoice;
-                    utterance.lang = matchVoice.lang;
-                } else {
-                    utterance.lang = mode === 'ottoman' ? 'ar-SA' : 'tr-TR';
+                    utterance.lang = 'tr-TR';
                 }
             } else {
-                utterance.lang = mode === 'ottoman' ? 'ar-SA' : 'tr-TR';
+                utterance.lang = 'tr-TR';
             }
             window.speechSynthesis.speak(utterance);
         };
