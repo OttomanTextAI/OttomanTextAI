@@ -7,6 +7,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const state = {
         selectedFile: null,
         imageDataUrl: null,
+        enhancedImageBlob: null,
+        enhancedImageUrl: null,
         isProcessing: false,
         ocrText: '',
         transText: '',
@@ -60,6 +62,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const enhancedEmptyState = document.getElementById('enhancedEmptyState');
     const enhancedImageWrapper = document.getElementById('enhancedImageWrapper');
     const enhancedImage = document.getElementById('enhancedImage');
+    const documentProfile =
+    document.getElementById('documentProfile');
 
     // Pre-set Sample Manuscript Database for Demo/Testing
     const sampleDatabase = {
@@ -151,6 +155,50 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`
         }
     });
 
+    // Belge profili değiştirildiğinde görüntüyü yeniden işle
+    documentProfile.addEventListener(
+        'change',
+        async () => {
+            if (!state.selectedFile) {
+                return;
+            }
+
+            try {
+                statusBadge.classList.remove('hidden');
+
+                statusMessage.textContent =
+                    'Yeni belge profiliyle görüntü iyileştiriliyor...';
+
+                const enhancedUrl =
+                    await enhanceUploadedImage(
+                        state.selectedFile,
+                        documentProfile.value
+                    );
+
+                enhancedImage.src = enhancedUrl;
+
+                enhancedEmptyState.classList.add(
+                    'hidden'
+                );
+
+                enhancedImageWrapper.classList.remove(
+                    'hidden'
+                );
+
+                statusMessage.textContent =
+                    'Görüntü iyileştirme tamamlandı.';
+            } catch (error) {
+                console.error(
+                    'Enhancement error:',
+                    error
+                );
+
+                statusMessage.textContent =
+                    'Görüntü iyileştirme başarısız oldu.';
+            }
+        }
+    );
+
     dropZone.addEventListener('dragover', (e) => {
         e.preventDefault();
         dropZone.classList.add('drag-over');
@@ -171,7 +219,49 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`
     reselectBtn.addEventListener('click', () => fileInput.click());
     removeFileBtn.addEventListener('click', resetState);
 
-    function handleFileSelect(file) {
+    async function enhanceUploadedImage(file, profile = 'printed') {
+    const formData = new FormData();
+
+    formData.append(
+        'image',
+        file
+    );
+
+    formData.append(
+        'profile',
+        profile
+    );
+
+    const response = await fetch(
+        'http://127.0.0.1:5000/api/enhance',
+        {
+            method: 'POST',
+            body: formData
+        }
+    );
+
+    if (!response.ok) {
+        const errorData = await response.json();
+
+        throw new Error(
+            errorData.error ||
+            'Görüntü iyileştirme başarısız oldu.'
+        );
+    }
+
+    const imageBlob = await response.blob();
+
+    const imageUrl = URL.createObjectURL(
+        imageBlob
+    );
+
+    return {
+        blob: imageBlob,
+        url: imageUrl
+    };
+}
+
+   async  function handleFileSelect(file) {
         if (!file.type.match('image.*')) {
             alert('Lütfen geçerli bir görsel dosyası (JPG, PNG, WEBP) seçin.');
             return;
@@ -181,18 +271,66 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`
         fileName.textContent = file.name;
         fileSize.textContent = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
 
+        
         const reader = new FileReader();
-        reader.onload = (e) => {
-            state.imageDataUrl = e.target.result;
-            previewImage.src = e.target.result;
-            enhancedImage.src = e.target.result;
-            enhancedEmptyState.classList.add('hidden');
-            enhancedImageWrapper.classList.remove('hidden');
-            uploadIdleState.classList.add('hidden');
-            uploadActiveState.classList.remove('hidden');
-            triggerTranslateBtn.disabled = false;
-            setStepActive(1);
-        };
+       reader.onload = async (e) => {
+        state.imageDataUrl = e.target.result;
+
+        previewImage.src = e.target.result;
+
+        uploadIdleState.classList.add('hidden');
+        uploadActiveState.classList.remove('hidden');
+
+        triggerTranslateBtn.disabled = false;
+
+        enhancedEmptyState.classList.remove('hidden');
+        enhancedImageWrapper.classList.add('hidden');
+
+        setStepActive(1);
+
+        try {
+            statusBadge.classList.remove('hidden');
+            statusMessage.textContent =
+                'Görüntü iyileştiriliyor...';
+
+            const selectedProfile =
+    documentProfile.value;
+
+        const enhancedResult =
+            await enhanceUploadedImage(
+                state.selectedFile,
+                documentProfile.value
+            );
+
+        state.enhancedImageBlob =
+            enhancedResult.blob;
+
+        state.enhancedImageUrl =
+            enhancedResult.url;
+
+        enhancedImage.src =
+            enhancedResult.url;
+
+            enhancedEmptyState.classList.add(
+                'hidden'
+            );
+
+            enhancedImageWrapper.classList.remove(
+                'hidden'
+            );
+
+            statusMessage.textContent =
+                'Görüntü iyileştirme tamamlandı.';
+        } catch (error) {
+            console.error(
+                'Enhancement error:',
+                error
+            );
+
+            statusMessage.textContent =
+                'Görüntü iyileştirme başarısız oldu.';
+        }
+    };
         reader.readAsDataURL(file);
     }
 
@@ -244,6 +382,15 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`
         enhancedEmptyState.classList.remove('hidden');
         enhancedImageWrapper.classList.add('hidden');
         enhancedImage.src = '';
+
+        if (state.enhancedImageUrl) {
+            URL.revokeObjectURL(
+                state.enhancedImageUrl
+            );
+        }
+
+        state.enhancedImageBlob = null;
+        state.enhancedImageUrl = null;
 
         setStepActive(1);
     }
@@ -594,3 +741,5 @@ ${transTextDisplay.textContent}
         });
     });
 });
+
+
