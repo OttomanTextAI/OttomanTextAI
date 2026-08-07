@@ -467,44 +467,66 @@ Böylece Yüce Allah'ı tanımak ve bilmek (marifetullah), ilimlerin en yücesi 
         });
     }
 
+    // Robust Cross-Browser Text-To-Speech Function
+    function speakTextWithVoice(text, preferredLangGroup) {
+        if (!text || !text.trim()) return;
+        if (!('speechSynthesis' in window)) {
+            alert('Tarayıcınız sesli okuma özelliğini desteklemiyor.');
+            return;
+        }
+
+        if (window.speechSynthesis.speaking) {
+            window.speechSynthesis.cancel();
+            return;
+        }
+
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text.trim());
+        utterance.rate = 0.85;
+
+        const playUtterance = () => {
+            const voices = window.speechSynthesis.getVoices();
+            if (voices && voices.length > 0) {
+                let matchVoice = null;
+                if (preferredLangGroup === 'ar') {
+                    matchVoice = voices.find(v => v.lang.toLowerCase().startsWith('ar') || v.name.toLowerCase().includes('arabic'));
+                } else if (preferredLangGroup === 'tr') {
+                    matchVoice = voices.find(v => v.lang.toLowerCase().startsWith('tr') || v.name.toLowerCase().includes('turkish'));
+                }
+                if (!matchVoice) {
+                    matchVoice = voices.find(v => v.lang.toLowerCase().startsWith('tr')) || voices[0];
+                }
+                if (matchVoice) {
+                    utterance.voice = matchVoice;
+                    utterance.lang = matchVoice.lang;
+                }
+            } else {
+                utterance.lang = preferredLangGroup === 'ar' ? 'ar-SA' : 'tr-TR';
+            }
+            window.speechSynthesis.speak(utterance);
+        };
+
+        if (window.speechSynthesis.getVoices().length === 0) {
+            window.speechSynthesis.onvoiceschanged = () => {
+                window.speechSynthesis.onvoiceschanged = null;
+                playUtterance();
+            };
+            playUtterance();
+        } else {
+            playUtterance();
+        }
+    }
+
     // Text To Speech (Turkish Translation)
     ttsBtn.addEventListener('click', () => {
-        const text = transTextDisplay.textContent;
-        if (!text) return;
-        if ('speechSynthesis' in window) {
-            if (window.speechSynthesis.speaking) {
-                window.speechSynthesis.cancel();
-                return;
-            }
-            window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'tr-TR';
-            utterance.rate = 0.9;
-            window.speechSynthesis.speak(utterance);
-        } else {
-            alert('Tarayıcınız sesli okuma özelliğini desteklemiyor.');
-        }
+        speakTextWithVoice(transTextDisplay.textContent, 'tr');
     });
 
     // Text To Speech (Ottoman Text / Arabic Script)
     const ocrTtsBtn = document.getElementById('ocrTtsBtn');
     if (ocrTtsBtn) {
         ocrTtsBtn.addEventListener('click', () => {
-            const text = ocrTextDisplay.textContent;
-            if (!text) return;
-            if ('speechSynthesis' in window) {
-                if (window.speechSynthesis.speaking) {
-                    window.speechSynthesis.cancel();
-                    return;
-                }
-                window.speechSynthesis.cancel();
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'ar-SA';
-                utterance.rate = 0.85;
-                window.speechSynthesis.speak(utterance);
-            } else {
-                alert('Tarayıcınız sesli okuma özelliğini desteklemiyor.');
-            }
+            speakTextWithVoice(ocrTextDisplay.textContent, 'ar');
         });
     }
 
