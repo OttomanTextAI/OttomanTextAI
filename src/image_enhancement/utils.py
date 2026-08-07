@@ -82,35 +82,52 @@ def read_image(image_path: str | Path) -> np.ndarray:
 
 def save_image(
     image: np.ndarray,
-    output_path: str | Path,
-) -> Path:
+    image_path: str | Path,
+) -> None:
     """
-    Save an image to disk.
-
-    The output directory is created automatically if it does not exist.
+    Save an image to disk using a Unicode-safe method.
 
     Args:
         image: Image represented as a NumPy array.
-        output_path: Destination path of the image.
-
-    Returns:
-        Path of the saved image.
+        image_path: Destination file path.
 
     Raises:
-        OSError: If OpenCV cannot save the image.
+        OSError: If the image cannot be encoded or written.
     """
     validate_image(image)
 
-    path = Path(output_path)
-    _create_parent_directory(path)
+    path = Path(image_path)
 
-    is_saved = cv2.imwrite(str(path), image)
+    path.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
 
-    if not is_saved:
-        raise OSError(f"Failed to save image: {path}")
+    extension = path.suffix.lower()
 
-    return path
+    if not extension:
+        raise ValueError(
+            "Output path must include a file extension."
+        )
 
+    success, encoded_image = cv2.imencode(
+        extension,
+        image,
+    )
+
+    if not success:
+        raise OSError(
+            f"Failed to encode image: {path}"
+        )
+
+    try:
+        encoded_image.tofile(
+            str(path)
+        )
+    except OSError as error:
+        raise OSError(
+            f"Failed to save image: {path}"
+        ) from error
 
 def is_grayscale(image: np.ndarray) -> bool:
     """

@@ -27,18 +27,53 @@ enhancement:
     horizontal_distance: 18
     vertical_distance: 8
 
-  bleed_through:
-    enabled: fasle
-    background_kernel_size: 31
-    min_contrast: 12
-    foreground_gain: 3.0
+  speckle_removal_v2:
+    enabled: false
+    min_area: 14
+    text_anchor_area: 40
+    horizontal_distance: 12
+    vertical_distance: 5
+    max_isolated_distance: 8
+  
+  speckle_removal_v3:
+    enabled: true
+    min_area: 14
+    line_kernel_width: 35
+    line_kernel_height: 3
+    line_dilation_iterations: 1
+    safe_vertical_margin: 8
 
+  bleed_through:
+    enabled: false
+    background_kernel_size: 41
+    min_contrast: 6
+    foreground_gain: 1.3
+    edge_threshold: 12
+    connectivity_kernel_size: 5
+  
+  line_removal:
+    enabled: true
+    min_line_length_ratio: 0.45
+    max_line_gap: 20
+    hough_threshold: 80
+    line_thickness: 7
+  
   text_region:
     enabled: false
     horizontal_kernel_width: 35
     vertical_kernel_height: 5
     min_region_area_ratio: 0.05
     padding: 15
+
+  text_regions:
+    enabled: true
+    horizontal_kernel_width: 25
+    vertical_kernel_height: 3
+    min_region_width_ratio: 0.05
+    min_region_height_ratio: 0.015
+    min_region_area_ratio: 0.002
+    padding: 8
+
 threshold:
   enabled: true
   default_method: otsu
@@ -97,11 +132,11 @@ profiles:
   printed:
     threshold_enabled: true
     threshold_method: otsu
-    text_region_enabled: true
-    bleed_through_enabled: true
+    text_region_enabled: false
+    bleed_through_enabled: false
     stain_suppression_enabled: true
-    morphology_enabled: true
-    speckle_removal_enabled: true
+    morphology_enabled: false
+    speckle_removal_enabled: false
 
   manuscript:
     threshold_enabled: false

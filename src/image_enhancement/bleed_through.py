@@ -19,28 +19,28 @@ def suppress_bleed_through(
     background_kernel_size: int = DEFAULT_BACKGROUND_KERNEL_SIZE,
     min_contrast: int = DEFAULT_MIN_CONTRAST,
     foreground_gain: float = DEFAULT_FOREGROUND_GAIN,
+    edge_threshold: int = 20,
+    connectivity_kernel_size: int = 3,
 ) -> np.ndarray:
     """
-    Suppress faint show-through while preserving darker front-side text.
+    Suppress faint show-through while preserving real text strokes.
 
-    A blurred image estimates the local paper background. Pixels that are
-    only slightly darker than this background are treated as faint
-    bleed-through, while stronger dark strokes are retained.
+    The method combines local contrast, edge strength, and local
+    connectivity. Faint low-contrast regions are suppressed, while
+    darker and structurally connected character strokes are retained.
 
     Args:
         image: Grayscale document image.
         background_kernel_size: Odd Gaussian kernel used to estimate
-            the local background.
-        min_contrast: Minimum darkness difference required for a pixel
-            to be retained as foreground.
+            the local paper background.
+        min_contrast: Minimum local darkness difference.
         foreground_gain: Strength applied to retained foreground strokes.
+        edge_threshold: Minimum gradient magnitude used to protect edges.
+        connectivity_kernel_size: Kernel size used to protect locally
+            connected character strokes.
 
     Returns:
-        Grayscale image with faint bleed-through reduced.
-
-    Raises:
-        TypeError: If parameter types are invalid.
-        ValueError: If the image or parameter values are invalid.
+        Grayscale image with reduced bleed-through.
     """
     validate_image(image)
 
@@ -106,18 +106,81 @@ def suppress_bleed_through(
         0,
     )
 
-    darkness = cv2.subtract(
+    local_darkness = cv2.subtract(
         estimated_background,
         grayscale_image,
-    ).astype(np.float32)
+    )
+
+    grad_x = cv2.Sobel(
+        grayscale_image,
+        cv2.CV_32F,
+        1,
+        0,
+        ksize=3,
+    )
+
+    grad_y = cv2.Sobel(
+        grayscale_image,
+        cv2.CV_32F,
+        0,
+        1,
+        ksize=3,
+    )
+
+    gradient_magnitude = cv2.magnitude(
+        grad_x,
+        grad_y,
+    )
+
+    edge_mask = (
+        gradient_magnitude >= edge_threshold
+    ).astype(np.uint8) * 255
+
+    dark_mask = (
+        local_darkness >= min_contrast
+    ).astype(np.uint8) * 255
+
+    connectivity_kernel = cv2.getStructuringElement(
+        cv2.MORPH_ELLIPSE,
+        (
+            connectivity_kernel_size,
+            connectivity_kernel_size,
+        ),
+    )
+
+    connected_mask = cv2.dilate(
+        dark_mask,
+        connectivity_kernel,
+        iterations=1,
+    )
+
+    protected_mask = cv2.bitwise_or(
+        edge_mask,
+        connected_mask,
+    )
 
     foreground_strength = np.clip(
-        (darkness - min_contrast)
+        (
+            local_darkness.astype(np.float32)
+            - min_contrast
+        )
         * foreground_gain,
         0,
         255,
     )
 
-    return (
+    result = (
         255 - foreground_strength
     ).astype(np.uint8)
+
+    protected_pixels = (
+        protected_mask > 0
+    )
+
+    result[
+        protected_pixels
+    ] = grayscale_image[
+        protected_pixels
+    ]
+
+    return result

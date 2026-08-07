@@ -57,6 +57,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveSettingsBtn = document.getElementById('saveSettingsBtn');
     const historyList = document.getElementById('historyList');
 
+    const enhancedEmptyState = document.getElementById('enhancedEmptyState');
+    const enhancedImageWrapper = document.getElementById('enhancedImageWrapper');
+    const enhancedImage = document.getElementById('enhancedImage');
+
     // Pre-set Sample Manuscript Database for Demo/Testing
     const sampleDatabase = {
         '2': {
@@ -181,6 +185,9 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`
         reader.onload = (e) => {
             state.imageDataUrl = e.target.result;
             previewImage.src = e.target.result;
+            enhancedImage.src = e.target.result;
+            enhancedEmptyState.classList.add('hidden');
+            enhancedImageWrapper.classList.remove('hidden');
             uploadIdleState.classList.add('hidden');
             uploadActiveState.classList.remove('hidden');
             triggerTranslateBtn.disabled = false;
@@ -200,6 +207,9 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`
                 fileName.textContent = sample.name;
                 fileSize.textContent = sample.size;
                 previewImage.src = sample.file;
+                enhancedImage.src = sample.file;
+                enhancedEmptyState.classList.add('hidden');
+                enhancedImageWrapper.classList.remove('hidden');
                 uploadIdleState.classList.add('hidden');
                 uploadActiveState.classList.remove('hidden');
                 triggerTranslateBtn.disabled = false;
@@ -230,6 +240,10 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`
         transTextDisplay.classList.add('hidden');
         transTools.classList.add('hidden');
         transTextDisplay.textContent = '';
+
+        enhancedEmptyState.classList.remove('hidden');
+        enhancedImageWrapper.classList.add('hidden');
+        enhancedImage.src = '';
 
         setStepActive(1);
     }

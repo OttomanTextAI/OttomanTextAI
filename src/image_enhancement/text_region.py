@@ -212,3 +212,346 @@ def crop_to_text_region(
         y:y + height,
         x:x + width,
     ].copy()
+
+def detect_text_regions(
+    image: np.ndarray,
+    min_component_area: int = 3,
+    max_component_area_ratio: float = 0.01,
+    max_component_width_ratio: float = 0.12,
+    max_component_height_ratio: float = 0.08,
+    horizontal_gap_ratio: float = 0.04,
+    vertical_tolerance_ratio: float = 0.025,
+    min_components_per_region: int = 4,
+    padding: int = 8,
+) -> list[tuple[int, int, int, int]]:
+    """
+    Detect text regions using character-like connected components.
+
+    Large lines, borders and stains are rejected before components
+    are grouped into text-like regions.
+    """
+    validate_image(image)
+
+    if image.ndim == 3:
+        if is_grayscale(image):
+            grayscale_image = image.squeeze(axis=2)
+        else:
+            grayscale_image = cv2.cvtColor(
+                image,
+                cv2.COLOR_BGR2GRAY,
+            )
+    else:
+        grayscale_image = image.copy()
+
+    height, width = grayscale_image.shape[:2]
+    image_area = height * width
+
+    _, binary = cv2.threshold(
+        grayscale_image,
+        0,
+        255,
+        cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU,
+    )
+
+    number_of_labels, _, stats, _ = (
+        cv2.connectedComponentsWithStats(
+            binary,
+            connectivity=8,
+        )
+    )
+
+    components = []
+
+    for label in range(1, number_of_labels):
+        x = stats[
+            label,
+            cv2.CC_STAT_LEFT,
+        ]
+        y = stats[
+            label,
+            cv2.CC_STAT_TOP,
+        ]
+        component_width = stats[
+            label,
+            cv2.CC_STAT_WIDTH,
+        ]
+        component_height = stats[
+            label,
+            cv2.CC_STAT_HEIGHT,
+        ]
+        area = stats[
+            label,
+            cv2.CC_STAT_AREA,
+        ]
+
+        if area < min_component_area:
+            continue
+
+        if (
+            area
+            > image_area
+            * max_component_area_ratio
+        ):
+            continue
+
+        # Uzun çizgi / border gibi yapıları reddet.
+        if (
+            component_width
+            > width * max_component_width_ratio
+            and component_height < 8
+        ):
+            continue
+
+        if (
+            component_height
+            > height * max_component_height_ratio
+            and component_width < 8
+        ):
+            continue
+
+        # Çok büyük bileşenler karakter adayı değildir.
+        if (
+            component_width
+            > width * max_component_width_ratio
+        ):
+            continue
+
+        if (
+            component_height
+            > height * max_component_height_ratio
+        ):
+            continue
+
+        components.append(
+            (
+                x,
+                y,
+                component_width,
+                component_height,
+            )
+        )
+
+    if not components:
+        return []
+
+    # Bileşenleri yaklaşık satır merkezlerine göre grupla.
+    components.sort(
+        key=lambda item: (
+            item[1] + item[3] / 2,
+            item[0],
+        )
+    )
+
+    vertical_tolerance = max(
+        8,
+        int(
+            height
+            * vertical_tolerance_ratio
+        ),
+    )
+
+    lines: list[
+        list[tuple[int, int, int, int]]
+    ] = []
+
+    for component in components:
+        x, y, cw, ch = component
+
+        component_center_y = (
+            y + ch / 2
+        )
+
+        best_line = None
+        best_distance = None
+
+        for line in lines:
+            line_centers = [
+                ly + lh / 2
+                for _, ly, _, lh in line
+            ]
+
+            line_center_y = (
+                sum(line_centers)
+                / len(line_centers)
+            )
+
+            distance = abs(
+                component_center_y
+                - line_center_y
+            )
+
+            if distance <= vertical_tolerance:
+                if (
+                    best_distance is None
+                    or distance < best_distance
+                ):
+                    best_line = line
+                    best_distance = distance
+
+        if best_line is None:
+            lines.append(
+                [component]
+            )
+        else:
+            best_line.append(
+                component
+            )
+
+    regions = []
+
+    horizontal_gap = max(
+        15,
+        int(
+            width
+            * horizontal_gap_ratio
+        ),
+    )
+
+    # Her satırdaki bileşenleri yatay yakınlığa göre
+    # küçük text cluster'larına ayır.
+    for line in lines:
+        line.sort(
+            key=lambda item: item[0]
+        )
+
+        clusters = []
+        current_cluster = []
+
+        for component in line:
+            if not current_cluster:
+                current_cluster.append(
+                    component
+                )
+                continue
+
+            previous = current_cluster[-1]
+
+            previous_right = (
+                previous[0]
+                + previous[2]
+            )
+
+            gap = (
+                component[0]
+                - previous_right
+            )
+
+            if gap <= horizontal_gap:
+                current_cluster.append(
+                    component
+                )
+            else:
+                clusters.append(
+                    current_cluster
+                )
+
+                current_cluster = [
+                    component
+                ]
+
+        if current_cluster:
+            clusters.append(
+                current_cluster
+            )
+
+        for cluster in clusters:
+            if (
+                len(cluster)
+                < min_components_per_region
+            ):
+                continue
+
+            x_start = min(
+                item[0]
+                for item in cluster
+            )
+
+            y_start = min(
+                item[1]
+                for item in cluster
+            )
+
+            x_end = max(
+                item[0] + item[2]
+                for item in cluster
+            )
+
+            y_end = max(
+                item[1] + item[3]
+                for item in cluster
+            )
+
+            x_start = max(
+                0,
+                x_start - padding,
+            )
+
+            y_start = max(
+                0,
+                y_start - padding,
+            )
+
+            x_end = min(
+                width,
+                x_end + padding,
+            )
+
+            y_end = min(
+                height,
+                y_end + padding,
+            )
+
+            regions.append(
+                (
+                    x_start,
+                    y_start,
+                    x_end - x_start,
+                    y_end - y_start,
+                )
+            )
+
+    regions.sort(
+        key=lambda region: (
+            region[1],
+            region[0],
+        )
+    )
+
+    return regions
+
+def create_text_region_mask(
+    image: np.ndarray,
+    regions: list[tuple[int, int, int, int]],
+) -> np.ndarray:
+    """
+    Create a binary mask covering all detected text regions.
+
+    Args:
+        image: Source document image.
+        regions: Bounding boxes returned by detect_text_regions().
+
+    Returns:
+        Binary mask where protected text regions are white.
+    """
+    validate_image(image)
+
+    height, width = image.shape[:2]
+
+    mask = np.zeros(
+        (height, width),
+        dtype=np.uint8,
+    )
+
+    for x, y, region_width, region_height in regions:
+        cv2.rectangle(
+            mask,
+            (x, y),
+            (
+                x + region_width,
+                y + region_height,
+            ),
+            255,
+            thickness=-1,
+        )
+
+    return mask

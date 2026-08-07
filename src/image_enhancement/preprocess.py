@@ -14,6 +14,10 @@ from src.image_enhancement.bleed_through import (
     suppress_bleed_through,
 )
 
+from src.image_enhancement.line_removal import (
+    remove_long_lines,
+)
+
 from src.image_enhancement.text_region import (
     crop_to_text_region,
 )
@@ -26,6 +30,8 @@ from src.image_enhancement.background import (
 from src.image_enhancement.morphology import (
     clean_binary_noise,
     remove_isolated_speckles,
+    remove_isolated_speckles_v2,
+    remove_isolated_speckles_v3,
 )
 
 from src.image_enhancement.enhance import (
@@ -147,8 +153,21 @@ def preprocess_image(
     "speckle_removal"
     ]
 
+    speckle_v2_config = enhancement_config[
+        "speckle_removal_v2"
+    ]
+
+    speckle_v3_config = enhancement_config[
+        "speckle_removal_v3"
+    ]
+
+
     bleed_through_config = enhancement_config[
     "bleed_through"
+    ]
+
+    line_removal_config = enhancement_config[
+        "line_removal"
     ]
 
     text_region_config = enhancement_config[
@@ -208,18 +227,24 @@ def preprocess_image(
     bleed_suppressed_image = normalized_image
 
     if  profile_config["bleed_through_enabled"]:
-        bleed_suppressed_image = suppress_bleed_through(
-            normalized_image,
-            background_kernel_size=bleed_through_config[
-                "background_kernel_size"
-            ],
-            min_contrast=bleed_through_config[
-                "min_contrast"
-            ],
-            foreground_gain=bleed_through_config[
-                "foreground_gain"
-            ],
-        )
+       bleed_suppressed_image = suppress_bleed_through(
+        normalized_image,
+        background_kernel_size=bleed_through_config[
+            "background_kernel_size"
+        ],
+        min_contrast=bleed_through_config[
+            "min_contrast"
+        ],
+        foreground_gain=bleed_through_config[
+            "foreground_gain"
+        ],
+        edge_threshold=bleed_through_config[
+            "edge_threshold"
+        ],
+        connectivity_kernel_size=bleed_through_config[
+            "connectivity_kernel_size"
+        ],
+    )
 
 
     stain_suppressed_image = (
@@ -245,16 +270,36 @@ def preprocess_image(
         ),
     )
 
+
+    line_cleaned_image = enhanced_image
+
+    if line_removal_config["enabled"]:
+        line_cleaned_image = remove_long_lines(
+            enhanced_image,
+            min_line_length_ratio=line_removal_config[
+                "min_line_length_ratio"
+            ],
+            max_line_gap=line_removal_config[
+                "max_line_gap"
+            ],
+            hough_threshold=line_removal_config[
+                "hough_threshold"
+            ],
+            line_thickness=line_removal_config[
+                "line_thickness"
+            ],
+        )
+
     if not profile_config["threshold_enabled"]:
-        return enhanced_image
+        return line_cleaned_image
 
     if normalized_threshold_method == "otsu":
         binary_image = apply_otsu_threshold(
-            enhanced_image
+            line_cleaned_image
         )
     else:
         binary_image = apply_adaptive_threshold(
-            enhanced_image
+            line_cleaned_image
         )
 
     if profile_config["morphology_enabled"]:
@@ -265,6 +310,45 @@ def preprocess_image(
             ],
             iterations=morphology_config[
                 "iterations"
+            ],
+        )
+    if speckle_v2_config["enabled"]:
+        binary_image = remove_isolated_speckles_v2(
+            binary_image,
+            min_area=speckle_v2_config[
+                "min_area"
+            ],
+            text_anchor_area=speckle_v2_config[
+                "text_anchor_area"
+            ],
+            horizontal_distance=speckle_v2_config[
+                "horizontal_distance"
+            ],
+            vertical_distance=speckle_v2_config[
+                "vertical_distance"
+            ],
+            max_isolated_distance=speckle_v2_config[
+                "max_isolated_distance"
+            ],
+        )
+
+    if speckle_v3_config["enabled"]:
+        binary_image = remove_isolated_speckles_v3(
+            binary_image,
+            min_area=speckle_v3_config[
+                "min_area"
+            ],
+            line_kernel_width=speckle_v3_config[
+                "line_kernel_width"
+            ],
+            line_kernel_height=speckle_v3_config[
+                "line_kernel_height"
+            ],
+            line_dilation_iterations=speckle_v3_config[
+                "line_dilation_iterations"
+            ],
+            safe_vertical_margin=speckle_v3_config[
+                "safe_vertical_margin"
             ],
         )
 
