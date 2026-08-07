@@ -11,4 +11,4 @@ COPY . .
 
 ENV PYTHONPATH=/app
 
-CMD ["python", "-m", "experiments.image_enhancement.run_pipeline"]
+CMD ["gunicorn", "--bind", "0.0.0.0:10000", "backend:app"]
