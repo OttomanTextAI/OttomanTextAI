@@ -522,11 +522,11 @@ Böylece Yüce Allah'ı tanımak ve bilmek (marifetullah), ilimlerin en yücesi 
         speakTextWithVoice(transTextDisplay.textContent, 'tr');
     });
 
-    // Text To Speech (Ottoman Text / Ottoman Turkish Phonetics)
+    // Text To Speech (Ottoman Text / Arabic Script)
     const ocrTtsBtn = document.getElementById('ocrTtsBtn');
     if (ocrTtsBtn) {
         ocrTtsBtn.addEventListener('click', () => {
-            speakTextWithVoice(ocrTextDisplay.textContent, 'tr');
+            speakTextWithVoice(ocrTextDisplay.textContent, 'ar');
         });
     }
 
