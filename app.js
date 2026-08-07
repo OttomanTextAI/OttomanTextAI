@@ -467,9 +467,28 @@ Böylece Yüce Allah'ı tanımak ve bilmek (marifetullah), ilimlerin en yücesi 
         });
     }
 
-    // Robust Cross-Browser Text-To-Speech Function
-    function speakTextWithVoice(text, preferredLangGroup) {
-        if (!text || !text.trim()) return;
+    // Ottoman Arabic Script to Turkish Phonetic Transliteration Converter for TTS
+    function convertOttomanScriptToTurkish(text) {
+        if (!text) return '';
+        const map = {
+            'ا': 'a', 'آ': 'a', 'أ': 'a', 'إ': 'i', 'ب': 'b', 'پ': 'p', 'ت': 't', 'ث': 's',
+            'ج': 'c', 'چ': 'ç', 'ح': 'h', 'خ': 'h', 'د': 'd', 'ذ': 'z', 'ر': 'r', 'ز': 'z',
+            'ژ': 'j', 'س': 's', 'ش': 'ş', 'ص': 's', 'ض': 'z', 'ط': 't', 'ظ': 'z', 'ع': 'a',
+            'غ': 'g', 'ف': 'f', 'ق': 'k', 'ك': 'k', 'گ': 'g', 'ڭ': 'n', 'ل': 'l', 'م': 'm',
+            'ن': 'n', 'و': 'v', 'ه': 'h', 'ی': 'y', 'ي': 'y', 'ة': 't', 'ء': '', 'ئ': 'y',
+            'ؤ': 'o'
+        };
+        let res = '';
+        for (let i = 0; i < text.length; i++) {
+            const ch = text[i];
+            res += map[ch] !== undefined ? map[ch] : ch;
+        }
+        return res;
+    }
+
+    // Fail-safe Text-To-Speech Function
+    function speakTextWithVoice(rawText, mode) {
+        if (!rawText || !rawText.trim()) return;
         if (!('speechSynthesis' in window)) {
             alert('Tarayıcınız sesli okuma özelliğini desteklemiyor.');
             return;
@@ -481,52 +500,25 @@ Böylece Yüce Allah'ı tanımak ve bilmek (marifetullah), ilimlerin en yücesi 
         }
 
         window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(text.trim());
+
+        const finalText = mode === 'ottoman' ? convertOttomanScriptToTurkish(rawText) : rawText;
+        const utterance = new SpeechSynthesisUtterance(finalText.trim());
+        utterance.lang = 'tr-TR';
         utterance.rate = 0.85;
 
-        const playUtterance = () => {
-            const voices = window.speechSynthesis.getVoices();
-            if (voices && voices.length > 0) {
-                let matchVoice = null;
-                if (preferredLangGroup === 'ar') {
-                    matchVoice = voices.find(v => v.lang.toLowerCase().startsWith('ar') || v.name.toLowerCase().includes('arabic'));
-                } else if (preferredLangGroup === 'tr') {
-                    matchVoice = voices.find(v => v.lang.toLowerCase().startsWith('tr') || v.name.toLowerCase().includes('turkish'));
-                }
-                if (!matchVoice) {
-                    matchVoice = voices.find(v => v.lang.toLowerCase().startsWith('tr')) || voices[0];
-                }
-                if (matchVoice) {
-                    utterance.voice = matchVoice;
-                    utterance.lang = matchVoice.lang;
-                }
-            } else {
-                utterance.lang = preferredLangGroup === 'ar' ? 'ar-SA' : 'tr-TR';
-            }
-            window.speechSynthesis.speak(utterance);
-        };
-
-        if (window.speechSynthesis.getVoices().length === 0) {
-            window.speechSynthesis.onvoiceschanged = () => {
-                window.speechSynthesis.onvoiceschanged = null;
-                playUtterance();
-            };
-            playUtterance();
-        } else {
-            playUtterance();
-        }
+        window.speechSynthesis.speak(utterance);
     }
 
     // Text To Speech (Turkish Translation)
     ttsBtn.addEventListener('click', () => {
-        speakTextWithVoice(transTextDisplay.textContent, 'tr');
+        speakTextWithVoice(transTextDisplay.textContent, 'turkish');
     });
 
     // Text To Speech (Ottoman Text / Ottoman Turkish Phonetics)
     const ocrTtsBtn = document.getElementById('ocrTtsBtn');
     if (ocrTtsBtn) {
         ocrTtsBtn.addEventListener('click', () => {
-            speakTextWithVoice(ocrTextDisplay.textContent, 'tr');
+            speakTextWithVoice(ocrTextDisplay.textContent, 'ottoman');
         });
     }
 
