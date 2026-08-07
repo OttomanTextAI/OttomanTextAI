@@ -494,19 +494,43 @@ Böylece Yüce Allah'ı tanımak ve bilmek (marifetullah), ilimlerin en yücesi 
             return;
         }
 
-        if (window.speechSynthesis.speaking) {
-            window.speechSynthesis.cancel();
-            return;
-        }
-
+        // Cancel previous speech and resume if browser paused synthesis
         window.speechSynthesis.cancel();
+        if (window.speechSynthesis.paused) {
+            window.speechSynthesis.resume();
+        }
 
         const finalText = mode === 'ottoman' ? convertOttomanScriptToTurkish(rawText) : rawText;
         const utterance = new SpeechSynthesisUtterance(finalText.trim());
-        utterance.lang = 'tr-TR';
-        utterance.rate = 0.85;
+        utterance.rate = 0.9;
+        utterance.volume = 1.0;
+        utterance.pitch = 1.0;
 
-        window.speechSynthesis.speak(utterance);
+        const speak = () => {
+            const voices = window.speechSynthesis.getVoices();
+            if (voices && voices.length > 0) {
+                const trVoice = voices.find(v => v.lang.toLowerCase().includes('tr') || v.name.toLowerCase().includes('turkish') || v.name.includes('Yelda') || v.name.includes('Cem'));
+                if (trVoice) {
+                    utterance.voice = trVoice;
+                    utterance.lang = trVoice.lang;
+                } else {
+                    utterance.lang = 'tr-TR';
+                }
+            } else {
+                utterance.lang = 'tr-TR';
+            }
+            window.speechSynthesis.speak(utterance);
+        };
+
+        if (window.speechSynthesis.getVoices().length === 0) {
+            window.speechSynthesis.onvoiceschanged = () => {
+                window.speechSynthesis.onvoiceschanged = null;
+                speak();
+            };
+            speak();
+        } else {
+            speak();
+        }
     }
 
     // Text To Speech (Turkish Translation)
