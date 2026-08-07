@@ -47,13 +47,18 @@ def enhance_endpoint():
 
     if profile not in {
         "printed",
+        "printed-degraded",
+        "delicate",
         "manuscript",
     }:
         return jsonify(
             {
                 "error": (
-                    "profile must be "
-                    "'printed' or 'manuscript'."
+                    "profile must be one of: "
+                    "'printed', "
+                    "'printed-degraded', "
+                    "'delicate', "
+                    "'manuscript'."
                 )
             }
         ), 400

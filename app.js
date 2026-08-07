@@ -169,13 +169,20 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`
                 statusMessage.textContent =
                     'Yeni belge profiliyle görüntü iyileştiriliyor...';
 
-                const enhancedUrl =
+                const enhancedResult =
                     await enhanceUploadedImage(
                         state.selectedFile,
                         documentProfile.value
                     );
 
-                enhancedImage.src = enhancedUrl;
+                if (state.enhancedImageUrl) {
+                    URL.revokeObjectURL(state.enhancedImageUrl);
+                }
+
+                state.enhancedImageBlob = enhancedResult.blob;
+                state.enhancedImageUrl = enhancedResult.url;
+
+                enhancedImage.src = enhancedResult.url;
 
                 enhancedEmptyState.classList.add(
                     'hidden'
