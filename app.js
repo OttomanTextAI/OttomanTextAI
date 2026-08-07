@@ -467,11 +467,15 @@ Böylece Yüce Allah'ı tanımak ve bilmek (marifetullah), ilimlerin en yücesi 
         });
     }
 
-    // Text To Speech
+    // Text To Speech (Turkish Translation)
     ttsBtn.addEventListener('click', () => {
         const text = transTextDisplay.textContent;
         if (!text) return;
         if ('speechSynthesis' in window) {
+            if (window.speechSynthesis.speaking) {
+                window.speechSynthesis.cancel();
+                return;
+            }
             window.speechSynthesis.cancel();
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'tr-TR';
@@ -481,6 +485,28 @@ Böylece Yüce Allah'ı tanımak ve bilmek (marifetullah), ilimlerin en yücesi 
             alert('Tarayıcınız sesli okuma özelliğini desteklemiyor.');
         }
     });
+
+    // Text To Speech (Ottoman Text / Arabic Script)
+    const ocrTtsBtn = document.getElementById('ocrTtsBtn');
+    if (ocrTtsBtn) {
+        ocrTtsBtn.addEventListener('click', () => {
+            const text = ocrTextDisplay.textContent;
+            if (!text) return;
+            if ('speechSynthesis' in window) {
+                if (window.speechSynthesis.speaking) {
+                    window.speechSynthesis.cancel();
+                    return;
+                }
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'ar-SA';
+                utterance.rate = 0.85;
+                window.speechSynthesis.speak(utterance);
+            } else {
+                alert('Tarayıcınız sesli okuma özelliğini desteklemiyor.');
+            }
+        });
+    }
 
     // Download Report
     downloadReportBtn.addEventListener('click', () => {
