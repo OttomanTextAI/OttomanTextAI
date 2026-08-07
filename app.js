@@ -493,42 +493,65 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`
         } else {
             let success = false;
 
-            // 1. Try Local Server Endpoint /api/translate first (if running python server)
-            try {
-                const apiRes = await fetch('/api/translate', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        image: state.imageDataUrl,
-                        api_key: state.apiKey
-                    })
-                });
+    try {
+        if (!state.enhancedImageBlob) {
+            throw new Error(
+                'İyileştirilmiş görüntü hazır değil.'
+            );
+        }
 
-                if (apiRes.ok) {
-                    const data = await apiRes.json();
-                    if (data.ocr && data.trans) {
-                        finalOcr = data.ocr;
-                        finalTrans = data.trans;
-                        success = true;
-                    }
-                }
-            } catch (err) {
-                console.log('Local python server not reachable, attempting direct client-side Gemini API call.');
+        const formData = new FormData();
+
+        formData.append(
+            'image',
+            state.enhancedImageBlob,
+            'enhanced.png'
+        );
+
+        const apiRes = await fetch(
+            'https://ottoman-text-ai.onrender.com/api/translate',
+            {
+                method: 'POST',
+                body: formData
             }
+        );
+
+        if (!apiRes.ok) {
+            const errorData = await apiRes.json();
+
+            throw new Error(
+                errorData.error ||
+                'OCR / çeviri isteği başarısız oldu.'
+            );
+        }
+
+        const data = await apiRes.json();
+
+        if (data.ocr && data.trans) {
+            finalOcr = data.ocr;
+            finalTrans = data.trans;
+            success = true;
+        }
+    } catch (err) {
+        console.error(
+            'Backend OCR / translation error:',
+            err
+        );
+    }
 
             // 2. If static hosting (GitHub Pages) or local server unreachable, call Gemini API directly from browser
-            if (!success && state.apiKey) {
-                try {
-                    const directData = await callDirectGeminiApi(state.imageDataUrl, state.apiKey);
-                    if (directData && directData.ocr && directData.trans) {
-                        finalOcr = directData.ocr;
-                        finalTrans = directData.trans;
-                        success = true;
-                    }
-                } catch (geminiErr) {
-                    console.warn('Direct Gemini API error:', geminiErr);
+            //if (!success && state.apiKey) {
+              //  try {
+               //     const directData = await callDirectGeminiApi(state.imageDataUrl, state.apiKey);
+                //    if (directData && directData.ocr && directData.trans) {
+                //        finalOcr = directData.ocr;
+                //        finalTrans = directData.trans;
+                 //       success = true;
+                 //   }
+               // } catch (geminiErr) {
+               //     console.warn('Direct Gemini API error:', geminiErr);
                 }
-            }
+            //}
 
             // 3. Seamless Fallback: Always render transcription & translation without pop-up errors
             if (!success) {
