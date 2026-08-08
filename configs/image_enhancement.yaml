@@ -79,8 +79,8 @@ threshold:
   default_method: otsu
 
   adaptive:
-    block_size: 31
-    constant: 6
+    block_size: 51
+    constant: 10
 
 deskew:
   minimum_text_line_count: 2
@@ -148,20 +148,19 @@ profiles:
 
   printed-degraded:
     threshold_enabled: true
-    threshold_method: adaptive
+    threshold_method: otsu
 
     upscale_enabled: false
     upscale_factor: 2.0
 
     background_normalization_enabled: true
-    clahe_enabled: true
+    clahe_enabled: false
 
     text_region_enabled: false
     bleed_through_enabled: false
     stain_suppression_enabled: true
     morphology_enabled: false
     speckle_removal_enabled: false
-
   delicate:
     threshold_enabled: true
     threshold_method: adaptive
