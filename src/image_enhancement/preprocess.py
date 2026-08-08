@@ -117,13 +117,45 @@ def preprocess_image(
     profile_config = profiles[
         normalized_profile
     ]
-    print("\n===== IMAGE ENHANCEMENT DEBUG =====")
-    print("PROFILE:", profile)
-    print("PROFILE CONFIG:", profile_config)
-    print("THRESHOLD METHOD:", profile_config["threshold_method"])
-    print("CLAHE:", profile_config["clahe_enabled"])
-    print("STAIN:", profile_config["stain_suppression_enabled"])
-    print("===================================\n")
+    print(
+        "\n===== IMAGE ENHANCEMENT DEBUG =====",
+        flush=True,
+    )
+
+    print(
+        "PROFILE:",
+        profile,
+        flush=True,
+    )
+
+    print(
+        "PROFILE CONFIG:",
+        profile_config,
+        flush=True,
+    )
+
+    print(
+        "THRESHOLD METHOD:",
+        profile_config["threshold_method"],
+        flush=True,
+    )
+
+    print(
+        "CLAHE:",
+        profile_config["clahe_enabled"],
+        flush=True,
+    )
+
+    print(
+        "STAIN:",
+        profile_config["stain_suppression_enabled"],
+        flush=True,
+    )
+
+    print(
+        "===================================",
+        flush=True,
+    )
     selected_threshold_method = (
                 profile_config["threshold_method"]
                 if threshold_method is None
