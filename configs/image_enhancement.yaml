@@ -80,7 +80,7 @@ threshold:
 
   adaptive:
     block_size: 51
-    constant: 10
+    constant: 8
 
 deskew:
   minimum_text_line_count: 2
@@ -148,7 +148,7 @@ profiles:
 
   printed-degraded:
     threshold_enabled: true
-    threshold_method: otsu
+    threshold_method: adaptive
 
     upscale_enabled: false
     upscale_factor: 2.0
@@ -158,9 +158,10 @@ profiles:
 
     text_region_enabled: false
     bleed_through_enabled: false
-    stain_suppression_enabled: true
+    stain_suppression_enabled: false
     morphology_enabled: false
     speckle_removal_enabled: false
+
   delicate:
     threshold_enabled: true
     threshold_method: adaptive

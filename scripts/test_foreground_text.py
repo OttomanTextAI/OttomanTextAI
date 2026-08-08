@@ -67,6 +67,9 @@ def main() -> None:
             "score"
         ]
 
+        combined_score = result[
+            "combined_score"
+        ]
         structure_score = result[
             "structure_score"
         ]
@@ -83,17 +86,19 @@ def main() -> None:
             "repetition_score"
         ]
 
-        if classification == "foreground":
-            color = (0, 255, 0)
-        else:
-            color = (0, 0, 255)
+    if classification == "foreground":
+        color = (0, 255, 0)
+
+    elif classification == "faint_text":
+        color = (0, 255, 255)
+
+    else:
+        color = (0, 0, 255)
 
         label = (
             f"{index}:"
-            f"{score:.2f}/"
-            f"{structure_score:.2f}/"
-            f"{line_alignment_score:.2f}/"
-            f"{repetition_score:.2f}"
+            f"{classification} "
+            f"C={combined_score:.2f}"
         )
 
         cv2.rectangle(
@@ -141,6 +146,7 @@ def main() -> None:
             index,
             result["classification"],
             f"foreground={result['score']:.3f}",
+            f"combined={result['combined_score']:.3f}",
             f"structure={result['structure_score']:.3f}",
             f"alignment={result['line_alignment_score']:.3f}",
             f"repetition={result['repetition_score']:.3f}",

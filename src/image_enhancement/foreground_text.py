@@ -111,6 +111,60 @@ def calculate_region_features(
     }
 
 
+def calculate_horizontal_ink_coverage(
+    image: np.ndarray,
+    region: tuple[int, int, int, int],
+) -> float:
+    """
+    Measure how continuously dark foreground content is distributed
+    across the horizontal extent of a candidate region.
+
+    Real text lines usually contain foreground pixels across a
+    substantial portion of their width, while stains and isolated
+    artifacts often occupy only a few columns.
+    """
+    grayscale = _to_grayscale(image)
+
+    x, y, width, height = region
+
+    crop = grayscale[
+        y:y + height,
+        x:x + width,
+    ]
+
+    if crop.size == 0:
+        return 0.0
+
+    _, binary = cv2.threshold(
+        crop,
+        0,
+        255,
+        cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU,
+    )
+
+    # Her sütunda kaç foreground pixel var?
+    column_density = (
+        np.count_nonzero(binary, axis=0)
+        / max(1, binary.shape[0])
+    )
+
+    # Tek bir noise pixelini "text var" diye kabul etmiyoruz.
+    active_columns = column_density >= 0.08
+
+    coverage = float(
+        np.count_nonzero(active_columns)
+        / max(1, binary.shape[1])
+    )
+
+    return float(
+        np.clip(
+            coverage,
+            0.0,
+            1.0,
+        )
+    )
+
+
 def calculate_foreground_score(
     features: dict[str, float],
 ) -> float:
@@ -204,16 +258,28 @@ def classify_text_regions(
             image,
             region,
         )
-        
 
+        horizontal_ink_coverage = calculate_horizontal_ink_coverage(
+            image,
+            region,
+        )
+        combined_score = (
+            0.45 * score
+            + 0.25 * structure_score
+            + 0.20 * line_alignment_score
+            + 0.10 * (1.0 - repetition_score)
+        )
+        
         results.append(
             {
                 "region": region,
                 "score": score,
+                "combined_score": combined_score,
                 "structure_score": structure_score,
                 "line_alignment_score": line_alignment_score,
                 "features": features,
                 "repetition_score": repetition_score,
+                "horizontal_ink_coverage": horizontal_ink_coverage,
             }
         )
 
@@ -222,7 +288,7 @@ def classify_text_regions(
 
     scores = np.array(
         [
-            result["score"]
+            result["combined_score"]
             for result in results
         ],
         dtype=np.float32,
@@ -243,16 +309,54 @@ def classify_text_regions(
         )
 
     for result in results:
-        result["classification"] = (
-            "foreground"
-            if result["score"]
-            >= foreground_threshold
-            else "weak"
+        combined_score = result["combined_score"]
+        structure_score = result["structure_score"]
+        alignment_score = result["line_alignment_score"]
+        repetition_score = result["repetition_score"]
+
+        features = result["features"]
+
+        edge_density = features["edge_density"]
+        dark_pixel_ratio = features["dark_pixel_ratio"]
+
+        x, y, region_width, region_height = result["region"]
+
+        aspect_ratio = (
+            region_width
+            / max(region_height, 1)
         )
 
-        result["threshold"] = (
-            foreground_threshold
-        )
+        # -------------------------------------------------
+        # 1. Güçlü foreground text
+        # -------------------------------------------------
+
+        if combined_score >= foreground_threshold:
+            classification = "foreground"
+
+        # -------------------------------------------------
+        # 2. Soluk fakat yapısal olarak gerçek metin
+        # -------------------------------------------------
+
+        elif (
+            combined_score >= 0.48
+            and structure_score >= 0.40
+            and alignment_score >= 0.38
+            and repetition_score <= 0.82
+            and edge_density >= 0.015
+            and dark_pixel_ratio >= 0.015
+            and aspect_ratio >= 2.0
+        ):
+            classification = "faint_text"
+
+        # -------------------------------------------------
+        # 3. Geri kalan belirsiz / artifact bölgeler
+        # -------------------------------------------------
+
+        else:
+            classification = "weak"
+
+        result["classification"] = classification
+        result["threshold"] = foreground_threshold
 
     return results
 

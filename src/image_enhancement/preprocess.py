@@ -18,11 +18,25 @@ from src.image_enhancement.bleed_through import (
 
 from src.image_enhancement.line_removal import (
     remove_long_lines,
+    remove_fold_lines_with_text_protection,
 )
 
 from src.image_enhancement.text_region import (
     crop_to_text_region,
+    detect_text_regions,
 )
+
+from src.image_enhancement.foreground_text import (
+    classify_text_regions,
+)
+
+from src.image_enhancement.text_mask import (
+    create_pixel_text_mask,
+    remove_long_artifacts_from_text_mask,
+    restore_text_pixels_to_binary,
+    restore_text_pixels_by_regions,
+)
+
 
 from src.image_enhancement.background import (
     normalize_background,
@@ -272,6 +286,42 @@ def preprocess_image(
             interpolation=cv2.INTER_CUBIC,
         )
 
+    text_protection_mask = None
+
+    if normalized_profile == "printed-degraded":
+
+        candidate_regions = detect_text_regions(
+            text_region_image
+        )
+
+        classified_regions = classify_text_regions(
+            text_region_image,
+            candidate_regions,
+        )
+
+        protected_regions = [
+            result["region"]
+            for result in classified_regions
+            if result["classification"] in {
+                "foreground",
+                "faint_text",
+            }
+        ]
+          
+
+        text_protection_mask = create_pixel_text_mask(
+            text_region_image,
+            protected_regions,
+            padding=1,
+        )
+
+        text_protection_mask = (
+            remove_long_artifacts_from_text_mask(
+                text_protection_mask,
+                horizontal_ratio=0.18,
+                vertical_ratio=0.12,
+            )
+        )
     grayscale_image = convert_to_grayscale(
         text_region_image
     )
@@ -386,6 +436,35 @@ def preprocess_image(
             constant=adaptive_config[
                 "constant"
             ],
+        )
+
+   # if text_protection_mask is not None:
+    #    binary_image = restore_text_pixels_to_binary(
+   #         source_image=text_region_image,
+   #         binary_image=binary_image,
+   #         text_mask=text_protection_mask,
+    #        darkness_percentile=35.0,
+    #    )
+
+    if (
+        normalized_profile == "printed-degraded"
+        and text_protection_mask is not None
+    ):
+        binary_image = remove_fold_lines_with_text_protection(
+            binary_image=binary_image,
+            text_mask=text_protection_mask,
+            horizontal_ratio=0.18,
+            vertical_ratio=0.12,
+            protection_dilation=0,
+        )
+
+    if text_protection_mask is not None:
+        binary_image = restore_text_pixels_by_regions(
+            source_image=text_region_image,
+            binary_image=binary_image,
+            text_mask=text_protection_mask,
+            regions=protected_regions,
+            darkness_percentile=40.0,
         )
 
 

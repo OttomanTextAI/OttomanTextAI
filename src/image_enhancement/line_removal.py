@@ -123,3 +123,556 @@ def remove_long_lines(
             thickness=line_thickness,
         )
     return result
+
+def remove_fold_lines_with_text_protection(
+    binary_image: np.ndarray,
+    text_mask: np.ndarray,
+    horizontal_ratio: float = 0.35,
+    vertical_ratio: float = 0.20,
+    protection_dilation: int = 2,
+) -> np.ndarray:
+    """
+    Remove long horizontal and vertical fold-like lines while
+    protecting pixels identified as text.
+
+    Args:
+        binary_image:
+            Binary document image. Text/foreground is expected
+            to be black (0), background white (255).
+
+        text_mask:
+            Binary protection mask. Text pixels are white (255).
+
+        horizontal_ratio:
+            Minimum horizontal line length relative to image width.
+
+        vertical_ratio:
+            Minimum vertical line length relative to image height.
+
+        protection_dilation:
+            Extra protection around detected text pixels.
+
+    Returns:
+        Binary image with safe fold-line pixels removed.
+    """
+
+    validate_image(binary_image)
+
+    if binary_image.ndim != 2:
+        raise ValueError(
+            "binary_image must be a 2D binary image."
+        )
+
+    if text_mask.shape != binary_image.shape:
+        raise ValueError(
+            "text_mask and binary_image must have the same shape."
+        )
+
+    height, width = binary_image.shape
+
+    # Binary image has black foreground.
+    # Morphology works more naturally with white foreground,
+    # so invert it.
+    foreground = cv2.bitwise_not(
+        binary_image
+    )
+
+    component_line_mask = detect_fold_line_components(
+        binary_image,
+        min_horizontal_ratio=0.30,
+        min_vertical_ratio=0.20,
+        max_horizontal_thickness=12,
+        max_vertical_thickness=12,
+    )
+
+    cv2.imwrite(
+        "outputs/debug_component_lines.png",
+        component_line_mask,
+    )
+
+    fragmented_vertical_mask = detect_fragmented_vertical_fold(
+        binary_image,
+        min_component_height=8,
+        max_component_width=18,
+        x_tolerance=14,
+        min_total_height_ratio=0.22,
+        max_gap=45,
+    )
+
+    cv2.imwrite(
+        "outputs/debug_fragmented_vertical.png",
+        fragmented_vertical_mask,
+    )
+
+    horizontal_length = max(
+        30,
+        int(width * horizontal_ratio),
+    )
+
+    vertical_length = max(
+        30,
+        int(height * vertical_ratio),
+    )
+
+    horizontal_kernel = cv2.getStructuringElement(
+        cv2.MORPH_RECT,
+        (horizontal_length, 1),
+    )
+
+    vertical_kernel = cv2.getStructuringElement(
+        cv2.MORPH_RECT,
+        (1, vertical_length),
+    )
+
+    horizontal_connect_kernel = cv2.getStructuringElement(
+        cv2.MORPH_RECT,
+        (9, 3),
+    )
+
+    vertical_connect_kernel = cv2.getStructuringElement(
+        cv2.MORPH_RECT,
+        (3, 9),
+    )
+
+    horizontal_connected = cv2.morphologyEx(
+        foreground,
+        cv2.MORPH_CLOSE,
+        horizontal_connect_kernel,
+        iterations=1,
+    )
+
+    vertical_connected = cv2.morphologyEx(
+        foreground,
+        cv2.MORPH_CLOSE,
+        vertical_connect_kernel,
+        iterations=1,
+    )
+
+    horizontal_lines = cv2.morphologyEx(
+        foreground,
+        cv2.MORPH_OPEN,
+        horizontal_kernel,
+    )
+
+    vertical_lines = cv2.morphologyEx(
+        foreground,
+        cv2.MORPH_OPEN,
+        vertical_kernel,
+    )
+
+    component_line_mask = detect_fold_line_components(
+        binary_image,
+        min_horizontal_ratio=0.30,
+        min_vertical_ratio=0.20,
+        max_horizontal_thickness=12,
+        max_vertical_thickness=12,
+    )
+
+    line_mask = cv2.bitwise_or(
+        horizontal_lines,
+        vertical_lines,
+    )
+
+    line_mask = cv2.bitwise_or(
+        line_mask,
+        component_line_mask,
+    )
+
+    # Protect not only exact text pixels but also a small
+    # neighbourhood around them.
+    protection_kernel = cv2.getStructuringElement(
+        cv2.MORPH_ELLIPSE,
+        (
+            2 * protection_dilation + 1,
+            2 * protection_dilation + 1,
+        ),
+    )
+
+    protected_text = cv2.dilate(
+        text_mask,
+        protection_kernel,
+        iterations=1,
+    )
+
+    # Remove only line pixels that are NOT protected as text.
+    safe_line_mask = cv2.bitwise_and(
+        line_mask,
+        cv2.bitwise_not(
+            protected_text
+        ),
+    )
+
+    safe_fragmented_vertical_mask = cv2.bitwise_and(
+        fragmented_vertical_mask,
+        cv2.bitwise_not(
+            protected_text
+        ),
+    )
+
+    safe_line_mask = cv2.bitwise_or(
+        safe_line_mask,
+        safe_fragmented_vertical_mask,
+    )
+
+    cv2.imwrite(
+        "outputs/debug_horizontal_lines.png",
+        horizontal_lines,
+    )
+
+    cv2.imwrite(
+        "outputs/debug_vertical_lines.png",
+        vertical_lines,
+    )
+
+    cv2.imwrite(
+        "outputs/debug_safe_line_mask.png",
+        safe_line_mask,
+    )
+
+    result = binary_image.copy()
+
+    result[
+        safe_line_mask > 0
+    ] = 255
+
+    return result
+
+def detect_fold_line_components(
+    binary_image: np.ndarray,
+    min_horizontal_ratio: float = 0.30,
+    min_vertical_ratio: float = 0.20,
+    max_horizontal_thickness: int = 12,
+    max_vertical_thickness: int = 12,
+) -> np.ndarray:
+
+    validate_image(binary_image)
+
+    if binary_image.ndim != 2:
+        raise ValueError(
+            "binary_image must be a 2D binary image."
+        )
+
+    height, width = binary_image.shape
+
+    foreground = cv2.bitwise_not(
+        binary_image
+    )
+
+    number_of_labels, labels, stats, _ = (
+        cv2.connectedComponentsWithStats(
+            foreground,
+            connectivity=8,
+        )
+    )
+
+    line_mask = np.zeros_like(
+        binary_image,
+        dtype=np.uint8,
+    )
+
+    for label in range(
+        1,
+        number_of_labels,
+    ):
+        x = stats[
+            label,
+            cv2.CC_STAT_LEFT,
+        ]
+
+        y = stats[
+            label,
+            cv2.CC_STAT_TOP,
+        ]
+
+        component_width = stats[
+            label,
+            cv2.CC_STAT_WIDTH,
+        ]
+
+        component_height = stats[
+            label,
+            cv2.CC_STAT_HEIGHT,
+        ]
+
+        is_horizontal = (
+            component_width
+            >= width * min_horizontal_ratio
+            and component_height
+            <= max_horizontal_thickness
+        )
+
+        is_vertical = (
+            component_height
+            >= height * min_vertical_ratio
+            and component_width
+            <= max_vertical_thickness
+        )
+
+        if not (
+            is_horizontal
+            or is_vertical
+        ):
+            continue
+
+        component_mask = (
+            labels == label
+        )
+
+        line_mask[
+            component_mask
+        ] = 255
+
+    return line_mask
+
+def detect_fragmented_vertical_fold(
+    binary_image: np.ndarray,
+    min_component_height: int = 8,
+    max_component_width: int = 18,
+    x_tolerance: int = 14,
+    min_total_height_ratio: float = 0.22,
+    max_gap: int = 45,
+) -> np.ndarray:
+    """
+    Detect vertically aligned fragmented fold-line components.
+
+    Small vertical fragments that lie on nearly the same x-axis
+    are grouped together. If their combined vertical coverage is
+    large enough, they are treated as one fragmented fold line.
+    """
+
+    validate_image(binary_image)
+
+    if binary_image.ndim != 2:
+        raise ValueError(
+            "binary_image must be a 2D binary image."
+        )
+
+    height, width = binary_image.shape
+
+    foreground = cv2.bitwise_not(
+        binary_image
+    )
+
+    number_of_labels, labels, stats, _ = (
+        cv2.connectedComponentsWithStats(
+            foreground,
+            connectivity=8,
+        )
+    )
+
+    candidates = []
+
+    for label in range(
+        1,
+        number_of_labels,
+    ):
+        x = stats[
+            label,
+            cv2.CC_STAT_LEFT,
+        ]
+
+        y = stats[
+            label,
+            cv2.CC_STAT_TOP,
+        ]
+
+        component_width = stats[
+            label,
+            cv2.CC_STAT_WIDTH,
+        ]
+
+        component_height = stats[
+            label,
+            cv2.CC_STAT_HEIGHT,
+        ]
+
+        if component_height < min_component_height:
+            continue
+
+        if component_width > max_component_width:
+            continue
+
+        center_x = (
+            x
+            + component_width / 2
+        )
+
+        aspect_ratio = (
+            component_height
+            / max(component_width, 1)
+        )
+
+        if aspect_ratio < 2.0:
+            continue
+
+        candidates.append(
+            {
+                "label": label,
+                "x": x,
+                "y": y,
+                "width": component_width,
+                "height": component_height,
+                "center_x": center_x,
+                "bottom": y + component_height,
+            }
+        )
+
+    if not candidates:
+        return np.zeros_like(
+            binary_image,
+            dtype=np.uint8,
+        )
+
+    candidates.sort(
+        key=lambda item: (
+            item["center_x"],
+            item["y"],
+        )
+    )
+
+    groups = []
+
+    for candidate in candidates:
+        best_group = None
+        best_distance = None
+
+        for group in groups:
+            group_center_x = float(
+                np.mean(
+                    [
+                        item["center_x"]
+                        for item in group
+                    ]
+                )
+            )
+
+            distance = abs(
+                candidate["center_x"]
+                - group_center_x
+            )
+
+            if distance <= x_tolerance:
+                if (
+                    best_distance is None
+                    or distance < best_distance
+                ):
+                    best_group = group
+                    best_distance = distance
+
+        if best_group is None:
+            groups.append(
+                [candidate]
+            )
+        else:
+            best_group.append(
+                candidate
+            )
+
+    output_mask = np.zeros_like(
+        binary_image,
+        dtype=np.uint8,
+    )
+
+    minimum_total_height = (
+        height
+        * min_total_height_ratio
+    )
+
+    for group in groups:
+        if len(group) < 2:
+            continue
+
+        group.sort(
+            key=lambda item: item["y"]
+        )
+
+        accepted = [
+            group[0]
+        ]
+
+        for candidate in group[1:]:
+            previous = accepted[-1]
+
+            gap = (
+                candidate["y"]
+                - previous["bottom"]
+            )
+
+            if gap <= max_gap:
+                accepted.append(
+                    candidate
+                )
+
+        if len(accepted) < 2:
+            continue
+
+        total_height = sum(
+            item["height"]
+            for item in accepted
+        )
+
+        vertical_start = min(
+            item["y"]
+            for item in accepted
+        )
+
+        vertical_end = max(
+            item["bottom"]
+            for item in accepted
+        )
+
+        vertical_span = (
+            vertical_end
+            - vertical_start
+        )
+
+        minimum_vertical_span = (
+            height * 0.20
+        )
+
+        if vertical_span < minimum_vertical_span:
+            continue
+
+        # Divide the vertical span into bins and check how many
+        # different height levels contain fold candidates.
+        bin_count = 8
+
+        occupied_bins = set()
+
+        for item in accepted:
+            center_y = (
+                item["y"]
+                + item["height"] / 2
+            )
+
+            relative_y = (
+                center_y - vertical_start
+            )
+
+            bin_index = int(
+                relative_y
+                / max(vertical_span, 1)
+                * bin_count
+            )
+
+            bin_index = min(
+                bin_index,
+                bin_count - 1,
+            )
+
+            occupied_bins.add(
+                bin_index
+            )
+
+        minimum_occupied_bins = 4
+
+        if len(occupied_bins) < minimum_occupied_bins:
+            continue
+
+
+        for item in accepted:
+            output_mask[
+                labels == item["label"]
+            ] = 255
+
+    return output_mask
