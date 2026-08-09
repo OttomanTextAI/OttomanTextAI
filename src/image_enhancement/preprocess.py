@@ -55,10 +55,13 @@ from src.image_enhancement.enhance import (
     convert_to_grayscale,
     reduce_noise,
 )
+
 from src.image_enhancement.threshold import (
     apply_adaptive_threshold,
     apply_otsu_threshold,
+    apply_faint_text_threshold,
 )
+
 from src.image_enhancement.utils import (
     read_image,
     save_image,
@@ -287,6 +290,7 @@ def preprocess_image(
         )
 
     text_protection_mask = None
+    faint_text_mask = None
 
     if normalized_profile == "printed-degraded":
 
@@ -299,19 +303,33 @@ def preprocess_image(
             candidate_regions,
         )
 
-        protected_regions = [
+        foreground_regions = [
             result["region"]
             for result in classified_regions
-            if result["classification"] in {
-                "foreground",
-                "faint_text",
-            }
+            if result["classification"] == "foreground"
         ]
+
+        faint_text_regions = [
+            result["region"]
+            for result in classified_regions
+            if result["classification"] == "faint_text"
+        ]
+
+        protected_regions = (
+            foreground_regions
+            + faint_text_regions
+        )
           
 
         text_protection_mask = create_pixel_text_mask(
             text_region_image,
             protected_regions,
+            padding=1,
+        )
+
+        faint_text_mask = create_pixel_text_mask(
+            text_region_image,
+            faint_text_regions,
             padding=1,
         )
 
@@ -436,6 +454,18 @@ def preprocess_image(
             constant=adaptive_config[
                 "constant"
             ],
+        )
+
+    if (
+        normalized_profile == "printed-degraded"
+        and faint_text_mask is not None
+    ):
+        binary_image = apply_faint_text_threshold(
+            image=line_cleaned_image,
+            base_binary=binary_image,
+            faint_text_mask=faint_text_mask,
+            block_size=31,
+            constant=4.0,
         )
 
    # if text_protection_mask is not None:

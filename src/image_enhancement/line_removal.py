@@ -199,6 +199,19 @@ def remove_fold_lines_with_text_protection(
         max_gap=45,
     )
 
+    bottom_artifact_mask = detect_bottom_edge_artifacts(
+        binary_image,
+        bottom_zone_ratio=0.12,
+        min_width_ratio=0.15,
+        max_distance_from_bottom=25,
+    )
+
+    cv2.imwrite(
+        "outputs/debug_bottom_artifacts.png",
+        bottom_artifact_mask,
+    )
+
+
     cv2.imwrite(
         "outputs/debug_fragmented_vertical.png",
         fragmented_vertical_mask,
@@ -313,6 +326,25 @@ def remove_fold_lines_with_text_protection(
         safe_line_mask,
         safe_fragmented_vertical_mask,
     )
+
+    safe_bottom_artifact_mask = cv2.bitwise_and(
+        bottom_artifact_mask,
+        cv2.bitwise_not(
+            protected_text
+        ),
+    )
+
+    safe_line_mask = cv2.bitwise_or(
+            safe_line_mask,
+            safe_bottom_artifact_mask,
+        )
+
+    cv2.imwrite(
+        "outputs/debug_safe_bottom_artifacts.png",
+        safe_bottom_artifact_mask,
+    )
+
+
 
     cv2.imwrite(
         "outputs/debug_horizontal_lines.png",
@@ -674,5 +706,134 @@ def detect_fragmented_vertical_fold(
             output_mask[
                 labels == item["label"]
             ] = 255
+
+    return output_mask
+
+def detect_bottom_edge_artifacts(
+    binary_image: np.ndarray,
+    bottom_zone_ratio: float = 0.10,
+    min_width_ratio: float = 0.20,
+    max_distance_from_bottom: int = 8,
+) -> np.ndarray:
+    """
+    Detect wide irregular artifacts located near the bottom edge
+    of a binary document image.
+
+    This function only creates a detection mask.
+    It does not modify the document.
+    """
+
+    validate_image(binary_image)
+
+    if binary_image.ndim != 2:
+        raise ValueError(
+            "binary_image must be a 2D binary image."
+        )
+
+    height, width = binary_image.shape
+
+    zone_height = max(
+        20,
+        int(height * bottom_zone_ratio),
+    )
+
+    zone_start = (
+        height - zone_height
+    )
+
+    bottom_zone = binary_image[
+        zone_start:height,
+        :
+    ]
+
+    # Black foreground -> white foreground
+    foreground = cv2.bitwise_not(
+        bottom_zone
+    )
+
+    # Only inside the bottom zone:
+    # connect small gaps belonging to the same border/artifact.
+    connection_kernel = cv2.getStructuringElement(
+        cv2.MORPH_RECT,
+        (9, 3),
+    )
+
+    connected = cv2.morphologyEx(
+        foreground,
+        cv2.MORPH_CLOSE,
+        connection_kernel,
+        iterations=1,
+    )
+
+    number_of_labels, labels, stats, _ = (
+        cv2.connectedComponentsWithStats(
+            connected,
+            connectivity=8,
+        )
+    )
+
+    output_mask = np.zeros_like(
+        binary_image,
+        dtype=np.uint8,
+    )
+
+    minimum_width = (
+        width * min_width_ratio
+    )
+
+    for label in range(
+        1,
+        number_of_labels,
+    ):
+        x = stats[
+            label,
+            cv2.CC_STAT_LEFT,
+        ]
+
+        y = stats[
+            label,
+            cv2.CC_STAT_TOP,
+        ]
+
+        component_width = stats[
+            label,
+            cv2.CC_STAT_WIDTH,
+        ]
+
+        component_height = stats[
+            label,
+            cv2.CC_STAT_HEIGHT,
+        ]
+
+        component_bottom = (
+            y + component_height
+        )
+
+        distance_from_bottom = (
+            zone_height
+            - component_bottom
+        )
+
+        if component_width < minimum_width:
+            continue
+
+        if (
+            distance_from_bottom
+            > max_distance_from_bottom
+        ):
+            continue
+
+        component_mask = (
+            labels == label
+        )
+
+        target_area = output_mask[
+            zone_start:height,
+            :
+        ]
+
+        target_area[
+            component_mask
+        ] = 255
 
     return output_mask

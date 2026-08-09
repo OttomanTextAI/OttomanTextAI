@@ -253,6 +253,22 @@ def detect_text_regions(
         cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU,
     )
 
+    # Secondary candidate layer for very faint text.
+    # This is used only for region detection, not for final binarization.
+    faint_binary = cv2.adaptiveThreshold(
+        grayscale_image,
+        255,
+        cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+        cv2.THRESH_BINARY_INV,
+        41,
+        11,
+    )
+
+    binary = cv2.bitwise_or(
+        binary,
+        faint_binary,
+    )
+
     number_of_labels, _, stats, _ = (
         cv2.connectedComponentsWithStats(
             binary,

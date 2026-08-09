@@ -187,6 +187,12 @@ def main():
         }
     ]
 
+    faint_text_regions = [
+        result["region"]
+        for result in classified_regions
+        if result["classification"] == "faint_text"
+    ]
+
     print()
     print(
         "Foreground:",
@@ -262,6 +268,36 @@ def main():
 
     mask_output = Path(
         "outputs/pixel_text_mask_debug.png"
+    )
+
+    faint_text_mask = create_pixel_text_mask(
+        image,
+        faint_text_regions,
+        padding=1,
+    )
+
+    faint_debug = overlay_text_mask(
+        image,
+        faint_text_mask,
+    )
+
+    faint_output = Path(
+        "outputs/faint_text_mask_debug.png"
+    )
+
+    cv2.imwrite(
+        str(faint_output),
+        faint_debug,
+    )
+
+    cv2.imwrite(
+        "outputs/faint_text_mask.png",
+        faint_text_mask,
+    )
+
+    print(
+        "Faint text mask saved:",
+        faint_output,
     )
 
     mask_output.parent.mkdir(
