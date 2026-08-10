@@ -2,6 +2,7 @@
 
 from pathlib import Path
 from typing import Any
+import time
 
 import numpy as np
 import cv2
@@ -110,8 +111,8 @@ def preprocess_image(
         ValueError: If threshold_method is unsupported.
     """
    
+    total_start = time.perf_counter()
 
-   
 
     config = _load_preprocessing_config(
         config_path
@@ -294,13 +295,29 @@ def preprocess_image(
 
     if normalized_profile == "printed-degraded":
 
+        t = time.perf_counter()
+
         candidate_regions = detect_text_regions(
             text_region_image
         )
 
+        print(
+            f"[TIMING] detect_text_regions: "
+            f"{time.perf_counter() - t:.3f}s",
+            flush=True,
+        )
+
+        t = time.perf_counter()
+
         classified_regions = classify_text_regions(
             text_region_image,
             candidate_regions,
+        )
+
+        print(
+            f"[TIMING] classify_text_regions: "
+            f"{time.perf_counter() - t:.3f}s",
+            flush=True,
         )
 
         foreground_regions = [
@@ -321,6 +338,8 @@ def preprocess_image(
         )
           
 
+        t = time.perf_counter()
+
         text_protection_mask = create_pixel_text_mask(
             text_region_image,
             protected_regions,
@@ -333,6 +352,14 @@ def preprocess_image(
             padding=1,
         )
 
+        print(
+            f"[TIMING] create_pixel_text_masks: "
+            f"{time.perf_counter() - t:.3f}s",
+            flush=True,
+        )
+
+        t = time.perf_counter()
+
         text_protection_mask = (
             remove_long_artifacts_from_text_mask(
                 text_protection_mask,
@@ -340,6 +367,14 @@ def preprocess_image(
                 vertical_ratio=0.12,
             )
         )
+
+        print(
+            f"[TIMING] remove_long_artifacts: "
+            f"{time.perf_counter() - t:.3f}s",
+            flush=True,
+        )
+
+       
     grayscale_image = convert_to_grayscale(
         text_region_image
     )
@@ -358,11 +393,19 @@ def preprocess_image(
     if profile_config[
         "background_normalization_enabled"
     ]:
+        t = time.perf_counter()
+
         normalized_image = normalize_background(
             denoised_image,
             kernel_size=background_config[
                 "kernel_size"
             ],
+        )
+
+        print(
+            f"[TIMING] normalize_background: "
+            f"{time.perf_counter() - t:.3f}s",
+            flush=True,
         )
 
     bleed_suppressed_image = normalized_image
@@ -441,6 +484,12 @@ def preprocess_image(
     if not profile_config["threshold_enabled"]:
         return line_cleaned_image
 
+    # -----------------------------------------
+    # Base threshold
+    # -----------------------------------------
+
+    t = time.perf_counter()
+
     if normalized_threshold_method == "otsu":
         binary_image = apply_otsu_threshold(
             line_cleaned_image
@@ -463,10 +512,23 @@ def preprocess_image(
                 ],
             )
 
+    print(
+        f"[TIMING] base_threshold: "
+        f"{time.perf_counter() - t:.3f}s",
+        flush=True,
+    )
+
+
+    # -----------------------------------------
+    # Faint text recovery
+    # -----------------------------------------
+
     if (
         normalized_profile == "printed-degraded"
         and faint_text_mask is not None
     ):
+        t = time.perf_counter()
+
         binary_image = apply_faint_text_threshold(
             image=line_cleaned_image,
             base_binary=binary_image,
@@ -475,18 +537,23 @@ def preprocess_image(
             constant=4.0,
         )
 
-   # if text_protection_mask is not None:
-    #    binary_image = restore_text_pixels_to_binary(
-   #         source_image=text_region_image,
-   #         binary_image=binary_image,
-   #         text_mask=text_protection_mask,
-    #        darkness_percentile=35.0,
-    #    )
+        print(
+            f"[TIMING] faint_text_threshold: "
+            f"{time.perf_counter() - t:.3f}s",
+            flush=True,
+        )
+
+
+    # -----------------------------------------
+    # Fold / artifact removal
+    # -----------------------------------------
 
     if (
         normalized_profile == "printed-degraded"
         and text_protection_mask is not None
     ):
+        t = time.perf_counter()
+
         binary_image = remove_fold_lines_with_text_protection(
             binary_image=binary_image,
             text_mask=text_protection_mask,
@@ -495,13 +562,32 @@ def preprocess_image(
             protection_dilation=0,
         )
 
+        print(
+            f"[TIMING] fold_line_removal: "
+            f"{time.perf_counter() - t:.3f}s",
+            flush=True,
+        )
+
+
+    # -----------------------------------------
+    # Text restoration
+    # -----------------------------------------
+
     if text_protection_mask is not None:
+        t = time.perf_counter()
+
         binary_image = restore_text_pixels_by_regions(
             source_image=text_region_image,
             binary_image=binary_image,
             text_mask=text_protection_mask,
             regions=protected_regions,
             darkness_percentile=40.0,
+        )
+
+        print(
+            f"[TIMING] restore_text_regions: "
+            f"{time.perf_counter() - t:.3f}s",
+            flush=True,
         )
 
 
@@ -571,7 +657,11 @@ def preprocess_image(
                 "vertical_distance"
             ],
         )
-
+    print(
+        f"[TIMING] TOTAL preprocess_image: "
+        f"{time.perf_counter() - total_start:.3f}s",
+        flush=True,
+    )
       
     return binary_image
 
