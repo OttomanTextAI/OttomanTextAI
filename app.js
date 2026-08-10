@@ -201,7 +201,7 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`
                 );
 
                 statusMessage.textContent =
-                    'Görüntü iyileştirme başarısız oldu.';
+                    'Hata: ' + error.message;
             }
         }
     );
@@ -266,6 +266,59 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`
         blob: imageBlob,
         url: imageUrl
     };
+
+    async function enhanceUploadedImage(file, profile = 'printed') {
+
+        console.log(
+            'ENHANCE PROFILE:',
+            profile
+        );
+
+        const formData = new FormData();
+
+        formData.append(
+            'image',
+            file
+        );
+
+        formData.append(
+            'profile',
+            profile
+        );
+
+        const response = await fetch(
+            'https://ottoman-text-ai.onrender.com/api/enhance',
+            {
+                method: 'POST',
+                body: formData
+            }
+        );
+
+        if (!response.ok) {
+            const errorData = await response.json();
+
+            console.error(
+                'BACKEND ERROR:',
+                errorData
+            );
+
+            throw new Error(
+                errorData.error ||
+                'Görüntü iyileştirme başarısız oldu.'
+            );
+        }
+
+        const imageBlob = await response.blob();
+
+        const imageUrl = URL.createObjectURL(
+            imageBlob
+        );
+
+        return {
+            blob: imageBlob,
+            url: imageUrl
+        };
+    }
 }
 
    async  function handleFileSelect(file) {
@@ -335,7 +388,7 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`
             );
 
             statusMessage.textContent =
-                'Görüntü iyileştirme başarısız oldu.';
+                'Hata: ' + error.message;
         }
     };
         reader.readAsDataURL(file);
