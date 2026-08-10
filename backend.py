@@ -151,7 +151,31 @@ def translate_endpoint():
     # a malformed key fails with a clear message instead of a cryptic
     # Google-side 401.
     masked = f"{api_key[:4]}...{api_key[-4:]} (len={len(api_key)})" if len(api_key) > 8 else "(too short)"
-    print(f"[translate] Using GEMINI_API_KEY: {masked}")
+
+    # If "AIzaSy" (the standard Google API key prefix) shows up more than
+    # once inside the value, two keys got concatenated somewhere upstream
+    # of this code (e.g. a stale value plus a new paste, or the variable
+    # being set in more than one place — a .env file AND the Render
+    # dashboard, for example). This pinpoints that case precisely instead
+    # of just reporting a wrong length.
+    prefix_occurrences = api_key.count("AIzaSy")
+    print(f"[translate] Using GEMINI_API_KEY: {masked} | 'AIzaSy' occurrences in value: {prefix_occurrences}")
+
+    if prefix_occurrences > 1:
+        return jsonify(
+            {
+                "error": (
+                    "GEMINI_API_KEY içinde birden fazla anahtar birleşmiş "
+                    "görünüyor (değer içinde 'AIzaSy' 1'den fazla kez "
+                    "geçiyor). Bu değişken muhtemelen birden fazla yerde "
+                    "tanımlı (örn. hem Render Environment sekmesinde hem "
+                    "bir .env dosyasında, ya da bir Environment Group "
+                    "içinde). Sadece TEK bir yerde, tek bir değer olarak "
+                    "tanımlı olduğundan emin olun."
+                ),
+                "debug_masked_key": masked,
+            }
+        ), 500
 
     if len(api_key) < 30 or " " in api_key or "\n" in api_key:
         return jsonify(
