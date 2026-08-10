@@ -446,15 +446,22 @@ def preprocess_image(
             line_cleaned_image
         )
     else:
-        binary_image = apply_adaptive_threshold(
-            line_cleaned_image,
-            block_size=adaptive_config[
-                "block_size"
-            ],
-            constant=adaptive_config[
-                "constant"
-            ],
-        )
+        if normalized_profile == "delicate":
+            binary_image = apply_adaptive_threshold(
+                line_cleaned_image,
+                block_size=31,
+                constant=6.0,
+            )
+        else:
+            binary_image = apply_adaptive_threshold(
+                line_cleaned_image,
+                block_size=adaptive_config[
+                    "block_size"
+                ],
+                constant=adaptive_config[
+                    "constant"
+                ],
+            )
 
     if (
         normalized_profile == "printed-degraded"
