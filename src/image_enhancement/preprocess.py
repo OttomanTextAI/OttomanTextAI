@@ -49,6 +49,7 @@ from src.image_enhancement.morphology import (
     remove_isolated_speckles,
     remove_isolated_speckles_v2,
     remove_isolated_speckles_v3,
+    remove_isolated_speckles_v4,
 )
 
 from src.image_enhancement.enhance import (
@@ -337,6 +338,55 @@ def preprocess_image(
             if result["classification"] == "faint_text"
         ]
 
+        debug_faint_regions = text_region_image.copy()
+
+        for x, y, w, h in faint_text_regions:
+            cv2.rectangle(
+                debug_faint_regions,
+                (x, y),
+                (x + w, y + h),
+                (0, 255, 0),
+                2,
+            )
+
+        debug_dir = Path(
+            "data/processed/debug"
+        )
+
+        debug_dir.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+
+        cv2.imwrite(
+            str(
+                debug_dir
+                / "faint_text_regions.png"
+            ),
+            debug_faint_regions,
+        )
+
+        classification_counts = {}
+
+        for result in classified_regions:
+            label = result["classification"]
+
+            classification_counts[label] = (
+                classification_counts.get(label, 0) + 1
+            )
+
+        print(
+            "[DEBUG] classification_counts:",
+            classification_counts,
+            flush=True,
+        )
+
+        print(
+            "[DEBUG] faint_text_regions:",
+            len(faint_text_regions),
+            flush=True,
+        )
+
         protected_regions = (
             foreground_regions
             + faint_text_regions
@@ -355,6 +405,23 @@ def preprocess_image(
             text_region_image,
             faint_text_regions,
             padding=1,
+        )
+
+        debug_dir = Path(
+            "data/processed/debug"
+        )
+
+        debug_dir.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+
+        cv2.imwrite(
+            str(
+                debug_dir
+                / "faint_text_mask.png"
+            ),
+            faint_text_mask,
         )
 
         print(
@@ -539,7 +606,7 @@ def preprocess_image(
             base_binary=binary_image,
             faint_text_mask=faint_text_mask,
             block_size=31,
-            constant=4.0,
+            constant=6.0,
         )
 
         print(
@@ -591,6 +658,29 @@ def preprocess_image(
 
         print(
             f"[TIMING] restore_text_regions: "
+            f"{time.perf_counter() - t:.3f}s",
+            flush=True,
+        )
+
+    # -----------------------------------------
+    # Protected speckle removal v4
+    # -----------------------------------------
+
+    if (
+        normalized_profile == "printed-degraded"
+        and text_protection_mask is not None
+    ):
+        t = time.perf_counter()
+
+        binary_image = remove_isolated_speckles_v4(
+            image=binary_image,
+            text_mask=text_protection_mask,
+            max_speckle_area=20,
+            text_protection_margin=3,
+        )
+
+        print(
+            f"[TIMING] speckle_removal_v4: "
             f"{time.perf_counter() - t:.3f}s",
             flush=True,
         )

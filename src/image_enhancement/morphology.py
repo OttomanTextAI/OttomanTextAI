@@ -266,6 +266,7 @@ def remove_isolated_speckles_v2(
         )
     )
 
+
     text_anchor_mask = np.zeros_like(
         foreground
     )
@@ -275,6 +276,7 @@ def remove_isolated_speckles_v2(
             label_index,
             cv2.CC_STAT_AREA,
         ]
+
 
         if area >= text_anchor_area:
             text_anchor_mask[
@@ -448,6 +450,214 @@ def remove_isolated_speckles_v3(
             cleaned_foreground[
                 component_mask
             ] = 255
+
+    return cv2.bitwise_not(
+        cleaned_foreground
+    )
+
+def remove_isolated_speckles_v4(
+    image: np.ndarray,
+    text_mask: np.ndarray | None = None,
+    max_speckle_area: int = 20,
+    text_protection_margin: int = 3,
+) -> np.ndarray:
+    """
+    Remove small isolated background speckles while protecting text.
+    """
+
+    validate_image(image)
+
+    if image.ndim != 2:
+        raise ValueError(
+            "Speckle removal requires a 2D binary image."
+        )
+
+    foreground = cv2.bitwise_not(image)
+
+    # -------------------------------------------------
+    # Create protected text region
+    # -------------------------------------------------
+
+    if text_mask is not None:
+        if text_mask.shape != image.shape:
+            raise ValueError(
+                "text_mask must have the same shape as image."
+            )
+
+        protection_kernel = cv2.getStructuringElement(
+            cv2.MORPH_ELLIPSE,
+            (
+                (text_protection_margin * 2) + 1,
+                (text_protection_margin * 2) + 1,
+            ),
+        )
+
+        protected_region = cv2.dilate(
+            text_mask.astype(np.uint8),
+            protection_kernel,
+            iterations=1,
+        )
+
+    else:
+        protected_region = np.zeros_like(image)
+
+    # -------------------------------------------------
+    # Connected components
+    # -------------------------------------------------
+
+    component_count, labels, statistics, _ = (
+        cv2.connectedComponentsWithStats(
+            foreground,
+            connectivity=8,
+        )
+    )
+
+    cleaned_foreground = foreground.copy()
+
+    # Debug counters
+    count_0_10 = 0
+    count_11_20 = 0
+    count_21_40 = 0
+    count_over_40 = 0
+
+    protected_small = 0
+    removed_small = 0
+
+    # -------------------------------------------------
+    # Analyse components
+    # -------------------------------------------------
+
+    for label_index in range(1, component_count):
+
+        area = statistics[
+            label_index,
+            cv2.CC_STAT_AREA,
+        ]
+
+        # Area distribution
+        if area <= 10:
+            count_0_10 += 1
+        elif area <= 20:
+            count_11_20 += 1
+        elif area <= 40:
+            count_21_40 += 1
+        else:
+            count_over_40 += 1
+
+        # Only components up to this size are candidates
+        if area > max_speckle_area:
+            continue
+
+        x = statistics[
+            label_index,
+            cv2.CC_STAT_LEFT,
+        ]
+
+        y = statistics[
+            label_index,
+            cv2.CC_STAT_TOP,
+        ]
+
+        width = statistics[
+            label_index,
+            cv2.CC_STAT_WIDTH,
+        ]
+
+        height = statistics[
+            label_index,
+            cv2.CC_STAT_HEIGHT,
+        ]
+
+        label_roi = labels[
+            y:y + height,
+            x:x + width,
+        ]
+
+        protection_roi = protected_region[
+            y:y + height,
+            x:x + width,
+        ]
+
+        foreground_roi = cleaned_foreground[
+            y:y + height,
+            x:x + width,
+        ]
+
+        component_roi = (
+            label_roi == label_index
+        )
+
+        touches_text = np.any(
+            protection_roi[
+                component_roi
+            ] > 0
+        )
+
+        if touches_text:
+            protected_small += 1
+
+        else:
+            foreground_roi[
+                component_roi
+            ] = 0
+
+            removed_small += 1
+
+    # -------------------------------------------------
+    # Debug output
+    # -------------------------------------------------
+
+    print(
+        "\n===== SPECKLE V4 DEBUG =====",
+        flush=True,
+    )
+
+    print(
+        "Total components:",
+        component_count - 1,
+        flush=True,
+    )
+
+    print(
+        "<= 10 px:",
+        count_0_10,
+        flush=True,
+    )
+
+    print(
+        "11-20 px:",
+        count_11_20,
+        flush=True,
+    )
+
+    print(
+        "21-40 px:",
+        count_21_40,
+        flush=True,
+    )
+
+    print(
+        "> 40 px:",
+        count_over_40,
+        flush=True,
+    )
+
+    print(
+        "Protected small components:",
+        protected_small,
+        flush=True,
+    )
+
+    print(
+        "Removed small components:",
+        removed_small,
+        flush=True,
+    )
+
+    print(
+        "============================",
+        flush=True,
+    )
 
     return cv2.bitwise_not(
         cleaned_foreground

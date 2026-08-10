@@ -380,6 +380,10 @@ def classify_text_regions(
         alignment_score = result["line_alignment_score"]
         repetition_score = result["repetition_score"]
 
+        horizontal_ink_coverage = result[
+            "horizontal_ink_coverage"
+        ]
+
         features = result["features"]
 
         edge_density = features["edge_density"]
@@ -390,6 +394,24 @@ def classify_text_regions(
         aspect_ratio = (
             region_width
             / max(region_height, 1)
+        )
+
+        print(
+            "[REGION DEBUG]",
+            {
+                "combined": round(combined_score, 3),
+                "structure": round(structure_score, 3),
+                "alignment": round(alignment_score, 3),
+                "repetition": round(repetition_score, 3),
+                "edge": round(edge_density, 3),
+                "dark": round(dark_pixel_ratio, 3),
+                "aspect": round(aspect_ratio, 3),
+                "coverage": round(
+                    result["horizontal_ink_coverage"],
+                    3,
+                ),
+            },
+            flush=True,
         )
 
         # -------------------------------------------------
