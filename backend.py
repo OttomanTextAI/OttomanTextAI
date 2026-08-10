@@ -89,28 +89,80 @@ def enhance_endpoint():
         ), 500
 
 
+# Fields the model is asked for beyond the original ocr/trans pair. Every
+# field is optional on the frontend side — if the model omits one or returns
+# an empty value, the results panel simply skips that piece rather than
+# showing a placeholder.
+ANALYSIS_PROMPT = (
+    "Lütfen bu Osmanlıca belgenin tüm satırlarını ve paragraflarını "
+    "eksiksiz transkribe et, çevir ve kısa bir içerik analizi çıkar. "
+    "ocr alanına yalnızca Arap harfli Osmanlıca metni yaz, Latin harfi "
+    "karıştırma. trans alanına metnin günümüz Türkçesi karşılığını yaz. "
+    "Diğer analiz alanlarını YALNIZCA metinden gerçekten çıkarabildiğin "
+    "kadarıyla doldur; emin olmadığın bir alanı boş string (\"\") olarak "
+    "bırak, ASLA uydurma bilgi verme. confidence alanına transkripsiyon ve "
+    "çeviriye olan güvenini 0-100 arasında bir tam sayı olarak yaz. "
+    "Yanıt YALNIZCA şu alanları içeren geçerli bir JSON olsun: "
+    '{"ocr":"...", "trans":"...", "document_type":"...", '
+    '"confidence": 0, "style":"...", "summary":"...", '
+    '"key_points":["...","..."], "people":["..."], "places":["..."], '
+    '"concepts":["..."], "script_type":"...", "script_purpose":"...", '
+    '"period_estimate":"...", "date_hijri":"...", "date_gregorian":"...", '
+    '"notes":"..."}'
+)
+
+
 @app.route("/api/translate", methods=["POST"])
 def translate_endpoint():
     """
-    Run Gemini OCR + Turkish translation on an enhanced image.
+    Run Gemini OCR + Turkish translation + light content analysis on an
+    enhanced image.
 
     Expects:
         multipart/form-data
         image: enhanced image file
 
     Returns:
-        JSON:
-        {
-            "ocr": "...",
-            "trans": "..."
-        }
+        JSON with at minimum "ocr" and "trans". May also include optional
+        analysis fields (document_type, confidence, summary, key_points,
+        people, places, concepts, script_type, script_purpose,
+        period_estimate, date_hijri, date_gregorian, notes) when the model
+        was able to determine them. Fields it couldn't determine are
+        omitted or empty rather than guessed.
     """
-    api_key = os.getenv("GEMINI_API_KEY")
+    # .strip() guards against a very common copy-paste mistake: a stray
+    # trailing newline, space, or leftover quote character in the
+    # environment variable value. Google's API treats a malformed key as
+    # "no credential at all" and returns a confusing OAuth-related 401
+    # instead of a clear "invalid key" message, which is hard to debug
+    # blind — so we normalize here and log a masked version of what we
+    # actually received.
+    api_key = (os.getenv("GEMINI_API_KEY") or "").strip().strip('"').strip("'")
 
     if not api_key:
         return jsonify(
             {
                 "error": "GEMINI_API_KEY is not configured."
+            }
+        ), 500
+
+    # Real Gemini API keys are long (~39 chars) and start with "AIza".
+    # This isn't a full validation, just an early, cheap sanity check so
+    # a malformed key fails with a clear message instead of a cryptic
+    # Google-side 401.
+    masked = f"{api_key[:4]}...{api_key[-4:]} (len={len(api_key)})" if len(api_key) > 8 else "(too short)"
+    print(f"[translate] Using GEMINI_API_KEY: {masked}")
+
+    if len(api_key) < 30 or " " in api_key or "\n" in api_key:
+        return jsonify(
+            {
+                "error": (
+                    "GEMINI_API_KEY bozuk görünüyor (uzunluk veya içerik "
+                    "beklenenden farklı). Render > Environment sekmesinde "
+                    "değeri kontrol edin: başında/sonunda boşluk, tırnak "
+                    "veya satır sonu olmamalı."
+                ),
+                "debug_masked_key": masked,
             }
         ), 500
 
@@ -137,16 +189,6 @@ def translate_endpoint():
             image_bytes
         ).decode("utf-8")
 
-        prompt = (
-            "Lütfen bu Osmanlıca belgenin tüm satırlarını ve "
-            "paragraflarını eksiksiz transkribe et ve çevir. "
-            "ocr alanına yalnızca Arap harfli Osmanlıca metni yaz. "
-            "Latin harfi karıştırma. "
-            "trans alanına metnin günümüz Türkçesi karşılığını yaz. "
-            "Yanıt yalnızca geçerli JSON olsun: "
-            '{"ocr":"...","trans":"..."}'
-        )
-
         model = "gemini-2.5-flash"
 
         url = (
@@ -160,7 +202,7 @@ def translate_endpoint():
                 {
                     "parts": [
                         {
-                            "text": prompt
+                            "text": ANALYSIS_PROMPT
                         },
                         {
                             "inline_data": {
@@ -214,12 +256,55 @@ def translate_endpoint():
             cleaned_text
         )
 
-        return jsonify(
-            {
-                "ocr": parsed.get("ocr", ""),
-                "trans": parsed.get("trans", ""),
-            }
-        )
+        if not parsed.get("ocr") or not parsed.get("trans"):
+            return jsonify(
+                {
+                    "error": (
+                        "Model transkripsiyon veya çeviri üretemedi."
+                    )
+                }
+            ), 502
+
+        # Build the response defensively: required fields always present,
+        # optional analysis fields only included when the model actually
+        # returned something usable for them (no invented placeholders).
+        result = {
+            "ocr": parsed.get("ocr", ""),
+            "trans": parsed.get("trans", ""),
+        }
+
+        optional_string_fields = [
+            "document_type",
+            "style",
+            "summary",
+            "script_type",
+            "script_purpose",
+            "period_estimate",
+            "date_hijri",
+            "date_gregorian",
+            "notes",
+        ]
+        for field in optional_string_fields:
+            value = parsed.get(field)
+            if isinstance(value, str) and value.strip():
+                result[field] = value.strip()
+
+        optional_list_fields = ["key_points", "people", "places", "concepts"]
+        for field in optional_list_fields:
+            value = parsed.get(field)
+            if isinstance(value, list):
+                cleaned_list = [
+                    item.strip() for item in value
+                    if isinstance(item, str) and item.strip()
+                ]
+                if cleaned_list:
+                    result[field] = cleaned_list
+
+        confidence = parsed.get("confidence")
+        if isinstance(confidence, (int, float)):
+            result["confidence"] = max(0, min(100, round(confidence)))
+
+        return jsonify(result)
 
     except json.JSONDecodeError:
         return jsonify(

@@ -802,6 +802,254 @@ body.dark-theme .hero-title {
     100% { transform: scale(0.95); opacity: 0.8; }
 }
 
+/* ==========================================================================
+   Detailed Results Panel (Tabbed) - opens below the workbench after a
+   translation completes.
+   ========================================================================== */
+
+.results-panel {
+    margin-bottom: 4rem;
+    animation: resultsFadeIn 0.4s ease-out;
+}
+
+@keyframes resultsFadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.results-panel-card {
+    background-color: var(--bg-card);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-lg);
+    padding: 2rem;
+}
+
+.results-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding-bottom: 1.2rem;
+    margin-bottom: 1.2rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.results-header-left {
+    display: flex;
+    align-items: baseline;
+    gap: 0.9rem;
+    flex-wrap: wrap;
+}
+
+.results-title {
+    font-family: var(--font-heading);
+    font-size: 1.4rem;
+    color: var(--color-text-main);
+}
+
+.results-doc-type {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-gold);
+    background: var(--color-gold-bg);
+    padding: 0.25rem 0.7rem;
+    border-radius: var(--radius-full);
+}
+
+.confidence-pill {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: var(--bg-card-subtle);
+    border: 1px solid var(--color-border);
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-full);
+}
+
+.confidence-label {
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
+    font-weight: 600;
+}
+
+.confidence-value {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--color-accent-green);
+}
+
+.confidence-value.confidence-mid {
+    color: var(--color-gold);
+}
+
+.confidence-value.confidence-low {
+    color: var(--color-accent-red);
+}
+
+/* Tab Buttons */
+.results-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-bottom: 1.6rem;
+}
+
+.results-tab-btn {
+    background: var(--bg-input);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-muted);
+    padding: 0.6rem 1.1rem;
+    border-radius: var(--radius-full);
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+}
+
+.results-tab-btn:hover {
+    border-color: var(--color-gold);
+    color: var(--color-text-main);
+}
+
+.results-tab-btn.active {
+    background: var(--color-primary-navy);
+    border-color: var(--color-primary-navy);
+    color: #FFFFFF;
+    box-shadow: var(--shadow-sm);
+}
+
+/* Tab Panels */
+.results-tab-panel {
+    display: none;
+    animation: resultsFadeIn 0.25s ease-out;
+}
+
+.results-tab-panel.active {
+    display: block;
+}
+
+.panel-heading {
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    margin-bottom: 0.6rem;
+    margin-top: 1.4rem;
+}
+
+.panel-heading:first-child {
+    margin-top: 0;
+}
+
+.panel-text {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--color-text-main);
+}
+
+.panel-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+
+.panel-list li {
+    position: relative;
+    padding-left: 1.3rem;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    color: var(--color-text-main);
+}
+
+.panel-list li::before {
+    content: '◆';
+    position: absolute;
+    left: 0;
+    top: 0.1rem;
+    color: var(--color-gold);
+    font-size: 0.7rem;
+}
+
+/* Info grids (Belge Bilgileri / Yazı & Dil / Tarih & Bağlam) */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.info-item {
+    background: var(--bg-input);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 0.9rem 1rem;
+}
+
+.info-item-label {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--color-text-light);
+    margin-bottom: 0.3rem;
+}
+
+.info-item-value {
+    display: block;
+    font-size: 0.98rem;
+    font-weight: 600;
+    color: var(--color-text-main);
+}
+
+/* Entity columns (Kişiler / Yerler / Kavramlar) */
+.entity-columns {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.4rem;
+    margin-top: 1.4rem;
+}
+
+.entity-chip-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.entity-chip {
+    display: inline-flex;
+    align-items: center;
+    background: var(--color-gold-bg);
+    border: 1px solid rgba(197, 160, 89, 0.35);
+    color: var(--color-text-main);
+    padding: 0.35rem 0.8rem;
+    border-radius: var(--radius-full);
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.entity-empty-text {
+    font-size: 0.85rem;
+    color: var(--color-text-light);
+    font-style: italic;
+}
+
+@media (max-width: 640px) {
+    .results-panel-card {
+        padding: 1.3rem;
+    }
+
+    .results-tabs {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        padding-bottom: 0.3rem;
+    }
+}
+
 /* Workflow Steps Section */
 .workflow-section {
     padding: 2rem 0;

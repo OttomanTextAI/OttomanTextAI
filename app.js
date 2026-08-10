@@ -17,6 +17,23 @@ document.addEventListener('DOMContentLoaded', () => {
         history: JSON.parse(localStorage.getItem('translation_history') || '[]')
     };
 
+    // Fetch wrapper with a timeout, so slow/sleeping backends fail with a
+    // clear message instead of leaving the UI stuck on "işleniyor..." forever.
+    async function fetchWithTimeout(url, options = {}, timeoutMs = 45000) {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), timeoutMs);
+        try {
+            return await fetch(url, { ...options, signal: controller.signal });
+        } catch (err) {
+            if (err.name === 'AbortError') {
+                throw new Error('Sunucu yanıt vermedi (zaman aşımı). Sunucu uyanıyor olabilir, birkaç saniye sonra tekrar deneyin.');
+            }
+            throw err;
+        } finally {
+            clearTimeout(timer);
+        }
+    }
+
     // --- DOM Elements ---
     const dropZone = document.getElementById('dropZone');
     const fileInput = document.getElementById('fileInput');
@@ -62,8 +79,23 @@ document.addEventListener('DOMContentLoaded', () => {
     const enhancedEmptyState = document.getElementById('enhancedEmptyState');
     const enhancedImageWrapper = document.getElementById('enhancedImageWrapper');
     const enhancedImage = document.getElementById('enhancedImage');
-    const documentProfile =
-    document.getElementById('documentProfile');
+    const documentProfile = document.getElementById('documentProfile');
+
+    // Detailed Results Panel elements
+    const resultsPanel = document.getElementById('resultsPanel');
+    const resultDocType = document.getElementById('resultDocType');
+    const resultConfidencePill = document.getElementById('resultConfidencePill');
+    const resultConfidenceValue = document.getElementById('resultConfidenceValue');
+    const resultsTabs = document.getElementById('resultsTabs');
+    const resultSummary = document.getElementById('resultSummary');
+    const resultDocInfoGrid = document.getElementById('resultDocInfoGrid');
+    const resultKeyPoints = document.getElementById('resultKeyPoints');
+    const resultPeople = document.getElementById('resultPeople');
+    const resultPlaces = document.getElementById('resultPlaces');
+    const resultConcepts = document.getElementById('resultConcepts');
+    const resultScriptGrid = document.getElementById('resultScriptGrid');
+    const resultDateGrid = document.getElementById('resultDateGrid');
+    const resultNotes = document.getElementById('resultNotes');
 
     // Pre-set Sample Manuscript Database for Demo/Testing
     const sampleDatabase = {
@@ -91,7 +123,30 @@ Nitekim Kur'ân-ı Kerîm'de şöyle buyurulmaktadır: "De ki: Hiç bilenlerle b
 Yine Kadîm Kelâm'da (Zâriyât Sûresi 56. âyet): "Ben cinleri ve insanları ancak bana kulluk (ibadet) etsinler diye yarattım" buyurulmuştur.
 
 Bazı tefsir âlimlerine göre "Bana ibadet etsinler" ifadesi "Beni tanısınlar/bilsinler (yani marifet sahibi olsunlar)" anlamına gelmektedir. 
-Böylece Yüce Allah'ı tanımak ve bilmek (marifetullah), ilimlerin en yücesi ve en değerlisidir.`
+Böylece Yüce Allah'ı tanımak ve bilmek (marifetullah), ilimlerin en yücesi ve en değerlisidir.`,
+            // Curated demo analysis for this sample — not AI-generated, written
+            // to showcase the results panel. Real uploads get this from the
+            // backend /api/translate response instead.
+            analysis: {
+                document_type: 'Tefsir & Kelam El Yazması',
+                confidence: 88,
+                style: 'Dini / İlmî',
+                summary: 'Bu metin, ilim ve marifetullah (Allah\'ı tanıma) kavramının önemini anlatan bir tefsir/kelam risalesinin giriş bölümüdür. Yazar, kendini alçakgönüllülükle tanıtıp konuya ayet ve hadislerle giriş yapmaktadır.',
+                key_points: [
+                    'Metin, Niğde Kadısı\'nın oğlu Niyazioğlu Mahmud tarafından kaleme alınmıştır.',
+                    'İlim ve marifet (Allah\'ı tanıma), tüm ilimlerin en şereflisi olarak sunulmaktadır.',
+                    'Zâriyât Sûresi 56. âyet, "ibadet" kelimesinin "marifet" anlamına geldiği yorumuyla aktarılmıştır.'
+                ],
+                people: ['Niyazioğlu Mahmud', 'Hazreti Muhammed'],
+                places: ['Niğde'],
+                concepts: ['Marifetullah', 'Tefsir', 'Kelam İlmi'],
+                script_type: 'Nesih',
+                script_purpose: 'Dinî / İlmî risale (tefsir metni)',
+                period_estimate: 'Geç dönem Osmanlı (tahmini)',
+                date_hijri: 'Belirtilmemiş',
+                date_gregorian: 'Belirtilmemiş',
+                notes: 'Metinde doğrudan bir tarih ibaresi geçmemektedir; dönem tahmini yazı üslubuna dayanmaktadır.'
+            }
         },
         '1': {
             file: 'assets/sample_ottoman_1.png',
@@ -108,7 +163,26 @@ Allah ki O'ndan başka ilah yoktur, Hayy ve Kayyûm'dur.
 Kovulmuş şeytandan Allah'a sığınırım.
 Her canlı ölümü tadacaktır.
 Hamd, âlemlerin Rabbi olan Allah'a mahsustur.
-Hayır ve iyilikler sahibi, merhum ve bağışlanmış ruhuna...`
+Hayır ve iyilikler sahibi, merhum ve bağışlanmış ruhuna...`,
+            analysis: {
+                document_type: 'Mezar Taşı / Vakfiye Kaydı',
+                confidence: 79,
+                style: 'Dini / Anma metni',
+                summary: 'Kısa, dua ve besmele içerikli bir anma metni. Muhtemelen bir mezar taşı kitabesi veya vakfa dair kısa bir kayıttır; hayır sahibi bir kişinin ruhuna dua edilmektedir.',
+                key_points: [
+                    'Metin besmele ve kelime-i tevhid ile başlamaktadır.',
+                    'Hayır ve iyilik sahibi, merhum bir kişi için dua edilmektedir.'
+                ],
+                people: ['İsmi belirtilmemiş hayır sahibi'],
+                places: [],
+                concepts: ['Dua', 'Rahmet', 'Vakıf/Hayır'],
+                script_type: 'Sülüs (kitabe üslubu)',
+                script_purpose: 'Anma / mezar kitabesi',
+                period_estimate: 'Belirlenemedi',
+                date_hijri: 'Belirtilmemiş',
+                date_gregorian: 'Belirtilmemiş',
+                notes: 'Metin çok kısa olduğundan kesin belge türü ve tarih tahmini sınırlıdır.'
+            }
         },
         'hero': {
             file: 'assets/hero_manuscript.png',
@@ -121,7 +195,27 @@ Hayır ve iyilikler sahibi, merhum ve bağışlanmış ruhuna...`
             tr: `Ey âlemlerin İlahı, ey merhametlilerin en merhametlisi!
 Yardım Sendedir ey kerem sahibi Rabbim!
 Yüce Osmanlı Devleti fermanının gereğince
-Devletin ve milletin esenliği için şerefli emir verilmiştir.`
+Devletin ve milletin esenliği için şerefli emir verilmiştir.`,
+            analysis: {
+                document_type: 'Ferman (Hatt-ı Hümayun)',
+                confidence: 92,
+                style: 'Resmî / Bürokratik',
+                summary: 'Bu ferman, devletin ve milletin esenliği için Yüce Osmanlı Devleti\'nin emri gereğince hareket edilmesini buyurmaktadır. Metin bir dua/niyaz ifadesiyle açılıp resmî bir emirle devam etmektedir.',
+                key_points: [
+                    'Ferman, dua ve niyaz cümleleriyle açılmaktadır.',
+                    'Devlet ve milletin esenliği (selameti) için şerefli bir emir verildiği belirtilmektedir.',
+                    'Metin, resmî/bürokratik bir üslupla kaleme alınmıştır.'
+                ],
+                people: ['Padişah (zımnen)'],
+                places: ['Devlet-i Aliyye-i Osmaniyye'],
+                concepts: ['Ferman', 'Devlet Esenliği', 'Padişah Buyruğu'],
+                script_type: 'Divani',
+                script_purpose: 'Resmî devlet buyruğu (ferman)',
+                period_estimate: '19. yüzyıl (tahmini)',
+                date_hijri: 'Belirtilmemiş',
+                date_gregorian: 'Belirtilmemiş',
+                notes: 'Bu, tanıtım amaçlı kısaltılmış bir örnek metindir; tam ferman genellikle tarih ve tuğra bilgisi de içerir.'
+            }
         }
     };
 
@@ -156,55 +250,38 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`
     });
 
     // Belge profili değiştirildiğinde görüntüyü yeniden işle
-    documentProfile.addEventListener(
-        'change',
-        async () => {
-            if (!state.selectedFile) {
-                return;
-            }
-
-            try {
-                statusBadge.classList.remove('hidden');
-
-                statusMessage.textContent =
-                    'Yeni belge profiliyle görüntü iyileştiriliyor...';
-
-                const enhancedResult =
-                    await enhanceUploadedImage(
-                        state.selectedFile,
-                        documentProfile.value
-                    );
-
-                if (state.enhancedImageUrl) {
-                    URL.revokeObjectURL(state.enhancedImageUrl);
-                }
-
-                state.enhancedImageBlob = enhancedResult.blob;
-                state.enhancedImageUrl = enhancedResult.url;
-
-                enhancedImage.src = enhancedResult.url;
-
-                enhancedEmptyState.classList.add(
-                    'hidden'
-                );
-
-                enhancedImageWrapper.classList.remove(
-                    'hidden'
-                );
-
-                statusMessage.textContent =
-                    'Görüntü iyileştirme tamamlandı.';
-            } catch (error) {
-                console.error(
-                    'Enhancement error:',
-                    error
-                );
-
-                statusMessage.textContent =
-                    'Hata: ' + error.message;
-            }
+    documentProfile.addEventListener('change', async () => {
+        if (!state.selectedFile) {
+            return;
         }
-    );
+
+        try {
+            statusBadge.classList.remove('hidden');
+            statusMessage.textContent = 'Yeni belge profiliyle görüntü iyileştiriliyor...';
+
+            const enhancedResult = await enhanceUploadedImage(
+                state.selectedFile,
+                documentProfile.value
+            );
+
+            if (state.enhancedImageUrl) {
+                URL.revokeObjectURL(state.enhancedImageUrl);
+            }
+
+            state.enhancedImageBlob = enhancedResult.blob;
+            state.enhancedImageUrl = enhancedResult.url;
+
+            enhancedImage.src = enhancedResult.url;
+
+            enhancedEmptyState.classList.add('hidden');
+            enhancedImageWrapper.classList.remove('hidden');
+
+            statusMessage.textContent = 'Görüntü iyileştirme tamamlandı.';
+        } catch (error) {
+            console.error('Enhancement error:', error);
+            statusMessage.textContent = 'Hata: ' + error.message;
+        }
+    });
 
     dropZone.addEventListener('dragover', (e) => {
         e.preventDefault();
@@ -226,102 +303,48 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`
     reselectBtn.addEventListener('click', () => fileInput.click());
     removeFileBtn.addEventListener('click', resetState);
 
+    // FIX: This function previously contained a duplicate, unreachable nested
+    // copy of itself declared after the `return` statement. Function
+    // declarations are hoisted in JS, so it never threw an error — it was
+    // simply dead code that could never run (its debug console.log never fired).
+    // Cleaned up to a single, straightforward implementation below.
     async function enhanceUploadedImage(file, profile = 'printed') {
-    const formData = new FormData();
-
-    formData.append(
-        'image',
-        file
-    );
-
-    formData.append(
-        'profile',
-        profile
-    );
-
-    const response = await fetch(
-        'https://ottoman-text-ai.onrender.com/api/enhance',
-        {
-            method: 'POST',
-            body: formData
-        }
-    );
-
-    if (!response.ok) {
-        const errorData = await response.json();
-
-        throw new Error(
-            errorData.error ||
-            'Görüntü iyileştirme başarısız oldu.'
-        );
-    }
-
-    const imageBlob = await response.blob();
-
-    const imageUrl = URL.createObjectURL(
-        imageBlob
-    );
-
-    return {
-        blob: imageBlob,
-        url: imageUrl
-    };
-
-    async function enhanceUploadedImage(file, profile = 'printed') {
-
-        console.log(
-            'ENHANCE PROFILE:',
-            profile
-        );
+        console.log('ENHANCE PROFILE:', profile);
 
         const formData = new FormData();
+        formData.append('image', file);
+        formData.append('profile', profile);
 
-        formData.append(
-            'image',
-            file
-        );
-
-        formData.append(
-            'profile',
-            profile
-        );
-
-        const response = await fetch(
-            'https://ottoman-text-ai.onrender.com/api/enhance',
-            {
-                method: 'POST',
-                body: formData
-            }
-        );
+        const response = await fetchWithTimeout('https://ottoman-text-ai.onrender.com/api/enhance', {
+            method: 'POST',
+            body: formData
+        });
 
         if (!response.ok) {
-            const errorData = await response.json();
+            let errorData = {};
+            try {
+                errorData = await response.json();
+            } catch (parseErr) {
+                // Response wasn't JSON; fall back to a generic message below.
+            }
 
-            console.error(
-                'BACKEND ERROR:',
-                errorData
-            );
+            console.error('BACKEND ERROR:', errorData);
 
             throw new Error(
-                errorData.error ||
-                'Görüntü iyileştirme başarısız oldu.'
+                errorData.error || 'Görüntü iyileştirme başarısız oldu.'
             );
         }
 
         const imageBlob = await response.blob();
-
-        const imageUrl = URL.createObjectURL(
-            imageBlob
-        );
+        const imageUrl = URL.createObjectURL(imageBlob);
 
         return {
             blob: imageBlob,
             url: imageUrl
         };
     }
-}
 
-   async  function handleFileSelect(file) {
+    async function handleFileSelect(file) {
         if (!file.type.match('image.*')) {
             alert('Lütfen geçerli bir görsel dosyası (JPG, PNG, WEBP) seçin.');
             return;
@@ -331,66 +354,45 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`
         fileName.textContent = file.name;
         fileSize.textContent = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
 
-        
         const reader = new FileReader();
-       reader.onload = async (e) => {
-        state.imageDataUrl = e.target.result;
+        reader.onload = async (e) => {
+            state.imageDataUrl = e.target.result;
 
-        previewImage.src = e.target.result;
+            previewImage.src = e.target.result;
 
-        uploadIdleState.classList.add('hidden');
-        uploadActiveState.classList.remove('hidden');
+            uploadIdleState.classList.add('hidden');
+            uploadActiveState.classList.remove('hidden');
 
-        triggerTranslateBtn.disabled = false;
+            triggerTranslateBtn.disabled = false;
 
-        enhancedEmptyState.classList.remove('hidden');
-        enhancedImageWrapper.classList.add('hidden');
+            enhancedEmptyState.classList.remove('hidden');
+            enhancedImageWrapper.classList.add('hidden');
 
-        setStepActive(1);
+            setStepActive(1);
 
-        try {
-            statusBadge.classList.remove('hidden');
-            statusMessage.textContent =
-                'Görüntü iyileştiriliyor...';
+            try {
+                statusBadge.classList.remove('hidden');
+                statusMessage.textContent = 'Görüntü iyileştiriliyor...';
 
-        const selectedProfile =
-                documentProfile.value;
+                const enhancedResult = await enhanceUploadedImage(
+                    state.selectedFile,
+                    documentProfile.value
+                );
 
-        const enhancedResult =
-            await enhanceUploadedImage(
-                state.selectedFile,
-                documentProfile.value
-            );
+                state.enhancedImageBlob = enhancedResult.blob;
+                state.enhancedImageUrl = enhancedResult.url;
 
-        state.enhancedImageBlob =
-            enhancedResult.blob;
+                enhancedImage.src = enhancedResult.url;
 
-        state.enhancedImageUrl =
-            enhancedResult.url;
+                enhancedEmptyState.classList.add('hidden');
+                enhancedImageWrapper.classList.remove('hidden');
 
-        enhancedImage.src =
-            enhancedResult.url;
-
-            enhancedEmptyState.classList.add(
-                'hidden'
-            );
-
-            enhancedImageWrapper.classList.remove(
-                'hidden'
-            );
-
-            statusMessage.textContent =
-                'Görüntü iyileştirme tamamlandı.';
-        } catch (error) {
-            console.error(
-                'Enhancement error:',
-                error
-            );
-
-            statusMessage.textContent =
-                'Hata: ' + error.message;
-        }
-    };
+                statusMessage.textContent = 'Görüntü iyileştirme tamamlandı.';
+            } catch (error) {
+                console.error('Enhancement error:', error);
+                statusMessage.textContent = 'Hata: ' + error.message;
+            }
+        };
         reader.readAsDataURL(file);
     }
 
@@ -411,7 +413,7 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`
                 uploadIdleState.classList.add('hidden');
                 uploadActiveState.classList.remove('hidden');
                 triggerTranslateBtn.disabled = false;
-                
+
                 dropZone.scrollIntoView({ behavior: 'smooth' });
                 setStepActive(1);
 
@@ -444,15 +446,147 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`
         enhancedImage.src = '';
 
         if (state.enhancedImageUrl) {
-            URL.revokeObjectURL(
-                state.enhancedImageUrl
-            );
+            URL.revokeObjectURL(state.enhancedImageUrl);
         }
 
         state.enhancedImageBlob = null;
         state.enhancedImageUrl = null;
 
+        hideResultsPanel();
         setStepActive(1);
+    }
+
+    // --- Detailed Results Panel (tabbed) ---
+    resultsTabs.addEventListener('click', (e) => {
+        const btn = e.target.closest('.results-tab-btn');
+        if (!btn) return;
+
+        const targetTab = btn.getAttribute('data-tab');
+
+        document.querySelectorAll('.results-tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        document.querySelectorAll('.results-tab-panel').forEach(panel => {
+            panel.classList.toggle('active', panel.getAttribute('data-panel') === targetTab);
+        });
+    });
+
+    function hideResultsPanel() {
+        resultsPanel.classList.add('hidden');
+    }
+
+    // Builds a row of label/value cards for an info-grid section.
+    // fields: [{ label, value }] — entries with an empty/undefined value are skipped.
+    function buildInfoGrid(container, fields) {
+        container.innerHTML = '';
+        const usable = fields.filter(f => f.value !== undefined && f.value !== null && String(f.value).trim() !== '');
+
+        if (usable.length === 0) {
+            container.innerHTML = '<p class="entity-empty-text">Bu belge için bilgi tespit edilemedi.</p>';
+            return;
+        }
+
+        usable.forEach(f => {
+            const item = document.createElement('div');
+            item.className = 'info-item';
+            item.innerHTML = `
+                <span class="info-item-label"></span>
+                <span class="info-item-value"></span>
+            `;
+            item.querySelector('.info-item-label').textContent = f.label;
+            item.querySelector('.info-item-value').textContent = f.value;
+            container.appendChild(item);
+        });
+    }
+
+    // Renders a list of entity chips (people/places/concepts). Each entry can be
+    // a plain string or an { name, role } object.
+    function buildEntityChips(container, entities) {
+        container.innerHTML = '';
+        if (!entities || entities.length === 0) {
+            container.innerHTML = '<span class="entity-empty-text">Tespit edilemedi</span>';
+            return;
+        }
+
+        entities.forEach(entity => {
+            const label = typeof entity === 'string' ? entity : (entity.name || '');
+            if (!label.trim()) return;
+            const chip = document.createElement('span');
+            chip.className = 'entity-chip';
+            chip.textContent = label;
+            container.appendChild(chip);
+        });
+    }
+
+    function buildList(container, items) {
+        container.innerHTML = '';
+        if (!items || items.length === 0) {
+            container.innerHTML = '<li class="entity-empty-text" style="padding-left:0;">Bu belge için önemli bilgi çıkarılamadı.</li>';
+            return;
+        }
+        items.forEach(text => {
+            if (!text || !String(text).trim()) return;
+            const li = document.createElement('li');
+            li.textContent = text;
+            container.appendChild(li);
+        });
+    }
+
+    // data is the parsed analysis object (see backend /api/translate response
+    // and sampleDatabase entries below). Only ocr/trans are guaranteed; every
+    // other field is optional and rendered defensively.
+    function renderResultsPanel(data) {
+        // Reset to first tab each time a new result comes in
+        document.querySelectorAll('.results-tab-btn').forEach((b, i) => b.classList.toggle('active', i === 0));
+        document.querySelectorAll('.results-tab-panel').forEach((p, i) => p.classList.toggle('active', i === 0));
+
+        resultDocType.textContent = data.document_type || 'Belge Türü Belirlenemedi';
+
+        if (typeof data.confidence === 'number') {
+            resultConfidencePill.classList.remove('hidden');
+            resultConfidenceValue.textContent = `%${Math.round(data.confidence)}`;
+            resultConfidenceValue.classList.remove('confidence-mid', 'confidence-low');
+            if (data.confidence < 60) {
+                resultConfidenceValue.classList.add('confidence-low');
+            } else if (data.confidence < 85) {
+                resultConfidenceValue.classList.add('confidence-mid');
+            }
+        } else {
+            resultConfidencePill.classList.add('hidden');
+        }
+
+        // Genel Bakış
+        resultSummary.textContent = data.summary || 'Bu belge için özet oluşturulamadı.';
+        buildInfoGrid(resultDocInfoGrid, [
+            { label: 'Belge Türü', value: data.document_type },
+            { label: 'Tahmini Dönem', value: data.period_estimate },
+            { label: 'Dil / Üslup', value: data.style },
+        ]);
+
+        // İçerik Analizi
+        buildList(resultKeyPoints, data.key_points);
+        buildEntityChips(resultPeople, data.people);
+        buildEntityChips(resultPlaces, data.places);
+        buildEntityChips(resultConcepts, data.concepts);
+
+        // Yazı & Dil Özellikleri
+        buildInfoGrid(resultScriptGrid, [
+            { label: 'Yazı Tipi (Hat)', value: data.script_type },
+            { label: 'Yazının Amacı', value: data.script_purpose },
+        ]);
+
+        // Tarih & Bağlam
+        buildInfoGrid(resultDateGrid, [
+            { label: 'Tarih (Hicrî)', value: data.date_hijri },
+            { label: 'Tarih (Miladî)', value: data.date_gregorian },
+            { label: 'Tahmini Dönem', value: data.period_estimate },
+        ]);
+
+        // Notlar
+        resultNotes.textContent = data.notes || 'Bu belge için ek not bulunmuyor.';
+
+        resultsPanel.classList.remove('hidden');
+        resultsPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     // --- Workflow Step Visual Control ---
@@ -467,50 +601,6 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`
                 }
             }
         }
-    }
-
-    // --- Direct Client-Side Gemini Vision API Call (for GitHub Pages static hosting) ---
-    async function callDirectGeminiApi(imageDataUrl, apiKey) {
-        const cleanB64 = imageDataUrl.split(',')[1] || imageDataUrl;
-        const models = ['gemini-3.6-flash', 'gemini-3.5-flash', 'gemini-flash-latest', 'gemini-2.5-flash', 'gemini-2.0-flash'];
-        const prompt = "Lütfen bu Osmanlıca belgenin TÜM SATIRLARINI VE PARAGRAFLARINI eksiksiz transkribe et ve çevir. " +
-            "DİKKAT: 'ocr' alanına KESİNLİKLE Latin harfi karıştırma; metni %100 Orijinal Arap Harfli Osmanlıca (Osmanlı Türkçesi) olarak yaz. " +
-            "'trans' alanına ise tam metnin günümüz Türkçesi sadeleştirmesini ver. " +
-            "Yanıt formatı KESİNLİKLE geçerli bir JSON olmalıdır: {\"ocr\": \"sadece arap harfli osmanlıca metin\", \"trans\": \"günümüz türkçesi çeviri\"}";
-
-        for (const model of models) {
-            try {
-                const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
-                const res = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{
-                            parts: [
-                                { text: prompt },
-                                { inline_data: { mime_type: "image/jpeg", data: cleanB64 } }
-                            ]
-                        }]
-                    })
-                });
-
-                if (res.ok) {
-                    const resData = await res.json();
-                    const rawText = resData.candidates?.[0]?.content?.parts?.[0]?.text || '';
-                    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-                    if (jsonMatch) {
-                        const parsed = JSON.parse(jsonMatch[0]);
-                        if (parsed.ocr && parsed.trans) {
-                            return parsed;
-                        }
-                    }
-                    return { ocr: rawText, trans: "Çeviri tamamlandı." };
-                }
-            } catch (e) {
-                console.warn(`Direct Gemini API model ${model} error:`, e);
-            }
-        }
-        return null;
     }
 
     // --- Translation Engine Execution ---
@@ -539,91 +629,83 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`
 
         let finalOcr = '';
         let finalTrans = '';
+        let finalAnalysis = null; // optional richer data for the results panel
 
         if (presetData) {
             finalOcr = presetData.ocr;
             finalTrans = presetData.tr;
+            // Sample entries may carry pre-written demo analysis fields
+            // (summary, people, places, concepts, etc.) — see sampleDatabase.
+            finalAnalysis = presetData.analysis || null;
         } else {
             let success = false;
 
-    try {
-        if (!state.enhancedImageBlob) {
-            throw new Error(
-                'İyileştirilmiş görüntü hazır değil.'
-            );
-        }
-
-        const formData = new FormData();
-
-        formData.append(
-            'image',
-            state.enhancedImageBlob,
-            'enhanced.png'
-        );
-
-        const apiRes = await fetch(
-            'https://ottoman-text-ai.onrender.com/api/translate',
-            {
-                method: 'POST',
-                body: formData
-            }
-        );
-
-        if (!apiRes.ok) {
-            const errorData = await apiRes.json();
-
-            throw new Error(
-                errorData.error ||
-                'OCR / çeviri isteği başarısız oldu.'
-            );
-        }
-
-        const data = await apiRes.json();
-
-        if (data.ocr && data.trans) {
-            finalOcr = data.ocr;
-            finalTrans = data.trans;
-            success = true;
-        }
-    } catch (err) {
-        console.error(
-            'Backend OCR / translation error:',
-            err
-        );
-    }
-
-            // 2. If static hosting (GitHub Pages) or local server unreachable, call Gemini API directly from browser
-           /*
-        if (!success && state.apiKey) {
             try {
-                const directData = await callDirectGeminiApi(
-                    state.imageDataUrl,
-                    state.apiKey
-                );
+                if (!state.enhancedImageBlob) {
+                    throw new Error('İyileştirilmiş görüntü hazır değil.');
+                }
 
-                if (
-                    directData &&
-                    directData.ocr &&
-                    directData.trans
-                ) {
-                    finalOcr = directData.ocr;
-                    finalTrans = directData.trans;
+                const formData = new FormData();
+                formData.append('image', state.enhancedImageBlob, 'enhanced.png');
+
+                const apiRes = await fetchWithTimeout('https://ottoman-text-ai.onrender.com/api/translate', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!apiRes.ok) {
+                    const errorData = await apiRes.json();
+                    // Include the backend's detailed error (e.g. Gemini's raw
+                    // response) so the user can see the real cause directly
+                    // in the alert popup, without needing to open DevTools.
+                    let detailMsg = '';
+                    if (errorData.details) {
+                        const rawDetails = typeof errorData.details === 'string'
+                            ? errorData.details
+                            : JSON.stringify(errorData.details);
+                        detailMsg = '\n\nDetay: ' + rawDetails.slice(0, 400);
+                    }
+                    throw new Error((errorData.error || 'OCR / çeviri isteği başarısız oldu.') + detailMsg);
+                }
+
+                const data = await apiRes.json();
+
+                if (data.ocr && data.trans) {
+                    finalOcr = data.ocr;
+                    finalTrans = data.trans;
+                    // Everything besides ocr/trans is optional analysis data;
+                    // pass the whole payload through and let renderResultsPanel
+                    // render only what's actually present.
+                    finalAnalysis = data;
                     success = true;
                 }
-            } catch (geminiErr) {
-                console.warn(
-                    'Direct Gemini API error:',
-                    geminiErr
-                );
-            }
-        }
-        */
+            } catch (err) {
+                console.error('Backend OCR / translation error:', err);
 
-            // 3. Seamless Fallback: Always render transcription & translation without pop-up errors
+                // Show the real error to the user instead of silently
+                // substituting fake placeholder text. A wrong "success"
+                // result is worse than a visible failure here.
+                state.isProcessing = false;
+                triggerTranslateBtn.disabled = false;
+                actionSpinner.classList.add('hidden');
+                translateBtnLabel.textContent = '✨ Yapay Zeka Çeviriyi Başlat';
+                scanLine.classList.remove('scanning');
+                statusMessage.textContent = 'Hata: ' + err.message;
+                setStepActive(1);
+                alert('Belge işlenemedi: ' + err.message + '\n\nLütfen tekrar deneyin.');
+                return;
+            }
+
             if (!success) {
-                const generated = generateIntelligentFallback();
-                finalOcr = generated.ocr;
-                finalTrans = generated.tr;
+                state.isProcessing = false;
+                triggerTranslateBtn.disabled = false;
+                actionSpinner.classList.add('hidden');
+                translateBtnLabel.textContent = '✨ Yapay Zeka Çeviriyi Başlat';
+                scanLine.classList.remove('scanning');
+                statusMessage.textContent = 'Çeviri başarısız oldu. Lütfen tekrar deneyin.';
+                setStepActive(1);
+                alert('Belge işlenemedi. Sunucudan geçerli bir sonuç alınamadı. Lütfen tekrar deneyin.');
+                return;
             }
         }
 
@@ -641,11 +723,20 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`
         state.ocrText = finalOcr;
         state.transText = finalTrans;
 
+        // Detailed Results Panel — only show it when we actually have
+        // analysis data to display; otherwise leave it hidden rather than
+        // rendering an empty/misleading panel.
+        if (finalAnalysis) {
+            renderResultsPanel(finalAnalysis);
+        } else {
+            hideResultsPanel();
+        }
+
         // Step 4: Completed
         setStepActive(4);
         statusMessage.textContent = 'Çeviri tamamlandı!';
         scanLine.classList.remove('scanning');
-        
+
         state.isProcessing = false;
         triggerTranslateBtn.disabled = false;
         actionSpinner.classList.add('hidden');
@@ -658,60 +749,6 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`
             ocr: finalOcr,
             trans: finalTrans
         });
-    }
-
-    function generateIntelligentFallback() {
-        return {
-            ocr: `بسم الله الرحمن الرحيم
-الحمد لله رب العالمين والصلاة والسلام على أفضل رسله محمد وآله أجمعين.
-وبعد، فيقول ضعيف الناس وأحوجهم إلى الملك الناصر محمود بن قاضي نكده المشهور بنيس أوغلي:
-أول عزّ نگاه حق تبارك وتعالى "كُنْتُ كَنْزاً مَخْفِيّاً فَأَحْبَبْتُ أَنْ أُعْرَفَ فَخَلَقْتُ الْخَلْقَ لِكَيْ يُعْرَفُونَ" بويوردوغى اوزه علم ومعرفت مجموع كمالاتدن شريف قيلنمشدر.
-ولهذا قرآن كريم بويورور: "قُلْ هَلْ يَسْتَوِي الَّذِينَ يَعْلَمُونَ وَالَّذِينَ لاَ يَعْلَمُونَ".
-ودخى كلام قديم: "وَمَا خَلَقْتُ الْجِنَّ وَالْإِنسَ إِلَّا لِيَعْبُدُونِ".
-"ليعبدون" ديمك بعض مفسرون قاطنده "ليعرفون" ديمكدر؛ يعنى حق تعالى‌يى معرفت ايتمكدر.
-بو سببله معرفت الله علمى جمله علومڭ اڭ شريفى واڭ عاليسيدر.`,
-            tr: `Rahmân ve Rahîm olan Allah'ın adıyla.
-Âlemlerin Rabbi olan Allah'a hamdolsun; salât ve selâm elçilerin en hayırlısı olan Hazreti Muhammed'e ve onun bütün âline (ailesine/soyuna) olsun.
-
-Şimdi gelelim asıl konuya; insanların en zayıfı ve Yüce Hükümdar'a en muhtaç olanı, Niğde Kadısı'nın oğlu diye meşhur Niyazioğlu Mahmud der ki:
-
-Yüce ve Mübarek Allah'ın "Ben gizli bir hazine idim; bilinmeyi ve tanınmayı istedim, bu yüzden bilinsinler diye halkı (yaratılanları) yarattım" buyurması gereğince; ilim ve marifet (tanıma/bilme), bütün olgunluk ve erdemlerin en şereflisi kılınmıştır.
-
-Nitekim Kur'ân-ı Kerîm'de şöyle buyurulmaktadır: "De ki: Hiç bilenlerle bilmeyenler bir olur mu?"
-
-Yine Kadîm Kelâm'da (Zâriyât Sûresi 56. âyet): "Ben cinleri ve insanları ancak bana kulluk (ibadet) etsinler diye yarattım" buyurulmuştur.
-
-Bazı tefsir âlimlerine göre "Bana ibadet etsinler" ifadesi "Beni tanısınlar/bilsinler (yani marifet sahibi olsunlar)" anlamına gelmektedir. 
-Böylece Yüce Allah'ı tanımak ve bilmek (marifetullah), ilimlerin en yücesi ve en değerlisidir.`
-        };
-    }
-
-    async function callGeminiVisionApi(base64Data, key) {
-        const cleanBase64 = base64Data.split(',')[1] || base64Data;
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{
-                    parts: [
-                        { text: "Lütfen bu Osmanlıca belgenin TÜM SATIRLARINI VE PARAGRAFLARINI eksiksiz transkribe et ve çevir. DİKKAT: 'ocr' alanına KESİNLİKLE Latin harfi karıştırma; metni %100 Orijinal Arap Harfli Osmanlıca (Osmanlı Türkçesi) olarak yaz. 'trans' alanına ise tam metnin günümüz Türkçesi sadeleştirmesini ver. Yanıt formatı JSON: {\"ocr\": \"sadece arap harfli osmanlıca metin\", \"trans\": \"günümüz türkçesi çeviri\"}" },
-                        { inline_data: { mime_type: "image/jpeg", data: cleanBase64 } }
-                    ]
-                }]
-            })
-        });
-
-        const data = await response.json();
-        const rawText = data.candidates[0].content.parts[0].text;
-        try {
-            const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-            if (jsonMatch) return JSON.parse(jsonMatch[0]);
-        } catch(e) {}
-
-        return {
-            ocr: rawText,
-            trans: "Çeviri tamamlandı."
-        };
     }
 
     // --- Interactive Tools & Actions ---
@@ -837,5 +874,3 @@ ${transTextDisplay.textContent}
         });
     });
 });
-
-

@@ -312,6 +312,84 @@
             </div>
         </section>
 
+        <!-- ===================== DETAILED RESULTS PANEL ===================== -->
+        <!-- Hidden until a translation completes; populated by renderResultsPanel() in app.js -->
+        <section class="results-panel hidden" id="resultsPanel">
+            <div class="results-panel-card">
+
+                <div class="results-header">
+                    <div class="results-header-left">
+                        <h2 class="results-title">📋 Detaylı Belge Analizi</h2>
+                        <span class="results-doc-type" id="resultDocType">—</span>
+                    </div>
+                    <div class="confidence-pill" id="resultConfidencePill" title="Modelin çeviri/analiz sonucuna olan güveni">
+                        <span class="confidence-label">Güven Skoru</span>
+                        <span class="confidence-value" id="resultConfidenceValue">—</span>
+                    </div>
+                </div>
+
+                <!-- Tab / Category Buttons -->
+                <div class="results-tabs" id="resultsTabs" role="tablist">
+                    <button class="results-tab-btn active" data-tab="overview" role="tab">🏠 Genel Bakış</button>
+                    <button class="results-tab-btn" data-tab="content" role="tab">🧩 İçerik Analizi</button>
+                    <button class="results-tab-btn" data-tab="script" role="tab">🖋️ Yazı & Dil</button>
+                    <button class="results-tab-btn" data-tab="dates" role="tab">🗓️ Tarih & Bağlam</button>
+                    <button class="results-tab-btn" data-tab="notes" role="tab">📝 Notlar</button>
+                </div>
+
+                <!-- Tab Panels -->
+                <div class="results-tab-panels">
+
+                    <!-- Genel Bakış -->
+                    <div class="results-tab-panel active" data-panel="overview">
+                        <h3 class="panel-heading">Kısa Özet</h3>
+                        <p class="panel-text" id="resultSummary">—</p>
+
+                        <h3 class="panel-heading">Belge Bilgileri</h3>
+                        <div class="info-grid" id="resultDocInfoGrid"></div>
+                    </div>
+
+                    <!-- İçerik Analizi -->
+                    <div class="results-tab-panel" data-panel="content">
+                        <h3 class="panel-heading">Önemli Bilgiler</h3>
+                        <ul class="panel-list" id="resultKeyPoints"></ul>
+
+                        <div class="entity-columns">
+                            <div class="entity-col">
+                                <h3 class="panel-heading">👤 Kişiler</h3>
+                                <div class="entity-chip-list" id="resultPeople"></div>
+                            </div>
+                            <div class="entity-col">
+                                <h3 class="panel-heading">📍 Yerler</h3>
+                                <div class="entity-chip-list" id="resultPlaces"></div>
+                            </div>
+                            <div class="entity-col">
+                                <h3 class="panel-heading">💡 Kavramlar</h3>
+                                <div class="entity-chip-list" id="resultConcepts"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Yazı & Dil Özellikleri -->
+                    <div class="results-tab-panel" data-panel="script">
+                        <div class="info-grid" id="resultScriptGrid"></div>
+                    </div>
+
+                    <!-- Tarih & Bağlam -->
+                    <div class="results-tab-panel" data-panel="dates">
+                        <div class="info-grid" id="resultDateGrid"></div>
+                    </div>
+
+                    <!-- Notlar -->
+                    <div class="results-tab-panel" data-panel="notes">
+                        <p class="panel-text" id="resultNotes">—</p>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+        <!-- =================== END DETAILED RESULTS PANEL =================== -->
+
         <!-- Process Steps Workflow Section -->
         <section class="workflow-section">
             <div class="workflow-header">
@@ -568,12 +646,13 @@
                     <input type="password" id="apiKeyInput" class="form-input" placeholder="AIzaSy...">
                 </div>
                 <div class="form-group">
-                    <label for="modelSelect">Varsayılan Çeviri Motoru</label>
-                    <select id="modelSelect" class="form-input">
-                        <option value="gemini-flash">Gemini Vision AI (Canlı API / Simülatör)</option>
-                        <option value="mt5-custom">Özel Eğitilmiş mT5-small Model (Local Server)</option>
-                        <option value="auto-demo">Otomatik Demo / Akıllı Simülasyon</option>
+                    <label for="modelSelect">Çeviri Motoru</label>
+                    <select id="modelSelect" class="form-input" disabled>
+                        <option value="gemini-flash">Gemini Vision AI</option>
                     </select>
+                    <p class="modal-hint" style="margin-top:0.4rem; margin-bottom:0;">
+                        Şu an tek motor aktif. Ek motor seçenekleri (örn. özel eğitilmiş model) yakında eklenecek.
+                    </p>
                 </div>
             </div>
             <div class="modal-footer">
