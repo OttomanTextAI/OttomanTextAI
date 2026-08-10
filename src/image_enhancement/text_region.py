@@ -366,9 +366,7 @@ def detect_text_regions(
         ),
     )
 
-    lines: list[
-        list[tuple[int, int, int, int]]
-    ] = []
+    lines = []
 
     for component in components:
         x, y, cw, ch = component
@@ -380,15 +378,10 @@ def detect_text_regions(
         best_line = None
         best_distance = None
 
-        for line in lines:
-            line_centers = [
-                ly + lh / 2
-                for _, ly, _, lh in line
-            ]
-
+        for line_info in lines:
             line_center_y = (
-                sum(line_centers)
-                / len(line_centers)
+                line_info["center_sum"]
+                / line_info["count"]
             )
 
             distance = abs(
@@ -401,17 +394,34 @@ def detect_text_regions(
                     best_distance is None
                     or distance < best_distance
                 ):
-                    best_line = line
+                    best_line = line_info
                     best_distance = distance
 
         if best_line is None:
             lines.append(
-                [component]
+                {
+                    "components": [
+                        component
+                    ],
+                    "center_sum": component_center_y,
+                    "count": 1,
+                }
             )
+
         else:
-            best_line.append(
+            best_line[
+                "components"
+            ].append(
                 component
             )
+
+            best_line[
+                "center_sum"
+            ] += component_center_y
+
+            best_line[
+                "count"
+            ] += 1
 
     regions = []
 
@@ -425,7 +435,11 @@ def detect_text_regions(
 
     # Her satırdaki bileşenleri yatay yakınlığa göre
     # küçük text cluster'larına ayır.
-    for line in lines:
+    for line_info in lines:
+        line = line_info[
+            "components"
+        ]
+
         line.sort(
             key=lambda item: item[0]
         )

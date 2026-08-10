@@ -3,6 +3,8 @@
 import cv2
 import numpy as np
 
+import time
+
 from src.image_enhancement.utils import (
     is_grayscale,
     validate_image,
@@ -112,44 +114,26 @@ def calculate_region_features(
 
 
 def calculate_horizontal_ink_coverage(
-    image: np.ndarray,
-    region: tuple[int, int, int, int],
+    analysis: dict,
 ) -> float:
     """
-    Measure how continuously dark foreground content is distributed
+    Measure how continuously foreground content is distributed
     across the horizontal extent of a candidate region.
-
-    Real text lines usually contain foreground pixels across a
-    substantial portion of their width, while stains and isolated
-    artifacts often occupy only a few columns.
     """
-    grayscale = _to_grayscale(image)
 
-    x, y, width, height = region
+    binary = analysis["binary"]
 
-    crop = grayscale[
-        y:y + height,
-        x:x + width,
-    ]
-
-    if crop.size == 0:
+    if binary is None or binary.size == 0:
         return 0.0
 
-    _, binary = cv2.threshold(
-        crop,
-        0,
-        255,
-        cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU,
-    )
-
-    # Her sütunda kaç foreground pixel var?
     column_density = (
         np.count_nonzero(binary, axis=0)
         / max(1, binary.shape[0])
     )
 
-    # Tek bir noise pixelini "text var" diye kabul etmiyoruz.
-    active_columns = column_density >= 0.08
+    active_columns = (
+        column_density >= 0.08
+    )
 
     coverage = float(
         np.count_nonzero(active_columns)
@@ -163,8 +147,6 @@ def calculate_horizontal_ink_coverage(
             1.0,
         )
     )
-
-
 def calculate_foreground_score(
     features: dict[str, float],
 ) -> float:
@@ -221,6 +203,7 @@ def calculate_foreground_score(
     )
 
 
+
 def classify_text_regions(
     image: np.ndarray,
     regions: list[tuple[int, int, int, int]],
@@ -234,42 +217,96 @@ def classify_text_regions(
     """
     results = []
 
+    grayscale = _to_grayscale(image)
+
+    analysis_total = 0.0
+    features_total = 0.0
+    structure_total = 0.0
+    alignment_total = 0.0
+    repetition_total = 0.0
+    coverage_total = 0.0
+
     for region in regions:
-        features = calculate_region_features(
-            image,
+
+        t = time.perf_counter()
+
+        analysis = analyze_region_components(
+            grayscale,
             region,
         )
+
+        analysis_total += (
+            time.perf_counter() - t
+        )
+
+
+        t = time.perf_counter()
+
+        features = calculate_region_features(
+            grayscale,
+            region,
+        )
+
+        features_total += (
+            time.perf_counter() - t
+        )
+
 
         score = calculate_foreground_score(
             features
         )
 
+
+        t = time.perf_counter()
+
         structure_score = calculate_text_structure_score(
-            image,
-            region,
+            analysis,
         )
+
+        structure_total += (
+            time.perf_counter() - t
+        )
+
+
+        t = time.perf_counter()
 
         line_alignment_score = calculate_line_alignment_score(
-            image,
-            region,
+            analysis,
         )
+
+        alignment_total += (
+            time.perf_counter() - t
+        )
+
+
+        t = time.perf_counter()
 
         repetition_score = calculate_repetition_score(
-            image,
-            region,
+            analysis,
         )
 
-        horizontal_ink_coverage = calculate_horizontal_ink_coverage(
-            image,
-            region,
+        repetition_total += (
+            time.perf_counter() - t
         )
+
+
+        t = time.perf_counter()
+
+        horizontal_ink_coverage = calculate_horizontal_ink_coverage(
+            analysis,
+        )
+
+        coverage_total += (
+            time.perf_counter() - t
+        )
+
         combined_score = (
             0.45 * score
             + 0.25 * structure_score
             + 0.20 * line_alignment_score
             + 0.10 * (1.0 - repetition_score)
         )
-        
+
         results.append(
             {
                 "region": region,
@@ -283,6 +320,35 @@ def classify_text_regions(
             }
         )
 
+    print(
+        f"[CLASSIFY] analysis: {analysis_total:.3f}s",
+        flush=True,
+    )
+
+    print(
+        f"[CLASSIFY] features: {features_total:.3f}s",
+        flush=True,
+    )
+
+    print(
+        f"[CLASSIFY] structure: {structure_total:.3f}s",
+        flush=True,
+    )
+
+    print(
+        f"[CLASSIFY] alignment: {alignment_total:.3f}s",
+        flush=True,
+    )
+
+    print(
+        f"[CLASSIFY] repetition: {repetition_total:.3f}s",
+        flush=True,
+    )
+
+    print(
+        f"[CLASSIFY] coverage: {coverage_total:.3f}s",
+        flush=True,
+    )
     if not results:
         return []
 
@@ -361,49 +427,22 @@ def classify_text_regions(
     return results
 
 def calculate_text_structure_score(
-    image: np.ndarray,
-    region: tuple[int, int, int, int],
+    analysis: dict,
 ) -> float:
-    """
-    Estimate how strongly a region resembles a text structure.
 
-    The score uses connected-component count, component-size consistency,
-    and horizontal distribution.
-
-    Args:
-        image: Input document image.
-        region: Region as (x, y, width, height).
-
-    Returns:
-        Text-structure score between 0 and 1.
-    """
-    grayscale = _to_grayscale(
-        image
-    )
-
-    x, y, width, height = region
-
-    crop = grayscale[
-        y:y + height,
-        x:x + width,
+    crop = analysis["crop"]
+    component_count = analysis[
+        "component_count"
+    ]
+    statistics = analysis[
+        "statistics"
     ]
 
-    if crop.size == 0:
+    if (
+        crop.size == 0
+        or statistics is None
+    ):
         return 0.0
-
-    _, binary = cv2.threshold(
-        crop,
-        0,
-        255,
-        cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU,
-    )
-
-    component_count, _, statistics, _ = (
-        cv2.connectedComponentsWithStats(
-            binary,
-            connectivity=8,
-        )
-    )
 
     component_widths = []
     component_heights = []
@@ -428,11 +467,6 @@ def calculate_text_structure_score(
             cv2.CC_STAT_LEFT,
         ]
 
-        top = statistics[
-            label_index,
-            cv2.CC_STAT_TOP,
-        ]
-
         component_width = statistics[
             label_index,
             cv2.CC_STAT_WIDTH,
@@ -443,14 +477,9 @@ def calculate_text_structure_score(
             cv2.CC_STAT_HEIGHT,
         ]
 
- 
-
-        # Çok küçük tek-piksel gürültüyü hesaba katma.
         if area < 2:
             continue
 
-        # Bölgenin büyük kısmını kaplayan yapı muhtemelen
-        # çizgi, çerçeve veya leke.
         if area > crop_area * 0.35:
             continue
 
@@ -473,7 +502,6 @@ def calculate_text_structure_score(
     if valid_component_count < 2:
         return 0.0
 
-    # 1. Component sayısı
     component_count_score = float(
         np.clip(
             valid_component_count / 12.0,
@@ -499,8 +527,6 @@ def calculate_text_structure_score(
     else:
         height_variation = 1.0
 
-    # Gerçek yazıda karakter yükseklikleri tamamen aynı
-    # değildir ama aşırı düzensiz de olmaz.
     height_consistency_score = float(
         np.clip(
             1.0 - height_variation,
@@ -522,7 +548,10 @@ def calculate_text_structure_score(
     horizontal_coverage_score = float(
         np.clip(
             horizontal_span
-            / max(1.0, crop.shape[1] * 0.7),
+            / max(
+                1.0,
+                crop.shape[1] * 0.7,
+            ),
             0.0,
             1.0,
         )
@@ -541,62 +570,30 @@ def calculate_text_structure_score(
             1.0,
         )
     )
-
 def calculate_line_alignment_score(
-    image: np.ndarray,
-    region: tuple[int, int, int, int],
+    analysis: dict,
 ) -> float:
-    """
-    Estimate whether connected components form a natural text line.
 
-    The score considers:
-    - baseline consistency,
-    - vertical alignment,
-    - horizontal spread,
-    - component-size diversity.
-
-    Repetitive decorative shapes may be well aligned, but usually have
-    unusually uniform component dimensions. The diversity term reduces
-    their score.
-
-    Args:
-        image: Input document image.
-        region: Region as (x, y, width, height).
-
-    Returns:
-        Text-line alignment score between 0 and 1.
-    """
-    grayscale = _to_grayscale(
-        image
-    )
-
-    x, y, width, height = region
-
-    crop = grayscale[
-        y:y + height,
-        x:x + width,
+    crop = analysis["crop"]
+    component_count = analysis[
+        "component_count"
+    ]
+    statistics = analysis[
+        "statistics"
     ]
 
-    if crop.size == 0:
+    if (
+        crop.size == 0
+        or statistics is None
+    ):
         return 0.0
-
-    _, binary = cv2.threshold(
-        crop,
-        0,
-        255,
-        cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU,
-    )
-
-    component_count, _, statistics, _ = (
-        cv2.connectedComponentsWithStats(
-            binary,
-            connectivity=8,
-        )
-    )
 
     components = []
 
-    crop_area = crop.shape[0] * crop.shape[1]
+    crop_area = (
+        crop.shape[0]
+        * crop.shape[1]
+    )
 
     for label_index in range(
         1,
@@ -630,7 +627,6 @@ def calculate_line_alignment_score(
         if area < 2:
             continue
 
-        # Çok büyük çizgi/leke benzeri component'ları dışarıda bırak.
         if area > crop_area * 0.30:
             continue
 
@@ -640,8 +636,13 @@ def calculate_line_alignment_score(
                 "top": top,
                 "width": component_width,
                 "height": component_height,
-                "bottom": top + component_height,
-                "center_x": left + component_width / 2,
+                "bottom": (
+                    top + component_height
+                ),
+                "center_x": (
+                    left
+                    + component_width / 2
+                ),
                 "area": area,
             }
         )
@@ -681,10 +682,6 @@ def calculate_line_alignment_score(
         dtype=np.float32,
     )
 
-    # -------------------------------------------------
-    # 1. Baseline consistency
-    # -------------------------------------------------
-
     median_bottom = float(
         np.median(bottoms)
     )
@@ -718,10 +715,6 @@ def calculate_line_alignment_score(
         )
     )
 
-    # -------------------------------------------------
-    # 2. Horizontal coverage
-    # -------------------------------------------------
-
     horizontal_span = float(
         centers_x.max()
         - centers_x.min()
@@ -739,21 +732,18 @@ def calculate_line_alignment_score(
         )
     )
 
-    # -------------------------------------------------
-    # 3. Component size diversity
-    #
-    # Gerçek yazıda component boyutları belli ölçüde farklıdır.
-    # Tekrarlanan süslerde ise component'lar aşırı benzer olabilir.
-    # -------------------------------------------------
-
     mean_width = max(
         1.0,
-        float(np.mean(widths)),
+        float(
+            np.mean(widths)
+        ),
     )
 
     mean_height = max(
         1.0,
-        float(np.mean(heights)),
+        float(
+            np.mean(heights)
+        ),
     )
 
     width_variation = float(
@@ -778,10 +768,6 @@ def calculate_line_alignment_score(
             1.0,
         )
     )
-
-    # -------------------------------------------------
-    # 4. Çok düzenli tekrar cezası
-    # -------------------------------------------------
 
     if (
         width_variation < 0.12
@@ -809,66 +795,52 @@ def calculate_line_alignment_score(
     )
 
 def calculate_repetition_score(
-    image: np.ndarray,
-    region: tuple[int, int, int, int],
+    analysis: dict,
 ) -> float:
-    """
-    Estimate how strongly a region contains repetitive decorative patterns.
 
-    The score is based on:
-    - component size similarity,
-    - spacing regularity,
-    - repeated horizontal arrangement.
-
-    Higher values indicate stronger repetition and therefore a lower
-    probability of natural text.
-
-    Args:
-        image: Input document image.
-        region: Region as (x, y, width, height).
-
-    Returns:
-        Repetition score between 0 and 1.
-    """
-    grayscale = _to_grayscale(
-        image
-    )
-
-    x, y, width, height = region
-
-    crop = grayscale[
-        y:y + height,
-        x:x + width,
+    crop = analysis["crop"]
+    component_count = analysis[
+        "component_count"
+    ]
+    statistics = analysis[
+        "statistics"
     ]
 
-    if crop.size == 0:
+    if (
+        crop.size == 0
+        or statistics is None
+    ):
         return 0.0
 
-    _, binary = cv2.threshold(
-        crop,
-        0,
-        255,
-        cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU,
-    )
-
-    component_count, _, statistics, _ = (
-        cv2.connectedComponentsWithStats(
-            binary,
-            connectivity=8,
-        )
-    )
-
-    components = []
+    if component_count <= 4:
+        return 0.0
 
     crop_area = (
         crop.shape[0]
         * crop.shape[1]
     )
 
+    widths = []
+    heights = []
+    areas = []
+    centers_x = []
+    centers_y = []
+
     for label_index in range(
         1,
         component_count,
     ):
+        area = statistics[
+            label_index,
+            cv2.CC_STAT_AREA,
+        ]
+
+        if area < 2:
+            continue
+
+        if area > crop_area * 0.30:
+            continue
+
         left = statistics[
             label_index,
             cv2.CC_STAT_LEFT,
@@ -889,120 +861,149 @@ def calculate_repetition_score(
             cv2.CC_STAT_HEIGHT,
         ]
 
-        area = statistics[
-            label_index,
-            cv2.CC_STAT_AREA,
-        ]
+        widths.append(
+            component_width
+        )
 
-        if area < 2:
-            continue
+        heights.append(
+            component_height
+        )
 
-        if area > crop_area * 0.30:
-            continue
+        areas.append(
+            area
+        )
 
-        center_x = (
+        centers_x.append(
             left
             + component_width / 2
         )
 
-        center_y = (
+        centers_y.append(
             top
             + component_height / 2
         )
 
-        components.append(
-            {
-                "width": component_width,
-                "height": component_height,
-                "area": area,
-                "center_x": center_x,
-                "center_y": center_y,
-            }
-        )
-
-    if len(components) < 4:
+    if len(widths) < 4:
         return 0.0
 
-    # Component'ları yatay konuma göre sırala
-    components.sort(
-        key=lambda item: item["center_x"]
+    widths = np.asarray(
+        widths,
+        dtype=np.float32,
+    )
+
+    heights = np.asarray(
+        heights,
+        dtype=np.float32,
+    )
+
+    areas = np.asarray(
+        areas,
+        dtype=np.float32,
+    )
+
+    centers_x = np.asarray(
+        centers_x,
+        dtype=np.float32,
+    )
+
+    centers_y = np.asarray(
+        centers_y,
+        dtype=np.float32,
+    )
+
+    # -------------------------------------------------
+    # Pairwise similarity matrices
+    # -------------------------------------------------
+
+    width_min = np.minimum(
+        widths[:, None],
+        widths[None, :],
+    )
+
+    width_max = np.maximum(
+        widths[:, None],
+        widths[None, :],
+    )
+
+    width_ratio = (
+        width_min
+        / np.maximum(
+            width_max,
+            1.0,
+        )
+    )
+
+    height_min = np.minimum(
+        heights[:, None],
+        heights[None, :],
+    )
+
+    height_max = np.maximum(
+        heights[:, None],
+        heights[None, :],
+    )
+
+    height_ratio = (
+        height_min
+        / np.maximum(
+            height_max,
+            1.0,
+        )
+    )
+
+    area_min = np.minimum(
+        areas[:, None],
+        areas[None, :],
+    )
+
+    area_max = np.maximum(
+        areas[:, None],
+        areas[None, :],
+    )
+
+    area_ratio = (
+        area_min
+        / np.maximum(
+            area_max,
+            1.0,
+        )
+    )
+
+    vertical_distance = np.abs(
+        centers_y[:, None]
+        - centers_y[None, :]
+    )
+
+    similar_matrix = (
+        (width_ratio >= 0.65)
+        & (height_ratio >= 0.65)
+        & (area_ratio >= 0.50)
+        & (vertical_distance <= 12)
     )
 
     best_score = 0.0
 
-    for base in components:
-        similar_components = []
-
-        for candidate in components:
-            width_ratio = (
-                min(
-                    base["width"],
-                    candidate["width"],
-                )
-                / max(
-                    base["width"],
-                    candidate["width"],
-                )
-            )
-
-            height_ratio = (
-                min(
-                    base["height"],
-                    candidate["height"],
-                )
-                / max(
-                    base["height"],
-                    candidate["height"],
-                )
-            )
-
-            area_ratio = (
-                min(
-                    base["area"],
-                    candidate["area"],
-                )
-                / max(
-                    base["area"],
-                    candidate["area"],
-                )
-            )
-
-            vertical_distance = abs(
-                base["center_y"]
-                - candidate["center_y"]
-            )
-
-            if (
-                width_ratio >= 0.65
-                and height_ratio >= 0.65
-                and area_ratio >= 0.50
-                and vertical_distance <= 12
-            ):
-                similar_components.append(
-                    candidate
-                )
-
-        if len(similar_components) < 3:
-            continue
-
-        similar_components.sort(
-            key=lambda item: item["center_x"]
+    for base_index in range(
+        len(widths)
+    ):
+        similar_indices = np.flatnonzero(
+            similar_matrix[
+                base_index
+            ]
         )
 
-        centers_x = np.array(
-            [
-                item["center_x"]
-                for item in similar_components
-            ],
-            dtype=np.float32,
+        if len(similar_indices) < 3:
+            continue
+
+        similar_centers_x = np.sort(
+            centers_x[
+                similar_indices
+            ]
         )
 
         gaps = np.diff(
-            centers_x
+            similar_centers_x
         )
-
-        if len(gaps) < 2:
-            continue
 
         positive_gaps = gaps[
             gaps > 0
@@ -1038,7 +1039,7 @@ def calculate_repetition_score(
 
         count_score = float(
             np.clip(
-                len(similar_components) / 5.0,
+                len(similar_indices) / 5.0,
                 0.0,
                 1.0,
             )
@@ -1046,13 +1047,14 @@ def calculate_repetition_score(
 
         candidate_score = (
             0.55 * count_score
-            + 0.45 * spacing_regularity_score
+            + 0.45
+            * spacing_regularity_score
         )
 
-        best_score = max(
-            best_score,
-            candidate_score,
-        )
+        if candidate_score > best_score:
+            best_score = (
+                candidate_score
+            )
 
     return float(
         np.clip(
@@ -1061,3 +1063,42 @@ def calculate_repetition_score(
             1.0,
         )
     )
+def analyze_region_components(
+    grayscale: np.ndarray,
+    region: tuple[int, int, int, int],
+) -> dict:
+    x, y, width, height = region
+
+    crop = grayscale[
+        y:y + height,
+        x:x + width,
+    ]
+
+    if crop.size == 0:
+        return {
+            "crop": crop,
+            "binary": None,
+            "statistics": None,
+            "component_count": 0,
+        }
+
+    _, binary = cv2.threshold(
+        crop,
+        0,
+        255,
+        cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU,
+    )
+
+    component_count, _, statistics, _ = (
+        cv2.connectedComponentsWithStats(
+            binary,
+            connectivity=8,
+        )
+    )
+
+    return {
+        "crop": crop,
+        "binary": binary,
+        "statistics": statistics,
+        "component_count": component_count,
+    }

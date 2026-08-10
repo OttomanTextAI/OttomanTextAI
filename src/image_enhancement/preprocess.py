@@ -302,6 +302,11 @@ def preprocess_image(
         )
 
         print(
+            "[DEBUG] candidate_regions:",
+            len(candidate_regions),
+            flush=True,
+        )
+        print(
             f"[TIMING] detect_text_regions: "
             f"{time.perf_counter() - t:.3f}s",
             flush=True,
