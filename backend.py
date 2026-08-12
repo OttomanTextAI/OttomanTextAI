@@ -320,41 +320,33 @@ def translate_endpoint():
 
 
 
-        response = None
+    response = None
 
-        for attempt in range(3):
-            response = requests.post(
-                url,
-                json=payload,
-                headers=headers,
-                timeout=120,
+    for attempt in range(2):
+        response = requests.post(
+            url,
+            json=payload,
+            headers=headers,
+            timeout=45,
+        )
+
+        if response.status_code not in {
+            429,
+            500,
+            502,
+            503,
+            504,
+        }:
+            break
+
+        if attempt == 0:
+            print(
+                f"[translate] Gemini temporary error "
+                f"{response.status_code}. Retrying once...",
+                flush=True,
             )
 
-            if response.status_code not in {
-                429,
-                500,
-                502,
-                503,
-                504,
-            }:
-                break
-
-            if attempt < 2:
-                wait_seconds = (
-                    (2 ** attempt)
-                    + random.uniform(0, 1)
-                )
-
-                print(
-                    f"[translate] Gemini temporary error "
-                    f"{response.status_code}. "
-                    f"Retrying in {wait_seconds:.1f}s...",
-                    flush=True,
-                )
-
-                time.sleep(
-                    wait_seconds
-                )
+            time.sleep(2)
 
         if not response.ok:
             return jsonify(
