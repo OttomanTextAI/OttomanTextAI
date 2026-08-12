@@ -3,6 +3,9 @@ import json
 import os
 from io import BytesIO
 
+import time
+import random
+
 import requests
 from flask import Flask, jsonify, request, send_file
 from flask_cors import CORS
@@ -315,12 +318,43 @@ def translate_endpoint():
             }
         }
 
-        response = requests.post(
-            url,
-            json=payload,
-            headers=headers,
-            timeout=120,
-        )
+
+
+        response = None
+
+        for attempt in range(3):
+            response = requests.post(
+                url,
+                json=payload,
+                headers=headers,
+                timeout=120,
+            )
+
+            if response.status_code not in {
+                429,
+                500,
+                502,
+                503,
+                504,
+            }:
+                break
+
+            if attempt < 2:
+                wait_seconds = (
+                    (2 ** attempt)
+                    + random.uniform(0, 1)
+                )
+
+                print(
+                    f"[translate] Gemini temporary error "
+                    f"{response.status_code}. "
+                    f"Retrying in {wait_seconds:.1f}s...",
+                    flush=True,
+                )
+
+                time.sleep(
+                    wait_seconds
+                )
 
         if not response.ok:
             return jsonify(
@@ -358,7 +392,7 @@ def translate_endpoint():
             cleaned_text[:2000],
             flush=True,
         )
-        
+
         parsed = json.loads(
             cleaned_text
         )
