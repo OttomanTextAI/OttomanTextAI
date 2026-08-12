@@ -240,7 +240,79 @@ def translate_endpoint():
                         },
                     ]
                 }
-            ]
+            ],
+            "generationConfig": {
+                "responseMimeType": "application/json",
+                "responseSchema": {
+                    "type": "object",
+                    "properties": {
+                        "ocr": {
+                            "type": "string"
+                        },
+                        "trans": {
+                            "type": "string"
+                        },
+                        "document_type": {
+                            "type": "string"
+                        },
+                        "confidence": {
+                            "type": "integer"
+                        },
+                        "style": {
+                            "type": "string"
+                        },
+                        "summary": {
+                            "type": "string"
+                        },
+                        "key_points": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "people": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "places": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "concepts": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        },
+                        "script_type": {
+                            "type": "string"
+                        },
+                        "script_purpose": {
+                            "type": "string"
+                        },
+                        "period_estimate": {
+                            "type": "string"
+                        },
+                        "date_hijri": {
+                            "type": "string"
+                        },
+                        "date_gregorian": {
+                            "type": "string"
+                        },
+                        "notes": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "ocr",
+                        "trans"
+                    ]
+                }
+            }
         }
 
         response = requests.post(
@@ -281,6 +353,12 @@ def translate_endpoint():
                 ""
             ).strip()
 
+        print(
+            "[translate] RAW GEMINI RESPONSE:",
+            cleaned_text[:2000],
+            flush=True,
+        )
+        
         parsed = json.loads(
             cleaned_text
         )
