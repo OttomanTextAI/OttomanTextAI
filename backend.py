@@ -320,40 +320,45 @@ def translate_endpoint():
 
 
 
-    response = None
+        response = None
 
-    for attempt in range(2):
-        response = requests.post(
-            url,
-            json=payload,
-            headers=headers,
-            timeout=45,
-        )
-
-        if response.status_code not in {
-            429,
-            500,
-            502,
-            503,
-            504,
-        }:
-            break
-
-        if attempt == 0:
-            print(
-                f"[translate] Gemini temporary error "
-                f"{response.status_code}. Retrying once...",
-                flush=True,
+        for attempt in range(2):
+            response = requests.post(
+                url,
+                json=payload,
+                headers=headers,
+                timeout=45,
             )
 
-            time.sleep(2)
+            if response.status_code not in {
+                429,
+                500,
+                502,
+                503,
+                504,
+            }:
+                break
+
+            if attempt == 0:
+                print(
+                    f"[translate] Gemini temporary error "
+                    f"{response.status_code}. Retrying once...",
+                    flush=True,
+                )
+                time.sleep(2)
+
+        # Retry bittikten SONRA cevabı kontrol ediyoruz.
+        if response is None:
+            return jsonify(
+                {
+                    "error": "Gemini API yanıtı alınamadı."
+                }
+            ), 502
 
         if not response.ok:
             return jsonify(
                 {
-                    "error": (
-                        "Gemini API request failed."
-                    ),
+                    "error": "Gemini API request failed.",
                     "details": response.text,
                 }
             ), response.status_code
@@ -371,13 +376,12 @@ def translate_endpoint():
         cleaned_text = raw_text.strip()
 
         if cleaned_text.startswith("```"):
-            cleaned_text = cleaned_text.replace(
-                "```json",
-                ""
-            ).replace(
-                "```",
-                ""
-            ).strip()
+            cleaned_text = (
+                cleaned_text
+                .replace("```json", "")
+                .replace("```", "")
+                .strip()
+            )
 
         print(
             "[translate] RAW GEMINI RESPONSE:",
@@ -385,9 +389,7 @@ def translate_endpoint():
             flush=True,
         )
 
-        parsed = json.loads(
-            cleaned_text
-        )
+        parsed = json.loads(cleaned_text)
 
         if not parsed.get("ocr") or not parsed.get("trans"):
             return jsonify(
@@ -398,9 +400,6 @@ def translate_endpoint():
                 }
             ), 502
 
-        # Build the response defensively: required fields always present,
-        # optional analysis fields only included when the model actually
-        # returned something usable for them (no invented placeholders).
         result = {
             "ocr": parsed.get("ocr", ""),
             "trans": parsed.get("trans", ""),
@@ -417,25 +416,40 @@ def translate_endpoint():
             "date_gregorian",
             "notes",
         ]
+
         for field in optional_string_fields:
             value = parsed.get(field)
+
             if isinstance(value, str) and value.strip():
                 result[field] = value.strip()
 
-        optional_list_fields = ["key_points", "people", "places", "concepts"]
+        optional_list_fields = [
+            "key_points",
+            "people",
+            "places",
+            "concepts",
+        ]
+
         for field in optional_list_fields:
             value = parsed.get(field)
+
             if isinstance(value, list):
                 cleaned_list = [
-                    item.strip() for item in value
+                    item.strip()
+                    for item in value
                     if isinstance(item, str) and item.strip()
                 ]
+
                 if cleaned_list:
                     result[field] = cleaned_list
 
         confidence = parsed.get("confidence")
+
         if isinstance(confidence, (int, float)):
-            result["confidence"] = max(0, min(100, round(confidence)))
+            result["confidence"] = max(
+                0,
+                min(100, round(confidence)),
+            )
 
         return jsonify(result)
 
@@ -448,13 +462,22 @@ def translate_endpoint():
             }
         ), 502
 
+    except requests.exceptions.Timeout:
+        return jsonify(
+            {
+                "error": (
+                    "Gemini yanıt vermedi (zaman aşımı). "
+                    "Lütfen birkaç saniye sonra tekrar deneyin."
+                )
+            }
+        ), 504
+
     except Exception as error:
         return jsonify(
             {
                 "error": str(error)
             }
         ), 500
-
 
 @app.route("/api/health", methods=["GET"])
 def health():

@@ -363,7 +363,7 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`,
             uploadIdleState.classList.add('hidden');
             uploadActiveState.classList.remove('hidden');
 
-            triggerTranslateBtn.disabled = false;
+            triggerTranslateBtn.disabled = true;
 
             enhancedEmptyState.classList.remove('hidden');
             enhancedImageWrapper.classList.add('hidden');
@@ -388,6 +388,7 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`,
                 enhancedImageWrapper.classList.remove('hidden');
 
                 statusMessage.textContent = 'Görüntü iyileştirme tamamlandı.';
+                triggerTranslateBtn.disabled = false;
             } catch (error) {
                 console.error('Enhancement error:', error);
                 statusMessage.textContent = 'Hata: ' + error.message;
@@ -647,6 +648,13 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`,
 
                 const formData = new FormData();
                 formData.append('image', state.enhancedImageBlob, 'enhanced.png');
+                console.log('=== TRANSLATION INPUT DEBUG ===');
+                console.log('Original file:', state.selectedFile?.name);
+                console.log('Original size:', state.selectedFile?.size);
+                console.log('Enhanced blob type:', state.enhancedImageBlob?.type);
+                console.log('Enhanced blob size:', state.enhancedImageBlob?.size);
+                console.log('Sending enhanced.png to /api/translate');
+                console.log('===============================');
 
                 const apiRes = await fetchWithTimeout('https://ottoman-text-ai.onrender.com/api/translate', {
                     method: 'POST',
