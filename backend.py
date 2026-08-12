@@ -218,8 +218,12 @@ def translate_endpoint():
         url = (
             "https://generativelanguage.googleapis.com/"
             f"v1beta/models/{model}:generateContent"
-            f"?key={api_key}"
         )
+
+        headers = {
+            "x-goog-api-key": api_key,
+            "Content-Type": "application/json",
+        }
 
         payload = {
             "contents": [
@@ -242,6 +246,7 @@ def translate_endpoint():
         response = requests.post(
             url,
             json=payload,
+            headers=headers,
             timeout=120,
         )
 
