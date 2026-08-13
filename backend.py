@@ -97,21 +97,57 @@ def enhance_endpoint():
 # an empty value, the results panel simply skips that piece rather than
 # showing a placeholder.
 ANALYSIS_PROMPT = (
-    "Lütfen bu Osmanlıca belgenin tüm satırlarını ve paragraflarını "
-    "eksiksiz transkribe et, çevir ve kısa bir içerik analizi çıkar. "
-    "ocr alanına yalnızca Arap harfli Osmanlıca metni yaz, Latin harfi "
-    "karıştırma. trans alanına metnin günümüz Türkçesi karşılığını yaz. "
-    "Diğer analiz alanlarını YALNIZCA metinden gerçekten çıkarabildiğin "
-    "kadarıyla doldur; emin olmadığın bir alanı boş string (\"\") olarak "
-    "bırak, ASLA uydurma bilgi verme. confidence alanına transkripsiyon ve "
-    "çeviriye olan güvenini 0-100 arasında bir tam sayı olarak yaz. "
-    "Yanıt YALNIZCA şu alanları içeren geçerli bir JSON olsun: "
-    '{"ocr":"...", "trans":"...", "document_type":"...", '
-    '"confidence": 0, "style":"...", "summary":"...", '
-    '"key_points":["...","..."], "people":["..."], "places":["..."], '
-    '"concepts":["..."], "script_type":"...", "script_purpose":"...", '
-    '"period_estimate":"...", "date_hijri":"...", "date_gregorian":"...", '
-    '"notes":"..."}'
+    "Bu görüntü bir Osmanlıca belgedir. "
+    "Belgeyi dikkatlice oku ve yalnızca belgenin içeriğini analiz et. "
+
+    "ocr: Görüntüde gerçekten okuyabildiğin Osmanlıca metni "
+    "Arap harfleriyle yaz. Latin harfi kullanma. "
+
+    "trans: OCR metninin günümüz Türkçesi karşılığını yaz. "
+
+    "document_type: Belgenin türünü kısa yaz. "
+    "Örnek: Ferman, Mektup, Gazete, Şiir / Manzume, Resmî Yazı. "
+
+    "confidence: Okuma ve çeviri güvenini 0-100 arasında tam sayı olarak yaz. "
+
+    "style: Belgenin dil ve üslubunu kısa belirt. "
+
+    "summary: Yalnızca BELGENİN İÇERİĞİNİ 2-4 cümleyle özetle. "
+    "JSON, schema, prompt, format, model, output, validation veya "
+    "kendi çalışma sürecin hakkında ASLA açıklama yazma. "
+
+    "key_points: Belgeden çıkarılabilen en önemli 2-5 bilgiyi yaz. "
+
+    "people: Belgede açıkça geçen kişi isimlerini yaz. "
+    "Yoksa boş liste döndür. "
+
+    "places: Belgede açıkça geçen yer isimlerini yaz. "
+    "Yoksa boş liste döndür. "
+
+    "concepts: Belgede geçen önemli tarihî, idarî, dinî veya "
+    "kültürel kavramları yaz. Yoksa boş liste döndür. "
+
+    "script_type: Görüntüden güvenle anlaşılabiliyorsa yazı türünü belirt. "
+    "Örnek: Nesih, Rik'a, Divanî, Ta'lik, Siyakat. "
+    "Emin değilsen boş string döndür. "
+
+    "script_purpose: Yazının/belgenin kullanım amacını kısa belirt. "
+    "Emin değilsen boş string döndür. "
+
+    "period_estimate: Metin veya görselden güvenle çıkarılabiliyorsa "
+    "tahmini dönemi yaz. Emin değilsen boş string döndür. "
+
+    "date_hijri: Belgede açıkça bulunan Hicrî tarihi yaz. "
+    "Yoksa boş string döndür. "
+
+    "date_gregorian: Belgede açıkça bulunan veya güvenle dönüştürülebilen "
+    "Miladî tarihi yaz. Yoksa boş string döndür. "
+
+    "notes: Okunamayan, belirsiz veya dikkat edilmesi gereken bir kısım "
+    "varsa kısa not yaz. Yoksa boş string döndür. "
+
+    "UYARI: Belgenin içeriğinde bulunmayan isim, tarih, kişi, yer veya olay "
+    "uydurma. JSON formatı hakkında açıklama üretme."
 )
 
 
@@ -244,7 +280,8 @@ def translate_endpoint():
                     ]
                 }
             ],
-            "generationConfig": {
+           "generationConfig": {
+                "temperature": 0.2,
                 "responseMimeType": "application/json",
                 "responseSchema": {
                     "type": "object",
@@ -310,10 +347,24 @@ def translate_endpoint():
                             "type": "string"
                         }
                     },
-                    "required": [
-                        "ocr",
-                        "trans"
-                    ]
+                   "required": [
+                            "ocr",
+                            "trans",
+                            "document_type",
+                            "confidence",
+                            "style",
+                            "summary",
+                            "key_points",
+                            "people",
+                            "places",
+                            "concepts",
+                            "script_type",
+                            "script_purpose",
+                            "period_estimate",
+                            "date_hijri",
+                            "date_gregorian",
+                            "notes"
+                        ]
                 }
             }
         }

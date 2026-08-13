@@ -351,6 +351,22 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`,
         }
 
         state.selectedFile = file;
+        state.ocrText = '';
+        state.transText = '';
+
+        ocrTextDisplay.textContent = '';
+        transTextDisplay.textContent = '';
+
+        ocrTextDisplay.classList.add('hidden');
+        transTextDisplay.classList.add('hidden');
+
+        ocrEmptyState.classList.remove('hidden');
+        transEmptyState.classList.remove('hidden');
+
+        ocrTools.classList.add('hidden');
+        transTools.classList.add('hidden');
+
+        hideResultsPanel();
         fileName.textContent = file.name;
         fileSize.textContent = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
 
@@ -676,7 +692,7 @@ devletin ve milletin esenliği için gerekli emir verilmiştir.`,
         let finalTrans = '';
         let finalAnalysis = null; // optional richer data for the results panel
         let usedFallback = false;
-        
+
         if (presetData) {
             finalOcr = presetData.ocr;
             finalTrans = presetData.tr;
