@@ -675,7 +675,8 @@ devletin ve milletin esenliği için gerekli emir verilmiştir.`,
         let finalOcr = '';
         let finalTrans = '';
         let finalAnalysis = null; // optional richer data for the results panel
-
+        let usedFallback = false;
+        
         if (presetData) {
             finalOcr = presetData.ocr;
             finalTrans = presetData.tr;
