@@ -322,13 +322,33 @@ def translate_endpoint():
 
         response = None
 
-        for attempt in range(2):
-            response = requests.post(
-                url,
-                json=payload,
-                headers=headers,
-                timeout=45,
-            )
+        max_attempts = 3
+        retry_delays = [2, 5]
+
+        for attempt in range(max_attempts):
+            try:
+                response = requests.post(
+                    url,
+                    json=payload,
+                    headers=headers,
+                    timeout=45,
+                )
+
+            except requests.exceptions.Timeout:
+                if attempt < max_attempts - 1:
+                    delay = retry_delays[attempt]
+
+                    print(
+                        f"[translate] Gemini timeout. "
+                        f"Retrying in {delay}s "
+                        f"({attempt + 2}/{max_attempts})...",
+                        flush=True,
+                    )
+
+                    time.sleep(delay)
+                    continue
+
+                raise
 
             if response.status_code not in {
                 429,
@@ -339,13 +359,18 @@ def translate_endpoint():
             }:
                 break
 
-            if attempt == 0:
+            if attempt < max_attempts - 1:
+                delay = retry_delays[attempt]
+
                 print(
                     f"[translate] Gemini temporary error "
-                    f"{response.status_code}. Retrying once...",
+                    f"{response.status_code}. "
+                    f"Retrying in {delay}s "
+                    f"({attempt + 2}/{max_attempts})...",
                     flush=True,
                 )
-                time.sleep(2)
+
+                time.sleep(delay)
 
         # Retry bittikten SONRA cevabı kontrol ediyoruz.
         if response is None:
