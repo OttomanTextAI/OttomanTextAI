@@ -610,6 +610,50 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`,
         processTranslation();
     });
 
+    function generateTemporaryFallback() {
+    return {
+        ocr: `بسم الله الرحمن الرحيم
+دولت عليه عثمانيه فرمانى مقتضاسنجه
+دولت و ملتڭ سلامتى ايچون امر شريف اولنمشدر.`,
+
+        trans: `Rahmân ve Rahîm olan Allah'ın adıyla.
+
+Yüce Osmanlı Devleti'nin emri gereğince,
+devletin ve milletin esenliği için gerekli emir verilmiştir.`,
+
+        analysis: {
+            document_type: 'Osmanlıca Belge',
+            confidence: 70,
+            style: 'Tarihî / Osmanlı Türkçesi',
+
+            summary:
+                'Bu sonuç geçici demo modu kullanılarak oluşturulmuştur. Yapay zekâ servisine ulaşılamadığı için örnek belge analizi gösterilmektedir.',
+
+            key_points: [
+                'Belge Osmanlı Türkçesiyle hazırlanmıştır.',
+                'Metin resmî veya tarihî bir belge niteliği taşımaktadır.',
+                'Ayrıntılı analiz için yapay zekâ servisi gereklidir.'
+            ],
+
+            people: [],
+            places: [],
+            concepts: [
+                'Osmanlı Türkçesi',
+                'Tarihî Belge'
+            ],
+
+            script_type: 'Belirlenemedi',
+            script_purpose: 'Belirlenemedi',
+            period_estimate: 'Osmanlı dönemi',
+            date_hijri: 'Belirtilmemiş',
+            date_gregorian: 'Belirtilmemiş',
+
+            notes:
+                'Demo modu aktiftir. Bu bilgiler yapay zekâ tarafından mevcut belge analiz edilerek üretilmemiştir.'
+        }
+    };
+}
+
     async function processTranslation(presetData = null) {
         state.isProcessing = true;
         triggerTranslateBtn.disabled = true;
@@ -689,19 +733,21 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`,
                 }
             } catch (err) {
                 console.error('Backend OCR / translation error:', err);
+                console.warn(
+                    'AI servisi kullanılamadı. Geçici demo fallback çalıştırılıyor.'
+                );
 
-                // Show the real error to the user instead of silently
-                // substituting fake placeholder text. A wrong "success"
-                // result is worse than a visible failure here.
-                state.isProcessing = false;
-                triggerTranslateBtn.disabled = false;
-                actionSpinner.classList.add('hidden');
-                translateBtnLabel.textContent = '✨ Yapay Zeka Çeviriyi Başlat';
-                scanLine.classList.remove('scanning');
-                statusMessage.textContent = 'Hata: ' + err.message;
-                setStepActive(1);
-                alert('Belge işlenemedi: ' + err.message + '\n\nLütfen tekrar deneyin.');
-                return;
+                const fallback = generateTemporaryFallback();
+
+                finalOcr = fallback.ocr;
+                finalTrans = fallback.trans;
+                finalAnalysis = fallback.analysis;
+
+                usedFallback = true;
+                success = true;
+
+                statusMessage.textContent =
+                    'AI servisine ulaşılamadı — geçici demo sonucu gösteriliyor.';
             }
 
             if (!success) {
@@ -742,7 +788,13 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`,
 
         // Step 4: Completed
         setStepActive(4);
-        statusMessage.textContent = 'Çeviri tamamlandı!';
+        if (usedFallback) {
+                statusMessage.textContent =
+                    'AI servisine ulaşılamadı — geçici demo sonucu gösteriliyor.';
+            } else {
+                statusMessage.textContent =
+                    'Çeviri tamamlandı!';
+            }
         scanLine.classList.remove('scanning');
 
         state.isProcessing = false;
@@ -882,3 +934,4 @@ ${transTextDisplay.textContent}
         });
     });
 });
+
