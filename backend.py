@@ -390,6 +390,17 @@ def translate_endpoint():
 
         response_data = response.json()
 
+        print(
+            "[translate] FULL GEMINI RESPONSE:",
+            json.dumps(
+                response_data,
+                ensure_ascii=False,
+                indent=2,
+            )[:10000],
+            flush=True,
+        )
+        
+
         raw_text = (
             response_data
             .get("candidates", [{}])[0]
