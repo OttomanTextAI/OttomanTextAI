@@ -295,7 +295,28 @@ def preprocess_image(
     faint_text_mask = None
     very_faint_text_mask = None
 
+    # Region listeleri her profil için güvenli şekilde
+    # başlangıçta boş tanımlanır.
+    foreground_regions = []
+    faint_text_regions = []
+    very_faint_text_regions = []
+    protected_regions = []
+
+    debug_dir = Path(
+        "data/processed/debug"
+    )
+
+    debug_dir.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+
+
     if normalized_profile == "printed-degraded":
+
+        # -----------------------------------------
+        # Text region detection
+        # -----------------------------------------
 
         t = time.perf_counter()
 
@@ -308,11 +329,17 @@ def preprocess_image(
             len(candidate_regions),
             flush=True,
         )
+
         print(
             f"[TIMING] detect_text_regions: "
             f"{time.perf_counter() - t:.3f}s",
             flush=True,
         )
+
+
+        # -----------------------------------------
+        # Region classification
+        # -----------------------------------------
 
         t = time.perf_counter()
 
@@ -326,6 +353,11 @@ def preprocess_image(
             f"{time.perf_counter() - t:.3f}s",
             flush=True,
         )
+
+
+        # -----------------------------------------
+        # Separate region classes
+        # -----------------------------------------
 
         foreground_regions = [
             result["region"]
@@ -345,7 +377,58 @@ def preprocess_image(
             if result["classification"] == "very_faint_text"
         ]
 
-        debug_faint_regions = text_region_image.copy()
+        protected_regions = (
+            foreground_regions
+            + faint_text_regions
+        )
+
+
+        # -----------------------------------------
+        # Debug: classification counts
+        # -----------------------------------------
+
+        classification_counts = {}
+
+        for result in classified_regions:
+            label = result["classification"]
+
+            classification_counts[label] = (
+                classification_counts.get(label, 0)
+                + 1
+            )
+
+        print(
+            "[DEBUG] classification_counts:",
+            classification_counts,
+            flush=True,
+        )
+
+        print(
+            "[DEBUG] foreground_regions:",
+            len(foreground_regions),
+            flush=True,
+        )
+
+        print(
+            "[DEBUG] faint_text_regions:",
+            len(faint_text_regions),
+            flush=True,
+        )
+
+        print(
+            "[DEBUG] very_faint_text_regions:",
+            len(very_faint_text_regions),
+            flush=True,
+        )
+
+
+        # -----------------------------------------
+        # Debug visualization
+        # -----------------------------------------
+
+        debug_faint_regions = (
+            text_region_image.copy()
+        )
 
         for x, y, w, h in faint_text_regions:
             cv2.rectangle(
@@ -356,15 +439,6 @@ def preprocess_image(
                 2,
             )
 
-        debug_dir = Path(
-            "data/processed/debug"
-        )
-
-        debug_dir.mkdir(
-            parents=True,
-            exist_ok=True,
-        )
-
         cv2.imwrite(
             str(
                 debug_dir
@@ -373,130 +447,101 @@ def preprocess_image(
             debug_faint_regions,
         )
 
-        classification_counts = {}
 
-        for result in classified_regions:
-            label = result["classification"]
+        # -----------------------------------------
+        # Protected text mask
+        # -----------------------------------------
 
-            classification_counts[label] = (
-                classification_counts.get(label, 0) + 1
+        if protected_regions:
+
+            t = time.perf_counter()
+
+            text_protection_mask = create_pixel_text_mask(
+                text_region_image,
+                protected_regions,
+                padding=1,
             )
 
-        print(
-            "[DEBUG] classification_counts:",
-            classification_counts,
-            flush=True,
-        )
+            print(
+                f"[TIMING] create_text_protection_mask: "
+                f"{time.perf_counter() - t:.3f}s",
+                flush=True,
+            )
 
-        print(
-            "[DEBUG] faint_text_regions:",
-            len(faint_text_regions),
-            flush=True,
-        )
+        else:
 
-    protected_regions = (
-        foreground_regions
-        + faint_text_regions
-    )
+            print(
+                "[DEBUG] No protected text regions found. "
+                "Protected cleanup stages will be skipped.",
+                flush=True,
+            )
 
-    # Hiç güvenilir metin bölgesi bulunamadıysa
-    # boş bir koruma maskesi üretme.
-    #
-    # Aksi halde speckle V4, sıfır maskeyi gerçek
-    # koruma maskesi sanıp küçük karakterleri
-    # agresif şekilde silebilir.
-    if protected_regions:
 
-        t = time.perf_counter()
-
-        text_protection_mask = create_pixel_text_mask(
-            text_region_image,
-            protected_regions,
-            padding=1,
-        )
+        # -----------------------------------------
+        # Faint text mask
+        # -----------------------------------------
 
         if faint_text_regions:
+
             faint_text_mask = create_pixel_text_mask(
                 text_region_image,
                 faint_text_regions,
                 padding=1,
             )
-        else:
-            faint_text_mask = None
 
-        print(
-            f"[TIMING] create_pixel_text_masks: "
-            f"{time.perf_counter() - t:.3f}s",
-            flush=True,
-        )
-
-    else:
-        text_protection_mask = None
-        faint_text_mask = None
-
-        print(
-            "[DEBUG] No protected text regions found. "
-            "Protected cleanup stages will be skipped.",
-            flush=True,
-        )
-
-        very_faint_text_mask = create_pixel_text_mask(
-            text_region_image,
-            very_faint_text_regions,
-            padding=1,
-        )
-
-        cv2.imwrite(
-            str(
-                debug_dir
-                / "very_faint_text_mask.png"
-            ),
-            very_faint_text_mask,
-        )
-
-
-
-        debug_dir = Path(
-            "data/processed/debug"
-        )
-
-        debug_dir.mkdir(
-            parents=True,
-            exist_ok=True,
-        )
-
-    if faint_text_mask is not None:
-        cv2.imwrite(
-            str(
-                debug_dir
-                / "faint_text_mask.png"
-            ),
-            faint_text_mask,
-        )
-
-        print(
-            f"[TIMING] create_pixel_text_masks: "
-            f"{time.perf_counter() - t:.3f}s",
-            flush=True,
-        )
-
-        t = time.perf_counter()
-
-        text_protection_mask = (
-            remove_long_artifacts_from_text_mask(
-                text_protection_mask,
-                horizontal_ratio=0.18,
-                vertical_ratio=0.12,
+            cv2.imwrite(
+                str(
+                    debug_dir
+                    / "faint_text_mask.png"
+                ),
+                faint_text_mask,
             )
-        )
 
-        print(
-            f"[TIMING] remove_long_artifacts: "
-            f"{time.perf_counter() - t:.3f}s",
-            flush=True,
-        )
 
-       
+        # -----------------------------------------
+        # Very faint text mask
+        # -----------------------------------------
+
+        if very_faint_text_regions:
+
+            very_faint_text_mask = create_pixel_text_mask(
+                text_region_image,
+                very_faint_text_regions,
+                padding=1,
+            )
+
+            cv2.imwrite(
+                str(
+                    debug_dir
+                    / "very_faint_text_mask.png"
+                ),
+                very_faint_text_mask,
+            )
+
+
+        # -----------------------------------------
+        # Remove long artifacts from protection mask
+        # -----------------------------------------
+
+        if text_protection_mask is not None:
+
+            t = time.perf_counter()
+
+            text_protection_mask = (
+                remove_long_artifacts_from_text_mask(
+                    text_protection_mask,
+                    horizontal_ratio=0.18,
+                    vertical_ratio=0.12,
+                )
+            )
+
+            print(
+                f"[TIMING] remove_long_artifacts: "
+                f"{time.perf_counter() - t:.3f}s",
+                flush=True,
+            )
+
+
     grayscale_image = convert_to_grayscale(
         text_region_image
     )
