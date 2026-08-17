@@ -69,6 +69,10 @@ from src.image_enhancement.utils import (
     save_image,
 )
 
+from src.image_enhancement.orientation import (
+    correct_document_orientation,
+)
+
 
 SUPPORTED_THRESHOLD_METHODS = {
     "otsu",
@@ -241,8 +245,16 @@ def preprocess_image(
     "text_region"
     ]
     
-    perspective_corrected_image = correct_perspective(
+    (
+        orientation_corrected_image,
+        rotation_angle,
+        orientation_confidence,
+    ) = correct_document_orientation(
         image
+    )
+
+    perspective_corrected_image = correct_perspective(
+        orientation_corrected_image
     )
 
     try:
