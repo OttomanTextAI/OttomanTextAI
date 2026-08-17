@@ -436,6 +436,34 @@ def classify_text_regions(
         ):
             classification = "faint_text"
 
+        elif (
+            combined_score >= 0.36
+            and structure_score >= 0.55
+            and alignment_score >= 0.50
+            and repetition_score <= 0.88
+            and dark_pixel_ratio >= 0.05
+            and aspect_ratio >= 1.60
+            and horizontal_ink_coverage >= 0.28
+            and edge_density >= 0.005
+        ):
+            classification = "very_faint_text"
+
+        elif (
+            # Çok soluk ama satır yapısı gösteren metin adayı
+            combined_score >= 0.30
+            and structure_score >= 0.55
+            and alignment_score >= 0.42
+            and repetition_score <= 0.88
+            and dark_pixel_ratio >= 0.035
+            and aspect_ratio >= 2.5
+            and horizontal_ink_coverage >= 0.40
+            and (
+                edge_density >= 0.003
+                or horizontal_ink_coverage >= 0.60
+            )
+        ):
+            classification = "very_faint_text"
+
         # -------------------------------------------------
         # 3. Geri kalan belirsiz / artifact bölgeler
         # -------------------------------------------------
@@ -445,6 +473,22 @@ def classify_text_regions(
 
         result["classification"] = classification
         result["threshold"] = foreground_threshold
+
+        print(
+            "[CLASSIFICATION]",
+            {
+                "region": result["region"],
+                "class": classification,
+                "combined": round(combined_score, 3),
+                "structure": round(structure_score, 3),
+                "alignment": round(alignment_score, 3),
+                "edge": round(edge_density, 3),
+                "dark": round(dark_pixel_ratio, 3),
+                "aspect": round(aspect_ratio, 3),
+                "coverage": round(horizontal_ink_coverage, 3),
+            },
+            flush=True,
+        )
 
     return results
 

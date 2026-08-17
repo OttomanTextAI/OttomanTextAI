@@ -293,6 +293,7 @@ def preprocess_image(
 
     text_protection_mask = None
     faint_text_mask = None
+    very_faint_text_mask = None
 
     if normalized_profile == "printed-degraded":
 
@@ -336,6 +337,12 @@ def preprocess_image(
             result["region"]
             for result in classified_regions
             if result["classification"] == "faint_text"
+        ]
+
+        very_faint_text_regions = [
+            result["region"]
+            for result in classified_regions
+            if result["classification"] == "very_faint_text"
         ]
 
         debug_faint_regions = text_region_image.copy()
@@ -387,11 +394,18 @@ def preprocess_image(
             flush=True,
         )
 
-        protected_regions = (
-            foreground_regions
-            + faint_text_regions
-        )
-          
+    protected_regions = (
+        foreground_regions
+        + faint_text_regions
+    )
+
+    # Hiç güvenilir metin bölgesi bulunamadıysa
+    # boş bir koruma maskesi üretme.
+    #
+    # Aksi halde speckle V4, sıfır maskeyi gerçek
+    # koruma maskesi sanıp küçük karakterleri
+    # agresif şekilde silebilir.
+    if protected_regions:
 
         t = time.perf_counter()
 
@@ -401,11 +415,46 @@ def preprocess_image(
             padding=1,
         )
 
-        faint_text_mask = create_pixel_text_mask(
+        if faint_text_regions:
+            faint_text_mask = create_pixel_text_mask(
+                text_region_image,
+                faint_text_regions,
+                padding=1,
+            )
+        else:
+            faint_text_mask = None
+
+        print(
+            f"[TIMING] create_pixel_text_masks: "
+            f"{time.perf_counter() - t:.3f}s",
+            flush=True,
+        )
+
+    else:
+        text_protection_mask = None
+        faint_text_mask = None
+
+        print(
+            "[DEBUG] No protected text regions found. "
+            "Protected cleanup stages will be skipped.",
+            flush=True,
+        )
+
+        very_faint_text_mask = create_pixel_text_mask(
             text_region_image,
-            faint_text_regions,
+            very_faint_text_regions,
             padding=1,
         )
+
+        cv2.imwrite(
+            str(
+                debug_dir
+                / "very_faint_text_mask.png"
+            ),
+            very_faint_text_mask,
+        )
+
+
 
         debug_dir = Path(
             "data/processed/debug"
@@ -416,6 +465,7 @@ def preprocess_image(
             exist_ok=True,
         )
 
+    if faint_text_mask is not None:
         cv2.imwrite(
             str(
                 debug_dir
@@ -560,6 +610,13 @@ def preprocess_image(
     # Base threshold
     # -----------------------------------------
 
+    debug_dir = Path("data/processed/debug")
+    debug_dir.mkdir(parents=True, exist_ok=True)
+
+    cv2.imwrite(
+        str(debug_dir / "00_before_threshold.png"),
+        line_cleaned_image,
+    )
     t = time.perf_counter()
 
     if normalized_threshold_method == "otsu":
@@ -590,6 +647,10 @@ def preprocess_image(
         flush=True,
     )
 
+    cv2.imwrite(
+        str(debug_dir / "00_after_threshold.png"),
+        binary_image,
+    )
 
     # -----------------------------------------
     # Faint text recovery
@@ -606,7 +667,7 @@ def preprocess_image(
             base_binary=binary_image,
             faint_text_mask=faint_text_mask,
             block_size=31,
-            constant=6.0,
+            constant=3.0,
         )
 
         print(
@@ -614,6 +675,12 @@ def preprocess_image(
             f"{time.perf_counter() - t:.3f}s",
             flush=True,
         )
+
+
+    cv2.imwrite(
+        str(debug_dir / "00_after_faint_recovery.png"),
+        binary_image,
+    )
 
 
     # -----------------------------------------
@@ -662,6 +729,14 @@ def preprocess_image(
             flush=True,
         )
 
+        debug_dir = Path("data/processed/debug")
+        debug_dir.mkdir(parents=True, exist_ok=True)
+
+        cv2.imwrite(
+            str(debug_dir / "01_before_speckle_v4.png"),
+            binary_image,
+        )
+
     # -----------------------------------------
     # Protected speckle removal v4
     # -----------------------------------------
@@ -685,6 +760,10 @@ def preprocess_image(
             flush=True,
         )
 
+    cv2.imwrite(
+        str(debug_dir / "02_after_speckle_v4.png"),
+        binary_image,
+    )
 
     if profile_config["morphology_enabled"]:
         binary_image = clean_binary_noise(
@@ -752,6 +831,24 @@ def preprocess_image(
                 "vertical_distance"
             ],
         )
+
+    debug_dir = Path(
+            "data/processed/debug"
+        )
+
+    debug_dir.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+
+    cv2.imwrite(
+            str(
+                debug_dir
+                / "03_final_output.png"
+            ),
+            binary_image,
+        )
+
     print(
         f"[TIMING] TOTAL preprocess_image: "
         f"{time.perf_counter() - total_start:.3f}s",

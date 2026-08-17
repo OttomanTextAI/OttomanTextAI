@@ -226,3 +226,186 @@ def apply_faint_text_threshold(
     ] = 0
 
     return result
+
+def recover_nearby_faint_strokes(
+    image: np.ndarray,
+    base_binary: np.ndarray,
+    block_size: int = 21,
+    constant: float = 2.0,
+    proximity_radius: int = 2,
+) -> np.ndarray:
+    """
+    Recover weak text strokes only near already detected text.
+
+    This is intentionally conservative:
+    it does not apply the sensitive threshold globally.
+    """
+
+    grayscale_image = _prepare_grayscale_image(
+        image
+    )
+
+    validate_image(
+        base_binary
+    )
+
+    validate_odd_kernel_size(
+        block_size,
+        parameter_name="block_size",
+    )
+
+    _validate_constant(
+        constant
+    )
+
+    if base_binary.ndim != 2:
+        raise ValueError(
+            "base_binary must be a 2D binary image."
+        )
+
+    sensitive_binary = cv2.adaptiveThreshold(
+        grayscale_image,
+        255,
+        cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+        cv2.THRESH_BINARY,
+        block_size,
+        constant,
+    )
+
+    # Existing black text pixels
+    existing_text = (
+        base_binary == 0
+    ).astype(
+        np.uint8
+    ) * 255
+
+    kernel_size = (
+        2 * proximity_radius + 1
+    )
+
+    proximity_kernel = cv2.getStructuringElement(
+        cv2.MORPH_ELLIPSE,
+        (
+            kernel_size,
+            kernel_size,
+        ),
+    )
+
+    nearby_text_zone = cv2.dilate(
+        existing_text,
+        proximity_kernel,
+        iterations=1,
+    )
+
+    result = base_binary.copy()
+
+    recovery_pixels = (
+        (sensitive_binary == 0)
+        & (nearby_text_zone > 0)
+        & (base_binary == 255)
+    )
+
+    result[
+        recovery_pixels
+    ] = 0
+
+    return result
+
+def recover_masked_faint_strokes(
+    image: np.ndarray,
+    base_binary: np.ndarray,
+    faint_text_mask: np.ndarray,
+    block_size: int = 21,
+    constant: float = 2.0,
+    mask_expansion: int = 1,
+) -> np.ndarray:
+    """
+    Recover weak text strokes only inside or immediately
+    around detected faint-text regions.
+
+    Pixels outside the expanded faint-text mask are never
+    modified.
+    """
+
+    grayscale_image = _prepare_grayscale_image(
+        image
+    )
+
+    validate_image(
+        base_binary
+    )
+
+    validate_image(
+        faint_text_mask
+    )
+
+    validate_odd_kernel_size(
+        block_size,
+        parameter_name="block_size",
+    )
+
+    _validate_constant(
+        constant
+    )
+
+    if base_binary.ndim != 2:
+        raise ValueError(
+            "base_binary must be a 2D binary image."
+        )
+
+    if faint_text_mask.ndim != 2:
+        raise ValueError(
+            "faint_text_mask must be a 2D image."
+        )
+
+    if faint_text_mask.shape != base_binary.shape:
+        raise ValueError(
+            "faint_text_mask and base_binary must "
+            "have the same shape."
+        )
+
+    sensitive_binary = cv2.adaptiveThreshold(
+        grayscale_image,
+        255,
+        cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+        cv2.THRESH_BINARY,
+        block_size,
+        constant,
+    )
+
+    # Slightly expand the existing faint-text mask.
+    if mask_expansion > 0:
+        kernel_size = (
+            2 * mask_expansion + 1
+        )
+
+        kernel = cv2.getStructuringElement(
+            cv2.MORPH_RECT,
+            (
+                kernel_size,
+                kernel_size,
+            ),
+        )
+
+        recovery_zone = cv2.dilate(
+            faint_text_mask,
+            kernel,
+            iterations=1,
+        )
+
+    else:
+        recovery_zone = faint_text_mask
+
+    result = base_binary.copy()
+
+    recovery_pixels = (
+        (recovery_zone > 0)
+        & (sensitive_binary == 0)
+        & (base_binary == 255)
+    )
+
+    result[
+        recovery_pixels
+    ] = 0
+
+    return result
