@@ -48,7 +48,7 @@ def enhance_endpoint():
 
     profile = request.form.get(
         "profile",
-        "printed",
+        "printed-degraded",
     ).strip().lower()
 
     if profile not in {

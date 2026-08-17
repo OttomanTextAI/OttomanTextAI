@@ -311,6 +311,10 @@ def preprocess_image(
         exist_ok=True,
     )
 
+    foreground_regions = []
+    faint_text_regions = []
+    very_faint_text_regions = []
+    protected_regions = []
 
     if normalized_profile == "printed-degraded":
 

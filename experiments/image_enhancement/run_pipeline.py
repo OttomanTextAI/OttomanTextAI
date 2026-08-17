@@ -47,7 +47,10 @@ def process_directory(
             print(f"Skipped unreadable image: {image_path}")
             continue
 
-        processed_image = preprocess_image(image)
+        processed_image = preprocess_image(
+            image,
+            profile="printed-degraded",
+        )
 
         output_path = output_directory / image_path.name
 
