@@ -14,8 +14,7 @@
     <!-- Custom Stylesheet -->
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
-
+<body class="dark-theme">
     <!-- Header Navigation Bar -->
     <header class="navbar">
         <div class="nav-container">
@@ -67,6 +66,7 @@
         
         <!-- Hero Section -->
         <section class="hero-section">
+            <img src="assets/arkaplan.png" alt="" class="hero-bg-image" aria-hidden="true">
             <div class="hero-container">
                 <div class="hero-content">
                     <h1 class="hero-title">Osmanlıca<br>Çeviri Sistemi</h1>
@@ -92,7 +92,7 @@
         </section>
 
         <!-- Main Interactive Workbench Card -->
-        <section class="workbench-section">
+        <section class="workbench-section reveal">
             <div class="workbench-card">
                 
                 <!-- Column 1: Image Drag & Drop Area -->
@@ -466,7 +466,7 @@
         <!-- =================== END DETAILED RESULTS PANEL =================== -->
 
         <!-- Process Steps Workflow Section -->
-        <section class="workflow-section">
+        <section class="workflow-section reveal">
             <div class="workflow-header">
                 <div class="section-decor-line"></div>
                 <h2 class="workflow-title">ÇEVİRİ SÜRECİ</h2>
@@ -557,7 +557,7 @@
         </section>
 
         <!-- Sample Documents Section for Instant Demo -->
-        <section class="samples-section">
+        <section class="samples-section reveal">
             <h2 class="samples-title">📜 Örnek Osmanlıca Belgeler İle Dene</h2>
             <p class="samples-subtitle">Kendi belgeniz yoksa aşağıdaki hazır matbu veya yazma belgelerden birini seçerek çeviriyi test edebilirsiniz:</p>
             <div class="samples-grid">
@@ -735,9 +735,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Smooth Scroll Library (falls back to native CSS smooth-scroll if unavailable) -->
-    <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.14/dist/lenis.min.js"></script>
 
     <!-- Custom JavaScript -->
     <script src="app.js?v=20260818-1"></script>

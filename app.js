@@ -240,37 +240,27 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`,
         }
     };
 
-    // --- Smooth Scroll (Lenis, with a native scrollIntoView fallback) ---
-    // Regular wheel scrolling uses a short duration so it stays responsive;
-    // the longer duration below is only for deliberate button/anchor jumps
-    // (see smoothScrollTo), where a slower glide reads as intentional.
-    let lenis = null;
-    if (typeof Lenis !== 'undefined') {
-        lenis = new Lenis({
-            duration: 0.7,
-            easing: (t) => 1 - Math.pow(1 - t, 3),
-            smoothWheel: true,
-            wheelMultiplier: 1
-        });
-        const raf = (time) => {
-            lenis.raf(time);
-            requestAnimationFrame(raf);
-        };
-        requestAnimationFrame(raf);
-    }
-
+    // --- Smooth Scroll (native browser smooth-scroll; no wheel-hijacking library) ---
     function smoothScrollTo(target, options = {}) {
         const el = typeof target === 'string' ? document.querySelector(target) : target;
         if (!el) return;
-        if (lenis) {
-            lenis.scrollTo(el, { offset: options.offset || 0, duration: 1.0 });
-        } else {
-            el.scrollIntoView({ behavior: 'smooth', block: options.block || 'start' });
-        }
+        el.scrollIntoView({ behavior: 'smooth', block: options.block || 'start' });
     }
 
-    // --- Theme Toggle ---
-    if (localStorage.getItem('theme') === 'dark') {
+    // --- Scroll Reveal (fade + slide up every time an element enters the viewport) ---
+    const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            entry.target.classList.toggle('is-visible', entry.isIntersecting);
+        });
+    }, { threshold: 0.15 });
+
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+    // --- Theme Toggle (defaults to dark unless the user explicitly chose light) ---
+    if (localStorage.getItem('theme') === 'light') {
+        document.body.classList.remove('dark-theme');
+        themeToggleBtn.querySelector('.theme-icon').textContent = '🌙';
+    } else {
         document.body.classList.add('dark-theme');
         themeToggleBtn.querySelector('.theme-icon').textContent = '☀️';
     }
@@ -287,11 +277,17 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`,
         smoothScrollTo(dropZone);
     });
 
-    // Enhanced-image column visibility toggle (does not affect the fetch/
-    // enhance logic — only shows/hides the already-populated column).
-    enhancedToggle.addEventListener('change', () => {
-        workbenchCard.classList.toggle('show-enhanced', enhancedToggle.checked);
-    });
+    // Shows either the original upload or the enhanced version inside the
+    // SAME preview box (previewImage) based on the toggle — no separate column.
+    function updatePreviewImage() {
+        if (enhancedToggle.checked && state.enhancedImageUrl) {
+            previewImage.src = state.enhancedImageUrl;
+        } else if (state.imageDataUrl) {
+            previewImage.src = state.imageDataUrl;
+        }
+    }
+
+    enhancedToggle.addEventListener('change', updatePreviewImage);
 
     selectFileBtn.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -332,6 +328,7 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`,
             enhancedImageWrapper.classList.remove('hidden');
 
             statusMessage.textContent = 'Görüntü iyileştirme tamamlandı.';
+            updatePreviewImage();
         } catch (error) {
             console.error('Enhancement error:', error);
             statusMessage.textContent = 'Hata: ' + error.message;
@@ -459,6 +456,7 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`,
                 enhancedImageWrapper.classList.remove('hidden');
 
                 statusMessage.textContent = 'Görüntü iyileştirme tamamlandı.';
+                updatePreviewImage();
                 triggerTranslateBtn.disabled = false;
             } catch (error) {
                 console.error('Enhancement error:', error);
@@ -476,6 +474,7 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`,
             if (sample) {
                 state.selectedFile = { name: sample.name };
                 state.imageDataUrl = sample.file;
+                state.enhancedImageUrl = sample.file;
                 fileName.textContent = sample.name;
                 fileSize.textContent = sample.size;
                 previewImage.src = sample.file;
