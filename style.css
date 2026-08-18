@@ -240,6 +240,7 @@ body {
 .hero-content {
     max-width: 640px;
     text-align: right;
+    margin-right: 4rem;
 }
 
 .hero-title {
