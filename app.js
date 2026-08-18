@@ -518,13 +518,14 @@ Umudum şudur ki kıyamet gününde senin yüzünü görmekten mahrum kalmayayı
     function updateWorkflowScrollHighlight() {
         if (!workflowSection) return;
         const rect = workflowSection.getBoundingClientRect();
-        const total = rect.height + window.innerHeight;
-        let progress = (window.innerHeight - rect.top) / total;
+        // Bu çarpanı büyütürsen geçişler daha YAVAŞ (daha fazla scroll gerekir),
+        // küçültürsen daha ERKEN/HIZLI olur.
+        const sweepDistance = window.innerHeight * 1.4;
+        let progress = (window.innerHeight - rect.top) / sweepDistance;
         progress = Math.max(0, Math.min(0.999, progress));
         const stepNum = Math.floor(progress * 4) + 1;
         setScrollStepHighlight(stepNum);
     }
-
     let workflowScrollTicking = false;
     window.addEventListener('scroll', () => {
         if (!workflowScrollTicking) {
@@ -1241,6 +1242,16 @@ devletin ve milletin esenliği için gerekli emir verilmiştir.`,
                     'Çeviri tamamlandı!';
             }
         scanLine.classList.remove('scanning');
+
+        // Briefly show all 4 steps as completed, then hand the highlight
+        // back to the scroll-based sweep so it keeps working afterwards.
+        setTimeout(() => {
+            for (let i = 1; i <= 4; i++) {
+                const card = document.getElementById(`stepCard${i}`);
+                if (card) card.classList.remove('active');
+            }
+            updateWorkflowScrollHighlight();
+        }, 2000);
 
         state.isProcessing = false;
         triggerTranslateBtn.disabled = false;

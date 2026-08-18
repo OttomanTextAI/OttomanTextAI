@@ -1484,8 +1484,7 @@ body.dark-theme .result-details-link:hover {
     align-items: center;
     gap: 1rem;
     box-shadow: var(--shadow-sm);
-    transition: all var(--transition-normal);
-}
+    transition: all 0.2s linear;}
 
 .step-card.nav-link.active, .step-card.active, .step-card.scroll-active {
     border-color: var(--color-gold);
