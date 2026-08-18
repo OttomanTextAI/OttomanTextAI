@@ -119,121 +119,371 @@ document.addEventListener('DOMContentLoaded', () => {
     // Pre-set Sample Manuscript Database for Demo/Testing
     const sampleDatabase = {
         '2': {
-            file: 'assets/sample_ottoman_2.png',
-            name: 'tefsir_kelam_yazmasi.png',
-            size: '0.34 MB',
-            ocr: `بسم الله الرحمن الرحيم
-الحمد لله رب العالمين والصلاة والسلام على أفضل رسله محمد وآله أجمعين.
-وبعد، فيقول ضعيف الناس وأحوجهم إلى الملك الناصر محمود بن قاضي نكده المشهور بنيس أوغلي:
-أول عزّ نگاه حق تبارك وتعالى "كُنْتُ كَنْزاً مَخْفِيّاً فَأَحْبَبْتُ أَنْ أُعْرَفَ فَخَلَقْتُ الْخَلْقَ لِكَيْ يُعْرَفُونَ" بويوردوغى اوزه علم ومعرفت مجموع كمالاتدن شريف قيلنمشدر.
-ولهذا قرآن كريم بويورور: "قُلْ هَلْ يَسْتَوِي الَّذِينَ يَعْلَمُونَ وَالَّذِينَ لاَ يَعْلَمُونَ".
-ودخى كلام قديم: "وَمَا خَلَقْتُ الْجِنَّ وَالْإِنسَ إِلَّا لِيَعْبُدُونِ".
-"ليعبدون" ديمك بعض مفسرون قاطنده "ليعرفون" ديمكدر؛ يعنى حق تعالى‌يى معرفت ايتمكدر.
-بو سببله معرفت الله علمى جمله علومڭ اڭ شريفى واڭ عاليسيدر.`,
-            tr: `Rahmân ve Rahîm olan Allah'ın adıyla.
-Âlemlerin Rabbi olan Allah'a hamdolsun; salât ve selâm elçilerin en hayırlısı olan Hazreti Muhammed'e ve onun bütün âline (ailesine/soyuna) olsun.
-
-Şimdi gelelim asıl konuya; insanların en zayıfı ve Yüce Hükümdar'a en muhtaç olanı, Niğde Kadısı'nın oğlu diye meşhur Niyazioğlu Mahmud der ki:
-
-Yüce ve Mübarek Allah'ın "Ben gizli bir hazine idim; bilinmeyi ve tanınmayı istedim, bu yüzden bilinsinler diye halkı (yaratılanları) yarattım" buyurması gereğince; ilim ve marifet (tanıma/bilme), bütün olgunluk ve erdemlerin en şereflisi kılınmıştır.
-
-Nitekim Kur'ân-ı Kerîm'de şöyle buyurulmaktadır: "De ki: Hiç bilenlerle bilmeyenler bir olur mu?"
-
-Yine Kadîm Kelâm'da (Zâriyât Sûresi 56. âyet): "Ben cinleri ve insanları ancak bana kulluk (ibadet) etsinler diye yarattım" buyurulmuştur.
-
-Bazı tefsir âlimlerine göre "Bana ibadet etsinler" ifadesi "Beni tanısınlar/bilsinler (yani marifet sahibi olsunlar)" anlamına gelmektedir. 
-Böylece Yüce Allah'ı tanımak ve bilmek (marifetullah), ilimlerin en yücesi ve en değerlisidir.`,
+            file: 'assets/fsma.png',
+            name: 'fatihin_ahidnamesi.png',
+            size: '0.15 MB',
+            ocr: `نشـان همايون اولدر كه بن كه سلطان محمد خانم
+جمله خواص و عوام معلوم اولا كه اشبو دارندگان فرمان همايون بوسنه راهبلرنه مزيد عنايتم ظهور ايدوب بويوردوم كه مزبـورلره و كليسالرينه كمسنه مانع و مزاحم اولمايوب احتياطسز مملكتمده دورالار.
+و قاچوب گيدنلر داهي امن و امانده اولالار.
+گلوب بزم خاصه مملكتمزده خوفسز ساكن اولوب كليسالرنده متمكن اولالار.
+و يوجه حضرتمدن و وزيرلرمدن و قوللارمدن و رعايامدن و جمله اهالي مملكتمدن كمسنه مزبـورلره دخل و تعرض ايدوب انجيتميه‌لر.
+كندولرينه و جانلرينه و ماللرينه و كليسالرينه و داهي ياباندان خاصه مملكتمزه آدم گلورلر ايسه يمين مغلظه ايدرَم كه:
+يرى و گوكى يراتان پروردگار حقى اچون
+و مصحف حقى اچون
+و اولى پيغمبرمز حقى اچون
+و يوز ييرمى دورت بن پيغمبرلر حقى اچون
+و قوشاندغم قليچ حقى اچون
+بو يازلغانلره هيچ فرد مخالفت اتميه.
+مادام كه بونلار بنم امرمه مطيع و منقاد اولالار.
+شويله بيلاسز.`,
+            tr: `Ben Sultan Mehmed Han'ım.
+Herkes bilsin ki, bu padişah fermanını taşıyan Bosnalı ruhbanlara özel bir lütufta bulunarak emrediyorum:
+Kimse onlara ve kiliselerine engel olmayacak, onları rahatsız etmeyecektir. Ülkemde güven içinde yaşayacaklardır.
+Kaçıp gitmiş olanlar da güvenlik içinde olacaklardır.
+Ülkeme gelip korkusuzca yaşayabilecek ve kiliselerinde ibadet edebileceklerdir.
+Benim makamımdan, vezirlerimden, askerlerimden, halkımdan ve ülkemdeki hiç kimseden onlara zarar gelmeyecek, kimse onları incitmeyecektir.
+Canlarına, mallarına ve kiliselerine dokunulmayacaktır.
+Dışarıdan ülkeye insan getirmelerine de engel olunmayacaktır.
+Yeri ve göğü yaratan Allah adına, Kur'an adına, Peygamber adına, bütün peygamberler adına ve kuşandığım kılıç adına yemin ederim ki bu hükümlere kimse karşı gelmeyecektir.
+Onlar benim emrime bağlı kaldıkları sürece bu güvence devam edecektir.
+Böyle bilinsin.`,
             // Curated demo analysis for this sample — not AI-generated, written
             // to showcase the results panel. Real uploads get this from the
             // backend /api/translate response instead.
             analysis: {
-                document_type: 'Tefsir & Kelam El Yazması',
-                confidence: 88,
-                style: 'Dini / İlmî',
-                summary: 'Bu metin, ilim ve marifetullah (Allah\'ı tanıma) kavramının önemini anlatan bir tefsir/kelam risalesinin giriş bölümüdür. Yazar, kendini alçakgönüllülükle tanıtıp konuya ayet ve hadislerle giriş yapmaktadır.',
+                document_type: 'Ahidnâme (Ferman niteliğinde)',
+                confidence: 94,
+                style: 'Osmanlı Türkçesi / Resmî-Bürokratik (Padişah buyruğu)',
+                summary: 'Fatih Sultan Mehmed\'in 1463 yılında Bosna\'daki ruhbanlara (Fransiskenler) verdiği ahidnâmedir. Belgede ruhbanların ve kiliselerinin korunacağı, güven içinde yaşamalarına ve dinî faaliyetlerini sürdürmelerine izin verileceği güvence altına alınmaktadır.',
                 key_points: [
-                    'Metin, Niğde Kadısı\'nın oğlu Niyazioğlu Mahmud tarafından kaleme alınmıştır.',
-                    'İlim ve marifet (Allah\'ı tanıma), tüm ilimlerin en şereflisi olarak sunulmaktadır.',
-                    'Zâriyât Sûresi 56. âyet, "ibadet" kelimesinin "marifet" anlamına geldiği yorumuyla aktarılmıştır.'
+                    'Bosna ruhbanlarına verilmiştir.',
+                    'Kiliselerin korunması emredilmiştir.',
+                    'Ruhbanların güven içinde yaşamaları güvence altına alınmıştır.',
+                    'Can, mal ve kilise dokunulmazlığı vurgulanmıştır.',
+                    'Padişah, hükümlere uyulacağına yemin etmektedir.',
+                    '28 Mayıs 1463 tarihinde, Milodraž\'da verilmiştir.'
                 ],
-                people: ['Niyazioğlu Mahmud', 'Hazreti Muhammed'],
-                places: ['Niğde'],
-                concepts: ['Marifetullah', 'Tefsir', 'Kelam İlmi'],
-                script_type: 'Nesih',
-                script_purpose: 'Dinî / İlmî risale (tefsir metni)',
-                period_estimate: 'Geç dönem Osmanlı (tahmini)',
-                date_hijri: 'Belirtilmemiş',
-                date_gregorian: 'Belirtilmemiş',
-                notes: 'Metinde doğrudan bir tarih ibaresi geçmemektedir; dönem tahmini yazı üslubuna dayanmaktadır.'
+                people: ['Fatih Sultan Mehmed (Sultan Mehmed Han)', 'Bosna ruhbanları / Fransiskenler', 'Fra Anđeo Zvizdović (tarihsel bağlamda ilişkilendirilir)'],
+                places: ['Bosna', 'Milodraž', 'Fojnica (nüshanın muhafaza edildiği yer)'],
+                concepts: ['Ahidnâme', 'Ferman', 'Dinî özgürlük', 'Güvenlik', 'Kilise', 'Ruhban', 'Padişah buyruğu', 'Koruma / himaye'],
+                script_type: 'Rık\'a karakterli el yazısı',
+                script_purpose: 'Padişah buyruğu / hukukî güvence belgesi',
+                period_estimate: '15. yüzyıl — Fatih Sultan Mehmed dönemi',
+                date_hijri: '868',
+                date_gregorian: '28 Mayıs 1463',
+                notes: 'Belgenin özgün 1463 tarihli nüshası değil, metnin bir yazımı/kopyası olabileceği düşünülerek güven skoru %100 verilmemiştir.'
             }
         },
         '1': {
-            file: 'assets/sample_ottoman_1.png',
-            name: 'sample_manuscript_1.png',
-            size: '1.4 MB',
-            ocr: `بسم الله الرحمن الرحيم
-الله لا اله الا هو الحي القيوم
-اعوذ بالله من الشيطان الرجيم
-كل نفس ذائقة الموت
-الحمد لله رب العالمين
-صاحب الخيرات والمبرات مرحوم ومغفور له`,
-            tr: `Bismillâhirrahmânirrahîm.
-Allah ki O'ndan başka ilah yoktur, Hayy ve Kayyûm'dur.
-Kovulmuş şeytandan Allah'a sığınırım.
-Her canlı ölümü tadacaktır.
-Hamd, âlemlerin Rabbi olan Allah'a mahsustur.
-Hayır ve iyilikler sahibi, merhum ve bağışlanmış ruhuna...`,
+            file: 'assets/im.png',
+            name: 'istiklal_marsi.png',
+            size: '0.4 MB',
+            ocr: `قورقما سونمز بو شفقلرده یوزن آل سنجاق
+سونمه‌دن یوردمڭ اوستنده توتن اڭ صوڭ اوجاق
+اوبنم ملتمڭ ییلدیزیدر پارلایاجق
+اوبنمدر اوبنم ملتمڭدر آنجاق
+
+چاتما قربان اولایم چهره ڭی ای نازلی هلال
+قهرمان عرقمه بر گول نه بو شدت بو جلال
+سڭا الماز دوكولن قانلرمز صوڭره حلال
+حقیدر حقه طاپان ملتمڭ استقلال
+
+بن ازلدن بریدر حر یاشادم حر یاشارم
+هانگی چیلغین بڭا زنجیر اوره جقمش شاشارم
+كوكره مش سیل كبی‌یم بندمی چیگنر آشارم
+ییرتارم طاغلری انگینلره صیغمام طاشارم
+
+غربڭ آفاقنی صارمشسه چلیك زرهلی دیوار
+بنم ایمان طولی كوكوسم كبی سرحدم وار
+اولوسون قورقما نصل بویله بر ایمانی بوغار
+مدنیت دیدیگن تك دیشی قالمش جانوار
+
+آرقاداش يودمى آلچاقلری اوغراتما صاقین
+سپر ايت كوده ڭی دورسون بو حیاسزجه آقین
+طوغاجقدرسگا وعد ایتدیڭی كونلر حقڭ
+كیم بیلیر بلكی یارین بلكی یاریندنده یاقین
+
+باصدیغڭ یرلری طوپراق دییه رك گچمه طانی
+دوشون آلتنده كی بیڭلرجه كفنسز یاتانی
+سن شهید اوغلیسڭ اینجیتمه یازیقدر آتاڭی
+ویرمه دنیالری آلسه ڭده بو جنت وطنی
+
+كیم بو جنت وطنڭ اوغرینه اولمازكه فدا
+شهدا فیشقیراجق طوپراغی صیقسه ڭ شهدا
+جانی جانانی بوتون واریمی آلسین ده خدا
+ایتمه سین تك وطنمدن بنی دنیاده جدا
+
+روحمڭ سندن الهی شودر آنجاق املی
+دكمه سین معبدمڭ كوكسنه نامحرم الی
+بو اذان لر كه شهادتلری دینڭ اتملی
+ابدی یوردمڭ اوستنده بنم ایگلملی
+
+او زمان وجد ایله بیڭ سجده ایدر وارسه طاشم
+هرجریحه مدن الهی بوشانور قانلی یاشیم
+فیشقیریر روح مجرد گبی یردن نعشیم
+او زمان یوكسله رك عرشه ده گر بلكی باشم
+
+دالقالان سن ده شفقلر كبی ای شانلی هلال
+ولسون آرتق دكولن قانلرمڭ هپسی حلال
+ابديا سڭا یوق عرقمه یوق اضمحلال
+حقیدر حر یاشامش بایراغمڭ حریت
+حقیدر حقه طاپان ملتمڭ استقلال`,
+            tr: `Korkma, sönmez bu şafaklarda yüzen al sancak;
+Sönmeden yurdumun üstünde tüten en son ocak.
+O benim milletimin yıldızıdır, parlayacak;
+O benimdir, o benim milletimindir ancak.
+
+Çatma, kurban olayım, çehreni ey nazlı hilâl!
+Kahraman ırkıma bir gül; ne bu şiddet, bu celâl?
+Sana olmaz dökülen kanlarımız sonra helâl.
+Hakkıdır, Hakk'a tapan milletimin istiklâl!
+
+Ben ezelden beridir hür yaşadım, hür yaşarım.
+Hangi çılgın bana zincir vuracakmış? Şaşarım!
+Kükremiş sel gibiyim, bendimi çiğner, aşarım.
+Yırtarım dağları, enginlere sığmam, taşarım.
+
+Garbın âfâkını sarmışsa çelik zırhlı duvar,
+Benim iman dolu göğsüm gibi serhaddim var.
+Ulusun, korkma! Nasıl böyle bir îmânı boğar,
+"Medeniyet!" dediğin tek dişi kalmış canavar?
+
+Arkadaş! Yurduma alçakları uğratma, sakın.
+Siper et gövdeni, dursun bu hayâsızca akın.
+Doğacaktır sana va'dettiği günler Hakk'ın...
+Kim bilir, belki yarın, belki yarından da yakın.
+
+Bastığın yerleri "toprak!" diyerek geçme, tanı!
+Düşün altındaki binlerce kefensiz yatanı.
+Sen şehid oğlusun, incitme, yazıktır atanı;
+Verme, dünyaları alsan da, bu cennet vatanı.
+
+Kim bu cennet vatanın uğruna olmaz ki fedâ?
+Şühedâ fışkıracak toprağı sıksan, şühedâ!
+Cânı, cânânı, bütün varımı alsın da Huda,
+Etmesin tek vatanımdan beni dünyada cüdâ.
+
+Ruhumun senden, İlâhî, şudur ancak emeli:
+Değmesin mabedimin göğsüne nâ-mahrem eli.
+Bu ezanlar -ki şehadetleri dînin temeli-
+Ebedî yurdumun üstünde benim inlemeli.
+
+O zaman vecd ile bin secde eder -varsa- taşım;
+Her cerîhamdan, İlâhî, boşanıp kanlı yaşım,
+Fışkırır ruh-ı mücerret gibi yerden na'şım;
+O zaman yükselerek Arş'a değer, belki başım.
+
+Dalgalan sen de şafaklar gibi ey şanlı hilâl!
+Olsun artık dökülen kanlarımın hepsi helâl.
+Ebediyen sana yok, ırkıma yok izmihlâl:
+Hakkıdır, hür yaşamış, bayrağımın hürriyet;
+Hakkıdır, Hakk'a tapan milletimin istiklâl!`,
             analysis: {
-                document_type: 'Mezar Taşı / Vakfiye Kaydı',
-                confidence: 79,
-                style: 'Dini / Anma metni',
-                summary: 'Kısa, dua ve besmele içerikli bir anma metni. Muhtemelen bir mezar taşı kitabesi veya vakfa dair kısa bir kayıttır; hayır sahibi bir kişinin ruhuna dua edilmektedir.',
+                document_type: 'Şiir / Millî Marş (Edebî Eser)',
+                confidence: 99,
+                style: 'Osmanlı Türkçesi / Millî, Hamasî, Dinî, Edebî',
+                summary: 'Mehmet Âkif Ersoy\'un Millî Mücadele döneminde yazdığı İstiklâl Marşı\'dır. Şiirde Türk milletinin bağımsızlığı, vatan sevgisi, bayrak, şehitlik, iman ve özgürlük temaları işlenmektedir. Marş, TBMM tarafından 12 Mart 1921\'de kabul edilmiştir.',
                 key_points: [
-                    'Metin besmele ve kelime-i tevhid ile başlamaktadır.',
-                    'Hayır ve iyilik sahibi, merhum bir kişi için dua edilmektedir.'
+                    'Yazar: Mehmet Âkif Ersoy — İthaf: Kahraman Ordumuza',
+                    'Kabul tarihi: 12 Mart 1921, Türkiye Büyük Millet Meclisi',
+                    'Kıta sayısı: 10, Tema: Bağımsızlık ve vatan sevgisi',
+                    'Yazıldığı dönem: Millî Mücadele',
+                    'İlk olarak 17 Şubat 1921\'de yayımlanmıştır.'
                 ],
-                people: ['İsmi belirtilmemiş hayır sahibi'],
-                places: [],
-                concepts: ['Dua', 'Rahmet', 'Vakıf/Hayır'],
-                script_type: 'Sülüs (kitabe üslubu)',
-                script_purpose: 'Anma / mezar kitabesi',
-                period_estimate: 'Belirlenemedi',
-                date_hijri: 'Belirtilmemiş',
-                date_gregorian: 'Belirtilmemiş',
-                notes: 'Metin çok kısa olduğundan kesin belge türü ve tarih tahmini sınırlıdır.'
+                people: ['Mehmet Âkif Ersoy (şair)', 'Hamdullah Suphi Tanrıöver (Mecliste okuyan Maarif Vekili)', 'Mustafa Kemal Atatürk (dönemin TBMM Başkanı)'],
+                places: ['Ankara', 'Taceddin Dergâhı (şiirin kaleme alındığı yer)'],
+                concepts: ['İstiklâl', 'Hürriyet', 'Vatan', 'Bayrak', 'Millet', 'Şehitlik', 'İman', 'Ezan', 'Fedakârlık', 'Millî Mücadele'],
+                script_type: 'Nesih karakterli Osmanlıca yazı',
+                script_purpose: 'Edebî eser / Millî marş metni',
+                period_estimate: '20. yüzyılın ilk çeyreği — Millî Mücadele dönemi (1921)',
+                date_hijri: '12 Mart 1337 (Rûmî)',
+                date_gregorian: '12 Mart 1921',
+                notes: 'Görsel, metnin Osmanlı alfabesiyle bir gösterimidir; 1921 tarihli resmî nüshanın özgün taraması olarak doğrulanmadığından güven skoru %100 verilmemiştir.'
             }
         },
         'hero': {
-            file: 'assets/hero_manuscript.png',
-            name: 'hatt_i_humayun.png',
-            size: '2.1 MB',
-            ocr: `يا اله العالمين يا ارحم الراحمين
-مدد سندندر ای رب كريم
-دولت عليه عثمانيه فرمانى مقتضاسنجه
-دولت وملتڭ سلامتـى ايچون امر شريف اولنمشدر.`,
-            tr: `Ey âlemlerin İlahı, ey merhametlilerin en merhametlisi!
-Yardım Sendedir ey kerem sahibi Rabbim!
-Yüce Osmanlı Devleti fermanının gereğince
-Devletin ve milletin esenliği için şerefli emir verilmiştir.`,
+            file: 'assets/sk.png',
+            name: 'su_kasidesi.png',
+            size: '0.15 MB',
+            ocr: `صاچمه ای كوز اشكدن كوكلمدەكي اودلاره صو
+كیم بو دكلو دوتشان اودلاره قیلمز چاره صو
+
+آبگوندور كنبد دوار رنكى بيلمزم
+يا محيط اولمش كوزومدن كنبد دواره صو
+
+ذوق تيغكدن عجب يوخ اولسه كوكلم چاك چاك
+كيم مرور ايلن براقور رخنلر ديواره صو
+
+وهم ايلن صويلر دل مجروح پيكانك سوزين
+احتياط ايلن ايچر هر كيمده اولسه ياره صو
+
+صويه ويرسون باغبان گلزارى زحمت چكشمسون
+بر گل آچيلمز يوزك تك ويرسه بيك گلزاره صو
+
+اوخشده بيلمز غبارينى محرر خطكه
+خامه تك باقمقدن اينسه كوزلرينه قاره صو
+
+عارضك يادييلە نمناك اولسه مژگانم نوله
+ضايع اولمز گل تمناسيله ويرمك خاره صو
+
+غم كونی ايتمه دل بيماردن تيغك دريغ
+خيردر ويرمك قراكوكجه ده بيماره صو
+
+ايسته پيكانك كوكل هجرنده شوقم ساكن ايت
+صوسزم بر كز بو صحراده بنمچون آره صو
+
+من لبك مشتاقيم زهاد كوثر طالبي
+نيتكم مسته مي ايچمك خوش كلور هشياره صو
+
+روضه كوینه هر دم دورميوپ ايلر گذار
+عاشق اولمش غالبا اول سرو خوش رفتارە صو
+
+صو يولن اول كوي دن طپراق اولوب دوتسم كرك
+چون رقيبمدر دخي اول كويه قويمـن واره صو
+
+دست بوسی آرزوسيله گر اولورسم دوستلر
+كوزه ايلك طپراغم صونك آنكلە ياره صو
+
+سرور سركشلك قيلور قمرى نيازندن مكر
+دامنن دوته اياغنه دوشه يالواره صو
+
+ايچمك استر بلبلك قانن مگر بر رنكيله
+گل بوداغنك مزاجنه گيرە قورتاره صو
+
+طينت پاكینی روشن قيلمیش اهل عالمه
+اقتدا قيلمیش طريق احمد مختاره صو
+
+سید نوع بشر دريای در اصطفا
+كيم سپوپدر معجزاتى آتش اشراره صو
+
+قلمغیچون تازه گلزار نبوت رونقن
+معجزندن ايلمش اظهار سنگ خاره صو
+
+معجزى بر بحر بى پايان ايمش عالم ده كيم
+يتمش اندن بيك بيك آتشخانه كفاره صو
+
+حيرت ايلن برمغن ديشلر كيم ايتسه استماع
+برمغندن ويرديكى شدت كونی انصاره صو
+
+دوستى كر زهر مار ايچسه اولور آب حيات
+خصمى صو ايچسه دونر البته زهر ماره صو
+
+ايلمش هر قطره دن بيك بحر رحمت موج خيز
+ال صونوب اورغج وضو ايچون كل رخساره صو
+
+خاكپاينه يتم در عمرلر در متصل
+باشنى طاشدن طاشه اوروب كزر آواره صو
+
+ذره ذره خاك درگاهينه استر صا له نور
+دونمز اول دركاهدن كر اولسه پاره پاره صو
+
+ذكر نعتن وردنى درمان بيلور اهل خطا
+ايله كيم دفع خمار ايچون ايچر ميخاره صو
+
+يا حبيب الله يا خير البشر مشتاقكم
+ايله كيم لب تشنه لريانوب ديلر همواره صو
+
+سنسن اول بحر كرامت كيم شب معراجد
+شبنم فيضك يتورمش ثابت وسياره صو
+
+چشمه خورشيددن هر دم زلال فيض اينر
+حاجت اولسه مرقدك تجديد ايدن معماره صو
+
+بيم دوزخ نا رغم صالمش دل سوزانم
+وار اميدم ابر احسانك سپه اول ناره صو
+
+يمن نعتندن گوهر اولمش فضولى سوزلرى
+ابر نيساندن دونن تك لولو شه وارە صو
+
+خواب غفلتن الان بيدار الانده روز حشر
+اشك حسرتن دوكن ده ديده بيداره صو
+
+اومدوغم اولدر كه روز حشر محروم اولمين
+چشمه وصالت ويرن تشنه ديداره صو`,
+            tr: `Ey göz! Gönlümdeki ateşlere gözyaşından su saçma; çünkü böylesine tutuşmuş ateşlere su çare olmaz.
+
+Dönen gök kubbenin rengi su renginde midir, yoksa gözümden akan gözyaşları mı gök kubbeyi kaplamıştır, bilmiyorum.
+
+Senin kılıca benzeyen keskin bakışlarının etkisiyle gönlüm parça parça olsa buna şaşılmaz. Çünkü akarsu da akıp geçerken duvarlarda yarıklar oluşturur.
+
+Yaralı gönül, senin oka benzeyen kirpiklerinden korkarak söz eder. Çünkü yarası olan kişi suyu bile dikkat ederek içer.
+
+Bahçıvan binlerce gül bahçesini sulasa bile senin yüzün gibi bir gül açılmaz. Bu yüzden boşuna zahmet çekmesin, gül bahçesini suya bıraksın.
+
+Kâtip, kalem gibi sürekli yazıya bakmaktan gözlerine kara su inse bile senin yüzündeki ayva tüylerine benzeyen ince çizgileri taklit edemez.
+
+Senin yanağını hatırladığım için kirpiklerim gözyaşlarıyla ıslansa ne olur? Gülü elde etme ümidiyle dikene su vermek boşa değildir.
+
+Gam gününde kılıcını hasta gönlümden esirgeme. Çünkü karanlık bir gecede hastaya su vermek hayırlı ve sevaptır.
+
+Ey gönül! Sevgiliden ayrı kaldığımda onun oka benzeyen kirpiklerini iste ve kavuşma arzumu dindir. Bu çölde susuzum; bir kez olsun benim için su ara.
+
+Ben senin dudağının özlemini çekiyorum, zahitler ise Kevser'i istiyor. Nitekim sarhoş olana şarap, ayık olana ise su hoş gelir.
+
+Su, galiba o güzel yürüyüşlü serviye âşık olmuş; bir an bile durmadan onun bulunduğu cennet bahçesine doğru akıp gidiyor.
+
+Sevgilinin bulunduğu yere gitmesini engellemek için suyun yolunu toprak olup kapatmalıyım. Çünkü su benim rakibimdir ve onun bulunduğu yere ulaşmasına izin vermek istemem.
+
+Dostlar! Eğer sevgilinin elini öpme arzusu yüzünden ölürsem, toprağımdan bir testi yapın ve onunla sevgiliye su sunun.
+
+Servi, kumrunun yalvarışlarına karşı dik başlılık ediyor. Öyleyse su onun eteğini tutup ayaklarına kapanarak yalvarsın.
+
+Gül, bir hileyle bülbülün kanını içmek istiyor. Su ise gül dalının damarlarına girerek bülbülü kurtarsın.
+
+Su, Hz. Ahmed-i Muhtâr'ın yoluna uymakla temiz yaradılışını bütün insanlara açıkça göstermiştir.
+
+İnsanların efendisi, seçilmiş ve temizlenmiş inciler denizi olan Hz. Muhammed'in mucizeleri, kötülük sahiplerinin ateşlerine su serpmiştir; yani onların kötülüklerini ve zulümlerini söndürmüştür.
+
+Peygamberlik gül bahçesinin güzelliğini ve canlılığını yeniden ortaya çıkarmak için Hz. Peygamber mucizesiyle sert taştan su çıkarmıştır.
+
+Onun mucizesi dünyada uçsuz bucaksız bir deniz gibidir; bu mucizeden binlerce kâfirin ateş yanan tapınağına su ulaşmıştır.
+
+Hz. Peygamber'in şiddetli bir susuzluk gününde parmaklarından Ensâr'a su verdiğini kim işitse hayretinden parmağını ısırır.
+
+Hz. Peygamber'in dostu yılan zehri içse, o zehir onun için ölümsüzlük suyuna dönüşür. Düşmanı ise su içse, o su elbette yılan zehrine dönüşür.
+
+Hz. Peygamber abdest almak için suyu gül gibi güzel yüzüne sürdüğünde, suyun her damlasından binlerce rahmet denizi dalgalanmıştır.
+
+Su, onun ayağının bastığı toprağa ulaşabilmek için ömürler boyunca durmadan başını taştan taşa vurup avare bir şekilde dolaşmaktadır.
+
+Su, onun dergâhının toprağına zerre zerre ışık saçmak ister. Parçalara ayrılsa bile o dergâhtan geri dönmez.
+
+Günahkâr insanlar, senin na'tını ve övgünü tekrar tekrar söylemeyi bir çare olarak görürler. Tıpkı sarhoşların baş ağrılarını gidermek için su içmeleri gibi.
+
+Ey Allah'ın sevgilisi! Ey insanların en hayırlısı! Susuzluktan dudakları kuruyan insanların sürekli su istemeleri gibi ben de sana büyük bir özlem duyuyorum.
+
+Sen, Miraç gecesinde feyzinin çiy damlalarıyla sabit ve hareketli yıldızlara bile su ulaştırmış olan keramet denizisin.
+
+Senin kabrini yenileyen mimarın suya ihtiyacı olsa, güneş çeşmesinden her an temiz ve tatlı bir feyiz suyu iner.
+
+Cehennem korkusu, yanmakta olan gönlüme bir gam ateşi salmıştır. Fakat senin bağışlama ve iyilik bulutunun bu ateşe su serpeceğine dair umudum vardır.
+
+Fuzûlî'nin sözleri, senin övgünü söylemenin uğuru sayesinde inciye dönüşmüştür. Nasıl ki nisan yağmurundan düşen bir su damlası değerli bir inciye dönüşürse, onun sözleri de inci gibi değer kazanmıştır.
+
+Mahşer günü gaflet uykusundan uyanıp, sana duyulan hasretin gözyaşlarını uyanık gözlerden döktüğümde...
+
+Umudum şudur ki kıyamet gününde senin yüzünü görmekten mahrum kalmayayım. Ben, senin güzel yüzünü görmeye susamış biriyim; kavuşma çeşmen bana su versin, yani bana vuslatını ve şefaatini nasip etsin.`,
             analysis: {
-                document_type: 'Ferman (Hatt-ı Hümayun)',
-                confidence: 92,
-                style: 'Resmî / Bürokratik',
-                summary: 'Bu ferman, devletin ve milletin esenliği için Yüce Osmanlı Devleti\'nin emri gereğince hareket edilmesini buyurmaktadır. Metin bir dua/niyaz ifadesiyle açılıp resmî bir emirle devam etmektedir.',
+                document_type: 'Kaside (Na\'t-ı Nebevî)',
+                confidence: 97,
+                style: 'Osmanlı Türkçesi / Dinî-Edebî / Klasik Divan Üslubu',
+                summary: 'Fuzûlî\'nin Su Kasidesi, Hz. Muhammed\'i övmek ve ona duyulan sevgi ile bağlılığı dile getirmek amacıyla yazılmış 32 beyitlik bir na\'ttır. Şair; su, ateş, gül, gözyaşı, Kevser ve rahmet gibi unsurlar üzerinden Hz. Peygamber\'in güzelliğini, üstünlüğünü ve mucizelerini anlatır.',
                 key_points: [
-                    'Ferman, dua ve niyaz cümleleriyle açılmaktadır.',
-                    'Devlet ve milletin esenliği (selameti) için şerefli bir emir verildiği belirtilmektedir.',
-                    'Metin, resmî/bürokratik bir üslupla kaleme alınmıştır.'
+                    'Eserin şairi Fuzûlî\'dir.',
+                    'Özgün başlığı "Kaside Der-Na\'t-ı Hazret-i Nebevî"dir, "su" redifinden dolayı "Su Kasidesi" adıyla yaygınlaşmıştır.',
+                    '32 beyitten oluşur, nazım şekli kaside, nazım türü na\'ttır.',
+                    'Aruz kalıbı: Fâilâtün / Fâilâtün / Fâilâtün / Fâilün',
+                    'Su, şiirin tamamında önemli bir sembol olarak kullanılır.'
                 ],
-                people: ['Padişah (zımnen)'],
-                places: ['Devlet-i Aliyye-i Osmaniyye'],
-                concepts: ['Ferman', 'Devlet Esenliği', 'Padişah Buyruğu'],
-                script_type: 'Divani',
-                script_purpose: 'Resmî devlet buyruğu (ferman)',
-                period_estimate: '19. yüzyıl (tahmini)',
+                people: ['Fuzûlî (şair)', 'Hz. Muhammed / Ahmed-i Muhtâr (kasidede övülen kişi)', 'Ensâr', 'Zühhâd (zahitler)'],
+                places: ['Ravza', 'Kûy', 'Sahrâ', 'Kevser', 'Mi\'rac'],
+                concepts: ['Su', 'Aşk', 'Gözyaşı', 'Na\'t', 'Mucize', 'Kerâmet', 'Rahmet', 'Kevser', 'Gül', 'Vuslat', 'Şefaat'],
+                script_type: 'Osmanlıca matbu yazı',
+                script_purpose: 'Dinî-edebî şiir (na\'t)',
+                period_estimate: '16. yüzyıl — Osmanlı Klasik Dönemi (Fuzûlî dönemi)',
                 date_hijri: 'Belirtilmemiş',
                 date_gregorian: 'Belirtilmemiş',
-                notes: 'Bu, tanıtım amaçlı kısaltılmış bir örnek metindir; tam ferman genellikle tarih ve tuğra bilgisi de içerir.'
+                notes: 'Görsel, özgün bir el yazması değil basılı/çoğaltılmış bir metin olduğundan güven skoru %100 verilmemiştir.'
             }
         }
     };
@@ -253,6 +503,40 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`,
     }, { threshold: 0.15 });
 
     document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+    
+    // --- Workflow Steps: gold highlight follows scroll position through the section ---
+    const workflowSection = document.querySelector('.workflow-section');
+    const workflowStepCards = [1, 2, 3, 4].map(n => document.getElementById(`stepCard${n}`));
+
+    function setScrollStepHighlight(stepNum) {
+        workflowStepCards.forEach((card, i) => {
+            if (card) card.classList.toggle('scroll-active', i + 1 === stepNum);
+        });
+    }
+
+    function updateWorkflowScrollHighlight() {
+        if (!workflowSection) return;
+        const rect = workflowSection.getBoundingClientRect();
+        const total = rect.height + window.innerHeight;
+        let progress = (window.innerHeight - rect.top) / total;
+        progress = Math.max(0, Math.min(0.999, progress));
+        const stepNum = Math.floor(progress * 4) + 1;
+        setScrollStepHighlight(stepNum);
+    }
+
+    let workflowScrollTicking = false;
+    window.addEventListener('scroll', () => {
+        if (!workflowScrollTicking) {
+            requestAnimationFrame(() => {
+                updateWorkflowScrollHighlight();
+                workflowScrollTicking = false;
+            });
+            workflowScrollTicking = true;
+        }
+    });
+    window.addEventListener('resize', updateWorkflowScrollHighlight);
+    updateWorkflowScrollHighlight();
 
     // --- Theme Toggle (defaults to dark unless the user explicitly chose light) ---
     if (localStorage.getItem('theme') === 'light') {

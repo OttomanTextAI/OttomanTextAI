@@ -384,7 +384,7 @@ body.dark-theme .hero-section::after {
 }
 
 .workbench-card {
-    background-color: var(--bg-card);
+    background-color: var(--bg-main);
     border-radius: var(--radius-lg);
     border: 1px solid var(--color-border);
     box-shadow: var(--shadow-lg);
@@ -500,7 +500,7 @@ body.dark-theme .hero-section::after {
 .upload-zone {
     border: 2px dashed var(--color-border);
     border-radius: var(--radius-md);
-    background-color: var(--bg-card-subtle);
+    background-color: var(--bg-card);
     padding: 2rem 1.5rem;
     text-align: center;
     display: flex;
@@ -508,6 +508,7 @@ body.dark-theme .hero-section::after {
     align-items: center;
     justify-content: center;
     height: 100%;
+    max-height: 460px;
     position: relative;
     cursor: pointer;
     transition: all var(--transition-fast);
@@ -768,13 +769,14 @@ body.dark-theme .hero-section::after {
 
 .box-content {
     flex: 1;
-    background-color: var(--bg-input);
+    background-color: var(--bg-card);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     padding: 1.2rem;
     overflow-y: auto;
     position: relative;
     min-height: 280px;
+    max-height: 460px;
     display: flex;
     flex-direction: column;
 }
@@ -1485,7 +1487,7 @@ body.dark-theme .result-details-link:hover {
     transition: all var(--transition-normal);
 }
 
-.step-card:hover, .step-card.active {
+.step-card.nav-link.active, .step-card.active, .step-card.scroll-active {
     border-color: var(--color-gold);
     box-shadow: var(--shadow-md), 0 0 0 1px var(--color-gold);
     transform: translateY(-4px);
@@ -1532,7 +1534,7 @@ body.dark-theme .result-details-link:hover {
 /* Sample Manuscripts Section */
 .samples-section {
     padding: 2.5rem;
-    background-color: var(--bg-card);
+    background-color: var(--bg-main);
     border-radius: var(--radius-lg);
     border: 1px solid var(--color-border);
     box-shadow: var(--shadow-sm);
@@ -1559,7 +1561,7 @@ body.dark-theme .result-details-link:hover {
 }
 
 .sample-card {
-    background: var(--bg-card-subtle);
+    background: var(--bg-card);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     overflow: hidden;
@@ -2023,11 +2025,42 @@ body.dark-theme .result-details-link:hover {
 }
 
 .sidebar-content-box {
-    background: var(--bg-input);
+    background: var(--bg-card);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     padding: 1.2rem;
     display: flex;
     flex-direction: column;
     flex: 1;
+    overflow-y: auto;
+    max-height: 460px;
+}
+
+/* Themed scrollbar for the internal scrolling boxes (adapts to light/dark theme) */
+.box-content,
+.sidebar-content-box,
+.upload-zone {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-gold) var(--bg-input);
+}
+
+.box-content::-webkit-scrollbar,
+.sidebar-content-box::-webkit-scrollbar,
+.upload-zone::-webkit-scrollbar {
+    width: 8px;
+}
+
+.box-content::-webkit-scrollbar-track,
+.sidebar-content-box::-webkit-scrollbar-track,
+.upload-zone::-webkit-scrollbar-track {
+    background: var(--bg-input);
+    border-radius: var(--radius-full);
+}
+
+.box-content::-webkit-scrollbar-thumb,
+.sidebar-content-box::-webkit-scrollbar-thumb,
+.upload-zone::-webkit-scrollbar-thumb {
+    background-color: var(--color-gold);
+    border-radius: var(--radius-full);
+    border: 2px solid var(--bg-input);
 }
