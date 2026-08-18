@@ -66,7 +66,7 @@
         
         <!-- Hero Section -->
         <section class="hero-section">
-            <img src="assets/arkaplan.png" alt="" class="hero-bg-image" aria-hidden="true">
+            <img src="assets/bg.png" alt="" class="hero-bg-image" aria-hidden="true">
             <div class="hero-container">
                 <div class="hero-content">
                     <h1 class="hero-title">Osmanlıca<br>Çeviri Sistemi</h1>
@@ -103,6 +103,7 @@
                             <span class="switch-track"><span class="switch-thumb"></span></span>
                         </label>
                         <label for="enhancedToggle" class="enhanced-toggle-text">İyileştirilmiş Görüntüyü Göster</label>
+                        <span class="enhance-status-icon" id="enhanceStatusIcon"></span>
                     </div>
                     <div class="upload-zone" id="dropZone">
                         <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp" class="file-input-hidden">
@@ -243,126 +244,93 @@
                     </div>
                 </div>
 
-                <!-- Column 2: Ottoman Text Extraction -->
-                <div class="workbench-col col-ocr">
-                    <div class="box-header">
-                        <div class="box-title">
-                            <span class="box-icon">✍️</span>
-                            <h2>OSMANLICA METİN</h2>
-                        </div>
-                        <div class="box-tools hidden" id="ocrTools">
-                            <button class="tool-btn" id="copyOcrBtn" title="Metni Kopyala">📋</button>
-                            <button class="tool-btn" id="toggleDirectionBtn" title="Metin Yönü (RTL/LTR)">⇄</button>
-                        </div>
-                    </div>
-                    <div class="box-content ocr-content-area" id="ocrOutputBox">
-                        <div class="empty-state" id="ocrEmptyState">
-                            <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#D1C4B0" stroke-width="1.4">
-                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                <polyline points="14 2 14 8 20 8"></polyline>
-                                <line x1="16" y1="13" x2="8" y2="13"></line>
-                                <line x1="16" y1="17" x2="8" y2="17"></line>
-                            </svg>
-                            <p>Yüklediğiniz görseldeki Osmanlıca metin burada görüntülenecek.</p>
-                        </div>
-                        <div class="text-display hidden" id="ocrTextDisplay" contenteditable="true" dir="rtl" lang="ota"></div>
-                    </div>
-                </div>
+                <!-- Column 2+3: Tabbed Output (Osmanlıca Metin / Türkçe Çeviri) + Belge Bilgileri sidebar -->
+                <div class="workbench-col col-output-wrap">
 
-                <!-- Column 3: Turkish Translation Output -->
-                <div class="workbench-col col-translation">
-                    <div class="box-header">
-                        <div class="box-title">
-                            <span class="box-icon">📖</span>
-                            <h2>TÜRKÇE ÇEVİRİ</h2>
+                    <div class="output-main">
+                        <div class="output-tabs" id="outputTabs">
+                            <button class="output-tab-btn" id="ocrTabBtn" data-output-tab="ocr">
+                                <span class="box-icon"></span> Osmanlıca Metin
+                            </button>
+                            <button class="output-tab-btn active" id="transTabBtn" data-output-tab="trans">
+                                <span class="box-icon"></span> Türkçe Çeviri
+                            </button>
+                            <div class="output-tab-tools box-tools" id="ocrTools" data-tools-for="ocr">
+                                <button class="tool-btn" id="copyOcrBtn" title="Metni Kopyala">📋</button>
+                                <button class="tool-btn" id="toggleDirectionBtn" title="Metin Yönü (RTL/LTR)">⇄</button>
+                            </div>
+                            <div class="output-tab-tools box-tools" id="transTools" data-tools-for="trans">
+                                <button class="tool-btn" id="copyTransBtn" title="Çeviriyi Kopyala">📋</button>
+                                <button class="tool-btn" id="ttsBtn" title="Sesli Oku">🔊</button>
+                                <button class="tool-btn" id="downloadReportBtn" title="Rapor İndir">📥</button>
+                            </div>
                         </div>
-                        <div class="box-tools hidden" id="transTools">
-                            <button class="tool-btn" id="copyTransBtn" title="Çeviriyi Kopyala">📋</button>
-                            <button class="tool-btn" id="ttsBtn" title="Sesli Oku">🔊</button>
-                            <button class="tool-btn" id="downloadReportBtn" title="Rapor İndir">📥</button>
+
+                        <div class="box-content ocr-content-area hidden" id="ocrOutputBox" data-output-panel="ocr">
+                            <div class="empty-state" id="ocrEmptyState">
+                                <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#D1C4B0" stroke-width="1.4">
+                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                    <polyline points="14 2 14 8 20 8"></polyline>
+                                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                                </svg>
+                                <p>Yüklediğiniz görseldeki Osmanlıca metin burada görüntülenecek.</p>
+                            </div>
+                            <div class="text-display hidden" id="ocrTextDisplay" contenteditable="true" dir="rtl" lang="ota"></div>
                         </div>
-                    </div>
-                    <div class="box-content trans-content-area" id="transOutputBox">
-                        <div class="empty-state" id="transEmptyState">
-                            <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#D1C4B0" stroke-width="1.4">
-                                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-                                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-                            </svg>
-                            <p>Çeviri sonucu burada görüntülenecek.</p>
-                        </div>
-                        <div class="text-display hidden" id="transTextDisplay" contenteditable="true" lang="tr"></div>
-                    </div>
-                </div>
 
-            </div>
-
-            <!-- Translate Command Bar / Status Footer -->
-            <div class="action-bar-container">
-                <button class="btn btn-action-translate" id="triggerTranslateBtn">
-                    <span class="btn-spinner hidden" id="actionSpinner"></span>
-                    <span id="translateBtnLabel">✨ Yapay Zeka Çeviriyi Başlat</span>
-                </button>
-                <div class="status-badge hidden" id="statusBadge">
-                    <span class="status-dot pulsing"></span>
-                    <span id="statusMessage">Görsel işleniyor...</span>
-                </div>
-            </div>
-        </section>
-
-        <!-- ================== TRANSLATION RESULT CARD ================== -->
-        <!-- Hidden until a translation completes; populated by renderTranslationResultCard() in app.js -->
-        <section class="translation-result-section hidden" id="translationResultSection">
-            <div class="result-card">
-                <div class="result-card-header">
-                    <h2 class="result-card-title"><span class="box-icon">📖</span> Günümüz Türkçesi Çeviri</h2>
-                    <span class="result-confidence-badge" id="resultCardConfidenceBadge">Güven Skoru %—</span>
-                </div>
-
-                <div class="result-card-body">
-                    <div class="result-main">
-                        <div class="result-translation-text" id="resultTranslationText"></div>
-                        <div class="result-actions">
-                            <button class="btn-sm btn-subtle" id="toggleLinesBtn">📄 <span>Satırları Göster</span></button>
-                            <button class="btn-sm btn-subtle" id="resultCopyBtn">📋 <span>Kopyala</span></button>
-                            <button class="btn-sm btn-subtle" id="resultListenBtn">🔊 <span>Dinle</span></button>
+                        <div class="box-content trans-content-area" id="transOutputBox" data-output-panel="trans">
+                            <div class="empty-state" id="transEmptyState">
+                                <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="#D1C4B0" stroke-width="1.4">
+                                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                                </svg>
+                                <p>Çeviri sonucu burada görüntülenecek.</p>
+                            </div>
+                            <div class="text-display hidden" id="transTextDisplay" contenteditable="true" lang="tr"></div>
                         </div>
                     </div>
 
-                    <aside class="result-sidebar">
-                        <h3 class="result-sidebar-title">Belge Bilgileri</h3>
+                    <aside class="result-sidebar workbench-info-sidebar hidden" id="infoSidebarCol">
+                        <div class="result-sidebar-header">
+                            <h3 class="result-sidebar-title">Belge Bilgileri</h3>
+                            <span class="result-confidence-badge" id="resultCardConfidenceBadge">Güven Skoru %—</span>
+                        </div>
+                        <div class="sidebar-content-box">
+                        <ul class="result-info-list">
                         <ul class="result-info-list">
                             <li>
-                                <span class="result-info-icon">📄</span>
+                                <span class="result-info-icon"></span>
                                 <span class="result-info-label">Belge Türü</span>
                                 <span class="result-info-value" id="infoDocType">—</span>
                             </li>
                             <li>
-                                <span class="result-info-icon">🎯</span>
+                                <span class="result-info-icon"></span>
                                 <span class="result-info-label">Belgenin Amacı</span>
                                 <span class="result-info-value" id="infoDocPurpose">—</span>
                             </li>
                             <li>
-                                <span class="result-info-icon">🖋️</span>
+                                <span class="result-info-icon"></span>
                                 <span class="result-info-label">Yazı Türü (Hat)</span>
                                 <span class="result-info-value" id="infoScriptType">—</span>
                             </li>
                             <li>
-                                <span class="result-info-icon">🗓️</span>
+                                <span class="result-info-icon"></span>
                                 <span class="result-info-label">Tahmini Dönem</span>
                                 <span class="result-info-value" id="infoPeriod">—</span>
                             </li>
                             <li>
-                                <span class="result-info-icon">🗣️</span>
+                                <span class="result-info-icon"></span>
                                 <span class="result-info-label">Dil / Üslup</span>
                                 <span class="result-info-value" id="infoStyle">—</span>
                             </li>
                             <li>
-                                <span class="result-info-icon">☪️</span>
+                                <span class="result-info-icon"></span>
                                 <span class="result-info-label">Tarih (Hicrî)</span>
                                 <span class="result-info-value" id="infoDateHijri">—</span>
                             </li>
                             <li>
-                                <span class="result-info-icon">📅</span>
+                                <span class="result-info-icon"></span>
                                 <span class="result-info-label">Tarih (Milâdî)</span>
                                 <span class="result-info-value" id="infoDateGregorian">—</span>
                             </li>
@@ -381,11 +349,26 @@
                         <a href="#resultsPanel" class="result-details-link" id="resultDetailsLink">
                             Detayları Gör <span>→</span>
                         </a>
+                        </div>
                     </aside>
+
+                </div>
+
+            </div>
+
+            <!-- Translate Command Bar / Status Footer -->
+            <div class="action-bar-container">
+                <button class="btn btn-action-translate" id="triggerTranslateBtn">
+                    <span class="btn-spinner hidden" id="actionSpinner"></span>
+                    <span id="translateBtnLabel">Çeviriyi Başlat</span>
+                </button>
+                <div class="status-badge hidden" id="statusBadge">
+                    <span class="status-dot pulsing"></span>
+                    <span id="statusMessage">Görsel işleniyor...</span>
                 </div>
             </div>
         </section>
-        <!-- ================ END TRANSLATION RESULT CARD ================ -->
+
 
         <!-- ===================== DETAILED RESULTS PANEL ===================== -->
         <!-- Hidden until a translation completes; populated by renderResultsPanel() in app.js -->
@@ -405,11 +388,9 @@
 
                 <!-- Tab / Category Buttons -->
                 <div class="results-tabs" id="resultsTabs" role="tablist">
-                    <button class="results-tab-btn active" data-tab="overview" role="tab">🏠 Genel Bakış</button>
-                    <button class="results-tab-btn" data-tab="content" role="tab">🧩 İçerik Analizi</button>
-                    <button class="results-tab-btn" data-tab="script" role="tab">🖋️ Yazı & Dil</button>
-                    <button class="results-tab-btn" data-tab="dates" role="tab">🗓️ Tarih & Bağlam</button>
-                    <button class="results-tab-btn" data-tab="notes" role="tab">📝 Notlar</button>
+                    <button class="results-tab-btn active" data-tab="overview" role="tab">Genel Bakış</button>
+                    <button class="results-tab-btn" data-tab="content" role="tab">İçerik Analizi</button>
+                    <button class="results-tab-btn" data-tab="notes" role="tab">Notlar</button>
                 </div>
 
                 <!-- Tab Panels -->
@@ -442,18 +423,17 @@
                                 <h3 class="panel-heading">💡 Kavramlar</h3>
                                 <div class="entity-chip-list" id="resultConcepts"></div>
                             </div>
+                            <div class="entity-col">
+                                <h3 class="panel-heading">🖋️ Yazı & Dil</h3>
+                                <div class="detail-line-list" id="resultScriptDetails"></div>
+                            </div>
+                            <div class="entity-col">
+                                <h3 class="panel-heading">🗓️ Tarih & Bağlam</h3>
+                                <div class="detail-line-list" id="resultDateDetails"></div>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Yazı & Dil Özellikleri -->
-                    <div class="results-tab-panel" data-panel="script">
-                        <div class="info-grid" id="resultScriptGrid"></div>
-                    </div>
-
-                    <!-- Tarih & Bağlam -->
-                    <div class="results-tab-panel" data-panel="dates">
-                        <div class="info-grid" id="resultDateGrid"></div>
-                    </div>
 
                     <!-- Notlar -->
                     <div class="results-tab-panel" data-panel="notes">

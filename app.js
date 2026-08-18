@@ -81,17 +81,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const enhancedImage = document.getElementById('enhancedImage');
     const documentProfile = document.getElementById('documentProfile');
     const enhancedToggle = document.getElementById('enhancedToggle');
+    const enhanceStatusIcon = document.getElementById('enhanceStatusIcon');
     const workbenchCard = document.querySelector('.workbench-card');
     const heroStartBtn = document.getElementById('heroStartBtn');
 
-    // Translation Result Card elements
-    const translationResultSection = document.getElementById('translationResultSection');
+    // Belge Bilgileri sidebar elements
+    const infoSidebarCol = document.getElementById('infoSidebarCol');
     const resultCardConfidenceBadge = document.getElementById('resultCardConfidenceBadge');
-    const resultTranslationText = document.getElementById('resultTranslationText');
-    const toggleLinesBtn = document.getElementById('toggleLinesBtn');
-    const resultCopyBtn = document.getElementById('resultCopyBtn');
-    const resultListenBtn = document.getElementById('resultListenBtn');
     const resultDetailsLink = document.getElementById('resultDetailsLink');
+    const outputTabs = document.getElementById('outputTabs');
     const infoDocType = document.getElementById('infoDocType');
     const infoDocPurpose = document.getElementById('infoDocPurpose');
     const infoScriptType = document.getElementById('infoScriptType');
@@ -114,8 +112,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const resultPeople = document.getElementById('resultPeople');
     const resultPlaces = document.getElementById('resultPlaces');
     const resultConcepts = document.getElementById('resultConcepts');
-    const resultScriptGrid = document.getElementById('resultScriptGrid');
-    const resultDateGrid = document.getElementById('resultDateGrid');
+    const resultScriptDetails = document.getElementById('resultScriptDetails');
+    const resultDateDetails = document.getElementById('resultDateDetails');
     const resultNotes = document.getElementById('resultNotes');
 
     // Pre-set Sample Manuscript Database for Demo/Testing
@@ -289,6 +287,25 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`,
 
     enhancedToggle.addEventListener('change', updatePreviewImage);
 
+    
+    // --- Output Tabs (Osmanlıca Metin / Türkçe Çeviri) ---
+    function setOutputTab(tab) {
+        document.querySelectorAll('.output-tab-btn').forEach(b => {
+            b.classList.toggle('active', b.getAttribute('data-output-tab') === tab);
+        });
+        document.querySelectorAll('.output-tab-tools').forEach(t => {
+            t.classList.toggle('tab-active', t.getAttribute('data-tools-for') === tab);
+        });
+        ocrOutputBox.classList.toggle('hidden', tab !== 'ocr');
+        transOutputBox.classList.toggle('hidden', tab !== 'trans');
+    }
+
+    outputTabs.addEventListener('click', (e) => {
+        const btn = e.target.closest('.output-tab-btn');
+        if (!btn) return;
+        setOutputTab(btn.getAttribute('data-output-tab'));
+    });
+
     selectFileBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         fileInput.click();
@@ -309,6 +326,8 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`,
         try {
             statusBadge.classList.remove('hidden');
             statusMessage.textContent = 'Yeni belge profiliyle görüntü iyileştiriliyor...';
+            enhanceStatusIcon.classList.remove('done');
+            enhanceStatusIcon.classList.add('spinning');
 
             const enhancedResult = await enhanceUploadedImage(
                 state.selectedFile,
@@ -329,9 +348,12 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`,
 
             statusMessage.textContent = 'Görüntü iyileştirme tamamlandı.';
             updatePreviewImage();
+            enhanceStatusIcon.classList.remove('spinning');
+            enhanceStatusIcon.classList.add('done');
         } catch (error) {
             console.error('Enhancement error:', error);
             statusMessage.textContent = 'Hata: ' + error.message;
+            enhanceStatusIcon.classList.remove('spinning', 'done');
         }
     });
 
@@ -415,10 +437,11 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`,
         ocrEmptyState.classList.remove('hidden');
         transEmptyState.classList.remove('hidden');
 
-        ocrTools.classList.add('hidden');
-        transTools.classList.add('hidden');
+        ocrTools.classList.remove('tools-ready');
+        transTools.classList.remove('tools-ready');
 
         hideResultsPanel();
+        setOutputTab('trans');
         fileName.textContent = file.name;
         fileSize.textContent = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
 
@@ -441,6 +464,8 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`,
             try {
                 statusBadge.classList.remove('hidden');
                 statusMessage.textContent = 'Görüntü iyileştiriliyor...';
+                enhanceStatusIcon.classList.remove('done');
+                enhanceStatusIcon.classList.add('spinning');
 
                 const enhancedResult = await enhanceUploadedImage(
                     state.selectedFile,
@@ -458,9 +483,12 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`,
                 statusMessage.textContent = 'Görüntü iyileştirme tamamlandı.';
                 updatePreviewImage();
                 triggerTranslateBtn.disabled = false;
+                enhanceStatusIcon.classList.remove('spinning');
+                enhanceStatusIcon.classList.add('done');
             } catch (error) {
                 console.error('Enhancement error:', error);
                 statusMessage.textContent = 'Hata: ' + error.message;
+                enhanceStatusIcon.classList.remove('spinning', 'done');
             }
         };
         reader.readAsDataURL(file);
@@ -504,12 +532,12 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`,
 
         ocrEmptyState.classList.remove('hidden');
         ocrTextDisplay.classList.add('hidden');
-        ocrTools.classList.add('hidden');
+        ocrTools.classList.remove('tools-ready');
         ocrTextDisplay.textContent = '';
 
         transEmptyState.classList.remove('hidden');
         transTextDisplay.classList.add('hidden');
-        transTools.classList.add('hidden');
+        transTools.classList.remove('tools-ready');
         transTextDisplay.textContent = '';
 
         enhancedEmptyState.classList.remove('hidden');
@@ -523,7 +551,10 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`,
         state.enhancedImageBlob = null;
         state.enhancedImageUrl = null;
 
+        enhanceStatusIcon.classList.remove('spinning', 'done');
+
         hideResultsPanel();
+        setOutputTab('trans');
         setStepActive(1);
     }
 
@@ -544,7 +575,7 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`,
 
     function hideResultsPanel() {
         resultsPanel.classList.add('hidden');
-        hideTranslationResultCard();
+        hideInfoSidebar();
     }
 
     // Builds a row of label/value cards for an info-grid section.
@@ -568,6 +599,27 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`,
             item.querySelector('.info-item-label').textContent = f.label;
             item.querySelector('.info-item-value').textContent = f.value;
             container.appendChild(item);
+        });
+    }
+
+    // Renders "Etiket: değer" lines (used for Yazı & Dil / Tarih & Bağlam,
+    // now shown inline inside İçerik Analizi instead of their own tabs).
+    function buildDetailLines(container, fields) {
+        container.innerHTML = '';
+        const usable = fields.filter(f => f.value !== undefined && f.value !== null && String(f.value).trim() !== '');
+
+        if (usable.length === 0) {
+            container.innerHTML = '<span class="entity-empty-text">Tespit edilemedi</span>';
+            return;
+        }
+
+        usable.forEach(f => {
+            const line = document.createElement('div');
+            line.className = 'detail-line';
+            line.innerHTML = `<span class="detail-line-label"></span> <span class="detail-line-value"></span>`;
+            line.querySelector('.detail-line-label').textContent = f.label + ':';
+            line.querySelector('.detail-line-value').textContent = f.value;
+            container.appendChild(line);
         });
     }
 
@@ -641,14 +693,14 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`,
         buildEntityChips(resultPlaces, data.places);
         buildEntityChips(resultConcepts, data.concepts);
 
-        // Yazı & Dil Özellikleri
-        buildInfoGrid(resultScriptGrid, [
+        // Yazı & Dil (İçerik Analizi sekmesi içinde, Kişiler/Yerler/Kavramlar yanında)
+        buildDetailLines(resultScriptDetails, [
             { label: 'Yazı Tipi (Hat)', value: data.script_type },
             { label: 'Yazının Amacı', value: data.script_purpose },
         ]);
 
-        // Tarih & Bağlam
-        buildInfoGrid(resultDateGrid, [
+        // Tarih & Bağlam (İçerik Analizi sekmesi içinde)
+        buildDetailLines(resultDateDetails, [
             { label: 'Tarih (Hicrî)', value: data.date_hijri },
             { label: 'Tarih (Miladî)', value: data.date_gregorian },
             { label: 'Tahmini Dönem', value: data.period_estimate },
@@ -660,14 +712,10 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`,
         resultsPanel.classList.remove('hidden');
     }
 
-    // --- Translation Result Card ("Günümüz Türkçesi Çeviri") ---
+    // --- Belge Bilgileri Sidebar ---
     // Renders the same analysis payload used by renderResultsPanel() into the
-    // summary card that appears first, right after a translation completes.
-    function renderTranslationResultCard(data, transText) {
-        resultTranslationText.classList.remove('lines-view');
-        resultTranslationText.textContent = transText || '';
-        toggleLinesBtn.classList.remove('active');
-
+    // sidebar that sits next to the translation tab.
+    function renderInfoSidebar(data) {
         infoDocType.textContent = data.document_type || '—';
         infoDocPurpose.textContent = data.script_purpose || '—';
         infoScriptType.textContent = data.script_type || '—';
@@ -692,11 +740,11 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`,
             infoConfidenceBar.style.width = '0%';
         }
 
-        translationResultSection.classList.remove('hidden');
+        infoSidebarCol.classList.remove('hidden');
     }
 
-    function hideTranslationResultCard() {
-        translationResultSection.classList.add('hidden');
+    function hideInfoSidebar() {
+        infoSidebarCol.classList.add('hidden');
     }
 
     // --- Workflow Step Visual Control ---
@@ -864,7 +912,7 @@ devletin ve milletin esenliği için gerekli emir verilmiştir.`,
                 state.isProcessing = false;
                 triggerTranslateBtn.disabled = false;
                 actionSpinner.classList.add('hidden');
-                translateBtnLabel.textContent = '✨ Yapay Zeka Çeviriyi Başlat';
+                translateBtnLabel.textContent = 'Çeviriyi Başlat';
                 scanLine.classList.remove('scanning');
                 statusMessage.textContent = 'Çeviri başarısız oldu. Lütfen tekrar deneyin.';
                 setStepActive(1);
@@ -877,12 +925,12 @@ devletin ve milletin esenliği için gerekli emir verilmiştir.`,
         ocrEmptyState.classList.add('hidden');
         ocrTextDisplay.classList.remove('hidden');
         ocrTextDisplay.textContent = finalOcr;
-        ocrTools.classList.remove('hidden');
+        ocrTools.classList.add('tools-ready');
 
         transEmptyState.classList.add('hidden');
         transTextDisplay.classList.remove('hidden');
         transTextDisplay.textContent = finalTrans;
-        transTools.classList.remove('hidden');
+        transTools.classList.add('tools-ready');
 
         state.ocrText = finalOcr;
         state.transText = finalTrans;
@@ -891,9 +939,10 @@ devletin ve milletin esenliği için gerekli emir verilmiştir.`,
         // analysis data to display; otherwise leave it hidden rather than
         // rendering an empty/misleading panel.
         if (finalAnalysis) {
-            renderTranslationResultCard(finalAnalysis, finalTrans);
+            renderInfoSidebar(finalAnalysis);
             renderResultsPanel(finalAnalysis);
-            smoothScrollTo(translationResultSection);
+            setOutputTab('trans');
+            smoothScrollTo(transOutputBox);
         } else {
             hideResultsPanel();
         }
@@ -912,7 +961,7 @@ devletin ve milletin esenliği için gerekli emir verilmiştir.`,
         state.isProcessing = false;
         triggerTranslateBtn.disabled = false;
         actionSpinner.classList.add('hidden');
-        translateBtnLabel.textContent = '✨ Yapay Zeka Çeviriyi Başlat';
+        translateBtnLabel.textContent = 'Çeviriyi Başlat';
 
         // Save to History
         saveHistoryItem({
@@ -926,7 +975,6 @@ devletin ve milletin esenliği için gerekli emir verilmiştir.`,
     // --- Interactive Tools & Actions ---
     copyOcrBtn.addEventListener('click', () => copyToClipboard(ocrTextDisplay.textContent, 'Osmanlıca metin kopyalandı!'));
     copyTransBtn.addEventListener('click', () => copyToClipboard(transTextDisplay.textContent, 'Türkçe çeviri kopyalandı!'));
-    resultCopyBtn.addEventListener('click', () => copyToClipboard(state.transText, 'Türkçe çeviri kopyalandı!'));
 
     function copyToClipboard(text, msg) {
         navigator.clipboard.writeText(text).then(() => {
@@ -949,34 +997,7 @@ devletin ve milletin esenliği için gerekli emir verilmiştir.`,
     }
 
     ttsBtn.addEventListener('click', () => speakText(transTextDisplay.textContent));
-    resultListenBtn.addEventListener('click', () => speakText(state.transText));
 
-    // "Satırları Göster" — purely a display toggle on the already-rendered
-    // translation text; splits it into per-line rows instead of flowing
-    // paragraphs. No data/state change.
-    toggleLinesBtn.addEventListener('click', () => {
-        const isLinesView = resultTranslationText.classList.toggle('lines-view');
-        toggleLinesBtn.classList.toggle('active', isLinesView);
-
-        if (isLinesView) {
-            const lines = (state.transText || '').split('\n').filter(line => line.trim() !== '');
-            resultTranslationText.innerHTML = '';
-            lines.forEach((line, i) => {
-                const row = document.createElement('div');
-                row.className = 'result-line';
-                const num = document.createElement('span');
-                num.className = 'result-line-num';
-                num.textContent = i + 1;
-                const text = document.createElement('span');
-                text.textContent = line;
-                row.appendChild(num);
-                row.appendChild(text);
-                resultTranslationText.appendChild(row);
-            });
-        } else {
-            resultTranslationText.textContent = state.transText || '';
-        }
-    });
 
     // "Detayları Gör" — scrolls down to the (unchanged) Detaylı Belge Analizi
     // panel, which is already rendered/visible alongside this card.
