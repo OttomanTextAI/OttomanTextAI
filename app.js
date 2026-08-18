@@ -1,3 +1,4 @@
+//app.js
 /**
  * Osmanlıca Çeviri Sistemi - Core Application JavaScript
  */
@@ -38,7 +39,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const dropZone = document.getElementById('dropZone');
     const fileInput = document.getElementById('fileInput');
     const selectFileBtn = document.getElementById('selectFileBtn');
-    const heroUploadBtn = document.getElementById('heroUploadBtn');
     const uploadIdleState = document.getElementById('uploadIdleState');
     const uploadActiveState = document.getElementById('uploadActiveState');
     const previewImage = document.getElementById('previewImage');
@@ -80,6 +80,27 @@ document.addEventListener('DOMContentLoaded', () => {
     const enhancedImageWrapper = document.getElementById('enhancedImageWrapper');
     const enhancedImage = document.getElementById('enhancedImage');
     const documentProfile = document.getElementById('documentProfile');
+    const enhancedToggle = document.getElementById('enhancedToggle');
+    const workbenchCard = document.querySelector('.workbench-card');
+    const heroStartBtn = document.getElementById('heroStartBtn');
+
+    // Translation Result Card elements
+    const translationResultSection = document.getElementById('translationResultSection');
+    const resultCardConfidenceBadge = document.getElementById('resultCardConfidenceBadge');
+    const resultTranslationText = document.getElementById('resultTranslationText');
+    const toggleLinesBtn = document.getElementById('toggleLinesBtn');
+    const resultCopyBtn = document.getElementById('resultCopyBtn');
+    const resultListenBtn = document.getElementById('resultListenBtn');
+    const resultDetailsLink = document.getElementById('resultDetailsLink');
+    const infoDocType = document.getElementById('infoDocType');
+    const infoDocPurpose = document.getElementById('infoDocPurpose');
+    const infoScriptType = document.getElementById('infoScriptType');
+    const infoPeriod = document.getElementById('infoPeriod');
+    const infoStyle = document.getElementById('infoStyle');
+    const infoDateHijri = document.getElementById('infoDateHijri');
+    const infoDateGregorian = document.getElementById('infoDateGregorian');
+    const infoConfidenceValue = document.getElementById('infoConfidenceValue');
+    const infoConfidenceBar = document.getElementById('infoConfidenceBar');
 
     // Detailed Results Panel elements
     const resultsPanel = document.getElementById('resultsPanel');
@@ -219,6 +240,35 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`,
         }
     };
 
+    // --- Smooth Scroll (Lenis, with a native scrollIntoView fallback) ---
+    // Regular wheel scrolling uses a short duration so it stays responsive;
+    // the longer duration below is only for deliberate button/anchor jumps
+    // (see smoothScrollTo), where a slower glide reads as intentional.
+    let lenis = null;
+    if (typeof Lenis !== 'undefined') {
+        lenis = new Lenis({
+            duration: 0.7,
+            easing: (t) => 1 - Math.pow(1 - t, 3),
+            smoothWheel: true,
+            wheelMultiplier: 1
+        });
+        const raf = (time) => {
+            lenis.raf(time);
+            requestAnimationFrame(raf);
+        };
+        requestAnimationFrame(raf);
+    }
+
+    function smoothScrollTo(target, options = {}) {
+        const el = typeof target === 'string' ? document.querySelector(target) : target;
+        if (!el) return;
+        if (lenis) {
+            lenis.scrollTo(el, { offset: options.offset || 0, duration: 1.0 });
+        } else {
+            el.scrollIntoView({ behavior: 'smooth', block: options.block || 'start' });
+        }
+    }
+
     // --- Theme Toggle ---
     if (localStorage.getItem('theme') === 'dark') {
         document.body.classList.add('dark-theme');
@@ -233,9 +283,14 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`,
     });
 
     // --- File Handling & Drag Drop ---
-    heroUploadBtn.addEventListener('click', () => {
-        dropZone.scrollIntoView({ behavior: 'smooth' });
-        fileInput.click();
+    heroStartBtn.addEventListener('click', () => {
+        smoothScrollTo(dropZone);
+    });
+
+    // Enhanced-image column visibility toggle (does not affect the fetch/
+    // enhance logic — only shows/hides the already-populated column).
+    enhancedToggle.addEventListener('change', () => {
+        workbenchCard.classList.toggle('show-enhanced', enhancedToggle.checked);
     });
 
     selectFileBtn.addEventListener('click', (e) => {
@@ -431,7 +486,7 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`,
                 uploadActiveState.classList.remove('hidden');
                 triggerTranslateBtn.disabled = false;
 
-                dropZone.scrollIntoView({ behavior: 'smooth' });
+                smoothScrollTo(dropZone);
                 setStepActive(1);
 
                 // Auto process sample
@@ -490,6 +545,7 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`,
 
     function hideResultsPanel() {
         resultsPanel.classList.add('hidden');
+        hideTranslationResultCard();
     }
 
     // Builds a row of label/value cards for an info-grid section.
@@ -603,7 +659,45 @@ Devletin ve milletin esenliği için şerefli emir verilmiştir.`,
         resultNotes.textContent = data.notes || 'Bu belge için ek not bulunmuyor.';
 
         resultsPanel.classList.remove('hidden');
-        resultsPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    // --- Translation Result Card ("Günümüz Türkçesi Çeviri") ---
+    // Renders the same analysis payload used by renderResultsPanel() into the
+    // summary card that appears first, right after a translation completes.
+    function renderTranslationResultCard(data, transText) {
+        resultTranslationText.classList.remove('lines-view');
+        resultTranslationText.textContent = transText || '';
+        toggleLinesBtn.classList.remove('active');
+
+        infoDocType.textContent = data.document_type || '—';
+        infoDocPurpose.textContent = data.script_purpose || '—';
+        infoScriptType.textContent = data.script_type || '—';
+        infoPeriod.textContent = data.period_estimate || '—';
+        infoStyle.textContent = data.style || '—';
+        infoDateHijri.textContent = data.date_hijri || '—';
+        infoDateGregorian.textContent = data.date_gregorian || '—';
+
+        const confidence = typeof data.confidence === 'number' ? Math.round(data.confidence) : null;
+        infoConfidenceBar.classList.remove('confidence-low', 'confidence-mid', 'confidence-high');
+
+        if (confidence !== null) {
+            resultCardConfidenceBadge.textContent = `Güven Skoru %${confidence}`;
+            infoConfidenceValue.textContent = `%${confidence}`;
+            infoConfidenceBar.style.width = `${Math.max(0, Math.min(100, confidence))}%`;
+
+            const tier = confidence < 60 ? 'confidence-low' : confidence < 85 ? 'confidence-mid' : 'confidence-high';
+            infoConfidenceBar.classList.add(tier);
+        } else {
+            resultCardConfidenceBadge.textContent = 'Güven Skoru %—';
+            infoConfidenceValue.textContent = '—';
+            infoConfidenceBar.style.width = '0%';
+        }
+
+        translationResultSection.classList.remove('hidden');
+    }
+
+    function hideTranslationResultCard() {
+        translationResultSection.classList.add('hidden');
     }
 
     // --- Workflow Step Visual Control ---
@@ -798,7 +892,9 @@ devletin ve milletin esenliği için gerekli emir verilmiştir.`,
         // analysis data to display; otherwise leave it hidden rather than
         // rendering an empty/misleading panel.
         if (finalAnalysis) {
+            renderTranslationResultCard(finalAnalysis, finalTrans);
             renderResultsPanel(finalAnalysis);
+            smoothScrollTo(translationResultSection);
         } else {
             hideResultsPanel();
         }
@@ -831,6 +927,7 @@ devletin ve milletin esenliği için gerekli emir verilmiştir.`,
     // --- Interactive Tools & Actions ---
     copyOcrBtn.addEventListener('click', () => copyToClipboard(ocrTextDisplay.textContent, 'Osmanlıca metin kopyalandı!'));
     copyTransBtn.addEventListener('click', () => copyToClipboard(transTextDisplay.textContent, 'Türkçe çeviri kopyalandı!'));
+    resultCopyBtn.addEventListener('click', () => copyToClipboard(state.transText, 'Türkçe çeviri kopyalandı!'));
 
     function copyToClipboard(text, msg) {
         navigator.clipboard.writeText(text).then(() => {
@@ -839,8 +936,7 @@ devletin ve milletin esenliği için gerekli emir verilmiştir.`,
     }
 
     // Text To Speech
-    ttsBtn.addEventListener('click', () => {
-        const text = transTextDisplay.textContent;
+    function speakText(text) {
         if (!text) return;
         if ('speechSynthesis' in window) {
             window.speechSynthesis.cancel();
@@ -851,6 +947,43 @@ devletin ve milletin esenliği için gerekli emir verilmiştir.`,
         } else {
             alert('Tarayıcınız sesli okuma özelliğini desteklemiyor.');
         }
+    }
+
+    ttsBtn.addEventListener('click', () => speakText(transTextDisplay.textContent));
+    resultListenBtn.addEventListener('click', () => speakText(state.transText));
+
+    // "Satırları Göster" — purely a display toggle on the already-rendered
+    // translation text; splits it into per-line rows instead of flowing
+    // paragraphs. No data/state change.
+    toggleLinesBtn.addEventListener('click', () => {
+        const isLinesView = resultTranslationText.classList.toggle('lines-view');
+        toggleLinesBtn.classList.toggle('active', isLinesView);
+
+        if (isLinesView) {
+            const lines = (state.transText || '').split('\n').filter(line => line.trim() !== '');
+            resultTranslationText.innerHTML = '';
+            lines.forEach((line, i) => {
+                const row = document.createElement('div');
+                row.className = 'result-line';
+                const num = document.createElement('span');
+                num.className = 'result-line-num';
+                num.textContent = i + 1;
+                const text = document.createElement('span');
+                text.textContent = line;
+                row.appendChild(num);
+                row.appendChild(text);
+                resultTranslationText.appendChild(row);
+            });
+        } else {
+            resultTranslationText.textContent = state.transText || '';
+        }
+    });
+
+    // "Detayları Gör" — scrolls down to the (unchanged) Detaylı Belge Analizi
+    // panel, which is already rendered/visible alongside this card.
+    resultDetailsLink.addEventListener('click', (e) => {
+        e.preventDefault();
+        smoothScrollTo(resultsPanel);
     });
 
     // Download Report

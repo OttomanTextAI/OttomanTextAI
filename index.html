@@ -1,3 +1,5 @@
+//index.html
+
 <!DOCTYPE html>
 <html lang="tr">
 <head>
@@ -74,29 +76,19 @@
                     <p class="hero-subtitle">
                         Osmanlıca metinlerinizi yapay zeka teknolojisi ile anında modern Türkçeye çevirin.
                     </p>
-                    <div class="hero-actions">
-                        <button class="btn btn-primary" id="heroUploadBtn">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                <polyline points="17 8 12 3 7 8"></polyline>
-                                <line x1="12" y1="3" x2="12" y2="15"></line>
-                            </svg>
-                            <span>Resim Yükle</span>
-                        </button>
-                        <button class="btn btn-outline" id="howItWorksBtn">
-                            <span>Nasıl Kullanılır?</span>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+
+                    <div class="hero-cta-row">
+                        <button class="btn btn-primary hero-cta-primary" id="heroStartBtn">
+                            <span>Çeviriye Başla</span>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
                                 <polyline points="9 18 15 12 9 6"></polyline>
                             </svg>
                         </button>
+                        <a href="#about" class="btn btn-outline hero-cta-secondary" data-modal="aboutModal">
+                            <span>Hakkında</span>
+                        </a>
                     </div>
-                </div>
 
-                <div class="hero-visual">
-                    <div class="hero-art-frame">
-                        <img src="assets/hero_manuscript.png" alt="Osmanlıca Yazma Belge ve Divit Mürekkep" class="hero-img">
-                        <div class="hero-art-glow"></div>
-                    </div>
                 </div>
             </div>
         </section>
@@ -107,6 +99,13 @@
                 
                 <!-- Column 1: Image Drag & Drop Area -->
                 <div class="workbench-col col-upload">
+                    <div class="enhanced-toggle-row">
+                        <label class="switch-toggle" for="enhancedToggle">
+                            <input type="checkbox" id="enhancedToggle">
+                            <span class="switch-track"><span class="switch-thumb"></span></span>
+                        </label>
+                        <label for="enhancedToggle" class="enhanced-toggle-text">İyileştirilmiş Görüntüyü Göster</label>
+                    </div>
                     <div class="upload-zone" id="dropZone">
                         <input type="file" id="fileInput" accept="image/jpeg,image/png,image/webp" class="file-input-hidden">
                         
@@ -311,6 +310,84 @@
                 </div>
             </div>
         </section>
+
+        <!-- ================== TRANSLATION RESULT CARD ================== -->
+        <!-- Hidden until a translation completes; populated by renderTranslationResultCard() in app.js -->
+        <section class="translation-result-section hidden" id="translationResultSection">
+            <div class="result-card">
+                <div class="result-card-header">
+                    <h2 class="result-card-title"><span class="box-icon">📖</span> Günümüz Türkçesi Çeviri</h2>
+                    <span class="result-confidence-badge" id="resultCardConfidenceBadge">Güven Skoru %—</span>
+                </div>
+
+                <div class="result-card-body">
+                    <div class="result-main">
+                        <div class="result-translation-text" id="resultTranslationText"></div>
+                        <div class="result-actions">
+                            <button class="btn-sm btn-subtle" id="toggleLinesBtn">📄 <span>Satırları Göster</span></button>
+                            <button class="btn-sm btn-subtle" id="resultCopyBtn">📋 <span>Kopyala</span></button>
+                            <button class="btn-sm btn-subtle" id="resultListenBtn">🔊 <span>Dinle</span></button>
+                        </div>
+                    </div>
+
+                    <aside class="result-sidebar">
+                        <h3 class="result-sidebar-title">Belge Bilgileri</h3>
+                        <ul class="result-info-list">
+                            <li>
+                                <span class="result-info-icon">📄</span>
+                                <span class="result-info-label">Belge Türü</span>
+                                <span class="result-info-value" id="infoDocType">—</span>
+                            </li>
+                            <li>
+                                <span class="result-info-icon">🎯</span>
+                                <span class="result-info-label">Belgenin Amacı</span>
+                                <span class="result-info-value" id="infoDocPurpose">—</span>
+                            </li>
+                            <li>
+                                <span class="result-info-icon">🖋️</span>
+                                <span class="result-info-label">Yazı Türü (Hat)</span>
+                                <span class="result-info-value" id="infoScriptType">—</span>
+                            </li>
+                            <li>
+                                <span class="result-info-icon">🗓️</span>
+                                <span class="result-info-label">Tahmini Dönem</span>
+                                <span class="result-info-value" id="infoPeriod">—</span>
+                            </li>
+                            <li>
+                                <span class="result-info-icon">🗣️</span>
+                                <span class="result-info-label">Dil / Üslup</span>
+                                <span class="result-info-value" id="infoStyle">—</span>
+                            </li>
+                            <li>
+                                <span class="result-info-icon">☪️</span>
+                                <span class="result-info-label">Tarih (Hicrî)</span>
+                                <span class="result-info-value" id="infoDateHijri">—</span>
+                            </li>
+                            <li>
+                                <span class="result-info-icon">📅</span>
+                                <span class="result-info-label">Tarih (Milâdî)</span>
+                                <span class="result-info-value" id="infoDateGregorian">—</span>
+                            </li>
+                        </ul>
+
+                        <div class="result-confidence-block">
+                            <div class="result-confidence-row">
+                                <span>Güven Skoru</span>
+                                <span id="infoConfidenceValue">—</span>
+                            </div>
+                            <div class="confidence-bar-track">
+                                <div class="confidence-bar-fill" id="infoConfidenceBar"></div>
+                            </div>
+                        </div>
+
+                        <a href="#resultsPanel" class="result-details-link" id="resultDetailsLink">
+                            Detayları Gör <span>→</span>
+                        </a>
+                    </aside>
+                </div>
+            </div>
+        </section>
+        <!-- ================ END TRANSLATION RESULT CARD ================ -->
 
         <!-- ===================== DETAILED RESULTS PANEL ===================== -->
         <!-- Hidden until a translation completes; populated by renderResultsPanel() in app.js -->
@@ -661,7 +738,10 @@
         </div>
     </div>
 
+    <!-- Smooth Scroll Library (falls back to native CSS smooth-scroll if unavailable) -->
+    <script src="https://cdn.jsdelivr.net/npm/lenis@1.1.14/dist/lenis.min.js"></script>
+
     <!-- Custom JavaScript -->
-    <script src="app.js?v=20260813-2"></script>
+    <script src="app.js?v=20260818-1"></script>
 </body>
 </html>
