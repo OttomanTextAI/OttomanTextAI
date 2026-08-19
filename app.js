@@ -1398,5 +1398,89 @@ ${transTextDisplay.textContent}
             if (e.target === overlay) overlay.classList.add('hidden');
         });
     });
+
+    // --- AI Assistant Widget ---
+    const assistantFabBtn = document.getElementById('assistantFabBtn');
+    const assistantPanel = document.getElementById('assistantPanel');
+    const assistantCloseBtn = document.getElementById('assistantCloseBtn');
+    const assistantMessages = document.getElementById('assistantMessages');
+    const assistantInput = document.getElementById('assistantInput');
+    const assistantSendBtn = document.getElementById('assistantSendBtn');
+
+    const assistantHistory = [];
+
+    function appendAssistantMessage(role, text) {
+        const msg = document.createElement('div');
+        msg.className = 'assistant-msg ' + (role === 'user' ? 'assistant-msg-user' : 'assistant-msg-bot');
+        msg.textContent = text;
+        assistantMessages.appendChild(msg);
+        assistantMessages.scrollTop = assistantMessages.scrollHeight;
+    }
+
+    assistantFabBtn.addEventListener('click', () => {
+        assistantPanel.classList.toggle('hidden');
+        if (!assistantPanel.classList.contains('hidden')) {
+            assistantInput.focus();
+        }
+    });
+
+    assistantCloseBtn.addEventListener('click', () => {
+        assistantPanel.classList.add('hidden');
+    });
+
+    async function sendAssistantMessage() {
+        const text = assistantInput.value.trim();
+        if (!text) return;
+
+        appendAssistantMessage('user', text);
+        assistantHistory.push({ role: 'user', text });
+        assistantInput.value = '';
+        assistantInput.disabled = true;
+        assistantSendBtn.disabled = true;
+
+        const loadingMsg = document.createElement('div');
+        loadingMsg.className = 'assistant-msg assistant-msg-loading';
+        loadingMsg.textContent = 'Yazıyor...';
+        assistantMessages.appendChild(loadingMsg);
+        assistantMessages.scrollTop = assistantMessages.scrollHeight;
+
+        try {
+            const res = await fetchWithTimeout('http://localhost:5000/api/assistant', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    message: text,
+                    history: assistantHistory.slice(-10)
+                })
+            }, 45000);
+
+            loadingMsg.remove();
+
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                appendAssistantMessage('bot', errData.error || 'Bir hata oluştu, lütfen tekrar deneyin.');
+            } else {
+                const data = await res.json();
+                const reply = data.reply || 'Bir yanıt alınamadı.';
+                appendAssistantMessage('bot', reply);
+                assistantHistory.push({ role: 'bot', text: reply });
+            }
+        } catch (err) {
+            loadingMsg.remove();
+            appendAssistantMessage('bot', 'Bağlantı hatası: ' + err.message);
+        } finally {
+            assistantInput.disabled = false;
+            assistantSendBtn.disabled = false;
+            assistantInput.focus();
+        }
+    }
+
+    assistantSendBtn.addEventListener('click', sendAssistantMessage);
+    assistantInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            sendAssistantMessage();
+        }
+    });
 });
 

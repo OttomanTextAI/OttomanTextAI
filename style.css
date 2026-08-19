@@ -2063,3 +2063,192 @@ body.dark-theme .result-details-link:hover {
     border-radius: var(--radius-full);
     border: 2px solid var(--bg-input);
 }
+
+/* ==========================================================================
+   AI Assistant Widget (floating button + chat panel)
+   ========================================================================== */
+
+.assistant-fab {
+    position: fixed;
+    bottom: 1.8rem;
+    right: 1.8rem;
+    width: 56px;
+    height: 56px;
+    border-radius: var(--radius-full);
+    background: linear-gradient(135deg, var(--color-primary-navy), #1A2740);
+    border: 1px solid var(--color-gold);
+    color: var(--color-gold-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: var(--shadow-gold);
+    z-index: 500;
+    transition: all var(--transition-fast);
+}
+
+.assistant-fab:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 10px 28px rgba(197, 160, 89, 0.4);
+}
+
+.assistant-panel {
+    position: fixed;
+    bottom: 6rem;
+    right: 1.8rem;
+    width: 360px;
+    max-width: calc(100vw - 2rem);
+    height: 480px;
+    max-height: calc(100vh - 8rem);
+    background: var(--bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    z-index: 500;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.assistant-panel-header {
+    background: var(--bg-header);
+    padding: 1rem 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(197, 160, 89, 0.25);
+}
+
+.assistant-panel-title {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    color: #F3EBDD;
+}
+
+.assistant-panel-title strong {
+    display: block;
+    font-size: 0.92rem;
+}
+
+.assistant-panel-subtitle {
+    display: block;
+    font-size: 0.72rem;
+    color: #B9AD98;
+}
+
+.assistant-panel-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--color-accent-green);
+    flex-shrink: 0;
+}
+
+.assistant-panel-close {
+    background: transparent;
+    border: none;
+    color: #D1C4B0;
+    font-size: 1.4rem;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.assistant-panel-close:hover {
+    color: #FFFFFF;
+}
+
+.assistant-panel-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+}
+
+.assistant-msg {
+    max-width: 85%;
+    padding: 0.6rem 0.9rem;
+    border-radius: var(--radius-md);
+    font-size: 0.88rem;
+    line-height: 1.5;
+}
+
+.assistant-msg-bot {
+    align-self: flex-start;
+    background: var(--bg-input);
+    color: var(--color-text-main);
+    border-bottom-left-radius: 4px;
+}
+
+.assistant-msg-user {
+    align-self: flex-end;
+    background: var(--color-primary-navy);
+    color: #FFFFFF;
+    border-bottom-right-radius: 4px;
+}
+
+.assistant-msg-loading {
+    align-self: flex-start;
+    color: var(--color-text-light);
+    font-style: italic;
+    font-size: 0.82rem;
+}
+
+.assistant-panel-input-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.9rem 1rem;
+    border-top: 1px solid var(--color-border);
+    background: var(--bg-card);
+}
+
+.assistant-input {
+    flex: 1;
+    padding: 0.65rem 0.9rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+    background: var(--bg-input);
+    color: var(--color-text-main);
+    font-size: 0.88rem;
+    outline: none;
+}
+
+.assistant-input:focus {
+    border-color: var(--color-gold);
+}
+
+.assistant-send-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-full);
+    background: var(--color-primary-navy);
+    border: 1px solid var(--color-gold);
+    color: var(--color-gold-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all var(--transition-fast);
+}
+
+.assistant-send-btn:hover {
+    background: var(--color-primary-navy-hover);
+}
+
+@media (max-width: 640px) {
+    .assistant-panel {
+        right: 1rem;
+        left: 1rem;
+        width: auto;
+        bottom: 5.2rem;
+    }
+
+    .assistant-fab {
+        bottom: 1.2rem;
+        right: 1.2rem;
+    }
+}

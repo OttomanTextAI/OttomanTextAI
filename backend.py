@@ -566,6 +566,130 @@ def translate_endpoint():
             }
         ), 500
 
+ASSISTANT_SYSTEM_PROMPT = (
+    "Sen 'Osmanlıca Çeviri Sistemi' adlı web uygulamasının yardımcı "
+    "asistanısın. Kullanıcılara Osmanlı Türkçesi, Osmanlıca belgeler, "
+    "eski yazı/Arap harfleri, tarih ve bu uygulamanın nasıl kullanılacağı "
+    "hakkında kısa, açık ve doğru cevaplar ver. Emin olmadığın bir konuda "
+    "kesin bilgi uydurma, bilmediğini söyle. Cevapların Türkçe ve "
+    "kullanıcı dostu olsun, gereksiz uzatma."
+)
+
+
+@app.route("/api/assistant", methods=["POST"])
+def assistant_endpoint():
+    """
+    Text-only chat assistant for general questions about Ottoman Turkish
+    and how to use the app. Separate from /api/translate; does not touch
+    image OCR/enhancement logic.
+
+    Expects:
+        JSON body: { "message": "...", "history": [{"role": "user"|"bot", "text": "..."}] }
+
+    Returns:
+        JSON: { "reply": "..." }
+    """
+    api_key = (os.getenv("GEMINI_API_KEY") or "").strip().strip('"').strip("'")
+
+    if not api_key:
+        return jsonify(
+            {
+                "error": "GEMINI_API_KEY is not configured."
+            }
+        ), 500
+
+    data = request.get_json(silent=True) or {}
+    user_message = (data.get("message") or "").strip()
+    history = data.get("history") or []
+
+    if not user_message:
+        return jsonify(
+            {
+                "error": "message field is required."
+            }
+        ), 400
+
+    model = "gemini-3.6-flash"
+
+    url = (
+        "https://generativelanguage.googleapis.com/"
+        f"v1beta/models/{model}:generateContent"
+    )
+
+    headers = {
+        "x-goog-api-key": api_key,
+        "Content-Type": "application/json",
+    }
+
+    contents = [
+        {"role": "user", "parts": [{"text": ASSISTANT_SYSTEM_PROMPT}]},
+        {"role": "model", "parts": [{"text": "Anladım, yardımcı olmaya hazırım."}]},
+    ]
+
+    for turn in history[-10:]:
+        role = "user" if turn.get("role") == "user" else "model"
+        text = (turn.get("text") or "").strip()
+        if text:
+            contents.append({"role": role, "parts": [{"text": text}]})
+
+    contents.append({"role": "user", "parts": [{"text": user_message}]})
+
+    payload = {
+        "contents": contents,
+        "generationConfig": {
+            "temperature": 0.4,
+        },
+    }
+
+    try:
+        response = requests.post(
+            url,
+            json=payload,
+            headers=headers,
+            timeout=45,
+        )
+
+        if not response.ok:
+            return jsonify(
+                {
+                    "error": "Gemini API request failed.",
+                    "details": response.text,
+                }
+            ), response.status_code
+
+        response_data = response.json()
+
+        reply_text = (
+            response_data
+            .get("candidates", [{}])[0]
+            .get("content", {})
+            .get("parts", [{}])[0]
+            .get("text", "")
+        ).strip()
+
+        if not reply_text:
+            return jsonify(
+                {
+                    "error": "Model bir yanıt üretemedi."
+                }
+            ), 502
+
+        return jsonify({"reply": reply_text})
+
+    except requests.exceptions.Timeout:
+        return jsonify(
+            {
+                "error": "Sunucu yanıt vermedi (zaman aşımı). Lütfen tekrar deneyin."
+            }
+        ), 504
+
+    except Exception as error:
+        return jsonify(
+            {
+                "error": str(error)
+            }
+        ), 500
+
 @app.route("/api/health", methods=["GET"])
 def health():
     return jsonify(
