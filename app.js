@@ -1440,7 +1440,7 @@ ${transTextDisplay.textContent}
 
         const loadingMsg = document.createElement('div');
         loadingMsg.className = 'assistant-msg assistant-msg-loading';
-        loadingMsg.textContent = 'Yazıyor...';
+        loadingMsg.textContent = 'Yanıt hazırlanıyor... (sunucu uyanıyor olabilir, ilk mesaj biraz sürebilir)'; 
         assistantMessages.appendChild(loadingMsg);
         assistantMessages.scrollTop = assistantMessages.scrollHeight;
 
