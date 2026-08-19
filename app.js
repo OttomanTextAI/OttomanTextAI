@@ -1445,7 +1445,7 @@ ${transTextDisplay.textContent}
         assistantMessages.scrollTop = assistantMessages.scrollHeight;
 
         try {
-            const res = await fetchWithTimeout('http://localhost:5000/api/assistant', {
+            const res = await fetchWithTimeout('https://ottoman-text-ai.onrender.com/api/assistant', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
