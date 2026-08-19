@@ -1399,6 +1399,10 @@ ${transTextDisplay.textContent}
         });
     });
 
+    // Wake the backend up as soon as the page loads (silent, no UI change)
+    // so the assistant's first real reply isn't delayed by Render's cold start.
+    fetch('https://ottoman-text-ai.onrender.com/api/health').catch(() => {});
+
     // --- AI Assistant Widget ---
     const assistantFabBtn = document.getElementById('assistantFabBtn');
     const assistantPanel = document.getElementById('assistantPanel');
@@ -1440,7 +1444,7 @@ ${transTextDisplay.textContent}
 
         const loadingMsg = document.createElement('div');
         loadingMsg.className = 'assistant-msg assistant-msg-loading';
-        loadingMsg.textContent = 'Yanıt hazırlanıyor... (sunucu uyanıyor olabilir, ilk mesaj biraz sürebilir)'; 
+        loadingMsg.textContent = 'Yanıt hazırlanıyor...'; 
         assistantMessages.appendChild(loadingMsg);
         assistantMessages.scrollTop = assistantMessages.scrollHeight;
 
