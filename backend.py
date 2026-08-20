@@ -154,7 +154,7 @@ ANALYSIS_PROMPT = (
 @app.route("/api/translate", methods=["POST"])
 def translate_endpoint():
     """
-    Run Gemini OCR + Turkish translation + light content analysis on an
+    Run  OCR + Turkish translation + light content analysis on an
     enhanced image.
 
     Expects:
@@ -176,58 +176,19 @@ def translate_endpoint():
     # instead of a clear "invalid key" message, which is hard to debug
     # blind — so we normalize here and log a masked version of what we
     # actually received.
-    api_key = (os.getenv("GEMINI_API_KEY") or "").strip().strip('"').strip("'")
+    api_key = (os.getenv("RELAY_API_KEY") or "").strip()
+    base_url = (
+        os.getenv("RELAY_BASE_URL")
+        or "https://relaygpu.com/v2/openai/v1"
+    ).strip()
 
     if not api_key:
         return jsonify(
             {
-                "error": "GEMINI_API_KEY is not configured."
+                "error": "RELAY_API_KEY is not configured."
             }
         ), 500
 
-    # Real Gemini API keys are long (~39 chars) and start with "AIza".
-    # This isn't a full validation, just an early, cheap sanity check so
-    # a malformed key fails with a clear message instead of a cryptic
-    # Google-side 401.
-    masked = f"{api_key[:4]}...{api_key[-4:]} (len={len(api_key)})" if len(api_key) > 8 else "(too short)"
-
-    # If "AIzaSy" (the standard Google API key prefix) shows up more than
-    # once inside the value, two keys got concatenated somewhere upstream
-    # of this code (e.g. a stale value plus a new paste, or the variable
-    # being set in more than one place — a .env file AND the Render
-    # dashboard, for example). This pinpoints that case precisely instead
-    # of just reporting a wrong length.
-    prefix_occurrences = api_key.count("AIzaSy")
-    print(f"[translate] Using GEMINI_API_KEY: {masked} | 'AIzaSy' occurrences in value: {prefix_occurrences}")
-
-    if prefix_occurrences > 1:
-        return jsonify(
-            {
-                "error": (
-                    "GEMINI_API_KEY içinde birden fazla anahtar birleşmiş "
-                    "görünüyor (değer içinde 'AIzaSy' 1'den fazla kez "
-                    "geçiyor). Bu değişken muhtemelen birden fazla yerde "
-                    "tanımlı (örn. hem Render Environment sekmesinde hem "
-                    "bir .env dosyasında, ya da bir Environment Group "
-                    "içinde). Sadece TEK bir yerde, tek bir değer olarak "
-                    "tanımlı olduğundan emin olun."
-                ),
-                "debug_masked_key": masked,
-            }
-        ), 500
-
-    if len(api_key) < 30 or " " in api_key or "\n" in api_key:
-        return jsonify(
-            {
-                "error": (
-                    "GEMINI_API_KEY bozuk görünüyor (uzunluk veya içerik "
-                    "beklenenden farklı). Render > Environment sekmesinde "
-                    "değeri kontrol edin: başında/sonunda boşluk, tırnak "
-                    "veya satır sonu olmamalı."
-                ),
-                "debug_masked_key": masked,
-            }
-        ), 500
 
     if "image" not in request.files:
         return jsonify(
@@ -252,122 +213,40 @@ def translate_endpoint():
             image_bytes
         ).decode("utf-8")
 
-        model = "gemini-3.6-flash"
+        model = "VISION_MODEL_ADI"
 
-        url = (
-            "https://generativelanguage.googleapis.com/"
-            f"v1beta/models/{model}:generateContent"
-        )
+        url = f"{base_url}/chat/completions"
 
         headers = {
-            "x-goog-api-key": api_key,
+            "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json",
         }
 
         payload = {
-            "contents": [
+            "model": model,
+            "messages": [
                 {
-                    "parts": [
+                    "role": "user",
+                    "content": [
                         {
-                            "text": ANALYSIS_PROMPT
+                            "type": "text",
+                            "text": ANALYSIS_PROMPT,
                         },
                         {
-                            "inline_data": {
-                                "mime_type": "image/png",
-                                "data": encoded_image,
-                            }
+                            "type": "image_url",
+                            "image_url": {
+                                "url": (
+                                    "data:image/png;base64,"
+                                    + encoded_image
+                                )
+                            },
                         },
-                    ]
+                    ],
                 }
             ],
-           "generationConfig": {
-                "temperature": 0.2,
-                "responseMimeType": "application/json",
-                "responseSchema": {
-                    "type": "object",
-                    "properties": {
-                        "ocr": {
-                            "type": "string"
-                        },
-                        "trans": {
-                            "type": "string"
-                        },
-                        "document_type": {
-                            "type": "string"
-                        },
-                        "confidence": {
-                            "type": "integer"
-                        },
-                        "style": {
-                            "type": "string"
-                        },
-                        "summary": {
-                            "type": "string"
-                        },
-                        "key_points": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        },
-                        "people": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        },
-                        "places": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        },
-                        "concepts": {
-                            "type": "array",
-                            "items": {
-                                "type": "string"
-                            }
-                        },
-                        "script_type": {
-                            "type": "string"
-                        },
-                        "script_purpose": {
-                            "type": "string"
-                        },
-                        "period_estimate": {
-                            "type": "string"
-                        },
-                        "date_hijri": {
-                            "type": "string"
-                        },
-                        "date_gregorian": {
-                            "type": "string"
-                        },
-                        "notes": {
-                            "type": "string"
-                        }
-                    },
-                   "required": [
-                            "ocr",
-                            "trans",
-                            "document_type",
-                            "confidence",
-                            "style",
-                            "summary",
-                            "key_points",
-                            "people",
-                            "places",
-                            "concepts",
-                            "script_type",
-                            "script_purpose",
-                            "period_estimate",
-                            "date_hijri",
-                            "date_gregorian",
-                            "notes"
-                        ]
-                }
-            }
+            "temperature": 0.2,
         }
+        
 
 
 
@@ -390,7 +269,7 @@ def translate_endpoint():
                     delay = retry_delays[attempt]
 
                     print(
-                        f"[translate] Gemini timeout. "
+                        f"[translate] Relay timeout. "
                         f"Retrying in {delay}s "
                         f"({attempt + 2}/{max_attempts})...",
                         flush=True,
@@ -414,7 +293,7 @@ def translate_endpoint():
                 delay = retry_delays[attempt]
 
                 print(
-                    f"[translate] Gemini temporary error "
+                    f"[translate] Realy temporary error "
                     f"{response.status_code}. "
                     f"Retrying in {delay}s "
                     f"({attempt + 2}/{max_attempts})...",
@@ -427,14 +306,14 @@ def translate_endpoint():
         if response is None:
             return jsonify(
                 {
-                    "error": "Gemini API yanıtı alınamadı."
+                    "error": "Relay API yanıtı alınamadı."
                 }
             ), 502
 
         if not response.ok:
             return jsonify(
                 {
-                    "error": "Gemini API request failed.",
+                    "error": "Relay API request failed.",
                     "details": response.text,
                 }
             ), response.status_code
@@ -442,7 +321,7 @@ def translate_endpoint():
         response_data = response.json()
 
         print(
-            "[translate] FULL GEMINI RESPONSE:",
+            "[translate] FULL RELAY RESPONSE:",
             json.dumps(
                 response_data,
                 ensure_ascii=False,
@@ -452,12 +331,13 @@ def translate_endpoint():
         )
         
 
+        response_data = response.json()
+
         raw_text = (
             response_data
-            .get("candidates", [{}])[0]
-            .get("content", {})
-            .get("parts", [{}])[0]
-            .get("text", "")
+            .get("choices", [{}])[0]
+            .get("message", {})
+            .get("content", "")
         )
 
         cleaned_text = raw_text.strip()
@@ -471,7 +351,7 @@ def translate_endpoint():
             )
 
         print(
-            "[translate] RAW GEMINI RESPONSE:",
+            "[translate] RAW RELAY RESPONSE:",
             cleaned_text[:2000],
             flush=True,
         )
@@ -544,7 +424,7 @@ def translate_endpoint():
         return jsonify(
             {
                 "error": (
-                    "Gemini response was not valid JSON."
+                    "Relay response was not valid JSON."
                 )
             }
         ), 502
@@ -553,7 +433,7 @@ def translate_endpoint():
         return jsonify(
             {
                 "error": (
-                    "Gemini yanıt vermedi (zaman aşımı). "
+                    "Relay yanıt vermedi (zaman aşımı). "
                     "Lütfen birkaç saniye sonra tekrar deneyin."
                 )
             }

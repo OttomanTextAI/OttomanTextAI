@@ -379,14 +379,23 @@ def correct_document_orientation(
     # -----------------------------------------
 
     upright_family_score = max(
-        scores[0],
-        scores[180],
+        _calculate_axis_score(
+            orientation_results[0]["image"]
+        ),
+        _calculate_axis_score(
+            orientation_results[180]["image"]
+        ),
     )
 
     sideways_family_score = max(
-        scores[90],
-        scores[270],
+        _calculate_axis_score(
+            orientation_results[90]["image"]
+        ),
+        _calculate_axis_score(
+            orientation_results[270]["image"]
+        ),
     )
+
 
     best_family_score = max(
         upright_family_score,
@@ -421,8 +430,8 @@ def correct_document_orientation(
         second_angle = 180
 
 # -----------------------------------------
-# Stage 2: determine which side is UP
-# -----------------------------------------
+    # Stage 2: determine which side is UP
+    # -----------------------------------------
 
     first_image = orientation_results[
         first_angle
@@ -432,54 +441,58 @@ def correct_document_orientation(
         second_angle
     ]["image"]
 
-    first_uprightness = (
-        _calculate_uprightness_score(
-            first_image
-        )
+    first_uprightness = _calculate_uprightness_score(
+        first_image
     )
 
-    second_uprightness = (
-        _calculate_uprightness_score(
-            second_image
-        )
+    second_uprightness = _calculate_uprightness_score(
+        second_image
     )
 
-    if (
-        second_uprightness
-        > first_uprightness
-    ):
-        selected_angle = second_angle
-        other_angle = first_angle
-    else:
-        selected_angle = first_angle
-        other_angle = second_angle
-
-    selected_score = scores[
-        selected_angle
-    ]
-
-    other_score = scores[
-        other_angle
-    ]
-
-    upright_difference = abs(
+    # Compare the two candidate directions directly.
+    uprightness_difference = (
         first_uprightness
         - second_uprightness
     )
 
-    direction_confidence = min(
-        upright_difference * 4.0,
-        1.0,
+    # Layout score is used only as supporting evidence.
+    first_layout_score = float(
+        scores[first_angle]
     )
 
-    selected_score = scores[
-        selected_angle
-    ]
+    second_layout_score = float(
+        scores[second_angle]
+    )
 
-    other_score = scores[
-        other_angle
-    ]
+    layout_scale = max(
+        abs(first_layout_score),
+        abs(second_layout_score),
+        1e-6,
+    )
 
+    layout_difference = (
+        first_layout_score
+        - second_layout_score
+    ) / layout_scale
+
+    # Uprightness remains the main evidence.
+    # Layout score is only a tie-breaker/supporting signal.
+    direction_score = (
+        0.75 * uprightness_difference
+        + 0.25 * layout_difference
+    )
+
+    if direction_score >= 0:
+        selected_angle = first_angle
+        other_angle = second_angle
+    else:
+        selected_angle = second_angle
+        other_angle = first_angle
+
+    direction_confidence = min(
+        abs(direction_score) * 4.0,
+        1.0,
+    )
 
 
     print(
@@ -533,6 +546,14 @@ def correct_document_orientation(
             second_uprightness,
             4,
         ),
+        "layout_difference": round(
+            layout_difference,
+            4,
+        ),
+        "direction_score": round(
+            direction_score,
+            4,
+        ),
         "confidence": round(
             direction_confidence,
             3,
@@ -556,6 +577,7 @@ def correct_document_orientation(
             axis_confidence,
         )
 
+
     corrected_image = orientation_results[
         selected_angle
     ]["image"]
@@ -578,4 +600,128 @@ def correct_document_orientation(
         corrected_image,
         selected_angle,
         axis_confidence,
+    )
+
+def _prepare_orientation_mask(
+    image: np.ndarray,
+) -> np.ndarray:
+    """
+    Create a text-focused binary mask for orientation analysis.
+
+    Large stains, borders, and isolated components are removed so
+    orientation estimation is driven mainly by text structures.
+    """
+    if image.ndim == 3:
+        grayscale = cv2.cvtColor(
+            image,
+            cv2.COLOR_BGR2GRAY,
+        )
+    else:
+        grayscale = image.copy()
+
+    blurred = cv2.GaussianBlur(
+        grayscale,
+        (3, 3),
+        0,
+    )
+
+    binary = cv2.adaptiveThreshold(
+        blurred,
+        255,
+        cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+        cv2.THRESH_BINARY_INV,
+        31,
+        15,
+    )
+
+    height, width = binary.shape
+    image_area = height * width
+
+    component_count, labels, stats, _ = (
+        cv2.connectedComponentsWithStats(
+            binary,
+            connectivity=8,
+        )
+    )
+
+    cleaned = np.zeros_like(binary)
+
+    for label in range(
+        1,
+        component_count,
+    ):
+        x, y, component_width, component_height, area = (
+            stats[label]
+        )
+
+        # Ignore tiny noise.
+        if area < 5:
+            continue
+
+        # Ignore very large stains / page regions.
+        if area > image_area * 0.03:
+            continue
+
+        # Ignore long page borders or scratches.
+        if (
+            component_width > width * 0.85
+            or component_height > height * 0.85
+        ):
+            continue
+
+        cleaned[
+            labels == label
+        ] = 255
+
+    return cleaned
+
+def _calculate_axis_score(
+    image: np.ndarray,
+) -> float:
+    """
+    Estimate whether document text is predominantly horizontal.
+
+    Horizontal text produces stronger row-wise projection peaks,
+    while sideways text produces stronger column-wise peaks.
+
+    Higher values indicate a normal 0/180 text axis.
+    """
+
+    binary = _prepare_orientation_mask(
+        image
+    )
+
+    row_projection = np.sum(
+        binary > 0,
+        axis=1,
+    ).astype(np.float32)
+
+    column_projection = np.sum(
+        binary > 0,
+        axis=0,
+    ).astype(np.float32)
+
+    # Projection variation indicates how strongly pixels
+    # form repeated horizontal/vertical text bands.
+    row_mean = float(
+        np.mean(row_projection)
+    )
+
+    column_mean = float(
+        np.mean(column_projection)
+    )
+
+    row_variation = float(
+        np.std(row_projection)
+        / max(row_mean, 1e-6)
+    )
+
+    column_variation = float(
+        np.std(column_projection)
+        / max(column_mean, 1e-6)
+    )
+
+    return (
+        row_variation
+        / max(column_variation, 1e-6)
     )
