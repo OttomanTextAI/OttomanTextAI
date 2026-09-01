@@ -1,0 +1,6 @@
+provider: relaygpu
+model: google/gemini-3.5-flash
+
+generation:
+  temperature: 0.1
+  max_tokens: 4096

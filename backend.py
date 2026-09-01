@@ -1,20 +1,68 @@
 import base64
 import json
 import os
+import re
 from io import BytesIO
+from pathlib import Path
 
 import time
 import random
 
 import requests
+from dotenv import load_dotenv
 from flask import Flask, jsonify, request, send_file
 from flask_cors import CORS
+import openai
+from openai import OpenAI
 
+from src.common.config import load_yaml_config
 from src.image_enhancement.enhance import enhance_image
 
+# Loads RELAY_API_KEY / RELAY_BASE_URL / GEMINI_API_KEY from a local .env for
+# development. In production (Render) these are set directly as environment
+# variables and no .env file is present, so this is a no-op there.
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
+
+
+LLM_CONFIG_PATH = Path(__file__).resolve().parent / "configs" / "llm.yaml"
+
+
+def get_llm_config():
+    """
+    Load configs/llm.yaml (provider, model, generation params). Read fresh
+    each call so editing the model there doesn't require a server restart.
+    """
+    return load_yaml_config(LLM_CONFIG_PATH)
+
+
+def has_excessive_repetition(text, max_repeats=4, min_fragment_length=15):
+    """
+    Cheap guard against a model looping on the same sentence/line until it
+    hits max_tokens, which truncates the JSON mid-object and would
+    otherwise surface as a confusing "not valid JSON" error. Only flags a
+    line/sentence that repeats several times, not incidental short phrases.
+    """
+    if not text:
+        return False
+
+    fragments = re.split(r"[\n.!?]+", text)
+    seen_counts = {}
+
+    for fragment in fragments:
+        cleaned = fragment.strip()
+
+        if len(cleaned) < min_fragment_length:
+            continue
+
+        seen_counts[cleaned] = seen_counts.get(cleaned, 0) + 1
+
+        if seen_counts[cleaned] >= max_repeats:
+            return True
+
+    return False
 
 
 @app.route("/api/enhance", methods=["POST"])
@@ -100,8 +148,24 @@ ANALYSIS_PROMPT = (
     "Bu görüntü bir Osmanlıca belgedir. "
     "Belgeyi dikkatlice oku ve yalnızca belgenin içeriğini analiz et. "
 
+    "ÇOK ÖNEMLİ: Hiçbir cümleyi, ifadeyi veya satırı metin içinde ard arda "
+    "ya da yanıtın farklı yerlerinde birebir tekrar etme; her bilgiyi "
+    "yalnızca bir kez yaz. Aynı ifadeyi tekrar tekrar üretmek yerine, emin "
+    "değilsen kısa kes ve belirsizliği açıkça işaretle. "
+
     "ocr: Görüntüde gerçekten okuyabildiğin Osmanlıca metni "
-    "Arap harfleriyle yaz. Latin harfi kullanma. "
+    "Arap harfleriyle yaz. Latin harfi kullanma. Okuyamadığın veya emin "
+    "olmadığın her harf/kelime/satır için onu ASLA sessizce tahminle "
+    "doldurma; metnin o noktasına [okunamadı] ya da elindeki en olası "
+    "tahminle birlikte [belirsiz: en olası \"X\"] işaretini koy ve bu "
+    "durumu hem notes hem uncertain_lines alanında ayrıca belirt. Emin "
+    "olmadığın bir yerde dürüstçe \"okuyamadım\" demek, yanlış bir "
+    "tahminde bulunmaktan HER ZAMAN daha değerlidir. "
+
+    "translit: ocr alanındaki metnin Latin harflerine harf çevirisini "
+    "(transliterasyon) yaz. Emin olmadığın kısımlarda tahmin uydurma, "
+    "[okunamadı] / [belirsiz: en olası \"X\"] işaretlerini ocr ile tutarlı "
+    "şekilde koru. "
 
     "trans: OCR metninin günümüz Türkçesi karşılığını yaz. "
 
@@ -144,10 +208,21 @@ ANALYSIS_PROMPT = (
     "Miladî tarihi yaz. Yoksa boş string döndür. "
 
     "notes: Okunamayan, belirsiz veya dikkat edilmesi gereken bir kısım "
-    "varsa kısa not yaz. Yoksa boş string döndür. "
+    "varsa kısa genel bir not yaz. Yoksa boş string döndür. "
+
+    "uncertain_lines: Belgede net okuyamadığın veya emin olmadığın HER "
+    "satır/kelime için ayrı bir liste öğesi üret; notes alanındaki genel "
+    "bir cümle yeterli değildir, her belirsizliği tek tek listele. Her öğe "
+    "şu iki alanı içeren bir obje olsun: "
+    "reference (hangi satır/bölüm olduğuna dair kısa referans, örn. "
+    "\"3. satır\" ya da o satırın ilk birkaç kelimesi) ve "
+    "guess (elindeki en olası tahminin, tahmin yürütemiyorsan boş string). "
+    "Belgede belirsiz kısım yoksa boş liste döndür. "
 
     "UYARI: Belgenin içeriğinde bulunmayan isim, tarih, kişi, yer veya olay "
-    "uydurma. JSON formatı hakkında açıklama üretme."
+    "uydurma. JSON formatı hakkında açıklama üretme. Aynı cümleyi veya "
+    "ifadeyi yanıt içinde birden fazla kez tekrar etme; her bilgiyi "
+    "yalnızca bir kez ifade et."
 )
 
 
@@ -163,24 +238,47 @@ def translate_endpoint():
 
     Returns:
         JSON with at minimum "ocr" and "trans". May also include optional
-        analysis fields (document_type, confidence, summary, key_points,
-        people, places, concepts, script_type, script_purpose,
-        period_estimate, date_hijri, date_gregorian, notes) when the model
-        was able to determine them. Fields it couldn't determine are
-        omitted or empty rather than guessed.
+        analysis fields (translit, document_type, confidence, summary,
+        key_points, people, places, concepts, script_type, script_purpose,
+        period_estimate, date_hijri, date_gregorian, notes, uncertain_lines)
+        when the model was able to determine them. uncertain_lines is a
+        list of {"reference": ..., "guess": ...} objects, one per line/word
+        the model could not read with confidence. Fields it couldn't
+        determine are omitted or empty rather than guessed.
+
+    LLM provider/model come from configs/llm.yaml, credentials come from
+    the RELAY_API_KEY / RELAY_BASE_URL environment variables (.env locally,
+    real env vars on the deployment platform). Neither ever appears in
+    frontend code or in the config file.
     """
+    try:
+        llm_config = get_llm_config()
+    except (FileNotFoundError, ValueError) as error:
+        return jsonify(
+            {
+                "error": f"configs/llm.yaml okunamadı: {error}"
+            }
+        ), 500
+
+    model = llm_config.get("model")
+    generation = llm_config.get("generation") or {}
+    temperature = generation.get("temperature", 0.2)
+    max_tokens = generation.get("max_tokens", 4096)
+
+    if not model:
+        return jsonify(
+            {
+                "error": "configs/llm.yaml içinde 'model' alanı tanımlı değil."
+            }
+        ), 500
+
     # .strip() guards against a very common copy-paste mistake: a stray
     # trailing newline, space, or leftover quote character in the
-    # environment variable value. Google's API treats a malformed key as
-    # "no credential at all" and returns a confusing OAuth-related 401
-    # instead of a clear "invalid key" message, which is hard to debug
-    # blind — so we normalize here and log a masked version of what we
-    # actually received.
+    # environment variable value. A malformed key otherwise fails with a
+    # confusing provider-side error instead of a clear message, which is
+    # hard to debug blind — so we normalize here.
     api_key = (os.getenv("RELAY_API_KEY") or "").strip()
-    base_url = (
-        os.getenv("RELAY_BASE_URL")
-        or "https://relaygpu.com/v2/openai/v1"
-    ).strip()
+    base_url = (os.getenv("RELAY_BASE_URL") or "").strip()
 
     if not api_key:
         return jsonify(
@@ -189,6 +287,14 @@ def translate_endpoint():
             }
         ), 500
 
+    if not base_url:
+        return jsonify(
+            {
+                "error": "RELAY_BASE_URL is not configured."
+            }
+        ), 500
+
+    client = OpenAI(api_key=api_key, base_url=base_url)
 
     if "image" not in request.files:
         return jsonify(
@@ -213,63 +319,48 @@ def translate_endpoint():
             image_bytes
         ).decode("utf-8")
 
-        model = "VISION_MODEL_ADI"
-
-        url = f"{base_url}/chat/completions"
-
-        headers = {
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-        }
-
-        payload = {
-            "model": model,
-            "messages": [
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "text",
-                            "text": ANALYSIS_PROMPT,
+        messages = [
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "text",
+                        "text": ANALYSIS_PROMPT,
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": (
+                                "data:image/png;base64,"
+                                + encoded_image
+                            )
                         },
-                        {
-                            "type": "image_url",
-                            "image_url": {
-                                "url": (
-                                    "data:image/png;base64,"
-                                    + encoded_image
-                                )
-                            },
-                        },
-                    ],
-                }
-            ],
-            "temperature": 0.2,
-        }
-        
+                    },
+                ],
+            }
+        ]
 
-
-
-        response = None
-
+        completion = None
         max_attempts = 3
         retry_delays = [2, 5]
 
         for attempt in range(max_attempts):
             try:
-                response = requests.post(
-                    url,
-                    json=payload,
-                    headers=headers,
-                    timeout=45,
+                completion = client.chat.completions.create(
+                    model=model,
+                    messages=messages,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                    timeout=120,
                 )
+                break
 
-            except requests.exceptions.Timeout:
+            except (openai.APITimeoutError, openai.APIConnectionError) as error:
                 if attempt < max_attempts - 1:
                     delay = retry_delays[attempt]
 
                     print(
-                        f"[translate] Relay timeout. "
+                        f"[translate] Relay timeout/connection error. "
                         f"Retrying in {delay}s "
                         f"({attempt + 2}/{max_attempts})...",
                         flush=True,
@@ -278,67 +369,87 @@ def translate_endpoint():
                     time.sleep(delay)
                     continue
 
-                raise
+                return jsonify(
+                    {
+                        "error": (
+                            "Relay yanıt vermedi (zaman aşımı). "
+                            "Lütfen birkaç saniye sonra tekrar deneyin."
+                        )
+                    }
+                ), 504
 
-            if response.status_code not in {
-                429,
-                500,
-                502,
-                503,
-                504,
-            }:
-                break
+            except openai.RateLimitError as error:
+                if attempt < max_attempts - 1:
+                    delay = retry_delays[attempt]
 
-            if attempt < max_attempts - 1:
-                delay = retry_delays[attempt]
+                    print(
+                        f"[translate] Relay rate limit. "
+                        f"Retrying in {delay}s "
+                        f"({attempt + 2}/{max_attempts})...",
+                        flush=True,
+                    )
 
-                print(
-                    f"[translate] Realy temporary error "
-                    f"{response.status_code}. "
-                    f"Retrying in {delay}s "
-                    f"({attempt + 2}/{max_attempts})...",
-                    flush=True,
-                )
+                    time.sleep(delay)
+                    continue
 
-                time.sleep(delay)
+                return jsonify(
+                    {
+                        "error": "Relay API rate limit aşıldı.",
+                        "details": str(error),
+                    }
+                ), 429
+
+            except openai.APIStatusError as error:
+                if (
+                    error.status_code in {500, 502, 503, 504}
+                    and attempt < max_attempts - 1
+                ):
+                    delay = retry_delays[attempt]
+
+                    print(
+                        f"[translate] Relay temporary error "
+                        f"{error.status_code}. "
+                        f"Retrying in {delay}s "
+                        f"({attempt + 2}/{max_attempts})...",
+                        flush=True,
+                    )
+
+                    time.sleep(delay)
+                    continue
+
+                return jsonify(
+                    {
+                        "error": "Relay API request failed.",
+                        "details": str(error),
+                    }
+                ), error.status_code
 
         # Retry bittikten SONRA cevabı kontrol ediyoruz.
-        if response is None:
+        if completion is None:
             return jsonify(
                 {
                     "error": "Relay API yanıtı alınamadı."
                 }
             ), 502
 
-        if not response.ok:
+        raw_text = completion.choices[0].message.content or ""
+        finish_reason = completion.choices[0].finish_reason
+
+        # A response cut off by the token limit or looping on the same
+        # sentence/line is a known failure mode that otherwise surfaces as
+        # a confusing "invalid JSON" 502. Catch it here with a clear
+        # message instead of letting the JSON parser fail cryptically.
+        if finish_reason == "length" or has_excessive_repetition(raw_text):
             return jsonify(
                 {
-                    "error": "Relay API request failed.",
-                    "details": response.text,
+                    "error": (
+                        "Model, belgeyi işlerken aynı ifadeyi tekrar tekrar "
+                        "üretti veya yanıtı token sınırına takıldı. Lütfen "
+                        "tekrar deneyin; sorun devam ederse belgeyi daha "
+                        "küçük bir bölüm hâlinde göndermeyi deneyin."
+                    )
                 }
-            ), response.status_code
-
-        response_data = response.json()
-
-        print(
-            "[translate] FULL RELAY RESPONSE:",
-            json.dumps(
-                response_data,
-                ensure_ascii=False,
-                indent=2,
-            )[:10000],
-            flush=True,
-        )
-        
-
-        response_data = response.json()
-
-        raw_text = (
-            response_data
-            .get("choices", [{}])[0]
-            .get("message", {})
-            .get("content", "")
-        )
+            ), 502
 
         cleaned_text = raw_text.strip()
 
@@ -356,7 +467,17 @@ def translate_endpoint():
             flush=True,
         )
 
-        parsed = json.loads(cleaned_text)
+        try:
+            parsed = json.loads(cleaned_text)
+        except json.JSONDecodeError:
+            # Some models add stray prose around the JSON object despite
+            # instructions not to. Fall back to extracting the first
+            # {...} block before giving up, so a well-behaved-but-chatty
+            # response doesn't needlessly fail.
+            json_match = re.search(r"\{[\s\S]*\}", cleaned_text)
+            if not json_match:
+                raise
+            parsed = json.loads(json_match.group(0))
 
         if not parsed.get("ocr") or not parsed.get("trans"):
             return jsonify(
@@ -373,6 +494,7 @@ def translate_endpoint():
         }
 
         optional_string_fields = [
+            "translit",
             "document_type",
             "style",
             "summary",
@@ -410,6 +532,47 @@ def translate_endpoint():
                 if cleaned_list:
                     result[field] = cleaned_list
 
+        # uncertain_lines is a list of {reference, guess} objects rather
+        # than plain strings, so it needs its own cleanup pass instead of
+        # optional_list_fields above. Parsed defensively since the model
+        # may not follow the exact shape asked for in the prompt.
+        uncertain_lines = parsed.get("uncertain_lines")
+
+        if isinstance(uncertain_lines, list):
+            cleaned_uncertain_lines = []
+
+            for item in uncertain_lines:
+                if isinstance(item, dict):
+                    reference = str(
+                        item.get("reference")
+                        or item.get("satir")
+                        or ""
+                    ).strip()
+                    guess = str(
+                        item.get("guess")
+                        or item.get("tahmin")
+                        or ""
+                    ).strip()
+
+                    if reference or guess:
+                        cleaned_uncertain_lines.append(
+                            {
+                                "reference": reference,
+                                "guess": guess,
+                            }
+                        )
+
+                elif isinstance(item, str) and item.strip():
+                    cleaned_uncertain_lines.append(
+                        {
+                            "reference": item.strip(),
+                            "guess": "",
+                        }
+                    )
+
+            if cleaned_uncertain_lines:
+                result["uncertain_lines"] = cleaned_uncertain_lines
+
         confidence = parsed.get("confidence")
 
         if isinstance(confidence, (int, float)):
@@ -428,16 +591,6 @@ def translate_endpoint():
                 )
             }
         ), 502
-
-    except requests.exceptions.Timeout:
-        return jsonify(
-            {
-                "error": (
-                    "Relay yanıt vermedi (zaman aşımı). "
-                    "Lütfen birkaç saniye sonra tekrar deneyin."
-                )
-            }
-        ), 504
 
     except Exception as error:
         return jsonify(
