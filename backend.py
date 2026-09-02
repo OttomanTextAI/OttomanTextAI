@@ -797,6 +797,63 @@ def health():
     )
 
 
+# --- TEMPORARY DEBUG ENDPOINT — remove once the RelayGPU 403 is diagnosed ---
+# Intentionally unauthenticated so the JSON can be read by just navigating
+# to the URL in a browser, no Render log access needed. Do not leave in
+# production longer than needed for this investigation.
+@app.route("/api/debug-relay", methods=["GET"])
+def debug_relay():
+    api_key = (os.getenv("RELAY_API_KEY") or "").strip()
+    base_url = (os.getenv("RELAY_BASE_URL") or "").strip()
+
+    if not api_key:
+        return jsonify({"ok": False, "error": "RELAY_API_KEY is not configured."})
+
+    if not base_url:
+        return jsonify({"ok": False, "error": "RELAY_BASE_URL is not configured."})
+
+    client = OpenAI(api_key=api_key, base_url=base_url)
+
+    try:
+        completion = client.chat.completions.create(
+            model="google/gemini-3.5-flash",
+            messages=[
+                {"role": "user", "content": "merhaba, bu bir test"}
+            ],
+            timeout=30,
+        )
+        return jsonify(
+            {
+                "ok": True,
+                "reply": completion.choices[0].message.content,
+            }
+        )
+
+    except openai.APIStatusError as error:
+        try:
+            relay_body = error.response.text
+        except Exception:
+            relay_body = getattr(error, "body", None)
+
+        return jsonify(
+            {
+                "ok": False,
+                "status_code": error.status_code,
+                "details": str(error),
+                "relay_response_body": relay_body,
+            }
+        )
+
+    except Exception as error:
+        return jsonify(
+            {
+                "ok": False,
+                "error": str(error),
+            }
+        )
+# --- end TEMPORARY DEBUG ENDPOINT ---
+
+
 if __name__ == "__main__":
     app.run(
         host="0.0.0.0",
