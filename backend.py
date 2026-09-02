@@ -3,12 +3,15 @@ import json
 import os
 import re
 import traceback
+from concurrent.futures import ThreadPoolExecutor
 from io import BytesIO
 from pathlib import Path
 
 import time
 import random
 
+import cv2
+import numpy as np
 import requests
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request, send_file
@@ -90,6 +93,557 @@ def has_excessive_repetition(text, max_repeats=4, min_fragment_length=15):
             return True
 
     return False
+
+
+def _build_messages(prompt, image_bytes):
+    """Build the chat-completions message list for a single image."""
+    encoded_image = base64.b64encode(image_bytes).decode("utf-8")
+
+    return [
+        {
+            "role": "user",
+            "content": [
+                {
+                    "type": "text",
+                    "text": prompt,
+                },
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": (
+                            "data:image/png;base64,"
+                            + encoded_image
+                        )
+                    },
+                },
+            ],
+        }
+    ]
+
+
+def _relay_completion(
+    client,
+    model,
+    messages,
+    temperature,
+    max_tokens,
+    max_attempts=3,
+    retry_delays=(2, 5),
+    label="translate",
+):
+    """
+    Call RelayGPU once, retrying up to max_attempts times on transient
+    timeout/connection/rate-limit/5xx errors (unchanged from the original
+    single-call retry behavior). Returns
+    {"ok": True, "raw_text": ..., "finish_reason": ...} on success, or
+    {"ok": False, "message": <dict>, "status_code": <int>} describing the
+    HTTP response the caller should return on a definitive failure.
+    """
+    for attempt in range(max_attempts):
+        try:
+            completion = client.chat.completions.create(
+                model=model,
+                messages=messages,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                timeout=120,
+            )
+
+            return {
+                "ok": True,
+                "raw_text": completion.choices[0].message.content or "",
+                "finish_reason": completion.choices[0].finish_reason,
+            }
+
+        except (openai.APITimeoutError, openai.APIConnectionError) as error:
+            if attempt < max_attempts - 1:
+                delay = retry_delays[attempt]
+
+                print(
+                    f"[translate:{label}] Relay timeout/connection error. "
+                    f"Retrying in {delay}s "
+                    f"({attempt + 2}/{max_attempts})...",
+                    flush=True,
+                )
+
+                time.sleep(delay)
+                continue
+
+            return {
+                "ok": False,
+                "message": {
+                    "error": (
+                        "Relay yanıt vermedi (zaman aşımı). "
+                        "Lütfen birkaç saniye sonra tekrar deneyin."
+                    )
+                },
+                "status_code": 504,
+            }
+
+        except openai.RateLimitError as error:
+            if attempt < max_attempts - 1:
+                delay = retry_delays[attempt]
+
+                print(
+                    f"[translate:{label}] Relay rate limit. "
+                    f"Retrying in {delay}s "
+                    f"({attempt + 2}/{max_attempts})...",
+                    flush=True,
+                )
+
+                time.sleep(delay)
+                continue
+
+            return {
+                "ok": False,
+                "message": {
+                    "error": "Relay API rate limit aşıldı.",
+                    "details": str(error),
+                },
+                "status_code": 429,
+            }
+
+        except openai.APIStatusError as error:
+            if (
+                error.status_code in {500, 502, 503, 504}
+                and attempt < max_attempts - 1
+            ):
+                delay = retry_delays[attempt]
+
+                print(
+                    f"[translate:{label}] Relay temporary error "
+                    f"{error.status_code}. "
+                    f"Retrying in {delay}s "
+                    f"({attempt + 2}/{max_attempts})...",
+                    flush=True,
+                )
+
+                time.sleep(delay)
+                continue
+
+            # str(error) is usually just a short summary (e.g. "Error
+            # code: 403 - blocked"). The full JSON body — quota, key
+            # restriction, content-policy reason, etc. — is on the
+            # underlying httpx response, so log that explicitly too; it's
+            # the only way to see it in the Render logs.
+            try:
+                relay_body = error.response.text
+            except Exception:
+                relay_body = getattr(error, "body", None)
+
+            print(
+                f"[translate:{label}] Relay API error {error.status_code}. "
+                f"Full response body: {relay_body}",
+                flush=True,
+            )
+
+            return {
+                "ok": False,
+                "message": {
+                    "error": "Relay API request failed.",
+                    "details": str(error),
+                },
+                "status_code": error.status_code,
+            }
+
+    # Every branch above returns; kept only as a defensive fallback.
+    return {
+        "ok": False,
+        "message": {"error": "Relay API yanıtı alınamadı."},
+        "status_code": 502,
+    }
+
+
+def _get_relay_result(
+    client,
+    model,
+    messages,
+    temperature,
+    max_tokens,
+    max_repetition_attempts=2,
+    repetition_retry_delay=1.5,
+    label="main",
+):
+    """
+    Get a usable (non-repetitive) response from RelayGPU, retrying the
+    whole request up to max_repetition_attempts times when the model
+    loops on the same phrase or gets cut off at the token limit. Returns
+    {"ok": True, "raw_text": ..., "finish_reason": ...} on success,
+    {"ok": False, "reason": "network", "message": ..., "status_code": ...}
+    on a definitive API/network failure, or
+    {"ok": False, "reason": "repetition"} if every attempt looped.
+    """
+    for repetition_attempt in range(max_repetition_attempts):
+        call_result = _relay_completion(
+            client,
+            model,
+            messages,
+            temperature,
+            max_tokens,
+            label=label,
+        )
+
+        if not call_result["ok"]:
+            return {
+                "ok": False,
+                "reason": "network",
+                "message": call_result["message"],
+                "status_code": call_result["status_code"],
+            }
+
+        raw_text = call_result["raw_text"]
+        finish_reason = call_result["finish_reason"]
+
+        if finish_reason == "length" or has_excessive_repetition(raw_text):
+            if repetition_attempt < max_repetition_attempts - 1:
+                print(
+                    f"[translate:{label}] Attempt "
+                    f"{repetition_attempt + 2}/{max_repetition_attempts} "
+                    f"due to repetition detected "
+                    f"(finish_reason={finish_reason}).",
+                    flush=True,
+                )
+
+                time.sleep(repetition_retry_delay)
+                continue
+
+            return {"ok": False, "reason": "repetition"}
+
+        return {
+            "ok": True,
+            "raw_text": raw_text,
+            "finish_reason": finish_reason,
+        }
+
+    return {"ok": False, "reason": "repetition"}
+
+
+def _parse_and_clean_relay_response(raw_text):
+    """
+    Parse a raw model response into the cleaned result dict returned by
+    /api/translate. Returns None if the model didn't produce usable
+    ocr/trans content. Raises json.JSONDecodeError if the response isn't
+    valid JSON and no {...} block could be recovered from it.
+    """
+    cleaned_text = raw_text.strip()
+
+    if cleaned_text.startswith("```"):
+        cleaned_text = (
+            cleaned_text
+            .replace("```json", "")
+            .replace("```", "")
+            .strip()
+        )
+
+    print(
+        "[translate] RAW RELAY RESPONSE:",
+        cleaned_text[:2000],
+        flush=True,
+    )
+
+    try:
+        parsed = json.loads(cleaned_text)
+    except json.JSONDecodeError:
+        # Some models add stray prose around the JSON object despite
+        # instructions not to. Fall back to extracting the first
+        # {...} block before giving up, so a well-behaved-but-chatty
+        # response doesn't needlessly fail.
+        json_match = re.search(r"\{[\s\S]*\}", cleaned_text)
+        if not json_match:
+            raise
+        parsed = json.loads(json_match.group(0))
+
+    if not parsed.get("ocr") or not parsed.get("trans"):
+        return None
+
+    result = {
+        "ocr": parsed.get("ocr", ""),
+        "trans": parsed.get("trans", ""),
+    }
+
+    optional_string_fields = [
+        "translit",
+        "document_type",
+        "style",
+        "summary",
+        "script_type",
+        "script_purpose",
+        "period_estimate",
+        "date_hijri",
+        "date_gregorian",
+        "notes",
+    ]
+
+    for field in optional_string_fields:
+        value = parsed.get(field)
+
+        if isinstance(value, str) and value.strip():
+            result[field] = value.strip()
+
+    optional_list_fields = [
+        "key_points",
+        "people",
+        "places",
+        "concepts",
+    ]
+
+    for field in optional_list_fields:
+        value = parsed.get(field)
+
+        if isinstance(value, list):
+            cleaned_list = [
+                item.strip()
+                for item in value
+                if isinstance(item, str) and item.strip()
+            ]
+
+            if cleaned_list:
+                result[field] = cleaned_list
+
+    # uncertain_lines is a list of {reference, guess} objects rather
+    # than plain strings, so it needs its own cleanup pass instead of
+    # optional_list_fields above. Parsed defensively since the model
+    # may not follow the exact shape asked for in the prompt.
+    uncertain_lines = parsed.get("uncertain_lines")
+
+    if isinstance(uncertain_lines, list):
+        cleaned_uncertain_lines = []
+
+        for item in uncertain_lines:
+            if isinstance(item, dict):
+                reference = str(
+                    item.get("reference")
+                    or item.get("satir")
+                    or ""
+                ).strip()
+                guess = str(
+                    item.get("guess")
+                    or item.get("tahmin")
+                    or ""
+                ).strip()
+
+                if reference or guess:
+                    cleaned_uncertain_lines.append(
+                        {
+                            "reference": reference,
+                            "guess": guess,
+                        }
+                    )
+
+            elif isinstance(item, str) and item.strip():
+                cleaned_uncertain_lines.append(
+                    {
+                        "reference": item.strip(),
+                        "guess": "",
+                    }
+                )
+
+        if cleaned_uncertain_lines:
+            result["uncertain_lines"] = cleaned_uncertain_lines
+
+    confidence = parsed.get("confidence")
+
+    if isinstance(confidence, (int, float)):
+        result["confidence"] = max(
+            0,
+            min(100, round(confidence)),
+        )
+
+    return result
+
+
+def _split_image_top_bottom(image_bytes, overlap_ratio=0.08):
+    """
+    Decode image bytes and split into a top half and a bottom half with a
+    vertical overlap, so a text line sitting on the split point isn't cut
+    off in both pieces.
+    """
+    encoded_input = np.frombuffer(image_bytes, dtype=np.uint8)
+    decoded_image = cv2.imdecode(encoded_input, cv2.IMREAD_UNCHANGED)
+
+    if decoded_image is None:
+        raise ValueError("Split image bytes could not be decoded.")
+
+    height = decoded_image.shape[0]
+    midpoint = height // 2
+    overlap = int(height * overlap_ratio)
+
+    top = decoded_image[0 : min(height, midpoint + overlap), :]
+    bottom = decoded_image[max(0, midpoint - overlap) :, :]
+
+    top_encoded_ok, top_encoded = cv2.imencode(".png", top)
+    bottom_encoded_ok, bottom_encoded = cv2.imencode(".png", bottom)
+
+    if not top_encoded_ok or not bottom_encoded_ok:
+        raise ValueError("Split image halves could not be encoded.")
+
+    return top_encoded.tobytes(), bottom_encoded.tobytes()
+
+
+def _merge_split_results(top, bottom):
+    """
+    Merge the cleaned results of the top and bottom image halves into a
+    single result dict with the same shape /api/translate normally
+    returns, so the split strategy is invisible to the frontend.
+    """
+    merged = {
+        "ocr": "\n".join(
+            part
+            for part in (top.get("ocr", ""), bottom.get("ocr", ""))
+            if part
+        ),
+        "trans": "\n".join(
+            part
+            for part in (top.get("trans", ""), bottom.get("trans", ""))
+            if part
+        ),
+    }
+
+    if not merged["ocr"] or not merged["trans"]:
+        return None
+
+    if top.get("translit") or bottom.get("translit"):
+        merged["translit"] = "\n".join(
+            part
+            for part in (
+                top.get("translit", ""),
+                bottom.get("translit", ""),
+            )
+            if part
+        )
+
+    # Document-level fields aren't per-half, so prefer whichever half
+    # produced a value (top first, since it usually carries the
+    # document's opening/header information).
+    singular_fields = [
+        "document_type",
+        "style",
+        "summary",
+        "script_type",
+        "script_purpose",
+        "period_estimate",
+        "date_hijri",
+        "date_gregorian",
+        "notes",
+    ]
+
+    for field in singular_fields:
+        value = top.get(field) or bottom.get(field)
+
+        if value:
+            merged[field] = value
+
+    list_fields = ["key_points", "people", "places", "concepts"]
+
+    for field in list_fields:
+        combined = list(top.get(field, [])) + list(bottom.get(field, []))
+        deduped = list(dict.fromkeys(combined))
+
+        if deduped:
+            merged[field] = deduped
+
+    uncertain_lines = (
+        list(top.get("uncertain_lines", []))
+        + list(bottom.get("uncertain_lines", []))
+    )
+
+    if uncertain_lines:
+        merged["uncertain_lines"] = uncertain_lines
+
+    top_confidence = top.get("confidence")
+    bottom_confidence = bottom.get("confidence")
+
+    if isinstance(top_confidence, (int, float)) and isinstance(
+        bottom_confidence, (int, float)
+    ):
+        merged["confidence"] = round(
+            (top_confidence + bottom_confidence) / 2
+        )
+    elif isinstance(top_confidence, (int, float)):
+        merged["confidence"] = top_confidence
+    elif isinstance(bottom_confidence, (int, float)):
+        merged["confidence"] = bottom_confidence
+
+    return merged
+
+
+def _try_split_image_translation(
+    client,
+    model,
+    temperature,
+    max_tokens,
+    image_bytes,
+    prompt,
+):
+    """
+    Split the image top/bottom and translate each half separately
+    (in parallel where possible, falling back to sequential on any
+    unexpected error), then merge the two results into one. Returns the
+    merged result dict, or None if the split strategy didn't produce a
+    usable result.
+    """
+    try:
+        top_bytes, bottom_bytes = _split_image_top_bottom(image_bytes)
+    except Exception as error:
+        print(
+            f"[translate] Split-image preparation failed: {error}",
+            flush=True,
+        )
+        return None
+
+    top_messages = _build_messages(prompt, top_bytes)
+    bottom_messages = _build_messages(prompt, bottom_bytes)
+
+    def get_half(messages, label):
+        return _get_relay_result(
+            client,
+            model,
+            messages,
+            temperature,
+            max_tokens,
+            max_repetition_attempts=2,
+            label=label,
+        )
+
+    try:
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            top_future = executor.submit(
+                get_half, top_messages, "split-top"
+            )
+            bottom_future = executor.submit(
+                get_half, bottom_messages, "split-bottom"
+            )
+
+            top_result = top_future.result()
+            bottom_result = bottom_future.result()
+
+    except Exception as error:
+        print(
+            f"[translate] Parallel split-image request failed "
+            f"({error}); falling back to sequential requests.",
+            flush=True,
+        )
+
+        top_result = get_half(top_messages, "split-top")
+        bottom_result = get_half(bottom_messages, "split-bottom")
+
+    if not top_result["ok"] or not bottom_result["ok"]:
+        return None
+
+    try:
+        top_parsed = _parse_and_clean_relay_response(
+            top_result["raw_text"]
+        )
+        bottom_parsed = _parse_and_clean_relay_response(
+            bottom_result["raw_text"]
+        )
+    except json.JSONDecodeError:
+        return None
+
+    if top_parsed is None or bottom_parsed is None:
+        return None
+
+    return _merge_split_results(top_parsed, bottom_parsed)
 
 
 @app.route("/api/enhance", methods=["POST"])
@@ -371,318 +925,106 @@ def translate_endpoint():
 
     try:
         image_bytes = uploaded_file.read()
+        messages = _build_messages(ANALYSIS_PROMPT, image_bytes)
 
-        encoded_image = base64.b64encode(
-            image_bytes
-        ).decode("utf-8")
+        main_result = _get_relay_result(
+            client,
+            model,
+            messages,
+            temperature,
+            max_tokens,
+            max_repetition_attempts=2,
+            label="main",
+        )
 
-        messages = [
-            {
-                "role": "user",
-                "content": [
-                    {
-                        "type": "text",
-                        "text": ANALYSIS_PROMPT,
-                    },
-                    {
-                        "type": "image_url",
-                        "image_url": {
-                            "url": (
-                                "data:image/png;base64,"
-                                + encoded_image
-                            )
-                        },
-                    },
-                ],
-            }
-        ]
+        if main_result["ok"]:
+            parsed = _parse_and_clean_relay_response(
+                main_result["raw_text"]
+            )
 
-        completion = None
-        raw_text = ""
-        finish_reason = None
-        max_attempts = 3
-        retry_delays = [2, 5]
-
-        # Some difficult manuscript images make the model loop
-        # probabilistically on the same phrase; retrying the same request
-        # often succeeds on the next try, so this is worth doing
-        # automatically before asking the user to re-upload. Kept small
-        # (2 total) to keep worst-case wait time reasonable for the user.
-        max_repetition_attempts = 2
-        repetition_retry_delay = 1.5
-
-        for repetition_attempt in range(max_repetition_attempts):
-            completion = None
-
-            for attempt in range(max_attempts):
-                try:
-                    completion = client.chat.completions.create(
-                        model=model,
-                        messages=messages,
-                        temperature=temperature,
-                        max_tokens=max_tokens,
-                        timeout=120,
-                    )
-                    break
-
-                except (openai.APITimeoutError, openai.APIConnectionError) as error:
-                    if attempt < max_attempts - 1:
-                        delay = retry_delays[attempt]
-
-                        print(
-                            f"[translate] Relay timeout/connection error. "
-                            f"Retrying in {delay}s "
-                            f"({attempt + 2}/{max_attempts})...",
-                            flush=True,
-                        )
-
-                        time.sleep(delay)
-                        continue
-
-                    return jsonify(
-                        {
-                            "error": (
-                                "Relay yanıt vermedi (zaman aşımı). "
-                                "Lütfen birkaç saniye sonra tekrar deneyin."
-                            )
-                        }
-                    ), 504
-
-                except openai.RateLimitError as error:
-                    if attempt < max_attempts - 1:
-                        delay = retry_delays[attempt]
-
-                        print(
-                            f"[translate] Relay rate limit. "
-                            f"Retrying in {delay}s "
-                            f"({attempt + 2}/{max_attempts})...",
-                            flush=True,
-                        )
-
-                        time.sleep(delay)
-                        continue
-
-                    return jsonify(
-                        {
-                            "error": "Relay API rate limit aşıldı.",
-                            "details": str(error),
-                        }
-                    ), 429
-
-                except openai.APIStatusError as error:
-                    if (
-                        error.status_code in {500, 502, 503, 504}
-                        and attempt < max_attempts - 1
-                    ):
-                        delay = retry_delays[attempt]
-
-                        print(
-                            f"[translate] Relay temporary error "
-                            f"{error.status_code}. "
-                            f"Retrying in {delay}s "
-                            f"({attempt + 2}/{max_attempts})...",
-                            flush=True,
-                        )
-
-                        time.sleep(delay)
-                        continue
-
-                    # str(error) is usually just a short summary (e.g.
-                    # "Error code: 403 - blocked"). The full JSON body —
-                    # quota, key restriction, content-policy reason, etc. —
-                    # is on the underlying httpx response, so log that
-                    # explicitly too; it's the only way to see it in the
-                    # Render logs.
-                    try:
-                        relay_body = error.response.text
-                    except Exception:
-                        relay_body = getattr(error, "body", None)
-
-                    print(
-                        f"[translate] Relay API error {error.status_code}. "
-                        f"Full response body: {relay_body}",
-                        flush=True,
-                    )
-
-                    return jsonify(
-                        {
-                            "error": "Relay API request failed.",
-                            "details": str(error),
-                        }
-                    ), error.status_code
-
-            # Retry bittikten SONRA cevabı kontrol ediyoruz.
-            if completion is None:
-                return jsonify(
-                    {
-                        "error": "Relay API yanıtı alınamadı."
-                    }
-                ), 502
-
-            raw_text = completion.choices[0].message.content or ""
-            finish_reason = completion.choices[0].finish_reason
-
-            # A response cut off by the token limit or looping on the same
-            # sentence/line is a known failure mode that otherwise surfaces
-            # as a confusing "invalid JSON" 502. Retry the whole request
-            # once before giving up.
-            if finish_reason == "length" or has_excessive_repetition(raw_text):
-                if repetition_attempt < max_repetition_attempts - 1:
-                    print(
-                        f"[translate] Attempt {repetition_attempt + 2}/"
-                        f"{max_repetition_attempts} due to repetition "
-                        f"detected (finish_reason={finish_reason}).",
-                        flush=True,
-                    )
-
-                    time.sleep(repetition_retry_delay)
-                    continue
-
+            if parsed is None:
                 return jsonify(
                     {
                         "error": (
-                            "Model, belgeyi işlerken aynı ifadeyi tekrar "
-                            "tekrar üretti veya yanıtı token sınırına "
-                            "takıldı. Lütfen tekrar deneyin; sorun devam "
-                            "ederse belgeyi daha küçük bir bölüm hâlinde "
-                            "göndermeyi deneyin."
+                            "Model transkripsiyon veya çeviri üretemedi."
                         )
                     }
                 ), 502
 
-            break
+            return jsonify(parsed)
 
-        cleaned_text = raw_text.strip()
+        if main_result["reason"] == "network":
+            return jsonify(
+                main_result["message"]
+            ), main_result["status_code"]
 
-        if cleaned_text.startswith("```"):
-            cleaned_text = (
-                cleaned_text
-                .replace("```json", "")
-                .replace("```", "")
-                .strip()
-            )
-
+        # reason == "repetition": both normal attempts looped. Instead of
+        # failing right away, try splitting the image into top/bottom
+        # halves — a difficult full-page image often succeeds once each
+        # half is a simpler, smaller request.
         print(
-            "[translate] RAW RELAY RESPONSE:",
-            cleaned_text[:2000],
+            "[translate] Falling back to split-image strategy after "
+            "2 failed attempts",
             flush=True,
         )
 
-        try:
-            parsed = json.loads(cleaned_text)
-        except json.JSONDecodeError:
-            # Some models add stray prose around the JSON object despite
-            # instructions not to. Fall back to extracting the first
-            # {...} block before giving up, so a well-behaved-but-chatty
-            # response doesn't needlessly fail.
-            json_match = re.search(r"\{[\s\S]*\}", cleaned_text)
-            if not json_match:
-                raise
-            parsed = json.loads(json_match.group(0))
+        split_result = _try_split_image_translation(
+            client,
+            model,
+            temperature,
+            max_tokens,
+            image_bytes,
+            ANALYSIS_PROMPT,
+        )
 
-        if not parsed.get("ocr") or not parsed.get("trans"):
-            return jsonify(
-                {
-                    "error": (
-                        "Model transkripsiyon veya çeviri üretemedi."
-                    )
-                }
-            ), 502
+        if split_result is not None:
+            return jsonify(split_result)
 
-        result = {
-            "ocr": parsed.get("ocr", ""),
-            "trans": parsed.get("trans", ""),
-        }
+        # Split strategy also failed. Last resort: try the whole
+        # (unsplit) image once more with a different model, in case this
+        # particular model is what's looping on this document.
+        fallback_model = llm_config.get("fallback_model")
 
-        optional_string_fields = [
-            "translit",
-            "document_type",
-            "style",
-            "summary",
-            "script_type",
-            "script_purpose",
-            "period_estimate",
-            "date_hijri",
-            "date_gregorian",
-            "notes",
-        ]
-
-        for field in optional_string_fields:
-            value = parsed.get(field)
-
-            if isinstance(value, str) and value.strip():
-                result[field] = value.strip()
-
-        optional_list_fields = [
-            "key_points",
-            "people",
-            "places",
-            "concepts",
-        ]
-
-        for field in optional_list_fields:
-            value = parsed.get(field)
-
-            if isinstance(value, list):
-                cleaned_list = [
-                    item.strip()
-                    for item in value
-                    if isinstance(item, str) and item.strip()
-                ]
-
-                if cleaned_list:
-                    result[field] = cleaned_list
-
-        # uncertain_lines is a list of {reference, guess} objects rather
-        # than plain strings, so it needs its own cleanup pass instead of
-        # optional_list_fields above. Parsed defensively since the model
-        # may not follow the exact shape asked for in the prompt.
-        uncertain_lines = parsed.get("uncertain_lines")
-
-        if isinstance(uncertain_lines, list):
-            cleaned_uncertain_lines = []
-
-            for item in uncertain_lines:
-                if isinstance(item, dict):
-                    reference = str(
-                        item.get("reference")
-                        or item.get("satir")
-                        or ""
-                    ).strip()
-                    guess = str(
-                        item.get("guess")
-                        or item.get("tahmin")
-                        or ""
-                    ).strip()
-
-                    if reference or guess:
-                        cleaned_uncertain_lines.append(
-                            {
-                                "reference": reference,
-                                "guess": guess,
-                            }
-                        )
-
-                elif isinstance(item, str) and item.strip():
-                    cleaned_uncertain_lines.append(
-                        {
-                            "reference": item.strip(),
-                            "guess": "",
-                        }
-                    )
-
-            if cleaned_uncertain_lines:
-                result["uncertain_lines"] = cleaned_uncertain_lines
-
-        confidence = parsed.get("confidence")
-
-        if isinstance(confidence, (int, float)):
-            result["confidence"] = max(
-                0,
-                min(100, round(confidence)),
+        if fallback_model:
+            print(
+                f"[translate] Falling back to alternate model "
+                f"({fallback_model}) after split-image strategy also "
+                f"failed",
+                flush=True,
             )
 
-        return jsonify(result)
+            fallback_result = _get_relay_result(
+                client,
+                fallback_model,
+                messages,
+                temperature,
+                max_tokens,
+                max_repetition_attempts=1,
+                label="fallback-model",
+            )
+
+            if fallback_result["ok"]:
+                try:
+                    fallback_parsed = _parse_and_clean_relay_response(
+                        fallback_result["raw_text"]
+                    )
+                except json.JSONDecodeError:
+                    fallback_parsed = None
+
+                if fallback_parsed is not None:
+                    return jsonify(fallback_parsed)
+
+        return jsonify(
+            {
+                "error": (
+                    "Model, belgeyi işlerken aynı ifadeyi tekrar "
+                    "tekrar üretti veya yanıtı token sınırına "
+                    "takıldı. Lütfen tekrar deneyin; sorun devam "
+                    "ederse belgeyi daha küçük bir bölüm hâlinde "
+                    "göndermeyi deneyin."
+                )
+            }
+        ), 502
 
     except json.JSONDecodeError:
         return jsonify(
