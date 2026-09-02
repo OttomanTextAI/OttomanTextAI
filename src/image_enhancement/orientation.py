@@ -644,34 +644,33 @@ def _prepare_orientation_mask(
         )
     )
 
-    cleaned = np.zeros_like(binary)
+    # A real document photo can have many hundreds of connected components
+    # (every letter stroke/diacritic counts). Looping over each one and
+    # doing `labels == label` re-scans the *entire* image per component —
+    # this alone was ~5s per call and, run 4x per request (once per
+    # rotation candidate), was the dominant cost of the whole enhance
+    # pipeline. Building one keep/reject mask over all labels at once and
+    # applying it in a single vectorized pass does the same filtering in
+    # a fraction of the time.
+    areas = stats[:, cv2.CC_STAT_AREA]
+    widths = stats[:, cv2.CC_STAT_WIDTH]
+    heights = stats[:, cv2.CC_STAT_HEIGHT]
 
-    for label in range(
-        1,
-        component_count,
-    ):
-        x, y, component_width, component_height, area = (
-            stats[label]
-        )
+    keep_label_mask = (
+        (areas >= 5)
+        & (areas <= image_area * 0.03)
+        & (widths <= width * 0.85)
+        & (heights <= height * 0.85)
+    )
+    keep_label_mask[0] = False  # label 0 is the background
 
-        # Ignore tiny noise.
-        if area < 5:
-            continue
+    kept_labels = np.flatnonzero(keep_label_mask)
 
-        # Ignore very large stains / page regions.
-        if area > image_area * 0.03:
-            continue
-
-        # Ignore long page borders or scratches.
-        if (
-            component_width > width * 0.85
-            or component_height > height * 0.85
-        ):
-            continue
-
-        cleaned[
-            labels == label
-        ] = 255
+    cleaned = np.where(
+        np.isin(labels, kept_labels),
+        np.uint8(255),
+        np.uint8(0),
+    )
 
     return cleaned
 
