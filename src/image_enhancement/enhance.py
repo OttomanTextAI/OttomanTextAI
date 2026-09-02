@@ -16,6 +16,18 @@ DEFAULT_DENOISE_DIAMETER = 5
 DEFAULT_DENOISE_SIGMA_COLOR = 30.0
 DEFAULT_DENOISE_SIGMA_SPACE = 30.0
 
+# Every pipeline stage after decode (denoise, CLAHE, threshold, speckle
+# removal, ...) scales with pixel count, and on Render's 512MB free tier a
+# full-resolution phone photo can OOM-kill the gunicorn worker mid-request.
+# Capping the long edge here bounds worst-case memory for the whole
+# pipeline regardless of the original photo's resolution.
+MAX_LONG_EDGE = 2400
+
+# Rejected before processing rather than risked: an unusually large image
+# (e.g. a raw scan) can already be too heavy to safely hold in memory at
+# decode time, before it even reaches the resize step above.
+MAX_DECODE_MEGAPIXELS = 60
+
 
 def convert_to_grayscale(image: np.ndarray) -> np.ndarray:
     """
@@ -262,6 +274,27 @@ def enhance_image(
     if decoded_image is None:
         raise ValueError(
             "Input image bytes could not be decoded."
+        )
+
+    decoded_height, decoded_width = decoded_image.shape[:2]
+    decoded_megapixels = (decoded_height * decoded_width) / 1_000_000
+
+    if decoded_megapixels > MAX_DECODE_MEGAPIXELS:
+        raise ValueError(
+            "Bu görsel çok büyük, lütfen daha küçük bir görsel deneyin."
+        )
+
+    long_edge = max(decoded_height, decoded_width)
+
+    if long_edge > MAX_LONG_EDGE:
+        resize_scale = MAX_LONG_EDGE / long_edge
+
+        decoded_image = cv2.resize(
+            decoded_image,
+            None,
+            fx=resize_scale,
+            fy=resize_scale,
+            interpolation=cv2.INTER_AREA,
         )
 
     # Local import prevents a circular import because preprocess.py

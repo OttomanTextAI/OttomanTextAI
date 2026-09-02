@@ -184,7 +184,7 @@ profiles:
     threshold_method: otsu
 
     upscale_enabled: true
-    upscale_factor: 2.0
+    upscale_factor: 1.5
 
     background_normalization_enabled: false
     clahe_enabled: true

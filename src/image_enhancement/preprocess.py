@@ -2,6 +2,7 @@
 
 from pathlib import Path
 from typing import Any
+import gc
 import time
 
 import numpy as np
@@ -303,6 +304,16 @@ def preprocess_image(
             interpolation=cv2.INTER_CUBIC,
         )
 
+    # orientation_corrected_image, perspective_corrected_image and
+    # deskewed_image were each full-size BGR copies used only to produce
+    # the next one; text_region_image (used for the rest of the pipeline)
+    # already holds what's needed, so these can be freed now instead of
+    # sitting in memory for the rest of the function.
+    del orientation_corrected_image
+    del perspective_corrected_image
+    del deskewed_image
+    gc.collect()
+
     text_protection_mask = None
     faint_text_mask = None
     very_faint_text_mask = None
@@ -569,8 +580,8 @@ def preprocess_image(
         sigma_space=denoise_config["sigma_space"],
     )
 
-    
-      
+    del grayscale_image
+
     normalized_image = denoised_image
 
     if profile_config[
@@ -590,6 +601,9 @@ def preprocess_image(
             f"{time.perf_counter() - t:.3f}s",
             flush=True,
         )
+
+    del denoised_image
+    gc.collect()
 
     bleed_suppressed_image = normalized_image
 
