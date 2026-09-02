@@ -300,13 +300,16 @@ def _get_relay_result(
     label="main",
 ):
     """
-    Get a usable (non-repetitive) response from RelayGPU, retrying the
-    whole request up to max_repetition_attempts times when the model
-    loops on the same phrase or gets cut off at the token limit. Returns
-    {"ok": True, "raw_text": ..., "finish_reason": ...} on success,
+    Get a usable response from RelayGPU, retrying the whole request up to
+    max_repetition_attempts times when the model loops on the same
+    phrase, gets cut off at the token limit, or returns something that
+    isn't a usable ocr/trans JSON object at all (empty content, invalid
+    JSON, missing fields — a relay-side hiccup deserves the same
+    "just try again" treatment as a looping model). Returns
+    {"ok": True, "parsed": <cleaned result dict>} on success,
     {"ok": False, "reason": "network", "message": ..., "status_code": ...}
     on a definitive API/network failure, or
-    {"ok": False, "reason": "repetition"} if every attempt looped.
+    {"ok": False, "reason": "unusable"} if every attempt failed.
     """
     for repetition_attempt in range(max_repetition_attempts):
         call_result = _relay_completion(
@@ -329,28 +332,39 @@ def _get_relay_result(
         raw_text = call_result["raw_text"]
         finish_reason = call_result["finish_reason"]
 
+        failure_reason = None
+        parsed = None
+
         if finish_reason == "length" or has_excessive_repetition(raw_text):
+            failure_reason = (
+                f"repetition detected (finish_reason={finish_reason})"
+            )
+        else:
+            try:
+                parsed = _parse_and_clean_relay_response(raw_text)
+            except json.JSONDecodeError as error:
+                failure_reason = f"invalid/empty JSON response ({error})"
+
+            if parsed is None and failure_reason is None:
+                failure_reason = "response missing ocr/trans fields"
+
+        if failure_reason is not None:
             if repetition_attempt < max_repetition_attempts - 1:
                 print(
                     f"[translate:{label}] Attempt "
                     f"{repetition_attempt + 2}/{max_repetition_attempts} "
-                    f"due to repetition detected "
-                    f"(finish_reason={finish_reason}).",
+                    f"due to {failure_reason}.",
                     flush=True,
                 )
 
                 time.sleep(repetition_retry_delay)
                 continue
 
-            return {"ok": False, "reason": "repetition"}
+            return {"ok": False, "reason": "unusable"}
 
-        return {
-            "ok": True,
-            "raw_text": raw_text,
-            "finish_reason": finish_reason,
-        }
+        return {"ok": True, "parsed": parsed}
 
-    return {"ok": False, "reason": "repetition"}
+    return {"ok": False, "reason": "unusable"}
 
 
 def _parse_and_clean_relay_response(raw_text):
@@ -665,20 +679,10 @@ def _try_split_image_translation(
     if not top_result["ok"] or not bottom_result["ok"]:
         return None
 
-    try:
-        top_parsed = _parse_and_clean_relay_response(
-            top_result["raw_text"]
-        )
-        bottom_parsed = _parse_and_clean_relay_response(
-            bottom_result["raw_text"]
-        )
-    except json.JSONDecodeError:
-        return None
-
-    if top_parsed is None or bottom_parsed is None:
-        return None
-
-    return _merge_split_results(top_parsed, bottom_parsed)
+    return _merge_split_results(
+        top_result["parsed"],
+        bottom_result["parsed"],
+    )
 
 
 @app.route("/api/enhance", methods=["POST"])
@@ -1000,30 +1004,19 @@ def translate_endpoint():
         )
 
         if main_result["ok"]:
-            parsed = _parse_and_clean_relay_response(
-                main_result["raw_text"]
-            )
-
-            if parsed is None:
-                return jsonify(
-                    {
-                        "error": (
-                            "Model transkripsiyon veya çeviri üretemedi."
-                        )
-                    }
-                ), 502
-
-            return jsonify(parsed)
+            return jsonify(main_result["parsed"])
 
         if main_result["reason"] == "network":
             return jsonify(
                 main_result["message"]
             ), main_result["status_code"]
 
-        # reason == "repetition": both normal attempts looped. Instead of
-        # failing right away, try splitting the image into top/bottom
-        # halves — a difficult full-page image often succeeds once each
-        # half is a simpler, smaller request.
+        # reason == "unusable": both normal attempts either looped,
+        # returned empty/invalid JSON, or were missing ocr/trans, after
+        # already retrying once internally. Instead of failing right
+        # away, try splitting the image into top/bottom halves — a
+        # difficult full-page image often succeeds once each half is a
+        # simpler, smaller request.
         print(
             "[translate] Falling back to split-image strategy after "
             "2 failed attempts",
@@ -1066,15 +1059,7 @@ def translate_endpoint():
             )
 
             if fallback_result["ok"]:
-                try:
-                    fallback_parsed = _parse_and_clean_relay_response(
-                        fallback_result["raw_text"]
-                    )
-                except json.JSONDecodeError:
-                    fallback_parsed = None
-
-                if fallback_parsed is not None:
-                    return jsonify(fallback_parsed)
+                return jsonify(fallback_result["parsed"])
 
         return jsonify(
             {
