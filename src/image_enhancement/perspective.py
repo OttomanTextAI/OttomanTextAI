@@ -6,7 +6,14 @@ import numpy as np
 from src.image_enhancement.enhance import convert_to_grayscale
 from src.image_enhancement.utils import validate_image
 
-_MINIMUM_DOCUMENT_AREA_RATIO = 0.20
+# A false-positive here silently crops away real document content before
+# the model ever sees it (e.g. a strong internal edge/column boundary
+# mistaken for the page edge). 0.20 was far too permissive — it accepted
+# contours covering as little as a fifth of the frame. Raised to 0.60,
+# which still allows genuine page-boundary trims (observed at ~0.79 area
+# ratio on a real reference photo) while rejecting sub-region false
+# positives (observed at ~0.38 on a real bug report).
+_MINIMUM_DOCUMENT_AREA_RATIO = 0.60
 _APPROXIMATION_EPSILON_RATIO = 0.02
 _CANNY_LOWER_THRESHOLD = 50
 _CANNY_UPPER_THRESHOLD = 150
