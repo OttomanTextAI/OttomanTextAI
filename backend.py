@@ -2,6 +2,7 @@ import base64
 import json
 import os
 import re
+import traceback
 from io import BytesIO
 from pathlib import Path
 
@@ -12,6 +13,7 @@ import requests
 from dotenv import load_dotenv
 from flask import Flask, jsonify, request, send_file
 from flask_cors import CORS
+from werkzeug.exceptions import RequestEntityTooLarge
 import openai
 from openai import OpenAI
 
@@ -24,7 +26,32 @@ from src.image_enhancement.enhance import enhance_image
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app)
+
+# All /api/* routes (enhance, translate, assistant, health) share this one
+# allowlist so a route can never end up with looser or stricter CORS than
+# the others.
+ALLOWED_ORIGINS = [
+    "https://ottomantextai.github.io",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+]
+CORS(app, resources={r"/api/*": {"origins": ALLOWED_ORIGINS}})
+
+# A phone-camera photo can be tens of MB. Without a cap, a very large
+# upload can run enhance_image() long/heavy enough to hit the gunicorn
+# worker timeout or the platform's memory limit — the worker dies mid
+# request with no HTTP response at all, which the browser then reports
+# as a misleading "blocked by CORS policy" error instead of a clear one.
+app.config["MAX_CONTENT_LENGTH"] = 20 * 1024 * 1024  # 20 MB
+
+
+@app.errorhandler(RequestEntityTooLarge)
+def handle_request_entity_too_large(error):
+    return jsonify(
+        {
+            "error": "Yüklenen dosya çok büyük (limit: 20MB)."
+        }
+    ), 413
 
 
 LLM_CONFIG_PATH = Path(__file__).resolve().parent / "configs" / "llm.yaml"
@@ -120,9 +147,26 @@ def enhance_endpoint():
     try:
         input_bytes = uploaded_file.read()
 
+        # If the worker dies mid-request (OOM kill, native crash, gunicorn
+        # --timeout 120 hit on a large photo) there is no Python exception
+        # to catch — the connection just drops and the browser reports a
+        # misleading CORS error. This line at least tells us from the
+        # Render logs whether processing started at all for that request.
+        print(
+            f"[enhance] start profile={profile} "
+            f"bytes={len(input_bytes)}",
+            flush=True,
+        )
+
         output_bytes = enhance_image(
             input_bytes,
             profile=profile,
+        )
+
+        print(
+            f"[enhance] done profile={profile} "
+            f"output_bytes={len(output_bytes)}",
+            flush=True,
         )
 
         return send_file(
@@ -133,6 +177,11 @@ def enhance_endpoint():
         )
 
     except Exception as error:
+        print(
+            f"[enhance] failed profile={profile}: {error}\n"
+            f"{traceback.format_exc()}",
+            flush=True,
+        )
         return jsonify(
             {
                 "error": str(error)
@@ -416,6 +465,22 @@ def translate_endpoint():
 
                     time.sleep(delay)
                     continue
+
+                # str(error) is usually just a short summary (e.g. "Error
+                # code: 403 - blocked"). The full JSON body — quota,
+                # key restriction, content-policy reason, etc. — is on the
+                # underlying httpx response, so log that explicitly too;
+                # it's the only way to see it in the Render logs.
+                try:
+                    relay_body = error.response.text
+                except Exception:
+                    relay_body = getattr(error, "body", None)
+
+                print(
+                    f"[translate] Relay API error {error.status_code}. "
+                    f"Full response body: {relay_body}",
+                    flush=True,
+                )
 
                 return jsonify(
                     {
