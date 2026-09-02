@@ -1147,11 +1147,12 @@ devletin ve milletin esenliği için gerekli emir verilmiştir.`,
                 // fall back to a split-image strategy (2 parallel halves,
                 // each with its own retry) and finally a different model —
                 // worst case is several relay calls, so this needs more
-                // headroom than the default 45s.
+                // headroom than the default 45s. Matches the backend's own
+                // gunicorn --timeout (200s in the Dockerfile).
                 const apiRes = await fetchWithTimeout('https://ottoman-text-ai.onrender.com/api/translate', {
                     method: 'POST',
                     body: formData
-                }, 150000);
+                }, 200000);
 
                 if (!apiRes.ok) {
                     const errorData = await apiRes.json();
