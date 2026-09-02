@@ -149,10 +149,45 @@ def _relay_completion(
                 timeout=120,
             )
 
+            # Accessed defensively (not completion.choices[0].message...
+            # directly): an abnormal relay response — e.g. an empty
+            # choices list, or a message with no content attribute at
+            # all — would otherwise raise IndexError/AttributeError here
+            # and get swallowed by the caller's generic except Exception
+            # with no logging, which is exactly the kind of silent
+            # failure this function exists to avoid.
+            choices = getattr(completion, "choices", None) or []
+            choice = choices[0] if choices else None
+            message = getattr(choice, "message", None) if choice else None
+            raw_text = (getattr(message, "content", None) or "") if message else ""
+            finish_reason = getattr(choice, "finish_reason", None) if choice else None
+
+            # An empty content field with no exception raised is a
+            # different failure mode than looping/truncation (e.g. a
+            # content filter, a refusal, or a relay-side error folded
+            # into the response instead of raised as an HTTP error).
+            # finish_reason alone doesn't explain it, so dump the whole
+            # completion object — that's the only place the real reason
+            # (native_finish_reason, a refusal/error field, usage, etc.)
+            # is likely to show up.
+            if not raw_text:
+                try:
+                    completion_dump = completion.model_dump()
+                except Exception:
+                    completion_dump = str(completion)
+
+                print(
+                    f"[translate:{label}] Empty content in Relay "
+                    f"response (finish_reason={finish_reason}, "
+                    f"choices_count={len(choices)}). "
+                    f"Full completion object: {completion_dump}",
+                    flush=True,
+                )
+
             return {
                 "ok": True,
-                "raw_text": completion.choices[0].message.content or "",
-                "finish_reason": completion.choices[0].finish_reason,
+                "raw_text": raw_text,
+                "finish_reason": finish_reason,
             }
 
         except (openai.APITimeoutError, openai.APIConnectionError) as error:
@@ -865,63 +900,90 @@ def translate_endpoint():
     try:
         llm_config = get_llm_config()
     except (FileNotFoundError, ValueError) as error:
+        print(
+            f"[translate] get_llm_config() failed: "
+            f"{type(error).__name__}: {error}\n"
+            f"{traceback.format_exc()}",
+            flush=True,
+        )
         return jsonify(
             {
                 "error": f"configs/llm.yaml okunamadı: {error}"
             }
         ), 500
 
-    model = llm_config.get("model")
-    generation = llm_config.get("generation") or {}
-    temperature = generation.get("temperature", 0.2)
-    max_tokens = generation.get("max_tokens", 4096)
+    try:
+        model = llm_config.get("model")
+        generation = llm_config.get("generation") or {}
+        temperature = generation.get("temperature", 0.2)
+        max_tokens = generation.get("max_tokens", 4096)
 
-    if not model:
+        if not model:
+            return jsonify(
+                {
+                    "error": (
+                        "configs/llm.yaml içinde 'model' alanı "
+                        "tanımlı değil."
+                    )
+                }
+            ), 500
+
+        # .strip() guards against a very common copy-paste mistake: a
+        # stray trailing newline, space, or leftover quote character in
+        # the environment variable value. A malformed key otherwise
+        # fails with a confusing provider-side error instead of a clear
+        # message, which is hard to debug blind — so we normalize here.
+        api_key = (os.getenv("RELAY_API_KEY") or "").strip()
+        base_url = (os.getenv("RELAY_BASE_URL") or "").strip()
+
+        if not api_key:
+            return jsonify(
+                {
+                    "error": "RELAY_API_KEY is not configured."
+                }
+            ), 500
+
+        if not base_url:
+            return jsonify(
+                {
+                    "error": "RELAY_BASE_URL is not configured."
+                }
+            ), 500
+
+        client = OpenAI(api_key=api_key, base_url=base_url)
+
+        if "image" not in request.files:
+            return jsonify(
+                {
+                    "error": "image field is required."
+                }
+            ), 400
+
+        uploaded_file = request.files["image"]
+
+        if uploaded_file.filename == "":
+            return jsonify(
+                {
+                    "error": "No image selected."
+                }
+            ), 400
+
+    except Exception as error:
+        # Nothing between config validation and the relay call should
+        # normally raise, but if it does, this is the gap that used to
+        # let an exception through with zero logging — make sure that
+        # can never happen silently again.
+        print(
+            f"[translate] Unexpected error before relay call: "
+            f"{type(error).__name__}: {error}\n"
+            f"{traceback.format_exc()}",
+            flush=True,
+        )
         return jsonify(
             {
-                "error": "configs/llm.yaml içinde 'model' alanı tanımlı değil."
+                "error": str(error)
             }
         ), 500
-
-    # .strip() guards against a very common copy-paste mistake: a stray
-    # trailing newline, space, or leftover quote character in the
-    # environment variable value. A malformed key otherwise fails with a
-    # confusing provider-side error instead of a clear message, which is
-    # hard to debug blind — so we normalize here.
-    api_key = (os.getenv("RELAY_API_KEY") or "").strip()
-    base_url = (os.getenv("RELAY_BASE_URL") or "").strip()
-
-    if not api_key:
-        return jsonify(
-            {
-                "error": "RELAY_API_KEY is not configured."
-            }
-        ), 500
-
-    if not base_url:
-        return jsonify(
-            {
-                "error": "RELAY_BASE_URL is not configured."
-            }
-        ), 500
-
-    client = OpenAI(api_key=api_key, base_url=base_url)
-
-    if "image" not in request.files:
-        return jsonify(
-            {
-                "error": "image field is required."
-            }
-        ), 400
-
-    uploaded_file = request.files["image"]
-
-    if uploaded_file.filename == "":
-        return jsonify(
-            {
-                "error": "No image selected."
-            }
-        ), 400
 
     try:
         image_bytes = uploaded_file.read()
@@ -1026,7 +1088,13 @@ def translate_endpoint():
             }
         ), 502
 
-    except json.JSONDecodeError:
+    except json.JSONDecodeError as error:
+        print(
+            f"[translate] JSONDecodeError parsing relay response: "
+            f"{error}\n"
+            f"{traceback.format_exc()}",
+            flush=True,
+        )
         return jsonify(
             {
                 "error": (
@@ -1036,6 +1104,12 @@ def translate_endpoint():
         ), 502
 
     except Exception as error:
+        print(
+            f"[translate] Unhandled exception: "
+            f"{type(error).__name__}: {error}\n"
+            f"{traceback.format_exc()}",
+            flush=True,
+        )
         return jsonify(
             {
                 "error": str(error)
