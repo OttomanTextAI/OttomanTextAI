@@ -202,6 +202,14 @@ ANALYSIS_PROMPT = (
     "yalnızca bir kez yaz. Aynı ifadeyi tekrar tekrar üretmek yerine, emin "
     "değilsen kısa kes ve belirsizliği açıkça işaretle. "
 
+    "SERT KURAL: Aynı kelimeyi veya ifadeyi art arda EN FAZLA 1-2 kez "
+    "yazabilirsin; bunun ötesinde bir tekrara ASLA girme. Bir cümleyi veya "
+    "kalıbı 3. kez yazmak üzereysen dur, o satırı [okunamadı] veya "
+    "[belirsiz] olarak işaretleyip bir SONRAKİ satıra geç. Aynı döngüye "
+    "girdiğini fark edersen yanıtı hemen orada makul bir şekilde sonlandır; "
+    "sonsuz tekrar üretmek, kısa ve eksik ama düzgün bir yanıt vermekten "
+    "HER ZAMAN daha kötüdür. "
+
     "ocr: Görüntüde gerçekten okuyabildiğin Osmanlıca metni "
     "Arap harfleriyle yaz. Latin harfi kullanma. Okuyamadığın veya emin "
     "olmadığın her harf/kelime/satır için onu ASLA sessizce tahminle "
@@ -390,131 +398,159 @@ def translate_endpoint():
         ]
 
         completion = None
+        raw_text = ""
+        finish_reason = None
         max_attempts = 3
         retry_delays = [2, 5]
 
-        for attempt in range(max_attempts):
-            try:
-                completion = client.chat.completions.create(
-                    model=model,
-                    messages=messages,
-                    temperature=temperature,
-                    max_tokens=max_tokens,
-                    timeout=120,
-                )
-                break
+        # Some difficult manuscript images make the model loop
+        # probabilistically on the same phrase; retrying the same request
+        # often succeeds on the next try, so this is worth doing
+        # automatically before asking the user to re-upload. Kept small
+        # (2 total) to keep worst-case wait time reasonable for the user.
+        max_repetition_attempts = 2
+        repetition_retry_delay = 1.5
 
-            except (openai.APITimeoutError, openai.APIConnectionError) as error:
-                if attempt < max_attempts - 1:
-                    delay = retry_delays[attempt]
+        for repetition_attempt in range(max_repetition_attempts):
+            completion = None
+
+            for attempt in range(max_attempts):
+                try:
+                    completion = client.chat.completions.create(
+                        model=model,
+                        messages=messages,
+                        temperature=temperature,
+                        max_tokens=max_tokens,
+                        timeout=120,
+                    )
+                    break
+
+                except (openai.APITimeoutError, openai.APIConnectionError) as error:
+                    if attempt < max_attempts - 1:
+                        delay = retry_delays[attempt]
+
+                        print(
+                            f"[translate] Relay timeout/connection error. "
+                            f"Retrying in {delay}s "
+                            f"({attempt + 2}/{max_attempts})...",
+                            flush=True,
+                        )
+
+                        time.sleep(delay)
+                        continue
+
+                    return jsonify(
+                        {
+                            "error": (
+                                "Relay yanıt vermedi (zaman aşımı). "
+                                "Lütfen birkaç saniye sonra tekrar deneyin."
+                            )
+                        }
+                    ), 504
+
+                except openai.RateLimitError as error:
+                    if attempt < max_attempts - 1:
+                        delay = retry_delays[attempt]
+
+                        print(
+                            f"[translate] Relay rate limit. "
+                            f"Retrying in {delay}s "
+                            f"({attempt + 2}/{max_attempts})...",
+                            flush=True,
+                        )
+
+                        time.sleep(delay)
+                        continue
+
+                    return jsonify(
+                        {
+                            "error": "Relay API rate limit aşıldı.",
+                            "details": str(error),
+                        }
+                    ), 429
+
+                except openai.APIStatusError as error:
+                    if (
+                        error.status_code in {500, 502, 503, 504}
+                        and attempt < max_attempts - 1
+                    ):
+                        delay = retry_delays[attempt]
+
+                        print(
+                            f"[translate] Relay temporary error "
+                            f"{error.status_code}. "
+                            f"Retrying in {delay}s "
+                            f"({attempt + 2}/{max_attempts})...",
+                            flush=True,
+                        )
+
+                        time.sleep(delay)
+                        continue
+
+                    # str(error) is usually just a short summary (e.g.
+                    # "Error code: 403 - blocked"). The full JSON body —
+                    # quota, key restriction, content-policy reason, etc. —
+                    # is on the underlying httpx response, so log that
+                    # explicitly too; it's the only way to see it in the
+                    # Render logs.
+                    try:
+                        relay_body = error.response.text
+                    except Exception:
+                        relay_body = getattr(error, "body", None)
 
                     print(
-                        f"[translate] Relay timeout/connection error. "
-                        f"Retrying in {delay}s "
-                        f"({attempt + 2}/{max_attempts})...",
+                        f"[translate] Relay API error {error.status_code}. "
+                        f"Full response body: {relay_body}",
                         flush=True,
                     )
 
-                    time.sleep(delay)
+                    return jsonify(
+                        {
+                            "error": "Relay API request failed.",
+                            "details": str(error),
+                        }
+                    ), error.status_code
+
+            # Retry bittikten SONRA cevabı kontrol ediyoruz.
+            if completion is None:
+                return jsonify(
+                    {
+                        "error": "Relay API yanıtı alınamadı."
+                    }
+                ), 502
+
+            raw_text = completion.choices[0].message.content or ""
+            finish_reason = completion.choices[0].finish_reason
+
+            # A response cut off by the token limit or looping on the same
+            # sentence/line is a known failure mode that otherwise surfaces
+            # as a confusing "invalid JSON" 502. Retry the whole request
+            # once before giving up.
+            if finish_reason == "length" or has_excessive_repetition(raw_text):
+                if repetition_attempt < max_repetition_attempts - 1:
+                    print(
+                        f"[translate] Attempt {repetition_attempt + 2}/"
+                        f"{max_repetition_attempts} due to repetition "
+                        f"detected (finish_reason={finish_reason}).",
+                        flush=True,
+                    )
+
+                    time.sleep(repetition_retry_delay)
                     continue
 
                 return jsonify(
                     {
                         "error": (
-                            "Relay yanıt vermedi (zaman aşımı). "
-                            "Lütfen birkaç saniye sonra tekrar deneyin."
+                            "Model, belgeyi işlerken aynı ifadeyi tekrar "
+                            "tekrar üretti veya yanıtı token sınırına "
+                            "takıldı. Lütfen tekrar deneyin; sorun devam "
+                            "ederse belgeyi daha küçük bir bölüm hâlinde "
+                            "göndermeyi deneyin."
                         )
                     }
-                ), 504
+                ), 502
 
-            except openai.RateLimitError as error:
-                if attempt < max_attempts - 1:
-                    delay = retry_delays[attempt]
-
-                    print(
-                        f"[translate] Relay rate limit. "
-                        f"Retrying in {delay}s "
-                        f"({attempt + 2}/{max_attempts})...",
-                        flush=True,
-                    )
-
-                    time.sleep(delay)
-                    continue
-
-                return jsonify(
-                    {
-                        "error": "Relay API rate limit aşıldı.",
-                        "details": str(error),
-                    }
-                ), 429
-
-            except openai.APIStatusError as error:
-                if (
-                    error.status_code in {500, 502, 503, 504}
-                    and attempt < max_attempts - 1
-                ):
-                    delay = retry_delays[attempt]
-
-                    print(
-                        f"[translate] Relay temporary error "
-                        f"{error.status_code}. "
-                        f"Retrying in {delay}s "
-                        f"({attempt + 2}/{max_attempts})...",
-                        flush=True,
-                    )
-
-                    time.sleep(delay)
-                    continue
-
-                # str(error) is usually just a short summary (e.g. "Error
-                # code: 403 - blocked"). The full JSON body — quota,
-                # key restriction, content-policy reason, etc. — is on the
-                # underlying httpx response, so log that explicitly too;
-                # it's the only way to see it in the Render logs.
-                try:
-                    relay_body = error.response.text
-                except Exception:
-                    relay_body = getattr(error, "body", None)
-
-                print(
-                    f"[translate] Relay API error {error.status_code}. "
-                    f"Full response body: {relay_body}",
-                    flush=True,
-                )
-
-                return jsonify(
-                    {
-                        "error": "Relay API request failed.",
-                        "details": str(error),
-                    }
-                ), error.status_code
-
-        # Retry bittikten SONRA cevabı kontrol ediyoruz.
-        if completion is None:
-            return jsonify(
-                {
-                    "error": "Relay API yanıtı alınamadı."
-                }
-            ), 502
-
-        raw_text = completion.choices[0].message.content or ""
-        finish_reason = completion.choices[0].finish_reason
-
-        # A response cut off by the token limit or looping on the same
-        # sentence/line is a known failure mode that otherwise surfaces as
-        # a confusing "invalid JSON" 502. Catch it here with a clear
-        # message instead of letting the JSON parser fail cryptically.
-        if finish_reason == "length" or has_excessive_repetition(raw_text):
-            return jsonify(
-                {
-                    "error": (
-                        "Model, belgeyi işlerken aynı ifadeyi tekrar tekrar "
-                        "üretti veya yanıtı token sınırına takıldı. Lütfen "
-                        "tekrar deneyin; sorun devam ederse belgeyi daha "
-                        "küçük bir bölüm hâlinde göndermeyi deneyin."
-                    )
-                }
-            ), 502
+            break
 
         cleaned_text = raw_text.strip()
 

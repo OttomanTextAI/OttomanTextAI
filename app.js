@@ -1143,10 +1143,13 @@ devletin ve milletin esenliği için gerekli emir verilmiştir.`,
                 console.log('Sending enhanced.png to /api/translate');
                 console.log('===============================');
 
+                // Backend can now retry once internally when the model loops
+                // on the same phrase (up to 2 total attempts), so this needs
+                // more headroom than the default 45s.
                 const apiRes = await fetchWithTimeout('https://ottoman-text-ai.onrender.com/api/translate', {
                     method: 'POST',
                     body: formData
-                });
+                }, 90000);
 
                 if (!apiRes.ok) {
                     const errorData = await apiRes.json();
