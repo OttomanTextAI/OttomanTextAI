@@ -1215,12 +1215,12 @@ devletin ve milletin esenliği için gerekli emir verilmiştir.`,
         // Display Results
         ocrEmptyState.classList.add('hidden');
         ocrTextDisplay.classList.remove('hidden');
-        ocrTextDisplay.textContent = finalOcr;
+        renderWithGuessMarkers(ocrTextDisplay, finalOcr);
         ocrTools.classList.add('tools-ready');
 
         transEmptyState.classList.add('hidden');
         transTextDisplay.classList.remove('hidden');
-        transTextDisplay.textContent = finalTrans;
+        renderWithGuessMarkers(transTextDisplay, finalTrans);
         transTools.classList.add('tools-ready');
 
         state.ocrText = finalOcr;
@@ -1276,6 +1276,20 @@ devletin ve milletin esenliği için gerekli emir verilmiştir.`,
     // --- Interactive Tools & Actions ---
     copyOcrBtn.addEventListener('click', () => copyToClipboard(ocrTextDisplay.textContent, 'Osmanlıca metin kopyalandı!'));
     copyTransBtn.addEventListener('click', () => copyToClipboard(transTextDisplay.textContent, 'Türkçe çeviri kopyalandı!'));
+
+    // Backend, modelin tahmin ettiği (okuyamadığı ama bağlamdan tahmin
+    // ettiği) kelime/ifadeleri **böyle** işaretleyerek gönderiyor. Burada
+    // bunu güvenli şekilde <strong>'e çevirip gösteriyoruz — önce HTML'i
+    // escape edip sonra sadece **...** çiftlerini kalınlaştırıyoruz, ham
+    // model çıktısını doğrudan innerHTML'e basmıyoruz (XSS'e karşı).
+    function renderWithGuessMarkers(el, rawText) {
+        const escaped = (rawText || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+
+        el.innerHTML = escaped.replace(/\*\*(.+?)\*\*/gs, '<strong>$1</strong>');
+    }
 
     function copyToClipboard(text, msg) {
         navigator.clipboard.writeText(text).then(() => {
