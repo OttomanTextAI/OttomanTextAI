@@ -1993,6 +1993,70 @@ body.dark-theme .result-details-link:hover {
     border-bottom-color: var(--color-gold);
 }
 
+.lang-dropdown {
+    position: relative;
+}
+
+.lang-dropdown-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: transparent;
+    border: none;
+    padding: 0.3rem 0.1rem 0.7rem;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--color-text-main);
+    cursor: pointer;
+}
+
+.lang-dropdown-caret {
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+}
+
+.lang-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    min-width: 180px;
+    background: var(--bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-lg);
+    padding: 0.4rem;
+    gap: 0.1rem;
+}
+
+.lang-dropdown-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    padding: 0.55rem 0.7rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.lang-dropdown-item:hover {
+    background: var(--color-border);
+    color: var(--color-text-main);
+}
+
+.lang-dropdown-item.active {
+    color: var(--color-text-main);
+    background: var(--color-gold-bg);
+}
+
 .output-tab-tools {
     margin-left: auto;
     display: none;

@@ -94,7 +94,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const infoSidebarCol = document.getElementById('infoSidebarCol');
     const resultCardConfidenceBadge = document.getElementById('resultCardConfidenceBadge');
     const resultDetailsLink = document.getElementById('resultDetailsLink');
-    const outputTabs = document.getElementById('outputTabs');
+    const langDropdown = document.getElementById('langDropdown');
+    const langDropdownTrigger = document.getElementById('langDropdownTrigger');
+    const langDropdownMenu = document.getElementById('langDropdownMenu');
+    const langDropdownLabel = document.getElementById('langDropdownLabel');
     const infoDocType = document.getElementById('infoDocType');
     const infoDocPurpose = document.getElementById('infoDocPurpose');
     const infoScriptType = document.getElementById('infoScriptType');
@@ -578,9 +581,15 @@ Umudum şudur ki kıyamet gününde senin yüzünü görmekten mahrum kalmayayı
     enhancedToggle.addEventListener('change', updatePreviewImage);
 
     
-    // --- Output Tabs (Osmanlıca Metin / Türkçe Çeviri) ---
+    // --- Output Language Dropdown (Osmanlıca Metin / Türkçe Çeviri / İngilizce Çeviri) ---
+    const OUTPUT_TAB_LABELS = {
+        ocr: 'Osmanlıca Metin',
+        trans: 'Türkçe Çeviri',
+        en: 'İngilizce Çeviri',
+    };
+
     function setOutputTab(tab) {
-        document.querySelectorAll('.output-tab-btn').forEach(b => {
+        document.querySelectorAll('.lang-dropdown-item').forEach(b => {
             b.classList.toggle('active', b.getAttribute('data-output-tab') === tab);
         });
         document.querySelectorAll('.output-tab-tools').forEach(t => {
@@ -589,12 +598,30 @@ Umudum şudur ki kıyamet gününde senin yüzünü görmekten mahrum kalmayayı
         ocrOutputBox.classList.toggle('hidden', tab !== 'ocr');
         transOutputBox.classList.toggle('hidden', tab !== 'trans');
         enOutputBox.classList.toggle('hidden', tab !== 'en');
+        langDropdownLabel.textContent = OUTPUT_TAB_LABELS[tab] || '';
     }
 
-    outputTabs.addEventListener('click', (e) => {
-        const btn = e.target.closest('.output-tab-btn');
-        if (!btn) return;
-        setOutputTab(btn.getAttribute('data-output-tab'));
+    function closeLangDropdown() {
+        langDropdownMenu.classList.add('hidden');
+        langDropdownTrigger.setAttribute('aria-expanded', 'false');
+    }
+
+    langDropdownTrigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = !langDropdownMenu.classList.contains('hidden');
+        langDropdownMenu.classList.toggle('hidden', isOpen);
+        langDropdownTrigger.setAttribute('aria-expanded', String(!isOpen));
+    });
+
+    langDropdownMenu.addEventListener('click', (e) => {
+        const item = e.target.closest('.lang-dropdown-item');
+        if (!item) return;
+        setOutputTab(item.getAttribute('data-output-tab'));
+        closeLangDropdown();
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!langDropdown.contains(e.target)) closeLangDropdown();
     });
 
     selectFileBtn.addEventListener('click', (e) => {

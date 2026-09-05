@@ -249,15 +249,18 @@
 
                     <div class="output-main">
                         <div class="output-tabs" id="outputTabs">
-                            <button class="output-tab-btn" id="ocrTabBtn" data-output-tab="ocr">
-                                <span class="box-icon"></span> Osmanlıca Metin
-                            </button>
-                            <button class="output-tab-btn active" id="transTabBtn" data-output-tab="trans">
-                                <span class="box-icon"></span> Türkçe Çeviri
-                            </button>
-                            <button class="output-tab-btn" id="enTabBtn" data-output-tab="en">
-                                <span class="box-icon"></span> İngilizce Çeviri
-                            </button>
+                            <div class="lang-dropdown" id="langDropdown">
+                                <button class="lang-dropdown-trigger" id="langDropdownTrigger" aria-haspopup="true" aria-expanded="false">
+                                    <span class="box-icon"></span>
+                                    <span id="langDropdownLabel">Türkçe Çeviri</span>
+                                    <span class="lang-dropdown-caret">▾</span>
+                                </button>
+                                <div class="lang-dropdown-menu hidden" id="langDropdownMenu">
+                                    <button class="lang-dropdown-item" id="ocrTabBtn" data-output-tab="ocr">Osmanlıca Metin</button>
+                                    <button class="lang-dropdown-item active" id="transTabBtn" data-output-tab="trans">Türkçe Çeviri</button>
+                                    <button class="lang-dropdown-item" id="enTabBtn" data-output-tab="en">İngilizce Çeviri</button>
+                                </div>
+                            </div>
                             <div class="output-tab-tools box-tools" id="ocrTools" data-tools-for="ocr">
                                 <button class="tool-btn" id="copyOcrBtn" title="Metni Kopyala">📋</button>
                                 <button class="tool-btn" id="toggleDirectionBtn" title="Metin Yönü (RTL/LTR)">⇄</button>
