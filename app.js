@@ -94,6 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const infoSidebarCol = document.getElementById('infoSidebarCol');
     const resultCardConfidenceBadge = document.getElementById('resultCardConfidenceBadge');
     const resultDetailsLink = document.getElementById('resultDetailsLink');
+    const ocrTabBtn = document.getElementById('ocrTabBtn');
     const langDropdown = document.getElementById('langDropdown');
     const langDropdownTrigger = document.getElementById('langDropdownTrigger');
     const langDropdownMenu = document.getElementById('langDropdownMenu');
@@ -581,15 +582,16 @@ Umudum şudur ki kıyamet gününde senin yüzünü görmekten mahrum kalmayayı
     enhancedToggle.addEventListener('change', updatePreviewImage);
 
     
-    // --- Output Language Dropdown (Osmanlıca Metin / Türkçe Çeviri / İngilizce Çeviri) ---
-    const OUTPUT_TAB_LABELS = {
-        ocr: 'Osmanlıca Metin',
+    // --- Output Selector: standalone "Osmanlıca Metin" button + a
+    // translation-language dropdown (Türkçe / İngilizce, more languages
+    // can be added to the dropdown later without touching the OCR button).
+    const TRANSLATION_TAB_LABELS = {
         trans: 'Türkçe Çeviri',
         en: 'İngilizce Çeviri',
     };
 
     function setOutputTab(tab) {
-        document.querySelectorAll('.lang-dropdown-item').forEach(b => {
+        document.querySelectorAll('.output-select-btn').forEach(b => {
             b.classList.toggle('active', b.getAttribute('data-output-tab') === tab);
         });
         document.querySelectorAll('.output-tab-tools').forEach(t => {
@@ -598,13 +600,23 @@ Umudum şudur ki kıyamet gününde senin yüzünü görmekten mahrum kalmayayı
         ocrOutputBox.classList.toggle('hidden', tab !== 'ocr');
         transOutputBox.classList.toggle('hidden', tab !== 'trans');
         enOutputBox.classList.toggle('hidden', tab !== 'en');
-        langDropdownLabel.textContent = OUTPUT_TAB_LABELS[tab] || '';
+
+        // The dropdown only ever represents a translation language, so it
+        // stays on the last-selected language (and its own highlight)
+        // rather than switching to "Osmanlıca Metin" when that button is
+        // picked instead.
+        if (TRANSLATION_TAB_LABELS[tab]) {
+            langDropdownLabel.textContent = TRANSLATION_TAB_LABELS[tab];
+        }
+        langDropdownTrigger.classList.toggle('active', tab !== 'ocr');
     }
 
     function closeLangDropdown() {
         langDropdownMenu.classList.add('hidden');
         langDropdownTrigger.setAttribute('aria-expanded', 'false');
     }
+
+    ocrTabBtn.addEventListener('click', () => setOutputTab('ocr'));
 
     langDropdownTrigger.addEventListener('click', (e) => {
         e.stopPropagation();

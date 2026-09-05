@@ -249,16 +249,18 @@
 
                     <div class="output-main">
                         <div class="output-tabs" id="outputTabs">
+                            <button class="output-tab-btn output-select-btn" id="ocrTabBtn" data-output-tab="ocr">
+                                <span class="box-icon"></span> Osmanlıca Metin
+                            </button>
                             <div class="lang-dropdown" id="langDropdown">
-                                <button class="lang-dropdown-trigger" id="langDropdownTrigger" aria-haspopup="true" aria-expanded="false">
+                                <button class="lang-dropdown-trigger active" id="langDropdownTrigger" aria-haspopup="true" aria-expanded="false">
                                     <span class="box-icon"></span>
                                     <span id="langDropdownLabel">Türkçe Çeviri</span>
                                     <span class="lang-dropdown-caret">▾</span>
                                 </button>
                                 <div class="lang-dropdown-menu hidden" id="langDropdownMenu">
-                                    <button class="lang-dropdown-item" id="ocrTabBtn" data-output-tab="ocr">Osmanlıca Metin</button>
-                                    <button class="lang-dropdown-item active" id="transTabBtn" data-output-tab="trans">Türkçe Çeviri</button>
-                                    <button class="lang-dropdown-item" id="enTabBtn" data-output-tab="en">İngilizce Çeviri</button>
+                                    <button class="lang-dropdown-item output-select-btn active" id="transTabBtn" data-output-tab="trans">Türkçe Çeviri</button>
+                                    <button class="lang-dropdown-item output-select-btn" id="enTabBtn" data-output-tab="en">İngilizce Çeviri</button>
                                 </div>
                             </div>
                             <div class="output-tab-tools box-tools" id="ocrTools" data-tools-for="ocr">

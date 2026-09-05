@@ -2003,12 +2003,23 @@ body.dark-theme .result-details-link:hover {
     gap: 0.5rem;
     background: transparent;
     border: none;
+    border-bottom: 2px solid transparent;
     padding: 0.3rem 0.1rem 0.7rem;
     font-size: 0.85rem;
     font-weight: 700;
     letter-spacing: 0.5px;
-    color: var(--color-text-main);
+    color: var(--color-text-muted);
     cursor: pointer;
+    transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.lang-dropdown-trigger:hover {
+    color: var(--color-text-main);
+}
+
+.lang-dropdown-trigger.active {
+    color: var(--color-text-main);
+    border-bottom-color: var(--color-gold);
 }
 
 .lang-dropdown-caret {
