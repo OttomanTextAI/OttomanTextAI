@@ -68,6 +68,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const ttsBtn = document.getElementById('ttsBtn');
     const downloadReportBtn = document.getElementById('downloadReportBtn');
 
+    const enOutputBox = document.getElementById('enOutputBox');
+    const enEmptyState = document.getElementById('enEmptyState');
+    const enTextDisplay = document.getElementById('enTextDisplay');
+    const copyEnBtn = document.getElementById('copyEnBtn');
+
     const themeToggleBtn = document.getElementById('themeToggleBtn');
     const settingsBtn = document.getElementById('settingsBtn');
     const settingsModal = document.getElementById('settingsModal');
@@ -583,6 +588,7 @@ Umudum şudur ki kıyamet gününde senin yüzünü görmekten mahrum kalmayayı
         });
         ocrOutputBox.classList.toggle('hidden', tab !== 'ocr');
         transOutputBox.classList.toggle('hidden', tab !== 'trans');
+        enOutputBox.classList.toggle('hidden', tab !== 'en');
     }
 
     outputTabs.addEventListener('click', (e) => {
@@ -712,15 +718,19 @@ Umudum şudur ki kıyamet gününde senin yüzünü görmekten mahrum kalmayayı
         state.selectedFile = file;
         state.ocrText = '';
         state.transText = '';
+        state.transTextEn = '';
 
         ocrTextDisplay.textContent = '';
         transTextDisplay.textContent = '';
+        enTextDisplay.textContent = '';
 
         ocrTextDisplay.classList.add('hidden');
         transTextDisplay.classList.add('hidden');
+        enTextDisplay.classList.add('hidden');
 
         ocrEmptyState.classList.remove('hidden');
         transEmptyState.classList.remove('hidden');
+        enEmptyState.classList.remove('hidden');
 
         ocrTools.classList.remove('tools-ready');
         transTools.classList.remove('tools-ready');
@@ -824,6 +834,10 @@ Umudum şudur ki kıyamet gününde senin yüzünü görmekten mahrum kalmayayı
         transTextDisplay.classList.add('hidden');
         transTools.classList.remove('tools-ready');
         transTextDisplay.textContent = '';
+
+        enEmptyState.classList.remove('hidden');
+        enTextDisplay.classList.add('hidden');
+        enTextDisplay.textContent = '';
 
         enhancedEmptyState.classList.remove('hidden');
         enhancedImageWrapper.classList.add('hidden');
@@ -1116,6 +1130,7 @@ devletin ve milletin esenliği için gerekli emir verilmiştir.`,
 
         let finalOcr = '';
         let finalTrans = '';
+        let finalTransEn = '';
         let finalAnalysis = null; // optional richer data for the results panel
         let usedFallback = false;
 
@@ -1174,6 +1189,7 @@ devletin ve milletin esenliği için gerekli emir verilmiştir.`,
                 if (data.ocr && data.trans) {
                     finalOcr = data.ocr;
                     finalTrans = data.trans;
+                    finalTransEn = data.trans_en || '';
                     // Everything besides ocr/trans is optional analysis data;
                     // pass the whole payload through and let renderResultsPanel
                     // render only what's actually present.
@@ -1223,8 +1239,18 @@ devletin ve milletin esenliği için gerekli emir verilmiştir.`,
         renderWithGuessMarkers(transTextDisplay, finalTrans);
         transTools.classList.add('tools-ready');
 
+        if (finalTransEn) {
+            enEmptyState.classList.add('hidden');
+            enTextDisplay.classList.remove('hidden');
+            renderWithGuessMarkers(enTextDisplay, finalTransEn);
+        } else {
+            enEmptyState.classList.remove('hidden');
+            enTextDisplay.classList.add('hidden');
+        }
+
         state.ocrText = finalOcr;
         state.transText = finalTrans;
+        state.transTextEn = finalTransEn;
 
         // Detailed Results Panel — only show it when we actually have
         // analysis data to display; otherwise leave it hidden rather than
@@ -1276,6 +1302,7 @@ devletin ve milletin esenliği için gerekli emir verilmiştir.`,
     // --- Interactive Tools & Actions ---
     copyOcrBtn.addEventListener('click', () => copyToClipboard(ocrTextDisplay.textContent, 'Osmanlıca metin kopyalandı!'));
     copyTransBtn.addEventListener('click', () => copyToClipboard(transTextDisplay.textContent, 'Türkçe çeviri kopyalandı!'));
+    copyEnBtn.addEventListener('click', () => copyToClipboard(enTextDisplay.textContent, 'English translation copied!'));
 
     // Backend, modelin tahmin ettiği (okuyamadığı ama bağlamdan tahmin
     // ettiği) kelime/ifadeleri **böyle** işaretleyerek gönderiyor. Burada

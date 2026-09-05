@@ -412,6 +412,7 @@ def _parse_and_clean_relay_response(raw_text):
 
     optional_string_fields = [
         "translit",
+        "trans_en",
         "document_type",
         "style",
         "summary",
@@ -557,6 +558,16 @@ def _merge_split_results(top, bottom):
             for part in (
                 top.get("translit", ""),
                 bottom.get("translit", ""),
+            )
+            if part
+        )
+
+    if top.get("trans_en") or bottom.get("trans_en"):
+        merged["trans_en"] = "\n".join(
+            part
+            for part in (
+                top.get("trans_en", ""),
+                bottom.get("trans_en", ""),
             )
             if part
         )
@@ -827,6 +838,10 @@ ANALYSIS_PROMPT = (
     "alanlarında **çift yıldızla** işaretlenmiş (tahmin edilmiş) "
     "kısımların buradaki karşılığını da aynı şekilde **çift yıldız** "
     "içine alarak işaretle. "
+
+    "trans_en: OCR metninin İngilizce çevirisini yaz. trans alanındaki "
+    "aynı çeviri olsun, sadece dili İngilizce olsun. Burada da tahmin "
+    "edilmiş kısımları aynı şekilde **çift yıldız** içine alarak işaretle. "
 
     "document_type: Belgenin türünü kısa yaz. "
     "Örnek: Ferman, Mektup, Gazete, Şiir / Manzume, Resmî Yazı. "
