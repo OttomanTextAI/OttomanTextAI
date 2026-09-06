@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
         isProcessing: false,
         ocrText: '',
         transText: '',
+        translitText: '',
         apiKey: localStorage.getItem('gemini_api_key') || '',
         engine: localStorage.getItem('translation_engine') || 'gemini-flash',
         history: JSON.parse(localStorage.getItem('translation_history') || '[]')
@@ -66,6 +67,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const transTools = document.getElementById('transTools');
     const copyTransBtn = document.getElementById('copyTransBtn');
     const ttsBtn = document.getElementById('ttsBtn');
+    const ocrTtsBtn = document.getElementById('ocrTtsBtn');
     const downloadReportBtn = document.getElementById('downloadReportBtn');
 
     const enOutputBox = document.getElementById('enOutputBox');
@@ -758,6 +760,7 @@ Umudum şudur ki kıyamet gününde senin yüzünü görmekten mahrum kalmayayı
         state.ocrText = '';
         state.transText = '';
         state.transTextEn = '';
+        state.translitText = '';
 
         ocrTextDisplay.textContent = '';
         transTextDisplay.textContent = '';
@@ -859,6 +862,7 @@ Umudum şudur ki kıyamet gününde senin yüzünü görmekten mahrum kalmayayı
     function resetState() {
         state.selectedFile = null;
         state.imageDataUrl = null;
+        state.translitText = '';
         fileInput.value = '';
         uploadIdleState.classList.remove('hidden');
         uploadActiveState.classList.add('hidden');
@@ -1170,12 +1174,14 @@ devletin ve milletin esenliği için gerekli emir verilmiştir.`,
         let finalOcr = '';
         let finalTrans = '';
         let finalTransEn = '';
+        let finalTranslit = '';
         let finalAnalysis = null; // optional richer data for the results panel
         let usedFallback = false;
 
         if (presetData) {
             finalOcr = presetData.ocr;
             finalTrans = presetData.tr;
+            finalTranslit = presetData.translit || '';
             // Sample entries may carry pre-written demo analysis fields
             // (summary, people, places, concepts, etc.) — see sampleDatabase.
             finalAnalysis = presetData.analysis || null;
@@ -1229,6 +1235,7 @@ devletin ve milletin esenliği için gerekli emir verilmiştir.`,
                     finalOcr = data.ocr;
                     finalTrans = data.trans;
                     finalTransEn = data.trans_en || '';
+                    finalTranslit = data.translit || '';
                     // Everything besides ocr/trans is optional analysis data;
                     // pass the whole payload through and let renderResultsPanel
                     // render only what's actually present.
@@ -1290,6 +1297,7 @@ devletin ve milletin esenliği için gerekli emir verilmiştir.`,
         state.ocrText = finalOcr;
         state.transText = finalTrans;
         state.transTextEn = finalTransEn;
+        state.translitText = finalTranslit;
 
         // Detailed Results Panel — only show it when we actually have
         // analysis data to display; otherwise leave it hidden rather than
@@ -1378,6 +1386,38 @@ devletin ve milletin esenliği için gerekli emir verilmiştir.`,
     }
 
     ttsBtn.addEventListener('click', () => speakText(transTextDisplay.textContent));
+
+    // Osmanlıca transliterasyonuna özgü diyakritikli harfleri (ḳ, ġ, ā, ḥ,
+    // ṣ, ṭ, ñ vb.) TTS motorunun tanıyabildiği düz Türkçe harflere çevirir.
+    // Standart Türkçe harfler (ü, ö, ç, ş, ı, İ) dokunulmadan kalır. Bu
+    // sadece TTS'e giden metni etkiler, ekranda hiçbir şey değişmez.
+    function cleanTranslitForTts(text) {
+        if (!text) return text;
+        const diacriticMap = {
+            'ā': 'a', 'Ā': 'A',
+            'ḳ': 'k', 'Ḳ': 'K',
+            'ġ': 'g', 'Ġ': 'G',
+            'ḥ': 'h', 'Ḥ': 'H',
+            'ḫ': 'h', 'Ḫ': 'H',
+            'ṣ': 's', 'Ṣ': 'S',
+            'ṭ': 't', 'Ṭ': 'T',
+            'ñ': 'n', 'Ñ': 'N',
+            'ū': 'u', 'Ū': 'U',
+            'ī': 'i', 'Ī': 'İ',
+            'ż': 'z', 'Ż': 'Z',
+            'ḍ': 'd', 'Ḍ': 'D',
+            'ʿ': '', 'ʾ': '', 'ʻ': '', 'ʼ': ''
+        };
+        return text.replace(/[āĀḳḲġĠḥḤḫḪṣṢṭṬñÑūŪīĪżŻḍḌʿʾʻʼ]/g, (ch) => diacriticMap[ch] ?? ch);
+    }
+
+    ocrTtsBtn.addEventListener('click', () => {
+        if (!state.translitText) {
+            alert('Bu belge için sesli okuma verisi bulunamadı.');
+            return;
+        }
+        speakText(cleanTranslitForTts(state.translitText));
+    });
 
 
     // "Detayları Gör" — scrolls down to the (unchanged) Detaylı Belge Analizi
