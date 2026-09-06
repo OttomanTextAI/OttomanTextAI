@@ -931,6 +931,14 @@ def translate_endpoint():
     real env vars on the deployment platform). Neither ever appears in
     frontend code or in the config file.
     """
+    # Captured first thing so the time budget below covers the entire
+    # request, not just the OCR/translation cascade.
+    request_start_time = time.monotonic()
+    TIME_BUDGET_SECONDS = 240
+
+    def _time_budget_exceeded():
+        return (time.monotonic() - request_start_time) > TIME_BUDGET_SECONDS
+
     try:
         llm_config = get_llm_config()
     except (FileNotFoundError, ValueError) as error:
@@ -1019,6 +1027,24 @@ def translate_endpoint():
             }
         ), 500
 
+    # Time budget for the whole cascade (main attempt -> split-image ->
+    # fallback model). Gunicorn's --timeout is set higher than this
+    # (see Dockerfile), so if we're already close to it, entering another
+    # multi-request stage would just get the worker killed mid-flight
+    # instead of returning a clean JSON error. Checked before each stage
+    # below rather than relied on as a hard deadline mid-stage.
+    TIME_BUDGET_ERROR_RESPONSE = jsonify(
+        {
+            "error": (
+                "Model, belgeyi işlerken aynı ifadeyi tekrar "
+                "tekrar üretti veya yanıtı token sınırına "
+                "takıldı. Lütfen tekrar deneyin; sorun devam "
+                "ederse belgeyi daha küçük bir bölüm hâlinde "
+                "göndermeyi deneyin."
+            )
+        }
+    ), 502
+
     try:
         image_bytes = uploaded_file.read()
         messages = _build_messages(ANALYSIS_PROMPT, image_bytes)
@@ -1047,6 +1073,14 @@ def translate_endpoint():
         # away, try splitting the image into top/bottom halves — a
         # difficult full-page image often succeeds once each half is a
         # simpler, smaller request.
+        if _time_budget_exceeded():
+            print(
+                "[translate] Aborting cascade early: time budget (240s) "
+                "exceeded before starting split-image strategy",
+                flush=True,
+            )
+            return TIME_BUDGET_ERROR_RESPONSE
+
         print(
             "[translate] Falling back to split-image strategy after "
             "2 failed attempts",
@@ -1071,6 +1105,15 @@ def translate_endpoint():
         fallback_model = llm_config.get("fallback_model")
 
         if fallback_model:
+            if _time_budget_exceeded():
+                print(
+                    "[translate] Aborting cascade early: time budget "
+                    "(240s) exceeded before starting fallback-model "
+                    "attempt",
+                    flush=True,
+                )
+                return TIME_BUDGET_ERROR_RESPONSE
+
             print(
                 f"[translate] Falling back to alternate model "
                 f"({fallback_model}) after split-image strategy also "
@@ -1091,17 +1134,7 @@ def translate_endpoint():
             if fallback_result["ok"]:
                 return jsonify(fallback_result["parsed"])
 
-        return jsonify(
-            {
-                "error": (
-                    "Model, belgeyi işlerken aynı ifadeyi tekrar "
-                    "tekrar üretti veya yanıtı token sınırına "
-                    "takıldı. Lütfen tekrar deneyin; sorun devam "
-                    "ederse belgeyi daha küçük bir bölüm hâlinde "
-                    "göndermeyi deneyin."
-                )
-            }
-        ), 502
+        return TIME_BUDGET_ERROR_RESPONSE
 
     except json.JSONDecodeError as error:
         print(

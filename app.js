@@ -54,6 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const actionSpinner = document.getElementById('actionSpinner');
     const statusBadge = document.getElementById('statusBadge');
     const statusMessage = document.getElementById('statusMessage');
+    const statusHint = document.getElementById('statusHint');
 
     const ocrOutputBox = document.getElementById('ocrOutputBox');
     const ocrEmptyState = document.getElementById('ocrEmptyState');
@@ -863,6 +864,7 @@ Umudum şudur ki kıyamet gününde senin yüzünü görmekten mahrum kalmayayı
         state.selectedFile = null;
         state.imageDataUrl = null;
         state.translitText = '';
+        statusHint.classList.add('hidden');
         fileInput.value = '';
         uploadIdleState.classList.remove('hidden');
         uploadActiveState.classList.add('hidden');
@@ -1159,6 +1161,7 @@ devletin ve milletin esenliği için gerekli emir verilmiştir.`,
         actionSpinner.classList.remove('hidden');
         translateBtnLabel.textContent = 'İşleniyor...';
         statusBadge.classList.remove('hidden');
+        statusHint.classList.remove('hidden');
         scanLine.classList.add('scanning');
 
         // Step 2: OCR Extraction
@@ -1207,12 +1210,16 @@ devletin ve milletin esenliği için gerekli emir verilmiştir.`,
                 // fall back to a split-image strategy (2 parallel halves,
                 // each with its own retry) and finally a different model —
                 // worst case is several relay calls, so this needs more
-                // headroom than the default 45s. Matches the backend's own
-                // gunicorn --timeout (200s in the Dockerfile).
+                // headroom than the default 45s. The backend's own internal
+                // time budget aborts the cascade cleanly at 240s and its
+                // gunicorn --timeout is 280s (Dockerfile); 250s here sits
+                // just above the backend's clean-abort point so the app
+                // waits long enough to receive that JSON error response
+                // instead of timing out on the frontend first.
                 const apiRes = await fetchWithTimeout('https://ottoman-text-ai.onrender.com/api/translate', {
                     method: 'POST',
                     body: formData
-                }, 200000);
+                }, 250000);
 
                 if (!apiRes.ok) {
                     const errorData = await apiRes.json();
@@ -1270,6 +1277,7 @@ devletin ve milletin esenliği için gerekli emir verilmiştir.`,
                 translateBtnLabel.textContent = 'Çeviriyi Başlat';
                 scanLine.classList.remove('scanning');
                 statusMessage.textContent = 'Çeviri başarısız oldu. Lütfen tekrar deneyin.';
+                statusHint.classList.add('hidden');
                 setStepActive(1);
                 alert('Belge işlenemedi. Sunucudan geçerli bir sonuç alınamadı. Lütfen tekrar deneyin.');
                 return;
@@ -1322,6 +1330,7 @@ devletin ve milletin esenliği için gerekli emir verilmiştir.`,
                 statusMessage.textContent =
                     'Çeviri tamamlandı!';
             }
+        statusHint.classList.add('hidden');
         scanLine.classList.remove('scanning');
 
         // Briefly show all 4 steps as completed, then hand the highlight

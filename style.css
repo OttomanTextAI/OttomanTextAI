@@ -860,6 +860,13 @@ body.dark-theme .hero-section::after {
     gap: 1.5rem;
 }
 
+.status-hint {
+    margin-top: 0.6rem;
+    text-align: center;
+    font-size: 0.82rem;
+    color: var(--color-text-muted);
+}
+
 .btn-action-translate {
     background: linear-gradient(135deg, var(--color-primary-navy), #1A2740);
     color: #FFFFFF;
