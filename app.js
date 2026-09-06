@@ -1372,17 +1372,54 @@ devletin ve milletin esenliği için gerekli emir verilmiştir.`,
     }
 
     // Text To Speech
+    // Uzun metinlerde tek bir SpeechSynthesisUtterance tarayıcılarda sessizce
+    // başarısız olabiliyor (bilinen bir speechSynthesis kısıtı). Bunu önlemek
+    // için metni cümlelere/parçalara bölüp her parçayı ayrı bir utterance
+    // olarak, bir öncekinin bitişini (onend) bekleyerek sırayla okutuyoruz.
+    // Kısa metinlerde tek parça oluşur, davranış öncekiyle aynı kalır.
+    function splitTextForTts(text) {
+        // Noktalama işaretlerinden (. ! ? ve satır sonu) sonra böl, işareti
+        // parçanın sonunda tut. (Lookbehind kullanmıyoruz, geniş tarayıcı
+        // uyumluluğu için split+capture-group ile eşdeğerini elde ediyoruz.)
+        const pieces = text.split(/([.!?\n]+)/);
+        const chunks = [];
+        let current = '';
+        for (const piece of pieces) {
+            current += piece;
+            if (/[.!?\n]/.test(piece)) {
+                const trimmed = current.trim();
+                if (trimmed) chunks.push(trimmed);
+                current = '';
+            }
+        }
+        const trimmedRest = current.trim();
+        if (trimmedRest) chunks.push(trimmedRest);
+        return chunks.length > 0 ? chunks : [text];
+    }
+
     function speakText(text) {
         if (!text) return;
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.cancel();
-            const utterance = new SpeechSynthesisUtterance(text);
+        if (!('speechSynthesis' in window)) {
+            alert('Tarayıcınız sesli okuma özelliğini desteklemiyor.');
+            return;
+        }
+
+        window.speechSynthesis.cancel();
+        const chunks = splitTextForTts(text);
+        let index = 0;
+
+        function speakNext() {
+            if (index >= chunks.length) return;
+            const utterance = new SpeechSynthesisUtterance(chunks[index]);
             utterance.lang = 'tr-TR';
             utterance.rate = 0.9;
+            index++;
+            utterance.onend = speakNext;
+            utterance.onerror = speakNext;
             window.speechSynthesis.speak(utterance);
-        } else {
-            alert('Tarayıcınız sesli okuma özelliğini desteklemiyor.');
         }
+
+        speakNext();
     }
 
     ttsBtn.addEventListener('click', () => speakText(transTextDisplay.textContent));
