@@ -830,9 +830,15 @@ ANALYSIS_PROMPT = (
     "alanında özetle. "
 
     "translit: ocr alanındaki metnin Latin harflerine harf çevirisini "
-    "(transliterasyon) yaz. ocr alanında **çift yıldızla** işaretlediğin "
-    "her tahmini kısmın Latin karşılığını da aynı şekilde **çift yıldız** "
-    "içine alarak yaz, işaretlemeyi ocr ile birebir tutarlı tut. "
+    "(transliterasyon) yaz. Bu, ocr'daki her kelimenin birebir okunuşudur; "
+    "günümüz Türkçesine çevrilmiş, sadeleştirilmiş veya yorumlanmış bir "
+    "cümle DEĞİLDİR ve trans alanıyla KESİNLİKLE AYNI OLMAMALIDIR. "
+    "translit alanına trans alanındaki gibi bir günümüz Türkçesi cümlesini "
+    "veya kelimesini ASLA karıştırma; iki alanı sırayla, birbirine "
+    "geçirmeden, birbirinden tamamen bağımsız olarak üret. ocr alanında "
+    "**çift yıldızla** işaretlediğin her tahmini kısmın Latin karşılığını "
+    "da aynı şekilde **çift yıldız** içine alarak yaz, işaretlemeyi ocr "
+    "ile birebir tutarlı tut. "
 
     "trans: OCR metninin günümüz Türkçesi karşılığını yaz. translit/ocr "
     "alanlarında **çift yıldızla** işaretlenmiş (tahmin edilmiş) "

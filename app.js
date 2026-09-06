@@ -1236,6 +1236,8 @@ devletin ve milletin esenliği için gerekli emir verilmiştir.`,
                     finalTrans = data.trans;
                     finalTransEn = data.trans_en || '';
                     finalTranslit = data.translit || '';
+                    // DEBUG: backend response'daki translit alanının ham hali.
+                    console.log('[TTS DEBUG] Backend /api/translate response — data.translit:', data.translit);
                     // Everything besides ocr/trans is optional analysis data;
                     // pass the whole payload through and let renderResultsPanel
                     // render only what's actually present.
@@ -1453,7 +1455,13 @@ devletin ve milletin esenliği için gerekli emir verilmiştir.`,
             alert('Bu belge için sesli okuma verisi bulunamadı.');
             return;
         }
-        speakText(cleanTranslitForTts(state.translitText));
+        // DEBUG: backend'den gelen ham "translit" alanının ve TTS'e
+        // gönderilmeden önce temizlenmiş halinin karşılaştırılması için.
+        // Karışık (translit + trans) içerik varsa buradan görülebilir.
+        console.log('[OCR TTS DEBUG] Ham state.translitText (backend "translit" alanı):', state.translitText);
+        const cleanedForTts = cleanTranslitForTts(state.translitText);
+        console.log('[OCR TTS DEBUG] Temizlenmiş, TTS motoruna gönderilen metin:', cleanedForTts);
+        speakText(cleanedForTts);
     });
 
 
