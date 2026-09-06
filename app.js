@@ -1408,6 +1408,18 @@ devletin ve milletin esenliği için gerekli emir verilmiştir.`,
         return chunks.length > 0 ? chunks : [text];
     }
 
+    // Her speakText() çağrısına ait zincirin kimliği. window.speechSynthesis
+    // .cancel() çağrıldığında tarayıcı, o an konuşmakta/kuyrukta olan
+    // utterance için "error" (canceled/interrupted) olayını tetikleyebilir —
+    // bu da onerror handler'ımız üzerinden ESKİ zincirin speakNext()'ini
+    // tekrar tetikleyip, az önce cancel() ile durdurulmuş metni YENİ
+    // başlayan okumayla aynı anda/iç içe okutmaya devam ettirebiliyordu.
+    // Sonuç: bazı cümleler iki kez (eski zincirin kalanı + yeni zincirin
+    // baştan okuması) duyulabiliyordu. ttsPlaybackId, her speakText()
+    // çağrısını bir öncekinden ayırt ederek eski zincirin artık geçersiz
+    // sayılıp sessizce durmasını sağlıyor.
+    let ttsPlaybackId = 0;
+
     function speakText(text) {
         if (!text) return;
         if (!('speechSynthesis' in window)) {
@@ -1415,18 +1427,38 @@ devletin ve milletin esenliği için gerekli emir verilmiştir.`,
             return;
         }
 
+        // Sıra kritik: id'yi cancel()'dan ÖNCE artırıyoruz, çünkü cancel()
+        // eski utterance'ın onerror'unu SENKRON tetikleyebilir — id daha
+        // sonra artırılsaydı, o senkron çağrı anında eski zincir hâlâ
+        // "güncel" görünüp devam ederdi.
+        const myPlaybackId = ++ttsPlaybackId;
         window.speechSynthesis.cancel();
         const chunks = splitTextForTts(text);
         let index = 0;
 
         function speakNext() {
+            // Bu zincir, aradan başka bir speakText() çağrısı yapılarak
+            // (cancel() ile) geçersiz kılınmışsa burada dur.
+            if (myPlaybackId !== ttsPlaybackId) return;
             if (index >= chunks.length) return;
+
             const utterance = new SpeechSynthesisUtterance(chunks[index]);
             utterance.lang = 'tr-TR';
             utterance.rate = 0.9;
             index++;
-            utterance.onend = speakNext;
-            utterance.onerror = speakNext;
+
+            // Bazı tarayıcılarda tek bir utterance için hem onend hem
+            // onerror ateşlenebiliyor; bu koruma speakNext()'in aynı
+            // utterance için yalnızca BİR kez tetiklenmesini garanti eder.
+            let advanced = false;
+            const advanceOnce = () => {
+                if (advanced) return;
+                advanced = true;
+                speakNext();
+            };
+            utterance.onend = advanceOnce;
+            utterance.onerror = advanceOnce;
+
             window.speechSynthesis.speak(utterance);
         }
 
