@@ -727,10 +727,11 @@ def enhance_endpoint():
 
     profile = request.form.get(
         "profile",
-        "printed-degraded",
+        "auto",
     ).strip().lower()
 
     if profile not in {
+        "auto",
         "printed",
         "printed-degraded",
         "delicate",
@@ -740,6 +741,7 @@ def enhance_endpoint():
             {
                 "error": (
                     "profile must be one of: "
+                    "'auto', "
                     "'printed', "
                     "'printed-degraded', "
                     "'delicate', "

@@ -1,3 +1,6 @@
+orientation:
+  enabled: false
+  
 enhancement:
   denoise:
     diameter: 5
@@ -136,8 +139,19 @@ profiles:
     upscale_enabled: false
     upscale_factor: 2.0
 
-    background_normalization_enabled: true
+    background_normalization_enabled: false
     clahe_enabled: true
+
+    denoise:
+      diameter: 5
+      sigma_color: 20.0
+      sigma_space: 20.0
+
+    clahe:
+      clip_limit: 1.5
+      tile_grid_size:
+        - 8
+        - 8
 
     text_region_enabled: false
     bleed_through_enabled: false
@@ -171,6 +185,10 @@ profiles:
 
     background_normalization_enabled: false
     clahe_enabled: false
+
+    adaptive:
+      block_size: 31
+      constant: 5.0
 
     text_region_enabled: false
     bleed_through_enabled: false

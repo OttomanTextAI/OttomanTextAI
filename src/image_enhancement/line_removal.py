@@ -124,6 +124,244 @@ def remove_long_lines(
         )
     return result
 
+def detect_diagonal_long_lines(
+    binary_image: np.ndarray,
+    min_length_ratio: float = 0.25,
+    angle_margin: float = 12.0,
+    max_line_gap: int = 25,
+    hough_threshold: int = 60,
+    line_thickness: int = 3,
+) -> np.ndarray:
+
+    height, width = binary_image.shape
+
+    foreground = cv2.bitwise_not(binary_image)
+
+    edges = cv2.Canny(
+        foreground,
+        50,
+        150,
+    )
+
+    min_line_length = int(
+        max(height, width) * min_length_ratio
+    )
+
+    lines = cv2.HoughLinesP(
+        edges,
+        rho=1,
+        theta=np.pi / 180.0,
+        threshold=hough_threshold,
+        minLineLength=min_line_length,
+        maxLineGap=max_line_gap,
+    )
+
+    mask = np.zeros_like(binary_image)
+
+    if lines is None:
+        return mask
+
+    diagonal_candidates = []
+
+    for x1, y1, x2, y2 in np.asarray(lines).reshape(-1, 4):
+
+        dx = x2 - x1
+        dy = y2 - y1
+
+        line_length = np.hypot(
+            dx,
+            dy,
+        )
+
+        angle = abs(
+            np.degrees(
+                np.arctan2(
+                    dy,
+                    dx,
+                )
+            )
+        )
+
+        if angle > 90:
+            angle = 180 - angle
+
+        if not (
+            angle_margin
+            < angle
+            < (90.0 - angle_margin)
+        ):
+            continue
+
+        diagonal_candidates.append(
+            (
+                line_length,
+                x1,
+                y1,
+                x2,
+                y2,
+            )
+        )
+
+    if not diagonal_candidates:
+        return mask
+
+    # Use the longest detected diagonal as the main artifact direction.
+    diagonal_candidates.sort(
+        key=lambda item: item[0],
+        reverse=True,
+    )
+
+    _, x1, y1, x2, y2 = diagonal_candidates[0]
+
+    dx = float(x2 - x1)
+    dy = float(y2 - y1)
+
+    if abs(dx) < 1e-6:
+        return mask
+
+    slope = dy / dx
+    intercept = y1 - slope * x1
+
+    # Find where the fitted line intersects the image boundaries.
+    intersection_points = []
+
+    # Left boundary: x = 0
+    y_left = intercept
+    if 0 <= y_left < height:
+        intersection_points.append(
+            (0, int(round(y_left)))
+        )
+
+    # Right boundary: x = width - 1
+    y_right = (
+        slope * (width - 1)
+        + intercept
+    )
+
+    if 0 <= y_right < height:
+        intersection_points.append(
+            (
+                width - 1,
+                int(round(y_right)),
+            )
+        )
+
+    # Top boundary: y = 0
+    if abs(slope) > 1e-6:
+        x_top = -intercept / slope
+
+        if 0 <= x_top < width:
+            intersection_points.append(
+                (
+                    int(round(x_top)),
+                    0,
+                )
+            )
+
+    # Bottom boundary: y = height - 1
+    if abs(slope) > 1e-6:
+        x_bottom = (
+            (height - 1 - intercept)
+            / slope
+        )
+
+        if 0 <= x_bottom < width:
+            intersection_points.append(
+                (
+                    int(round(x_bottom)),
+                    height - 1,
+                )
+            )
+
+    # Remove duplicate intersection points.
+    unique_points = []
+
+    for point in intersection_points:
+        if point not in unique_points:
+            unique_points.append(point)
+
+    if len(unique_points) < 2:
+        return mask
+
+    # Choose the two boundary points that are farthest apart.
+    best_pair = None
+    best_distance = -1.0
+
+    for i in range(len(unique_points)):
+        for j in range(i + 1, len(unique_points)):
+
+            px1, py1 = unique_points[i]
+            px2, py2 = unique_points[j]
+
+            distance = np.hypot(
+                px2 - px1,
+                py2 - py1,
+            )
+
+            if distance > best_distance:
+                best_distance = distance
+                best_pair = (
+                    unique_points[i],
+                    unique_points[j],
+                )
+
+    if best_pair is None:
+        return mask
+
+    start_point, end_point = best_pair
+
+    # This is only a guide line.
+    guide_mask = np.zeros_like(binary_image)
+
+    cv2.line(
+        guide_mask,
+        start_point,
+        end_point,
+        255,
+        line_thickness,
+    )
+
+    # Create a narrow search corridor around the extended line.
+    corridor_kernel = cv2.getStructuringElement(
+        cv2.MORPH_ELLIPSE,
+        (17, 17),
+    )
+
+    diagonal_corridor = cv2.dilate(
+        guide_mask,
+        corridor_kernel,
+        iterations=1,
+    )
+
+    # Keep only real foreground pixels inside the corridor.
+    artifact_pixels = cv2.bitwise_and(
+        foreground,
+        diagonal_corridor,
+    )
+
+    mask = cv2.bitwise_or(
+        guide_mask,
+        artifact_pixels,
+    )
+
+    cv2.imwrite(
+        "outputs/debug_diagonal_guide.png",
+        guide_mask,
+    )
+
+    cv2.imwrite(
+        "outputs/debug_diagonal_corridor.png",
+        diagonal_corridor,
+    )
+
+    cv2.imwrite(
+        "outputs/debug_diagonal_artifact_pixels.png",
+        artifact_pixels,
+    )
+
+    return mask
+
+
 def remove_fold_lines_with_text_protection(
     binary_image: np.ndarray,
     text_mask: np.ndarray,
@@ -206,6 +444,21 @@ def remove_fold_lines_with_text_protection(
         max_distance_from_bottom=25,
     )
 
+    diagonal_line_mask = detect_diagonal_long_lines(
+        binary_image,
+        min_length_ratio=0.25,
+        angle_margin=12.0,
+        max_line_gap=25,
+        hough_threshold=60,
+        line_thickness=3,
+    )
+
+    cv2.imwrite(
+        "outputs/debug_diagonal_lines.png",
+        diagonal_line_mask,
+    )
+
+
     cv2.imwrite(
         "outputs/debug_bottom_artifacts.png",
         bottom_artifact_mask,
@@ -262,23 +515,15 @@ def remove_fold_lines_with_text_protection(
     )
 
     horizontal_lines = cv2.morphologyEx(
-        foreground,
+        horizontal_connected,
         cv2.MORPH_OPEN,
         horizontal_kernel,
     )
 
     vertical_lines = cv2.morphologyEx(
-        foreground,
+        vertical_connected,
         cv2.MORPH_OPEN,
         vertical_kernel,
-    )
-
-    component_line_mask = detect_fold_line_components(
-        binary_image,
-        min_horizontal_ratio=0.30,
-        min_vertical_ratio=0.20,
-        max_horizontal_thickness=12,
-        max_vertical_thickness=12,
     )
 
     line_mask = cv2.bitwise_or(
@@ -307,12 +552,47 @@ def remove_fold_lines_with_text_protection(
         iterations=1,
     )
 
+
     # Remove only line pixels that are NOT protected as text.
     safe_line_mask = cv2.bitwise_and(
         line_mask,
         cv2.bitwise_not(
             protected_text
         ),
+    )
+
+    safe_diagonal_line_mask = cv2.bitwise_and(
+            diagonal_line_mask,
+            cv2.bitwise_not(
+                protected_text
+            ),
+        )
+
+    diagonal_connect_kernel = cv2.getStructuringElement(
+        cv2.MORPH_ELLIPSE,
+        (5, 5),
+    )
+
+    safe_diagonal_line_mask = cv2.morphologyEx(
+        safe_diagonal_line_mask,
+        cv2.MORPH_CLOSE,
+        diagonal_connect_kernel,
+        iterations=1,
+    )
+
+    cv2.imwrite(
+        "outputs/debug_safe_diagonal_lines.png",
+        safe_diagonal_line_mask,
+    )
+
+    cv2.imwrite(
+        "outputs/debug_safe_diagonal_lines.png",
+        safe_diagonal_line_mask,
+    )
+
+    safe_line_mask = cv2.bitwise_or(
+        safe_line_mask,
+        safe_diagonal_line_mask,
     )
 
     safe_fragmented_vertical_mask = cv2.bitwise_and(
@@ -361,12 +641,21 @@ def remove_fold_lines_with_text_protection(
         safe_line_mask,
     )
 
+    cv2.imwrite(
+        "outputs/debug_binary_before_fold.png",
+        binary_image,
+    )
+
     result = binary_image.copy()
 
     result[
         safe_line_mask > 0
     ] = 255
 
+    cv2.imwrite(
+        "outputs/debug_after_fold_removal.png",
+        result,
+    )
     return result
 
 def detect_fold_line_components(

@@ -86,6 +86,624 @@ DEFAULT_CONFIG_PATH = (
     / "image_enhancement.yaml"
 )
 
+AUTO_PROFILES = (
+    "printed",
+    "printed-degraded",
+    "delicate",
+    "manuscript",
+)
+
+def _create_auto_preview(
+    image: np.ndarray,
+    max_long_edge: int = 1100,
+) -> np.ndarray:
+    height, width = image.shape[:2]
+    long_edge = max(height, width)
+
+    if long_edge <= max_long_edge:
+        return image.copy()
+
+    scale = max_long_edge / long_edge
+
+    return cv2.resize(
+        image,
+        None,
+        fx=scale,
+        fy=scale,
+        interpolation=cv2.INTER_AREA,
+    )
+def _score_enhancement_candidate(
+    image: np.ndarray,
+    reference_image: np.ndarray,
+) -> float:
+    """
+    Score a preprocessing candidate.
+
+    Higher score means:
+    - original text strokes are preserved,
+    - unnecessary new edges are avoided,
+    - foreground amount stays close to the source document,
+    - large black blobs are avoided,
+    - connected components remain structurally reasonable.
+    """
+
+    # -------------------------------------------------
+    # Convert candidate to grayscale
+    # -------------------------------------------------
+    if image.ndim == 3:
+        grayscale = cv2.cvtColor(
+            image,
+            cv2.COLOR_BGR2GRAY,
+        )
+    else:
+        grayscale = image.copy()
+
+    # -------------------------------------------------
+    # Convert reference to grayscale
+    # -------------------------------------------------
+    if reference_image.ndim == 3:
+        reference_gray = cv2.cvtColor(
+            reference_image,
+            cv2.COLOR_BGR2GRAY,
+        )
+    else:
+        reference_gray = reference_image.copy()
+
+    # Candidate may be upscaled by some profiles.
+    # Resize only for comparison-based metrics.
+    if grayscale.shape != reference_gray.shape:
+        grayscale_for_compare = cv2.resize(
+            grayscale,
+            (
+                reference_gray.shape[1],
+                reference_gray.shape[0],
+            ),
+            interpolation=cv2.INTER_AREA,
+        )
+    else:
+        grayscale_for_compare = grayscale
+
+    # =================================================
+    # 1. FOREGROUND CONSISTENCY
+    # =================================================
+
+    # Candidate foreground
+    # Candidate binary at original output size.
+    # This can still be useful for actual output-related checks.
+    _, binary_inv = cv2.threshold(
+        grayscale,
+        0,
+        255,
+        cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU,
+    )
+
+    # Candidate binary normalized to reference resolution.
+    # Structural scoring must use this version so that
+    # upscaled profiles are compared fairly.
+    _, binary_inv_compare = cv2.threshold(
+        grayscale_for_compare,
+        0,
+        255,
+        cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU,
+    )
+
+    foreground_ratio = float(
+        np.mean(binary_inv > 0)
+    )
+
+    # Reference foreground
+    _, reference_binary_inv = cv2.threshold(
+        reference_gray,
+        0,
+        255,
+        cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU,
+    )
+
+    reference_foreground_ratio = float(
+        np.mean(reference_binary_inv > 0)
+    )
+
+    # Compare candidate foreground with source foreground.
+    #
+    # A candidate should not lose most of the text
+    # or create excessive foreground.
+    if reference_foreground_ratio > 1e-6:
+        foreground_relative_error = abs(
+            foreground_ratio
+            - reference_foreground_ratio
+        ) / reference_foreground_ratio
+
+        foreground_score = max(
+            0.0,
+            1.0 - foreground_relative_error,
+        )
+    else:
+        foreground_score = (
+            1.0
+            if foreground_ratio < 0.015
+            else 0.0
+        )
+
+    # Additional protection against obviously invalid
+    # mostly-empty or mostly-black outputs.
+    if foreground_ratio < 0.01:
+        foreground_score *= (
+            foreground_ratio / 0.01
+        )
+
+    if foreground_ratio > 0.45:
+        foreground_score *= max(
+            0.0,
+            1.0 - (
+                foreground_ratio - 0.45
+            ) / 0.35,
+        )
+
+    foreground_score = float(
+        np.clip(
+            foreground_score,
+            0.0,
+            1.0,
+        )
+    )
+
+    # =================================================
+    # 2. EDGE PRESERVATION — PRECISION + RECALL + F1
+    # =================================================
+
+    _, reference_compare_binary = cv2.threshold(
+        reference_gray,
+        0,
+        255,
+        cv2.THRESH_BINARY + cv2.THRESH_OTSU,
+    )
+
+    reference_edges = cv2.Canny(
+        reference_compare_binary,
+        50,
+        150,
+    )
+
+    _, candidate_compare_binary = cv2.threshold(
+        grayscale_for_compare,
+        0,
+        255,
+        cv2.THRESH_BINARY + cv2.THRESH_OTSU,
+    )
+
+    candidate_edges = cv2.Canny(
+        candidate_compare_binary,
+        50,
+        150,
+    )
+
+    kernel = np.ones(
+        (3, 3),
+        dtype=np.uint8,
+    )
+
+    # Tolerance in both directions.
+    candidate_edges_dilated = cv2.dilate(
+        candidate_edges,
+        kernel,
+        iterations=1,
+    )
+
+    reference_edges_dilated = cv2.dilate(
+        reference_edges,
+        kernel,
+        iterations=1,
+    )
+
+    reference_edge_pixels = (
+        reference_edges > 0
+    )
+
+    candidate_edge_pixels = (
+        candidate_edges > 0
+    )
+
+    reference_edge_count = int(
+        np.count_nonzero(
+            reference_edge_pixels
+        )
+    )
+
+    candidate_edge_count = int(
+        np.count_nonzero(
+            candidate_edge_pixels
+        )
+    )
+
+    # Recall:
+    # How much of the original edge structure survived?
+    if reference_edge_count > 0:
+        preserved_reference_edges = (
+            np.logical_and(
+                reference_edge_pixels,
+                candidate_edges_dilated > 0,
+            )
+        )
+
+        edge_recall = float(
+            np.count_nonzero(
+                preserved_reference_edges
+            )
+            / reference_edge_count
+        )
+    else:
+        edge_recall = 0.0
+
+    # Precision:
+    # How much of the candidate edge structure
+    # corresponds to something in the source?
+    if candidate_edge_count > 0:
+        valid_candidate_edges = (
+            np.logical_and(
+                candidate_edge_pixels,
+                reference_edges_dilated > 0,
+            )
+        )
+
+        edge_precision = float(
+            np.count_nonzero(
+                valid_candidate_edges
+            )
+            / candidate_edge_count
+        )
+    else:
+        edge_precision = 0.0
+
+    # F1 prevents a profile from winning simply by
+    # generating many additional edges.
+    if (
+        edge_precision
+        + edge_recall
+        > 1e-8
+    ):
+        edge_preservation_score = (
+            2.0
+            * edge_precision
+            * edge_recall
+            / (
+                edge_precision
+                + edge_recall
+            )
+        )
+    else:
+        edge_preservation_score = 0.0
+
+    # =================================================
+    # 3. CONNECTED COMPONENTS — CANDIDATE
+    # =================================================
+
+    num_labels, labels, stats, _ = (
+        cv2.connectedComponentsWithStats(
+            binary_inv_compare,
+            connectivity=8,
+        )
+    )
+
+    image_area = float(
+        binary_inv_compare.shape[0]
+        * binary_inv_compare.shape[1]
+    )
+
+    if num_labels > 1:
+        component_areas = stats[
+            1:,
+            cv2.CC_STAT_AREA,
+        ]
+    else:
+        component_areas = np.array(
+            [],
+            dtype=np.int32,
+        )
+
+    # =================================================
+    # 4. LARGE BLACK BLOB PENALTY
+    # =================================================
+
+    large_blob_area = 0.0
+    max_component_ratio = 0.0
+
+    if len(component_areas) > 0:
+        max_component_ratio = float(
+            np.max(component_areas)
+            / image_area
+        )
+
+        large_components = component_areas[
+            component_areas
+            > image_area * 0.01
+        ]
+
+        large_blob_area = float(
+            np.sum(large_components)
+            / image_area
+        )
+
+    blob_score = 1.0
+
+    if max_component_ratio > 0.035:
+        blob_score -= min(
+            (
+                max_component_ratio
+                - 0.035
+            ) * 8.0,
+            0.65,
+        )
+
+    if large_blob_area > 0.08:
+        blob_score -= min(
+            (
+                large_blob_area
+                - 0.08
+            ) * 3.0,
+            0.35,
+        )
+
+    blob_score = float(
+        np.clip(
+            blob_score,
+            0.0,
+            1.0,
+        )
+    )
+
+    # =================================================
+    # 5. COMPONENT STRUCTURE
+    # =================================================
+
+    if len(component_areas) > 0:
+        character_like_components = (
+            component_areas[
+                (
+                    component_areas >= 3
+                )
+                & (
+                    component_areas
+                    <= image_area * 0.003
+                )
+            ]
+        )
+
+        character_like_ratio = (
+            len(character_like_components)
+            / max(
+                len(component_areas),
+                1,
+            )
+        )
+    else:
+        character_like_components = np.array(
+            [],
+            dtype=np.int32,
+        )
+
+        character_like_ratio = 0.0
+
+    # Candidate component quality.
+    #
+    # Unlike the old version, do not immediately
+    # saturate at 1.0 around 70%.
+    character_quality_score = float(
+        np.clip(
+            character_like_ratio,
+            0.0,
+            1.0,
+        )
+    )
+
+    # -------------------------------------------------
+    # Reference component count
+    # -------------------------------------------------
+
+    reference_num_labels, _, reference_stats, _ = (
+        cv2.connectedComponentsWithStats(
+            reference_binary_inv,
+            connectivity=8,
+        )
+    )
+
+    reference_component_count = max(
+        reference_num_labels - 1,
+        1,
+    )
+
+    candidate_component_count = max(
+        num_labels - 1,
+        0,
+    )
+
+    # Candidate and reference may have different dimensions
+    # because some profiles upscale the output.
+    #
+    # Normalize component density by image area rather
+    # than comparing raw component counts directly.
+    if reference_component_count > 0:
+        component_density_ratio = (
+            candidate_component_count
+            / reference_component_count
+        )
+    else:
+        component_density_ratio = 0.0
+
+        # Ideal density ratio is around 1.
+        #
+        # Allow moderate changes, but increasingly
+        # penalize excessive fragmentation or merging.
+    if 0.60 <= component_density_ratio <= 1.60:
+        fragmentation_score = 1.0
+
+    elif component_density_ratio < 0.60:
+        fragmentation_score = max(
+            0.0,
+            component_density_ratio / 0.60,
+        )
+
+    else:
+        fragmentation_score = max(
+            0.0,
+            1.0
+            - (
+                component_density_ratio
+                - 1.60
+            ) / 2.00,
+        )
+
+    fragmentation_score = float(
+        np.clip(
+            fragmentation_score,
+            0.0,
+            1.0,
+        )
+    )
+
+    # Character-likeness alone should not be enough.
+    # A fragmented candidate must also be penalized.
+    component_score = (
+        0.55 * character_quality_score
+        + 0.45 * fragmentation_score
+    )
+
+    component_score = float(
+        np.clip(
+            component_score,
+            0.0,
+            1.0,
+        )
+    )
+
+    # =================================================
+    # FINAL SCORE
+    # =================================================
+
+    score = (
+        0.40 * edge_preservation_score
+        + 0.20 * foreground_score
+        + 0.25 * blob_score
+        + 0.15 * component_score
+    )
+
+    print(
+        "[SCORE DETAILS]",
+        {
+            "edge_f1": round(
+                float(edge_preservation_score),
+                3,
+            ),
+            "edge_precision": round(
+                float(edge_precision),
+                3,
+            ),
+            "edge_recall": round(
+                float(edge_recall),
+                3,
+            ),
+
+            "foreground": round(
+                float(foreground_score),
+                3,
+            ),
+            "foreground_ratio": round(
+                float(foreground_ratio),
+                4,
+            ),
+            "reference_foreground": round(
+                float(reference_foreground_ratio),
+                4,
+            ),
+
+            "blob": round(
+                float(blob_score),
+                3,
+            ),
+
+            "component": round(
+                float(component_score),
+                3,
+            ),
+            "character_ratio": round(
+                float(character_like_ratio),
+                3,
+            ),
+            "fragmentation": round(
+                float(fragmentation_score),
+                3,
+            ),
+            "component_density_ratio": round(
+                float(component_density_ratio),
+                3,
+            ),
+
+            "components_total": int(
+                candidate_component_count
+            ),
+            "reference_components": int(
+                reference_component_count
+            ),
+
+            "final": round(
+                float(score),
+                3,
+            ),
+        },
+        flush=True,
+    )
+
+    return float(score)
+
+
+def _select_auto_profile(
+    image: np.ndarray,
+    config_path: str | Path | None = None,
+) -> str:
+    preview = _create_auto_preview(
+        image
+    )
+
+    scores = {}
+
+    for candidate_profile in AUTO_PROFILES:
+        candidate = preprocess_image(
+            preview,
+            config_path=config_path,
+            profile=candidate_profile,
+        )
+
+        score = _score_enhancement_candidate(
+            candidate,
+            reference_image=preview,
+        )
+
+        scores[candidate_profile] = score
+
+        print(
+            "[AUTO CANDIDATE]",
+            candidate_profile,
+            round(score, 3),
+            flush=True,
+        )
+
+    selected_profile = max(
+        scores,
+        key=scores.get,
+    )
+
+    print(
+        "[AUTO PROFILE]",
+        {
+            profile: round(score, 3)
+            for profile, score in scores.items()
+        },
+        "selected:",
+        selected_profile,
+        flush=True,
+    )
+
+    return selected_profile
+
 
 def preprocess_image(
     image: np.ndarray,
@@ -128,15 +746,21 @@ def preprocess_image(
 
     normalized_profile = profile.strip().lower()
 
-    if normalized_profile not in profiles:
-        supported_profiles = ", ".join(
-            sorted(profiles)
+    if normalized_profile == "auto":
+        normalized_profile = _select_auto_profile(
+            image,
+            config_path=config_path,
         )
 
-        raise ValueError(
-            f"Unsupported profile: {profile!r}. "
-            f"Supported profiles: {supported_profiles}."
-        )
+        if normalized_profile not in profiles:
+            supported_profiles = ", ".join(
+                sorted(profiles)
+            )
+
+            raise ValueError(
+                f"Unsupported profile: {profile!r}. "
+                f"Supported profiles: {supported_profiles}."
+            )
 
     profile_config = profiles[
         normalized_profile
@@ -197,21 +821,28 @@ def preprocess_image(
         "threshold"
     ]
 
-    adaptive_config = threshold_config[
-        "adaptive"
-    ]
+    adaptive_config = {
+        **threshold_config["adaptive"],
+        **profile_config.get("adaptive", {}),
+    }
 
-    denoise_config = enhancement_config[
-        "denoise"
-    ]
+    denoise_config = {
+        **enhancement_config["denoise"],
+        **profile_config.get("denoise", {}),
+    }
 
-    clahe_config = enhancement_config[
-        "clahe"
-    ]
+    clahe_config = {
+        **enhancement_config["clahe"],
+        **profile_config.get("clahe", {}),
+    }
 
-    background_config = enhancement_config[
-        "background_normalization"
-    ]
+    background_config = {
+        **enhancement_config["background_normalization"],
+        **profile_config.get(
+            "background_normalization",
+            {},
+        ),
+    }
 
     stain_config = enhancement_config[
     "stain_suppression"
@@ -246,13 +877,18 @@ def preprocess_image(
     "text_region"
     ]
     
-    (
-        orientation_corrected_image,
-        rotation_angle,
-        orientation_confidence,
-    ) = correct_document_orientation(
-        image
-    )
+    orientation_config = config.get("orientation", {"enabled": False})
+
+    if orientation_config.get("enabled", False):
+        (
+            orientation_corrected_image,
+            rotation_angle,
+            orientation_confidence,
+        ) = correct_document_orientation(image)
+    else:
+        orientation_corrected_image = image.copy()
+        rotation_angle = 0
+        orientation_confidence = 0.0
 
     perspective_corrected_image = correct_perspective(
         orientation_corrected_image
@@ -699,22 +1335,15 @@ def preprocess_image(
             line_cleaned_image
         )
     else:
-        if normalized_profile == "delicate":
-            binary_image = apply_adaptive_threshold(
-                line_cleaned_image,
-                block_size=31,
-                constant=6.0,
-            )
-        else:
-            binary_image = apply_adaptive_threshold(
-                line_cleaned_image,
-                block_size=adaptive_config[
-                    "block_size"
-                ],
-                constant=adaptive_config[
-                    "constant"
-                ],
-            )
+        binary_image = apply_adaptive_threshold(
+            line_cleaned_image,
+            block_size=adaptive_config[
+                "block_size"
+            ],
+            constant=adaptive_config[
+                "constant"
+            ],
+        )
 
     print(
         f"[TIMING] base_threshold: "

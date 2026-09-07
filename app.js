@@ -715,7 +715,7 @@ Umudum şudur ki kıyamet gününde senin yüzünü görmekten mahrum kalmayayı
     // declarations are hoisted in JS, so it never threw an error — it was
     // simply dead code that could never run (its debug console.log never fired).
     // Cleaned up to a single, straightforward implementation below.
-    async function enhanceUploadedImage(file, profile = 'printed') {
+    async function enhanceUploadedImage(file, profile = 'auto') {
         console.log('ENHANCE PROFILE:', profile);
 
         const formData = new FormData();
