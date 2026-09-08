@@ -1276,6 +1276,14 @@ def assistant_endpoint():
     try:
         data = request.get_json(silent=True) or {}
 
+        history = data.get(
+            "history",
+            [],
+        )
+
+        if not isinstance(history, list):
+            history = []
+
         user_message = (
             data.get("message")
             or ""
@@ -1302,6 +1310,7 @@ def assistant_endpoint():
         result = document_qa.answer(
             question=user_message,
             top_k=3,
+            history=history,
         )
 
         return jsonify(
@@ -1368,6 +1377,7 @@ def assistant_external_endpoint():
     """
     try:
         data = request.get_json(silent=True) or {}
+
 
         user_message = (
             data.get("message")

@@ -43,6 +43,13 @@ Genel kurallar:
 - Bilgi uydurma.
 - Cevabı Türkçe ver.
 - Tarih, kişi, yer ve olay adlarını belgede geçtiği biçimiyle koru.
+- answer alanını kısa ve doğrudan tut.
+- answer en fazla 3 cümle olsun.
+- related_information en fazla 3 kısa madde içersin.
+- JSON dışında hiçbir metin üretme.
+- Markdown kullanma.
+- Önceki konuşma verilmişse takip sorularını bu konuşmaya göre yorumla.
+- Önceki konuşmadaki bilgileri yalnızca belge bağlamıyla uyumluysa kullan.
 
 SADECE geçerli JSON döndür.
 
@@ -93,6 +100,7 @@ class DocumentQA:
         self,
         question: str,
         top_k: int = 3,
+        history: list | None = None,
     ) -> dict:
         if not question or not question.strip():
             raise ValueError("Question cannot be empty.")
@@ -124,9 +132,59 @@ class DocumentQA:
 
         context = "\n\n".join(context_parts)
 
+        history = history or []
+
+        recent_history = history[-4:]
+
+        history_parts = []
+
+        for item in recent_history:
+            if not isinstance(item, dict):
+                continue
+
+            role = str(
+                item.get("role", "")
+            ).strip().lower()
+
+            content = str(
+                item.get("content", "")
+            ).strip()
+
+            if not content:
+                continue
+
+            if role not in {
+                "user",
+                "assistant",
+            }:
+                continue
+
+            label = (
+                "Kullanıcı"
+                if role == "user"
+                else "Asistan"
+            )
+
+            history_parts.append(
+                f"{label}: {content}"
+            )
+
+        conversation_history = "\n".join(
+            history_parts
+        )
+
+        history_section = ""
+
+        if conversation_history:
+            history_section = (
+                "ÖNCEKİ KONUŞMA:\n"
+                f"{conversation_history}\n\n"
+            )
+
         user_prompt = (
             f"BELGE BAĞLAMI:\n"
             f"{context}\n\n"
+            f"{history_section}"
             f"KULLANICI SORUSU:\n"
             f"{question.strip()}"
         )
@@ -144,7 +202,7 @@ class DocumentQA:
                 },
             ],
             temperature=0.1,
-            max_tokens=900,
+            max_tokens=1600,
         )
 
         finish_reason = completion.choices[0].finish_reason
@@ -176,9 +234,18 @@ class DocumentQA:
             )
 
         except json.JSONDecodeError:
+            print(
+                "[DOCUMENT QA] Invalid JSON response:",
+                repr(answer_text),
+                flush=True,
+            )
+
             parsed_answer = {
-                "answer_type": "related",
-                "answer": answer_text,
+                "answer_type": "unavailable",
+                "answer": (
+                    "Belge yanıtı oluşturulurken bir biçimlendirme "
+                    "hatası oluştu. Lütfen sorunuzu tekrar deneyin."
+                ),
                 "related_information": [],
                 "external_answer_available": True,
             }
@@ -206,8 +273,10 @@ class DocumentQA:
         return {
             "answer_type": answer_type,
             "answer": parsed_answer.get(
-                "answer",
-                answer_text,
+                "answer"
+            ) or (
+                "Belgeden uygun bir yanıt oluşturulamadı. "
+                "Lütfen sorunuzu farklı şekilde tekrar deneyin."
             ),
             "related_information": related_information,
 
