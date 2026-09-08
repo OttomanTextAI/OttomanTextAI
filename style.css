@@ -25,6 +25,7 @@
     
     --color-accent-red: #D9534F;
     --color-accent-green: #2B8A3E;
+    --color-accent-blue: #3F7CC4;
 
     --font-heading: 'Playfair Display', 'Cormorant Garamond', Georgia, serif;
     --font-brand: 'Cinzel Decorative', 'Playfair Display', serif;
@@ -224,20 +225,24 @@ body {
     border-radius: 0;
     overflow: hidden;
     box-shadow: none;
+    min-height: 480px;
+    background:
+        radial-gradient(circle at 85% 25%, rgba(197, 160, 89, 0.14), transparent 55%),
+        linear-gradient(135deg, #0D1627 0%, #141F36 55%, #0D1627 100%);
 }
 
-.hero-bg-image {
-    display: block;
-    width: 100%;
-    height: auto;
-}
-
+/* A faint, tiled Ottoman-star motif (reusing the same diamond/circle shapes
+   as the header crest) stands in for the old photographic background — a
+   small decorative touch instead of a large stock-style hero image. */
 .hero-section::before {
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(135deg, rgba(13, 22, 39, 0.80), rgba(13, 22, 39, 0.60) 55%, rgba(13, 22, 39, 0.78));
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%23C5A059' stroke-width='1'%3E%3Cpolygon points='60,8 112,60 60,112 8,60'/%3E%3Ccircle cx='60' cy='60' r='26'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 120px 120px;
+    opacity: 0.07;
     z-index: 1;
+    pointer-events: none;
 }
 
 .hero-section::after {
@@ -401,26 +406,6 @@ body.dark-theme .hero-section::after {
     transition: background-color var(--transition-normal), border-color var(--transition-normal), grid-template-columns var(--transition-normal);
 }
 
-/* Enhanced image column is opt-in via the toggle above the upload box.
-   Needs the .workbench-col.col-enhanced compound selector so it outranks
-   the later `.workbench-col { display: flex }` rule (equal single-class
-   specificity would otherwise let source order win). */
-.workbench-col.col-enhanced {
-    display: none;
-}
-
-.workbench-card.show-enhanced {
-    grid-template-columns:
-    0.9fr
-    auto
-    0.9fr
-    2fr;
-}
-
-.workbench-card.show-enhanced .col-enhanced {
-    display: flex;
-}
-
 .enhanced-toggle-row {
     display: flex;
     align-items: center;
@@ -489,11 +474,14 @@ body.dark-theme .hero-section::after {
     outline-offset: 2px;
 }
 
+/* Fixed (not min-) height so the image column and the output column are
+   always exactly the same size regardless of which is naturally taller —
+   long translations scroll inside .box-content instead of growing the
+   whole card. */
 .workbench-col {
     display: flex;
     flex-direction: column;
-    height: 100%;
-    min-height: 380px;
+    height: 620px;
 }
 
 /* Col 1: Upload Area */
@@ -508,7 +496,6 @@ body.dark-theme .hero-section::after {
     align-items: center;
     justify-content: center;
     height: 100%;
-    max-height: 460px;
     position: relative;
     cursor: pointer;
     transition: all var(--transition-fast);
@@ -601,7 +588,7 @@ body.dark-theme .hero-section::after {
 .preview-img-wrapper {
     position: relative;
     max-width: 100%;
-    max-height: 220px;
+    max-height: 420px;
     border-radius: var(--radius-sm);
     overflow: hidden;
     border: 1px solid var(--color-border);
@@ -610,7 +597,7 @@ body.dark-theme .hero-section::after {
 
 .preview-img-wrapper img {
     max-width: 100%;
-    max-height: 220px;
+    max-height: 420px;
     object-fit: contain;
     display: block;
 }
@@ -776,40 +763,10 @@ body.dark-theme .hero-section::after {
     overflow-y: auto;
     position: relative;
     min-height: 280px;
-    max-height: 460px;
     display: flex;
     flex-direction: column;
 }
 
-/* Enhanced Image Output */
-
-.enhanced-content-area {
-    align-items: center;
-    justify-content: center;
-}
-
-.enhanced-image-wrapper {
-    width: 100%;
-    height: 100%;
-    min-height: 280px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    overflow: hidden;
-    border-radius: var(--radius-sm);
-}
-
-.enhanced-image-wrapper img {
-    width: 100%;
-    height: 100%;
-    max-height: 320px;
-
-    object-fit: contain;
-
-    border-radius: var(--radius-sm);
-}
 .empty-state {
     display: flex;
     flex-direction: column;
@@ -828,6 +785,19 @@ body.dark-theme .hero-section::after {
     line-height: 1.5;
 }
 
+.empty-state.state-error {
+    color: #d64545;
+}
+
+.empty-state.state-error p {
+    max-width: 320px;
+    font-weight: 500;
+}
+
+.empty-state.state-error svg {
+    stroke: #d64545;
+}
+
 .text-display {
     width: 100%;
     height: 100%;
@@ -836,6 +806,69 @@ body.dark-theme .hero-section::after {
     line-height: 1.8;
     color: var(--color-text-main);
     white-space: pre-wrap;
+}
+
+/* Entity highlighting (people/places/dates) inside the Turkish translation —
+   see renderTranslationWithEntities() in app.js. Three subtle color variants
+   reusing the palette's existing accent tokens. */
+.entity-tag {
+    cursor: pointer;
+    border-bottom: 1.5px dashed currentColor;
+    border-radius: 2px;
+    padding: 0 1px;
+    transition: background-color var(--transition-fast);
+}
+
+.entity-tag:hover {
+    background-color: var(--color-gold-bg);
+}
+
+.entity-tag.entity-person { color: var(--color-gold); }
+.entity-tag.entity-place { color: var(--color-accent-blue); }
+.entity-tag.entity-date { color: var(--color-accent-green); }
+
+.entity-popover {
+    position: absolute;
+    z-index: 1000;
+    max-width: 280px;
+    background: var(--bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    padding: 0.9rem 1rem;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    animation: entity-popover-in 0.15s ease-out;
+}
+
+@keyframes entity-popover-in {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.entity-popover-type {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 0.15rem 0.55rem;
+    border-radius: var(--radius-full);
+    margin-bottom: 0.5rem;
+}
+
+.entity-popover-type-person { background: var(--color-gold-bg); color: var(--color-gold); }
+.entity-popover-type-place { background: rgba(63, 124, 196, 0.14); color: var(--color-accent-blue); }
+.entity-popover-type-date { background: rgba(43, 138, 62, 0.1); color: var(--color-accent-green); }
+
+.entity-popover-text {
+    font-weight: 700;
+    color: var(--color-text-main);
+    margin-bottom: 0.3rem;
+}
+
+.entity-popover-context {
+    color: var(--color-text-muted);
 }
 
 /* Specific styling for Ottoman Noto Naskh Arabic font */
@@ -849,6 +882,17 @@ body.dark-theme .hero-section::after {
 #transTextDisplay {
     font-family: var(--font-sans);
     font-size: 1.05rem;
+}
+
+/* Okunuş (Latin-script Ottoman transliteration) — a serif italic sets it
+   visually apart from both the Arabic-script original and the modern
+   Turkish translation. */
+#translitTextDisplay {
+    font-family: var(--font-heading);
+    font-style: italic;
+    font-size: 1.1rem;
+    line-height: 1.9;
+    color: var(--color-text-main);
 }
 
 /* Action Translate Command Bar */
@@ -932,6 +976,17 @@ body.dark-theme .hero-section::after {
     animation: pulse 1.2s infinite;
 }
 
+.status-badge.status-error {
+    border-color: #d64545;
+    color: #d64545;
+    background: rgba(214, 69, 69, 0.1);
+}
+
+.status-badge.status-error .status-dot {
+    background-color: #d64545;
+    animation: none;
+}
+
 @keyframes pulse {
     0% { transform: scale(0.95); opacity: 0.8; }
     50% { transform: scale(1.4); opacity: 1; }
@@ -974,20 +1029,6 @@ body.dark-theme .hero-section::after {
     font-family: var(--font-heading);
     font-size: 1.4rem;
     color: var(--color-text-main);
-}
-
-.result-confidence-badge {
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: var(--color-primary-navy);
-    background: var(--color-gold-bg);
-    border: 1px solid rgba(197, 160, 89, 0.4);
-    padding: 0.4rem 0.9rem;
-    border-radius: var(--radius-full);
-}
-
-body.dark-theme .result-confidence-badge {
-    color: var(--color-gold-light);
 }
 
 .result-card-body {
@@ -1056,132 +1097,6 @@ body.dark-theme .result-confidence-badge {
     background: var(--color-gold-bg);
 }
 
-/* Sidebar */
-.result-sidebar {
-    background: var(--bg-card-subtle);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    padding: 1.4rem;
-    display: flex;
-    flex-direction: column;
-}
-
-.result-sidebar-title {
-    display: inline-block;
-    font-size: 0.85rem;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-    color: var(--color-text-main);
-    padding-bottom: 0.55rem;
-}
-
-.result-info-list {
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 0.85rem;
-    margin-bottom: 1.2rem;
-}
-
-.result-info-list li {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    grid-template-areas:
-        "icon label"
-        "icon value";
-    column-gap: 0.6rem;
-    row-gap: 0.1rem;
-    align-items: start;
-}
-
-.result-info-icon {
-    grid-area: icon;
-    font-size: 1rem;
-    line-height: 1.4;
-}
-
-.result-info-label {
-    grid-area: label;
-    font-size: 0.72rem;
-    font-weight: 700;
-    letter-spacing: 0.3px;
-    text-transform: uppercase;
-    color: var(--color-text-light);
-}
-
-.result-info-value {
-    grid-area: value;
-    font-size: 0.92rem;
-    font-weight: 600;
-    color: var(--color-text-main);
-}
-
-.result-confidence-block {
-    padding-top: 1rem;
-    border-top: 1px solid var(--color-border);
-    margin-bottom: 1.2rem;
-}
-
-.result-confidence-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-size: 0.82rem;
-    font-weight: 700;
-    color: var(--color-text-main);
-    margin-bottom: 0.5rem;
-}
-
-.confidence-bar-track {
-    width: 100%;
-    height: 8px;
-    background: var(--bg-input);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-full);
-    overflow: hidden;
-}
-
-.confidence-bar-fill {
-    height: 100%;
-    width: 0%;
-    background: linear-gradient(90deg, var(--color-gold), var(--color-gold-light));
-    border-radius: var(--radius-full);
-    transition: width var(--transition-normal);
-}
-
-.confidence-bar-fill.confidence-low {
-    background: linear-gradient(90deg, var(--color-accent-red), #E8756F);
-}
-
-.confidence-bar-fill.confidence-mid {
-    background: linear-gradient(90deg, var(--color-gold), var(--color-gold-light));
-}
-
-.confidence-bar-fill.confidence-high {
-    background: linear-gradient(90deg, var(--color-accent-green), #4CAE5B);
-}
-
-.result-details-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: 0.88rem;
-    font-weight: 700;
-    color: var(--color-gold);
-    text-decoration: none;
-    margin-top: auto;
-    transition: gap var(--transition-fast);
-}
-
-.result-details-link:hover {
-    gap: 0.7rem;
-    color: var(--color-primary-navy-hover);
-}
-
-body.dark-theme .result-details-link:hover {
-    color: var(--color-gold-light);
-}
-
 @media (max-width: 900px) {
     .result-card-body {
         grid-template-columns: 1fr;
@@ -1195,26 +1110,17 @@ body.dark-theme .result-details-link:hover {
 }
 
 /* ==========================================================================
-   Detailed Results Panel (Tabbed) - opens below the workbench after a
-   translation completes.
+   "Bilgi" output tab (İçerik Analizi) - tabbed document analysis, rendered
+   by renderResultsPanel() in app.js inside #infoContentWrapper.
    ========================================================================== */
-
-.results-panel {
-    margin-bottom: 4rem;
-    animation: resultsFadeIn 0.4s ease-out;
-}
 
 @keyframes resultsFadeIn {
     from { opacity: 0; transform: translateY(12px); }
     to { opacity: 1; transform: translateY(0); }
 }
 
-.results-panel-card {
-    background-color: var(--bg-card);
-    border-radius: var(--radius-lg);
-    border: 1px solid var(--color-border);
-    box-shadow: var(--shadow-lg);
-    padding: 2rem;
+.info-content-wrapper {
+    animation: resultsFadeIn 0.3s ease-out;
 }
 
 .results-header {
@@ -1431,110 +1337,11 @@ body.dark-theme .result-details-link:hover {
 }
 
 @media (max-width: 640px) {
-    .results-panel-card {
-        padding: 1.3rem;
-    }
-
     .results-tabs {
         overflow-x: auto;
         flex-wrap: nowrap;
         padding-bottom: 0.3rem;
     }
-}
-
-/* Workflow Steps Section */
-.workflow-section {
-    padding: 2rem 0;
-    margin-bottom: 3.5rem;
-}
-
-.workflow-header {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 1.5rem;
-    margin-bottom: 2.5rem;
-}
-
-.section-decor-line {
-    width: 60px;
-    height: 1px;
-    background: var(--color-gold);
-    opacity: 0.6;
-}
-
-.workflow-title {
-    font-family: var(--font-heading);
-    font-size: 1.15rem;
-    letter-spacing: 3px;
-    font-weight: 700;
-    color: var(--color-text-main);
-    text-transform: uppercase;
-}
-
-.steps-grid {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-}
-
-.step-card {
-    flex: 1;
-    background-color: var(--bg-card);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    padding: 1.5rem 1.2rem;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-    box-shadow: var(--shadow-sm);
-    transition: all 0.2s linear;}
-
-.step-card.nav-link.active, .step-card.active, .step-card.scroll-active {
-    border-color: var(--color-gold);
-    box-shadow: var(--shadow-md), 0 0 0 1px var(--color-gold);
-    transform: translateY(-4px);
-}
-
-.step-icon-wrapper {
-    width: 56px;
-    height: 56px;
-    border-radius: var(--radius-full);
-    background-color: var(--bg-card-subtle);
-    border: 1px solid var(--color-border);
-    color: var(--color-gold);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all var(--transition-fast);
-}
-
-.step-card.active .step-icon-wrapper {
-    background-color: var(--color-gold-bg);
-    border-color: var(--color-gold);
-}
-
-.step-info h3 {
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: var(--color-text-main);
-    margin-bottom: 0.3rem;
-}
-
-.step-info p {
-    font-size: 0.8rem;
-    color: var(--color-text-muted);
-    line-height: 1.4;
-}
-
-.step-arrow {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0.7;
 }
 
 /* Sample Manuscripts Section */
@@ -1562,8 +1369,8 @@ body.dark-theme .result-details-link:hover {
 
 .samples-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 1rem;
 }
 
 .sample-card {
@@ -1582,7 +1389,7 @@ body.dark-theme .result-details-link:hover {
 }
 
 .sample-img-container {
-    height: 180px;
+    height: 110px;
     overflow: hidden;
 }
 
@@ -1598,22 +1405,25 @@ body.dark-theme .result-details-link:hover {
 }
 
 .sample-details {
-    padding: 1rem;
+    padding: 0.65rem 0.75rem;
 }
 
 .sample-details h4 {
-    font-size: 0.95rem;
+    font-size: 0.82rem;
     font-weight: 700;
     color: var(--color-text-main);
-    margin-bottom: 0.3rem;
+    margin-bottom: 0.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .sample-tag {
     display: inline-block;
-    font-size: 0.75rem;
+    font-size: 0.68rem;
     color: var(--color-gold);
     background: var(--color-gold-bg);
-    padding: 0.2rem 0.6rem;
+    padding: 0.15rem 0.5rem;
     border-radius: var(--radius-full);
 }
 
@@ -1758,18 +1568,6 @@ body.dark-theme .result-details-link:hover {
     margin-bottom: 1.2rem;
 }
 
-.badge {
-    display: inline-block;
-    padding: 0.3rem 0.8rem;
-    border-radius: var(--radius-full);
-    font-size: 0.8rem;
-    font-weight: 600;
-}
-
-.badge-gold { background: var(--color-gold-bg); color: var(--color-gold); }
-.badge-navy { background: rgba(13,22,39,0.1); color: var(--color-primary-navy); }
-.badge-accent { background: rgba(43,138,62,0.1); color: var(--color-accent-green); }
-
 /* Responsive Media Queries */
 @media (max-width: 1024px) {
     .hero-container {
@@ -1791,8 +1589,7 @@ body.dark-theme .result-details-link:hover {
         text-align: center;
     }
 
-    .workbench-card,
-    .workbench-card.show-enhanced {
+    .workbench-card {
         grid-template-columns: 1fr;
     }
 
@@ -1801,22 +1598,9 @@ body.dark-theme .result-details-link:hover {
         padding: 0.5rem 0;
     }
 
-    .workbench-col.col-output-wrap {
-        flex-direction: column;
-    }
-
     .divider-line {
         height: 1px;
         width: 100%;
-    }
-
-    .steps-grid {
-        flex-direction: column;
-    }
-
-    .step-arrow {
-        transform: rotate(90deg);
-        margin: 0.5rem 0;
     }
 }
 
@@ -1831,6 +1615,7 @@ body.dark-theme .result-details-link:hover {
 
     .hero-section {
         margin-top: -1.5rem;
+        min-height: 380px;
     }
 
     .hero-cta-row {
@@ -1923,44 +1708,16 @@ body.dark-theme .result-details-link:hover {
     content: '✓';
 }
 
-/* Output area: tabbed OCR/Translation box + Belge Bilgileri sidebar side by side */
-.workbench-col.col-output-wrap {
-    flex-direction: row;
-    gap: 1.5rem;
-    align-items: stretch;
-}
-
+/* Output area: tabbed OCR/Okunuş/Çeviri/Bilgi box, full width (no more
+   side-by-side "Belge Bilgileri" sidebar — that content now lives in its
+   own "Bilgi" tab, see .info-content-area below). */
 .output-main {
-    flex: 1.6;
     display: flex;
     flex-direction: column;
     min-width: 0;
-}
-
-.workbench-info-sidebar {
-    flex: 1;
-    min-width: 220px;
-    background: none;
-    border: none;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-}
-
-.result-sidebar-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.6rem;
-    padding-bottom: 0.8rem;
-    border-bottom: 1px solid var(--color-border);
-    margin-bottom: 1rem;
-    min-height: 2.75rem;
-    box-sizing: border-box;
-}
-
-.result-sidebar-header .result-sidebar-title {
-    margin-bottom: 0;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
 }
 
 .output-tabs {
@@ -2105,41 +1862,25 @@ body.dark-theme .result-details-link:hover {
     color: var(--color-text-main);
 }
 
-.sidebar-content-box {
-    background: var(--bg-card);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    padding: 1.2rem;
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    overflow-y: auto;
-    max-height: 460px;
-}
-
 /* Themed scrollbar for the internal scrolling boxes (adapts to light/dark theme) */
 .box-content,
-.sidebar-content-box,
 .upload-zone {
     scrollbar-width: thin;
     scrollbar-color: var(--color-gold) var(--bg-input);
 }
 
 .box-content::-webkit-scrollbar,
-.sidebar-content-box::-webkit-scrollbar,
 .upload-zone::-webkit-scrollbar {
     width: 8px;
 }
 
 .box-content::-webkit-scrollbar-track,
-.sidebar-content-box::-webkit-scrollbar-track,
 .upload-zone::-webkit-scrollbar-track {
     background: var(--bg-input);
     border-radius: var(--radius-full);
 }
 
 .box-content::-webkit-scrollbar-thumb,
-.sidebar-content-box::-webkit-scrollbar-thumb,
 .upload-zone::-webkit-scrollbar-thumb {
     background-color: var(--color-gold);
     border-radius: var(--radius-full);

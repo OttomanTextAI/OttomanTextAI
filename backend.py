@@ -1167,7 +1167,7 @@ def translate_endpoint():
         ), 500
 
 ASSISTANT_SYSTEM_PROMPT = (
-    "Sen 'Osmanlıca Çeviri Sistemi' adlı web uygulamasının yardımcı "
+    "Sen 'Divane' adlı Osmanlıca çeviri web uygulamasının yardımcı "
     "asistanısın. Kullanıcılara Osmanlı Türkçesi, Osmanlıca belgeler, "
     "eski yazı/Arap harfleri, tarih ve bu uygulamanın nasıl kullanılacağı "
     "hakkında kısa, açık ve doğru cevaplar ver. Emin olmadığın bir konuda "
