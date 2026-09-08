@@ -1302,6 +1302,13 @@ def assistant_endpoint():
         return jsonify(
             {
                 "reply": result["answer"],
+                "answer_type": result["answer_type"],
+                "related_information": result[
+                    "related_information"
+                ],
+                "external_answer_available": result[
+                    "external_answer_available"
+                ],
                 "sources": result["sources"],
             }
         )

@@ -1,3 +1,4 @@
+import json
 import os
 
 from openai import OpenAI
@@ -9,14 +10,55 @@ DOCUMENT_QA_SYSTEM_PROMPT = """
 Sen Akıllı Osmanlıca Asistanı'nın belge analiz asistanısın.
 
 Görevin, kullanıcının sorusunu yalnızca sana verilen belge
-bağlamına dayanarak cevaplamaktır.
+bağlamına dayanarak değerlendirmek ve cevaplamaktır.
 
-Kurallar:
-- Belge bağlamında bulunmayan bilgileri uydurma.
-- Cevap belgede yoksa bunu açıkça belirt.
+Üç olası durum vardır:
+
+1. DIRECT
+Sorunun cevabı belge bağlamında açıkça bulunuyorsa:
+- answer_type = "direct"
+- Soruyu doğrudan cevapla.
+- Belgede olmayan hiçbir bilgi ekleme.
+
+2. RELATED
+Sorunun doğrudan cevabı belgede bulunmuyorsa ancak soruyla
+ilişkili veya cevaba yaklaşmaya yardımcı olabilecek bilgiler varsa:
+- answer_type = "related"
+- Doğrudan cevabın belgede bulunmadığını açıkça belirt.
+- Belgede bulunan en yakın bilgileri açıkla.
+- Bu bilgilerden kesin olarak çıkarılamayan sonuçları gerçekmiş
+  gibi sunma.
+- related_information alanına ilgili bilgileri kısa maddeler
+  halinde ekle.
+
+3. UNAVAILABLE
+Belgelerde soruyla anlamlı şekilde ilişkili bilgi de yoksa:
+- answer_type = "unavailable"
+- Belgede bu soruyu cevaplamak için yeterli bilgi olmadığını belirt.
+- related_information boş liste olsun.
+
+Genel kurallar:
+- Yalnızca verilen belge bağlamını kullan.
+- Genel bilgini kullanarak boşlukları doldurma.
+- Bilgi uydurma.
 - Cevabı Türkçe ver.
-- Kısa, açık ve doğrudan cevap ver.
 - Tarih, kişi, yer ve olay adlarını belgede geçtiği biçimiyle koru.
+
+SADECE geçerli JSON döndür.
+
+JSON formatı:
+
+{
+  "answer_type": "direct | related | unavailable",
+  "answer": "Kullanıcıya gösterilecek cevap",
+  "related_information": ["ilgili bilgi 1", "ilgili bilgi 2"],
+  "external_answer_available": true
+}
+
+external_answer_available:
+- direct için false
+- related için true
+- unavailable için true
 """.strip()
 
 
@@ -62,10 +104,13 @@ class DocumentQA:
 
         if not results:
             return {
+                "answer_type": "unavailable",
                 "answer": (
                     "Bu soruya cevap verebilmek için "
                     "belgede yeterli bilgi bulunamadı."
                 ),
+                "related_information": [],
+                "external_answer_available": True,
                 "sources": [],
             }
 
@@ -106,8 +151,58 @@ class DocumentQA:
             completion.choices[0].message.content or ""
         ).strip()
 
+        try:
+            cleaned_answer = answer_text
+
+            if cleaned_answer.startswith("```json"):
+                cleaned_answer = cleaned_answer[7:]
+
+            if cleaned_answer.startswith("```"):
+                cleaned_answer = cleaned_answer[3:]
+
+            if cleaned_answer.endswith("```"):
+                cleaned_answer = cleaned_answer[:-3]
+
+            parsed_answer = json.loads(
+                cleaned_answer.strip()
+            )
+
+        except json.JSONDecodeError:
+            parsed_answer = {
+                "answer_type": "related",
+                "answer": answer_text,
+                "related_information": [],
+                "external_answer_available": True,
+            }
+
+        answer_type = parsed_answer.get(
+            "answer_type",
+            "related",
+        )
+
+        if answer_type not in {
+            "direct",
+            "related",
+            "unavailable",
+        }:
+            answer_type = "related"
+
         return {
-            "answer": answer_text,
+            "answer_type": answer_type,
+            "answer": parsed_answer.get(
+                "answer",
+                answer_text,
+            ),
+            "related_information": parsed_answer.get(
+                "related_information",
+                [],
+            ),
+            "external_answer_available": bool(
+                parsed_answer.get(
+                    "external_answer_available",
+                    answer_type != "direct",
+                )
+            ),
             "sources": [
                 {
                     "chunk_id": result.chunk.chunk_id,
