@@ -144,8 +144,16 @@ class DocumentQA:
                 },
             ],
             temperature=0.1,
-            max_tokens=500,
+            max_tokens=900,
         )
+
+        finish_reason = completion.choices[0].finish_reason
+
+        if finish_reason == "length":
+            print(
+                "[DOCUMENT QA] Response stopped because max token limit was reached.",
+                flush=True,
+            )
 
         answer_text = (
             completion.choices[0].message.content or ""
@@ -187,16 +195,22 @@ class DocumentQA:
         }:
             answer_type = "related"
 
+        related_information = parsed_answer.get(
+            "related_information",
+            [],
+        )
+
+        if not isinstance(related_information, list):
+            related_information = []
+
         return {
             "answer_type": answer_type,
             "answer": parsed_answer.get(
                 "answer",
                 answer_text,
             ),
-            "related_information": parsed_answer.get(
-                "related_information",
-                [],
-            ),
+            "related_information": related_information,
+
             "external_answer_available": bool(
                 parsed_answer.get(
                     "external_answer_available",

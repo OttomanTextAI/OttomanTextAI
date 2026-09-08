@@ -35,6 +35,8 @@ class DocumentRetriever:
 
         self.document_indexed = False
 
+        self.document_text = ""
+
     def index_document(
         self,
         text: str,
@@ -70,6 +72,7 @@ class DocumentRetriever:
             embeddings=embeddings,
         )
 
+        self.document_text = text.strip()
         self.document_indexed = True
 
         return chunks

@@ -24,6 +24,11 @@ from src.common.config import load_yaml_config
 from src.image_enhancement.enhance import enhance_image
 from src.ai.rag.retriever import DocumentRetriever
 from src.ai.assistant.qa import DocumentQA
+from src.ai.analysis.selected_text import SelectedTextAnalyzer
+from src.ai.analysis.suggestions import AISuggestionGenerator
+from src.ai.assistant.question_generator import DocumentQuestionGenerator
+from src.ai.analysis.research import ResearchSuggestionGenerator
+from src.ai.filters.entity_filter import EntityFilterClassifier
 # Loads RELAY_API_KEY / RELAY_BASE_URL / GEMINI_API_KEY from a local .env for
 # development. In production (Render) these are set directly as environment
 # variables and no .env file is present, so this is a no-op there.
@@ -1327,6 +1332,465 @@ def assistant_endpoint():
             }
         ), 500
 
+EXTERNAL_ASSISTANT_SYSTEM_PROMPT = """
+Sen Divane adlı Osmanlıca belge analiz uygulamasının araştırma asistanısın.
+
+Kullanıcı, daha önce yüklediği belgeyle ilgili bir soru sordu.
+Belge içinde bu sorunun doğrudan cevabı bulunamadığı için,
+kullanıcı özellikle belge dışı bilgilerle devam etmeyi seçti.
+
+Görevin:
+- Kullanıcının sorusunu genel tarihsel ve akademik bilginle cevaplamak.
+- Belgeye ait bilgi ile belge dışı genel bilgiyi birbirine karıştırmamak.
+- Kesin olmadığın bilgileri kesinmiş gibi sunmamak.
+- Gerekirse "genel tarihsel bilgiye göre" gibi ifadeler kullanmak.
+- Cevabı Türkçe, açık ve gereksiz uzatmadan vermek.
+""".strip()
+
+
+@app.route("/api/assistant/external", methods=["POST"])
+def assistant_external_endpoint():
+    """
+    Answer a question using general model knowledge after the user
+    explicitly chooses to continue outside the uploaded document.
+
+    Expected JSON:
+        {
+            "message": "...",
+            "document_context": "..."
+        }
+
+    Returns:
+        {
+            "reply": "...",
+            "answer_type": "external"
+        }
+    """
+    try:
+        data = request.get_json(silent=True) or {}
+
+        user_message = (
+            data.get("message")
+            or ""
+        ).strip()
+
+        document_context = (
+            data.get("document_context")
+            or ""
+        ).strip()
+
+        if not user_message:
+            return jsonify(
+                {
+                    "error": "message field is required."
+                }
+            ), 400
+
+        llm_config = get_llm_config()
+        model = llm_config.get("model")
+
+        if not model:
+            return jsonify(
+                {
+                    "error": "LLM model is not configured."
+                }
+            ), 500
+
+        api_key = (
+            os.getenv("RELAY_API_KEY")
+            or ""
+        ).strip()
+
+        base_url = (
+            os.getenv("RELAY_BASE_URL")
+            or ""
+        ).strip()
+
+        if not api_key:
+            return jsonify(
+                {
+                    "error": "RELAY_API_KEY is not configured."
+                }
+            ), 500
+
+        if not base_url:
+            return jsonify(
+                {
+                    "error": "RELAY_BASE_URL is not configured."
+                }
+            ), 500
+
+        client = OpenAI(
+            api_key=api_key,
+            base_url=base_url,
+        )
+
+        context_text = ""
+
+        if document_context:
+            context_text = (
+                "\n\nBELGEDE BULUNAN YAKIN BİLGİ:\n"
+                f"{document_context}"
+            )
+
+        user_prompt = (
+            f"KULLANICI SORUSU:\n"
+            f"{user_message}"
+            f"{context_text}"
+        )
+
+        completion = client.chat.completions.create(
+            model=model,
+            messages=[
+                {
+                    "role": "system",
+                    "content": EXTERNAL_ASSISTANT_SYSTEM_PROMPT,
+                },
+                {
+                    "role": "user",
+                    "content": user_prompt,
+                },
+            ],
+            temperature=0.2,
+            max_tokens=900,
+        )
+
+        reply_text = (
+            completion.choices[0].message.content
+            or ""
+        ).strip()
+
+        if not reply_text:
+            return jsonify(
+                {
+                    "error": (
+                        "Model did not produce an answer."
+                    )
+                }
+            ), 502
+
+        return jsonify(
+            {
+                "reply": reply_text,
+                "answer_type": "external",
+            }
+        )
+
+    except Exception as error:
+        print(
+            f"[ASSISTANT EXTERNAL] "
+            f"{type(error).__name__}: {error}",
+            flush=True,
+        )
+
+        return jsonify(
+            {
+                "error": "External assistant request failed.",
+                "details": str(error),
+            }
+        ), 500
+
+@app.route("/api/ai/suggestions", methods=["POST"])
+def ai_suggestions():
+    """
+    Generate AI alternatives for an uncertain reading,
+    interpretation or translation.
+
+    Expected JSON:
+        {
+            "text": "..."
+        }
+    """
+    try:
+        data = request.get_json(silent=True) or {}
+
+        text = (
+            data.get("text")
+            or ""
+        ).strip()
+
+        if not text:
+            return jsonify(
+                {
+                    "error": "Text is required."
+                }
+            ), 400
+
+        llm_config = get_llm_config()
+        model = llm_config.get("model")
+
+        if not model:
+            return jsonify(
+                {
+                    "error": "LLM model is not configured."
+                }
+            ), 500
+
+        generator = AISuggestionGenerator(
+            model=model,
+        )
+
+        result = generator.generate(
+            text=text,
+        )
+
+        return jsonify(
+            {
+                "success": True,
+                "suggestion": result,
+            }
+        )
+
+    except Exception as error:
+        print(
+            f"[AI SUGGESTIONS] "
+            f"{type(error).__name__}: {error}",
+            flush=True,
+        )
+
+        return jsonify(
+            {
+                "error": "AI suggestion generation failed.",
+                "details": str(error),
+            }
+        ), 500
+
+    
+@app.route("/api/ai/analyze-selection", methods=["POST"])
+def ai_analyze_selection():
+    """
+    Analyze a user-selected section of document text.
+
+    Expected JSON:
+        {
+            "text": "..."
+        }
+
+    Returns AI-generated analysis of only the selected text.
+    """
+    try:
+        data = request.get_json(silent=True) or {}
+
+        selected_text = (
+            data.get("text")
+            or ""
+        ).strip()
+
+        if not selected_text:
+            return jsonify(
+                {
+                    "error": "Selected text is required."
+                }
+            ), 400
+
+        llm_config = get_llm_config()
+        model = llm_config.get("model")
+
+        if not model:
+            return jsonify(
+                {
+                    "error": "LLM model is not configured."
+                }
+            ), 500
+
+        analyzer = SelectedTextAnalyzer(
+            model=model,
+        )
+
+        result = analyzer.analyze(
+            selected_text=selected_text,
+        )
+
+        return jsonify(
+            {
+                "success": True,
+                "analysis": result,
+            }
+        )
+
+    except Exception as error:
+        print(
+            f"[AI SELECTION] "
+            f"{type(error).__name__}: {error}",
+            flush=True,
+        )
+
+        return jsonify(
+            {
+                "error": "Selected text analysis failed.",
+                "details": str(error),
+            }
+        ), 500
+
+@app.route("/api/ai/entity-filter", methods=["GET"])
+def ai_entity_filter():
+    global document_retriever
+
+    if (
+        document_retriever is None
+        or not document_retriever.document_indexed
+        or not document_retriever.document_text
+    ):
+        return jsonify(
+            {
+                "error": (
+                    "Entity classification requires "
+                    "an indexed document."
+                )
+            }
+        ), 400
+
+    try:
+        model = get_llm_config().get("model")
+
+        classifier = EntityFilterClassifier(
+            model=model,
+        )
+
+        entities = classifier.classify(
+            document_text=document_retriever.document_text,
+        )
+
+        return jsonify(
+            {
+                "success": True,
+                "entities": entities,
+            }
+        )
+
+    except Exception as error:
+        print(
+            "[ENTITY FILTER]",
+            type(error).__name__,
+            str(error),
+            flush=True,
+        )
+
+        return jsonify(
+            {
+                "error": (
+                    "Entity classification failed."
+                ),
+                "details": str(error),
+            }
+        ), 500
+
+    
+@app.route("/api/ai/research-suggestions", methods=["GET"])
+def ai_research_suggestions():
+    global document_retriever
+
+    if (
+        document_retriever is None
+        or not document_retriever.document_indexed
+        or not document_retriever.document_text
+    ):
+        return jsonify(
+            {
+                "error": (
+                    "Research suggestions require "
+                    "an indexed document."
+                )
+            }
+        ), 400
+
+    try:
+        model = get_llm_config().get("model")
+
+        generator = ResearchSuggestionGenerator(
+            model=model,
+        )
+
+        suggestions = generator.generate(
+            document_text=document_retriever.document_text,
+        )
+
+        return jsonify(
+            {
+                "success": True,
+                "suggestions": suggestions,
+            }
+        )
+
+    except Exception as error:
+        print(
+            "[RESEARCH SUGGESTIONS]",
+            type(error).__name__,
+            str(error),
+            flush=True,
+        )
+
+        return jsonify(
+            {
+                "error": (
+                    "Research suggestion generation failed."
+                ),
+                "details": str(error),
+            }
+        ), 500
+    
+@app.route("/api/ai/suggested-questions", methods=["GET"])
+def ai_suggested_questions():
+    """
+    Generate suggested questions for the currently indexed document.
+
+    The active document text is reused from the RAG retriever,
+    so the frontend does not need to send the document again.
+    """
+    global document_retriever
+
+    try:
+        if (
+            document_retriever is None
+            or not document_retriever.document_indexed
+            or not document_retriever.document_text
+        ):
+            return jsonify(
+                {
+                    "error": "No document has been indexed yet."
+                }
+            ), 400
+
+        llm_config = get_llm_config()
+        model = llm_config.get("model")
+
+        if not model:
+            return jsonify(
+                {
+                    "error": "LLM model is not configured."
+                }
+            ), 500
+
+        generator = DocumentQuestionGenerator(
+            model=model,
+        )
+
+        questions = generator.generate(
+            document_text=document_retriever.document_text,
+        )
+
+        return jsonify(
+            {
+                "success": True,
+                "questions": questions,
+            }
+        )
+
+    except Exception as error:
+        print(
+            f"[AI QUESTIONS] "
+            f"{type(error).__name__}: {error}",
+            flush=True,
+        )
+
+        return jsonify(
+            {
+                "error": "Question generation failed.",
+                "details": str(error),
+            }
+        ), 500
+
+    
 @app.route("/api/ai/index-document", methods=["POST"])
 def ai_index_document():
     """
