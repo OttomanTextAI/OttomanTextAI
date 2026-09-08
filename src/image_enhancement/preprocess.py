@@ -112,10 +112,12 @@ def _create_auto_preview(
         fy=scale,
         interpolation=cv2.INTER_AREA,
     )
+
 def _score_enhancement_candidate(
     image: np.ndarray,
     reference_image: np.ndarray,
-) -> float:
+    return_details: bool = False,
+) -> float | tuple[float, dict[str, float]]:
     """
     Score a preprocessing candidate.
 
@@ -246,7 +248,7 @@ def _score_enhancement_candidate(
             1.0,
         )
     )
-
+   
     # =================================================
     # 2. EDGE PRESERVATION — PRECISION + RECALL + F1
     # =================================================
@@ -578,8 +580,43 @@ def _score_enhancement_candidate(
     # =================================================
     # FINAL SCORE
     # =================================================
+    # Hard rejection for obviously broken candidates.
+    # A mostly-black image with a huge connected blob
+    # must never win automatic profile selection.
+    if (
+        foreground_ratio > 0.45
+        and blob_score <= 0.05
+    ):
+        print(
+            "[SCORE REJECTED]",
+            {
+                "reason": "mostly_black_large_blob",
+                "foreground_ratio": round(
+                    float(foreground_ratio),
+                    4,
+                ),
+                "blob_score": round(
+                    float(blob_score),
+                    3,
+                ),
+            },
+            flush=True,
+        )
 
-    score = (
+        if return_details:
+            return 0.0, {
+                "edge_f1": float(edge_preservation_score),
+                "foreground": float(foreground_score),
+                "blob": float(blob_score),
+                "component": float(component_score),
+                "character_ratio": float(character_like_ratio),
+                "fragmentation": float(fragmentation_score),
+                "component_density_ratio": float(component_density_ratio),
+            }
+
+        return 0.0
+
+    final_score = (
         0.40 * edge_preservation_score
         + 0.20 * foreground_score
         + 0.25 * blob_score
@@ -608,10 +645,6 @@ def _score_enhancement_candidate(
             ),
             "foreground_ratio": round(
                 float(foreground_ratio),
-                4,
-            ),
-            "reference_foreground": round(
-                float(reference_foreground_ratio),
                 4,
             ),
 
@@ -645,14 +678,25 @@ def _score_enhancement_candidate(
             ),
 
             "final": round(
-                float(score),
+                float(final_score),
                 3,
             ),
         },
         flush=True,
     )
 
-    return float(score)
+    if return_details:
+        return float(final_score), {
+            "edge_f1": float(edge_preservation_score),
+            "foreground": float(foreground_score),
+            "blob": float(blob_score),
+            "component": float(component_score),
+            "character_ratio": float(character_like_ratio),
+            "fragmentation": float(fragmentation_score),
+            "component_density_ratio": float(component_density_ratio),
+        }
+
+    return float(final_score)
 
 
 def _select_auto_profile(
@@ -664,6 +708,7 @@ def _select_auto_profile(
     )
 
     scores = {}
+    details = {}
 
     for candidate_profile in AUTO_PROFILES:
         candidate = preprocess_image(
@@ -672,12 +717,14 @@ def _select_auto_profile(
             profile=candidate_profile,
         )
 
-        score = _score_enhancement_candidate(
+        score, candidate_details = _score_enhancement_candidate(
             candidate,
             reference_image=preview,
+            return_details=True,
         )
 
         scores[candidate_profile] = score
+        details[candidate_profile] = candidate_details
 
         print(
             "[AUTO CANDIDATE]",
@@ -691,16 +738,71 @@ def _select_auto_profile(
         key=scores.get,
     )
 
-    print(
-        "[AUTO PROFILE]",
-        {
-            profile: round(score, 3)
-            for profile, score in scores.items()
-        },
-        "selected:",
-        selected_profile,
-        flush=True,
+    # -------------------------------------------------
+    # Conservative structural tie-break
+    # -------------------------------------------------
+    ranked_profiles = sorted(
+        scores,
+        key=scores.get,
+        reverse=True,
     )
+
+    best_profile = ranked_profiles[0]
+    second_profile = ranked_profiles[1]
+
+    score_gap = (
+        scores[best_profile]
+        - scores[second_profile]
+    )
+
+    # Only reconsider reasonably close candidates.
+    # This avoids changing clear profile decisions.
+    if 0.015 <= score_gap <= 0.035:
+        best_details = details[best_profile]
+        second_details = details[second_profile]
+
+        character_gain = (
+            second_details["character_ratio"]
+            - best_details["character_ratio"]
+        )
+
+        component_gain = (
+            second_details["component"]
+            - best_details["component"]
+        )
+
+        # Override only when the runner-up has a clear
+        # structural advantage in BOTH metrics.
+        if (
+            character_gain >= 0.05
+            and component_gain >= 0.04
+            and best_details["component_density_ratio"] <= 3.0
+            and second_details["component_density_ratio"] <= 3.0
+        ):
+            selected_profile = second_profile
+
+            print(
+                "[AUTO TIE-BREAK]",
+                {
+                    "original": best_profile,
+                    "selected": second_profile,
+                    "score_gap": round(float(score_gap), 3),
+                    "character_gain": round(float(character_gain), 3),
+                    "component_gain": round(float(component_gain), 3),
+                },
+                flush=True,
+            )
+
+    print(
+            "[AUTO PROFILE]",
+            {
+                profile: round(score, 3)
+                for profile, score in scores.items()
+            },
+            "selected:",
+            selected_profile,
+            flush=True,
+        )
 
     return selected_profile
 
@@ -1043,6 +1145,7 @@ def preprocess_image(
         protected_regions = (
             foreground_regions
             + faint_text_regions
+            + very_faint_text_regions
         )
 
 
@@ -1440,6 +1543,7 @@ def preprocess_image(
             str(debug_dir / "01_before_speckle_v4.png"),
             binary_image,
         )
+
 
     # -----------------------------------------
     # Protected speckle removal v4
