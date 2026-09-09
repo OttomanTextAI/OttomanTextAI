@@ -101,12 +101,26 @@ class DocumentQA:
         question: str,
         top_k: int = 3,
         history: list | None = None,
+        selected_context: dict | None = None,
     ) -> dict:
         if not question or not question.strip():
             raise ValueError("Question cannot be empty.")
 
+        retrieval_query = question.strip()
+
+        if isinstance(selected_context, dict):
+            selected_context_text = str(
+                selected_context.get("text", "")
+            ).strip()
+
+            if selected_context_text:
+                retrieval_query = (
+                    f"{selected_context_text}\n"
+                    f"{retrieval_query}"
+                )
+
         results = self.retriever.retrieve(
-            query=question,
+            query=retrieval_query,
             top_k=top_k,
         )
 
@@ -181,9 +195,43 @@ class DocumentQA:
                 f"{conversation_history}\n\n"
             )
 
+        selected_context_section = ""
+
+        if isinstance(selected_context, dict):
+            context_type = str(
+                selected_context.get("type", "")
+            ).strip()
+
+            context_text = str(
+                selected_context.get("text", "")
+            ).strip()
+
+            context_details = str(
+                selected_context.get("details", "")
+            ).strip()
+
+            if context_text:
+                selected_context_section = (
+                    "KULLANICININ SEÇTİĞİ AKTİF KONU:\n"
+                    f"Tür: {context_type or 'belirtilmedi'}\n"
+                    f"İçerik: {context_text}\n"
+                )
+
+                if context_details:
+                    selected_context_section += (
+                        f"Ek bilgi: {context_details}\n"
+                    )
+
+                selected_context_section += (
+                    "Takip sorularındaki 'bu kişi', 'bu konu', "
+                    "'bu olay', 'bu kavram' gibi ifadeleri öncelikle "
+                    "bu aktif konuya göre yorumla.\n\n"
+                )
+
         user_prompt = (
             f"BELGE BAĞLAMI:\n"
             f"{context}\n\n"
+            f"{selected_context_section}"
             f"{history_section}"
             f"KULLANICI SORUSU:\n"
             f"{question.strip()}"

@@ -894,6 +894,11 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         }
 
         hardStopTts();
+
+        assistantHistory.length = 0;
+        assistantSelectedContext = null;
+        assistantMessages.innerHTML = '';
+
         state.selectedFile = file;
         state.ocrText = '';
         state.transText = '';
@@ -948,6 +953,9 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
             const key = card.getAttribute('data-sample');
             const sample = sampleDatabase[key];
             if (sample) {
+                assistantHistory.length = 0;
+                assistantSelectedContext = null;
+                assistantMessages.innerHTML = '';
                 state.selectedFile = { name: sample.name };
                 state.imageDataUrl = sample.file;
                 state.enhancedImageUrl = sample.file;
@@ -977,6 +985,10 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         state.transTextEn = '';
         state.translitText = '';
         state.lastAnalysis = null;
+
+        assistantHistory.length = 0;
+        assistantSelectedContext = null;
+        assistantMessages.innerHTML = '';
         statusHint.classList.add('hidden');
         statusBadge.classList.add('hidden');
         clearProcessingFailure();
@@ -2165,6 +2177,7 @@ ${transTextDisplay.textContent}
     const assistantSendBtn = document.getElementById('assistantSendBtn');
 
     const assistantHistory = [];
+    let assistantSelectedContext = null;
 
     function appendAssistantMessage(role, text) {
         const msg = document.createElement('div');
@@ -2209,8 +2222,9 @@ ${transTextDisplay.textContent}
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    message: text,
-                    history: assistantHistory.slice(-10)
+                message: text,
+                history: assistantHistory.slice(-10),
+                selected_context: assistantSelectedContext
                 })
             }, 45000);
 
@@ -2242,6 +2256,19 @@ ${transTextDisplay.textContent}
 
     const aiPredictionsBtn = document.getElementById('aiPredictionsBtn');
     const aiFeatureResult = document.getElementById('aiFeatureResult');
+    const aiFeatureModal =
+        document.getElementById('aiFeatureModal');
+
+    const aiFeatureModalClose =
+        document.getElementById('aiFeatureModalClose');
+
+        function openAiFeatureModal() {
+        aiFeatureModal.classList.remove('hidden');
+    }
+
+    function closeAiFeatureModal() {
+        aiFeatureModal.classList.add('hidden');
+    }
 
     async function runAiPredictions() {
         if (!state.transText || !state.transText.trim()) {
@@ -2286,36 +2313,115 @@ ${transTextDisplay.textContent}
                 ? result.recommendations
                 : [];
 
-            let output = 'TAHMİNLER\n\n';
+            aiFeatureResult.innerHTML = '';
+
+            const title = document.createElement('div');
+            title.textContent = 'TAHMİNLER';
+            title.style.fontWeight = '700';
+            title.style.marginBottom = '10px';
+
+            aiFeatureResult.appendChild(title);
 
             if (predictions.length === 0) {
-                output += 'Tahmin bulunamadı.\n';
+                const empty = document.createElement('div');
+                empty.textContent = 'Tahmin bulunamadı.';
+                aiFeatureResult.appendChild(empty);
             } else {
                 predictions.forEach((item, index) => {
+                    const button = document.createElement('button');
+
+                    button.type = 'button';
+                    button.style.display = 'block';
+                    button.style.width = '100%';
+                    button.style.textAlign = 'left';
+                    button.style.marginBottom = '8px';
+                    button.style.padding = '8px';
+                    button.style.cursor = 'pointer';
+
+                    const predictionText =
+                        item.prediction || 'Tahmin';
+
                     const percent = Math.round(
                         (Number(item.confidence) || 0) * 100
                     );
 
-                    output +=
-                        `${index + 1}. ${item.prediction || '-'}\n` +
+                    button.textContent =
+                        `${index + 1}. ${predictionText}\n` +
                         `Güven: %${percent}\n` +
-                        `Neden: ${item.reason || '-'}\n\n`;
+                        `Neden: ${item.reason || '-'}`;
+
+                    button.addEventListener('click', () => {
+                        assistantSelectedContext = {
+                            type: 'prediction',
+                            text: predictionText,
+                            details: item.reason || ''
+                        };
+
+                        assistantPanel.classList.remove('hidden');
+
+                        assistantInput.placeholder =
+                            `"${predictionText}" hakkında sor...`;
+
+                        assistantInput.focus();
+                    });
+
+                    aiFeatureResult.appendChild(button);
                 });
             }
 
-            output += '\nÖNERİLER\n\n';
+
+            // ÖNERİLER
+
+            const recommendationTitle =
+                document.createElement('div');
+
+            recommendationTitle.textContent = 'ÖNERİLER';
+            recommendationTitle.style.fontWeight = '700';
+            recommendationTitle.style.margin = '14px 0 10px 0';
+
+            aiFeatureResult.appendChild(recommendationTitle);
 
             if (recommendations.length === 0) {
-                output += 'Öneri bulunamadı.';
+                const empty = document.createElement('div');
+                empty.textContent = 'Öneri bulunamadı.';
+                aiFeatureResult.appendChild(empty);
             } else {
                 recommendations.forEach((item, index) => {
-                    output +=
-                        `${index + 1}. ${item.recommendation || '-'}\n` +
-                        `Neden: ${item.reason || '-'}\n\n`;
+                    const button = document.createElement('button');
+
+                    button.type = 'button';
+                    button.style.display = 'block';
+                    button.style.width = '100%';
+                    button.style.textAlign = 'left';
+                    button.style.marginBottom = '8px';
+                    button.style.padding = '8px';
+                    button.style.cursor = 'pointer';
+
+                    const recommendationText =
+                        item.recommendation || 'Öneri';
+
+                    button.textContent =
+                        `${index + 1}. ${recommendationText}\n` +
+                        `Neden: ${item.reason || '-'}`;
+
+                    button.addEventListener('click', () => {
+                        assistantSelectedContext = {
+                            type: 'recommendation',
+                            text: recommendationText,
+                            details: item.reason || ''
+                        };
+
+                        assistantPanel.classList.remove('hidden');
+
+                        assistantInput.placeholder =
+                            `"${recommendationText}" hakkında sor...`;
+
+                        assistantInput.focus();
+                    });
+
+                    aiFeatureResult.appendChild(button);
                 });
             }
-
-            aiFeatureResult.textContent = output.trim();
 
         } catch (error) {
             console.error('[AI PREDICTIONS]', error);
@@ -2336,6 +2442,16 @@ ${transTextDisplay.textContent}
         );
     }
 
+    aiFeatureModalClose.addEventListener(
+        'click',
+        closeAiFeatureModal
+    );
+
+    aiFeatureModal.addEventListener('click', (e) => {
+        if (e.target === aiFeatureModal) {
+            closeAiFeatureModal();
+        }
+    });
     const aiQuestionsBtn = document.getElementById('aiQuestionsBtn');
 
     async function runAiSuggestedQuestions() {
@@ -2376,13 +2492,40 @@ ${transTextDisplay.textContent}
                 return;
             }
 
-            let output = 'HAZIR SORULAR\n\n';
+            aiFeatureResult.innerHTML = '';
+
+            const title = document.createElement('div');
+            title.textContent = 'HAZIR SORULAR';
+            title.style.fontWeight = '700';
+            title.style.marginBottom = '10px';
+
+            aiFeatureResult.appendChild(title);
 
             questions.forEach((question, index) => {
-                output += `${index + 1}. ${question}\n`;
-            });
+                const button = document.createElement('button');
 
-            aiFeatureResult.textContent = output.trim();
+                button.type = 'button';
+                button.style.display = 'block';
+                button.style.width = '100%';
+                button.style.textAlign = 'left';
+                button.style.marginBottom = '8px';
+                button.style.padding = '8px';
+                button.style.cursor = 'pointer';
+
+                button.textContent =
+                    `${index + 1}. ${question}`;
+
+                button.addEventListener('click', () => {
+                    assistantPanel.classList.remove('hidden');
+
+                    assistantInput.value = question;
+                    assistantInput.focus();
+
+                    sendAssistantMessage();
+                });
+
+                aiFeatureResult.appendChild(button);
+            });
 
         } catch (error) {
             console.error('[AI QUESTIONS]', error);
@@ -2426,39 +2569,106 @@ ${transTextDisplay.textContent}
                 );
             }
 
-            const suggestions = data.suggestions;
+            let suggestions = data.suggestions;
 
             if (!suggestions) {
                 aiFeatureResult.textContent =
                     'Araştırma önerisi bulunamadı.';
                 return;
             }
+        if (typeof suggestions === 'object') {
+            suggestions = Object.values(suggestions)
+                .flat()
+                .filter(Boolean);
+        }
+// Liste dönerse okunabilir ve tıklanabilir şekilde göster
+if (Array.isArray(suggestions)) {
+    aiFeatureResult.innerHTML = '';
 
-            // Liste dönerse okunabilir şekilde göster
-            if (Array.isArray(suggestions)) {
-                let output = 'ARAŞTIRMA ÖNERİLERİ\n\n';
+    const title = document.createElement('div');
+    title.textContent = 'ARAŞTIRMA ÖNERİLERİ';
+    title.style.fontWeight = '700';
+    title.style.marginBottom = '10px';
 
-                suggestions.forEach((item, index) => {
-                    if (typeof item === 'string') {
-                        output += `${index + 1}. ${item}\n\n`;
-                    } else {
-                        output +=
-                            `${index + 1}. ${JSON.stringify(item, null, 2)}\n\n`;
-                    }
-                });
+    aiFeatureResult.appendChild(title);
 
-                aiFeatureResult.textContent = output.trim();
-                return;
-            }
+    suggestions.forEach((item, index) => {
+        const suggestion =
+            typeof item === 'string'
+                ? {
+                    title: item,
+                    query: item,
+                    reason: '',
+                    type: 'research'
+                }
+                : item;
+
+        const button = document.createElement('button');
+
+        button.type = 'button';
+        button.style.display = 'block';
+        button.style.width = '100%';
+        button.style.textAlign = 'left';
+        button.style.marginBottom = '10px';
+        button.style.padding = '8px';
+        button.style.cursor = 'pointer';
+
+        const titleText =
+            suggestion.title ||
+            suggestion.query ||
+            'Araştırma önerisi';
+
+        let text =
+            `${index + 1}. ${titleText}`;
+
+        if (suggestion.query) {
+            text += `\nAraştırma: ${suggestion.query}`;
+        }
+
+        if (suggestion.reason) {
+            text += `\nNeden: ${suggestion.reason}`;
+        }
+
+        if (suggestion.type) {
+            text += `\nTür: ${suggestion.type}`;
+        }
+
+        button.textContent = text;
+
+        button.addEventListener('click', () => {
+            assistantSelectedContext = {
+                type: suggestion.type || 'research',
+                text: titleText,
+                details:
+                    suggestion.reason ||
+                    suggestion.query ||
+                    ''
+            };
+
+            assistantPanel.classList.remove('hidden');
+
+            assistantInput.placeholder =
+                `"${titleText}" hakkında sor...`;
+
+            assistantInput.focus();
+        });
+
+        aiFeatureResult.appendChild(button);
+    });
+
+    return;
+}
 
             // Object dönerse test aşamasında JSON olarak göster
-            if (typeof suggestions === 'object') {
-                aiFeatureResult.textContent =
-                    'ARAŞTIRMA ÖNERİLERİ\n\n' +
-                    JSON.stringify(suggestions, null, 2);
+        if (typeof suggestions === 'object') {
+            const objectSuggestions = Object.values(suggestions)
+                .flat()
+                .filter(Boolean);
 
-                return;
-            }
+            suggestions = objectSuggestions;
+        }
+
+
 
             aiFeatureResult.textContent =
                 'ARAŞTIRMA ÖNERİLERİ\n\n' +
@@ -2509,7 +2719,7 @@ async function runAiEntityFilter() {
             );
         }
 
-        const entities = data.entities;
+        let entities = data.entities;
 
         if (!entities) {
             aiFeatureResult.textContent =
@@ -2517,33 +2727,108 @@ async function runAiEntityFilter() {
             return;
         }
 
-        if (Array.isArray(entities)) {
-            let output = 'VARLIK ANALİZİ\n\n';
+        if (typeof entities === 'object' && !Array.isArray(entities)) {
+            entities = Object.values(entities)
+                .flat()
+                .filter(Boolean);
+        }
 
-            entities.forEach((item, index) => {
-                if (typeof item === 'string') {
-                    output += `${index + 1}. ${item}\n`;
-                } else {
-                    output +=
-                        `${index + 1}. ${JSON.stringify(item, null, 2)}\n\n`;
+if (Array.isArray(entities)) {
+    aiFeatureResult.innerHTML = '';
+
+    const title = document.createElement('div');
+    title.textContent = 'VARLIK ANALİZİ';
+    title.style.fontWeight = '700';
+    title.style.marginBottom = '10px';
+
+    aiFeatureResult.appendChild(title);
+
+    entities.forEach((item, index) => {
+        const entity =
+            typeof item === 'string'
+                ? {
+                    text: item,
+                    category: 'entity',
+                    context: '',
+                    confidence: null
                 }
-            });
+                : item;
 
-            aiFeatureResult.textContent = output.trim();
-            return;
+        const button = document.createElement('button');
+
+        button.type = 'button';
+        button.style.display = 'block';
+        button.style.width = '100%';
+        button.style.textAlign = 'left';
+        button.style.marginBottom = '10px';
+        button.style.padding = '8px';
+        button.style.cursor = 'pointer';
+
+        const entityText =
+            entity.text ||
+            entity.name ||
+            'Varlık';
+
+        const categoryLabels = {
+            person: 'Kişi',
+            place: 'Yer',
+            date: 'Tarih',
+            event: 'Olay',
+            concept: 'Kavram',
+            organization: 'Kurum',
+            entity: 'Varlık'
+        };
+
+        const categoryText =
+            categoryLabels[entity.category] ||
+            entity.category ||
+            'Varlık';
+
+        let text =
+            `${index + 1}. ${entityText}\n` +
+            `Tür: ${categoryText}`;
+
+        if (entity.confidence !== null &&
+            entity.confidence !== undefined) {
+
+            const confidencePercent =
+                Math.round(
+                    (Number(entity.confidence) || 0) * 100
+                );
+
+            text += `\nGüven: %${confidencePercent}`;
         }
 
-        if (typeof entities === 'object') {
-            aiFeatureResult.textContent =
-                'VARLIK ANALİZİ\n\n' +
-                JSON.stringify(entities, null, 2);
-
-            return;
+        if (entity.context) {
+            text += `\nBağlam: ${entity.context}`;
         }
 
-        aiFeatureResult.textContent =
-            'VARLIK ANALİZİ\n\n' +
-            String(entities);
+        button.textContent = text;
+
+        button.addEventListener('click', () => {
+            assistantSelectedContext = {
+                type: entity.category || 'entity',
+                text: entityText,
+                details: entity.context || ''
+            };
+
+            assistantPanel.classList.remove('hidden');
+
+            assistantInput.placeholder =
+                `"${entityText}" hakkında sor...`;
+
+            assistantInput.focus();
+        });
+
+        aiFeatureResult.appendChild(button);
+    });
+
+    return;
+}
+
+aiFeatureResult.textContent =
+    'VARLIK ANALİZİ\n\n' +
+    String(entities);
 
     } catch (error) {
         console.error('[AI ENTITY FILTER]', error);
@@ -2617,13 +2902,119 @@ async function runAiSelectedTextAnalysis() {
             return;
         }
 
-        aiFeatureResult.textContent =
-            'SEÇİLİ METİN ANALİZİ\n\n' +
-            JSON.stringify(
-                analysis,
-                null,
-                2
-            );
+aiFeatureResult.innerHTML = '';
+
+const title = document.createElement('div');
+title.textContent = 'SEÇİLİ METİN ANALİZİ';
+title.style.fontWeight = '700';
+title.style.marginBottom = '10px';
+
+aiFeatureResult.appendChild(title);
+
+const mainButton = document.createElement('button');
+mainButton.type = 'button';
+mainButton.style.display = 'block';
+mainButton.style.width = '100%';
+mainButton.style.textAlign = 'left';
+mainButton.style.marginBottom = '10px';
+mainButton.style.padding = '8px';
+mainButton.style.cursor = 'pointer';
+
+let mainText =
+    `Metin: ${selectedText}`;
+
+if (analysis.explanation) {
+    mainText += `\nAçıklama: ${analysis.explanation}`;
+}
+
+if (analysis.context) {
+    mainText += `\nBağlam: ${analysis.context}`;
+}
+
+mainButton.textContent = mainText;
+
+mainButton.addEventListener('click', () => {
+    assistantSelectedContext = {
+        type: 'selected_text',
+        text: selectedText,
+        details:
+            analysis.explanation ||
+            analysis.context ||
+            ''
+    };
+
+    assistantPanel.classList.remove('hidden');
+
+    assistantInput.placeholder =
+        `"${selectedText}" hakkında sor...`;
+
+    assistantInput.focus();
+});
+
+aiFeatureResult.appendChild(mainButton);
+
+const sections = [
+    ['Anahtar Kelimeler', analysis.keywords, 'concept'],
+    ['Kişiler', analysis.people, 'person'],
+    ['Yerler', analysis.places, 'place'],
+    ['Tarihler', analysis.dates, 'date'],
+    ['Olaylar', analysis.events, 'event']
+];
+
+sections.forEach(([label, items, type]) => {
+    if (!Array.isArray(items) || items.length === 0) {
+        return;
+    }
+
+    const sectionTitle = document.createElement('div');
+    sectionTitle.textContent = label;
+    sectionTitle.style.fontWeight = '600';
+    sectionTitle.style.margin =
+        '10px 0 6px 0';
+
+    aiFeatureResult.appendChild(sectionTitle);
+
+    items.forEach((item) => {
+        const itemText =
+            typeof item === 'string'
+                ? item
+                : item.text ||
+                  item.name ||
+                  JSON.stringify(item);
+
+        const button = document.createElement('button');
+
+        button.type = 'button';
+        button.style.display = 'block';
+        button.style.width = '100%';
+        button.style.textAlign = 'left';
+        button.style.marginBottom = '6px';
+        button.style.padding = '7px';
+        button.style.cursor = 'pointer';
+
+        button.textContent = itemText;
+
+        button.addEventListener('click', () => {
+            assistantSelectedContext = {
+                type: type,
+                text: itemText,
+                details:
+                    analysis.context ||
+                    analysis.explanation ||
+                    ''
+            };
+
+            assistantPanel.classList.remove('hidden');
+
+            assistantInput.placeholder =
+                `"${itemText}" hakkında sor...`;
+
+            assistantInput.focus();
+        });
+
+        aiFeatureResult.appendChild(button);
+    });
+});
 
     } catch (error) {
         console.error(
@@ -2747,13 +3138,160 @@ async function runAiSuggestions() {
                 suggestedText;
         }
 
-        aiFeatureResult.textContent =
-            'AI ALTERNATİF ÖNERİLERİ\n\n' +
-            JSON.stringify(
-                suggestion,
-                null,
-                2
+    aiFeatureResult.innerHTML = '';
+
+    const title = document.createElement('div');
+    title.textContent = 'AI ALTERNATİF ÖNERİLERİ';
+    title.style.fontWeight = '700';
+    title.style.marginBottom = '10px';
+
+    aiFeatureResult.appendChild(title);
+
+
+    // Önerilen ana metin
+    if (suggestedText) {
+        const recommendedButton =
+            document.createElement('button');
+
+        recommendedButton.type = 'button';
+        recommendedButton.style.display = 'block';
+        recommendedButton.style.width = '100%';
+        recommendedButton.style.textAlign = 'left';
+        recommendedButton.style.marginBottom = '10px';
+        recommendedButton.style.padding = '8px';
+        recommendedButton.style.cursor = 'pointer';
+
+        let recommendedDetails = '';
+
+        if (
+            suggestion.recommended &&
+            typeof suggestion.recommended === 'object'
+        ) {
+            recommendedDetails =
+                suggestion.recommended.reason ||
+                suggestion.recommended.explanation ||
+                '';
+        }
+
+        recommendedButton.textContent =
+            `Önerilen: ${suggestedText}` +
+            (
+                recommendedDetails
+                    ? `\nAçıklama: ${recommendedDetails}`
+                    : ''
             );
+
+        recommendedButton.addEventListener(
+            'click',
+            () => {
+                assistantSelectedContext = {
+                    type: 'ai_suggestion',
+                    text: suggestedText,
+                    details: recommendedDetails
+                };
+
+                assistantPanel.classList.remove('hidden');
+
+                assistantInput.placeholder =
+                    `"${suggestedText}" hakkında sor...`;
+
+                assistantInput.focus();
+            }
+        );
+
+        aiFeatureResult.appendChild(
+            recommendedButton
+        );
+    }
+
+
+    // Diğer alternatifler
+    const alternatives =
+        Array.isArray(suggestion.alternatives)
+            ? suggestion.alternatives
+            : [];
+
+    if (alternatives.length > 0) {
+        const alternativesTitle =
+            document.createElement('div');
+
+        alternativesTitle.textContent =
+            'Diğer Alternatifler';
+
+        alternativesTitle.style.fontWeight = '600';
+        alternativesTitle.style.margin =
+            '10px 0 6px 0';
+
+        aiFeatureResult.appendChild(
+            alternativesTitle
+        );
+
+        alternatives.forEach((item, index) => {
+            const alternativeText =
+                typeof item === 'string'
+                    ? item
+                    : (
+                        item.text ||
+                        item.suggestion ||
+                        item.recommendation ||
+                        ''
+                    );
+
+            if (!alternativeText) {
+                return;
+            }
+
+            const details =
+                typeof item === 'object'
+                    ? (
+                        item.reason ||
+                        item.explanation ||
+                        ''
+                    )
+                    : '';
+
+            const button =
+                document.createElement('button');
+
+            button.type = 'button';
+            button.style.display = 'block';
+            button.style.width = '100%';
+            button.style.textAlign = 'left';
+            button.style.marginBottom = '6px';
+            button.style.padding = '7px';
+            button.style.cursor = 'pointer';
+
+            button.textContent =
+                `${index + 1}. ${alternativeText}` +
+                (
+                    details
+                        ? `\nAçıklama: ${details}`
+                        : ''
+                );
+
+            button.addEventListener(
+                'click',
+                () => {
+                    assistantSelectedContext = {
+                        type: 'ai_alternative',
+                        text: alternativeText,
+                        details: details
+                    };
+
+                    assistantPanel.classList.remove(
+                        'hidden'
+                    );
+
+                    assistantInput.placeholder =
+                        `"${alternativeText}" hakkında sor...`;
+
+                    assistantInput.focus();
+                }
+            );
+
+            aiFeatureResult.appendChild(button);
+        });
+    }
 
     } catch (error) {
         console.error(
@@ -2834,15 +3372,54 @@ async function runAiSuggestionReview() {
             (Number(review.confidence) || 0) * 100
         );
 
-        aiFeatureResult.textContent =
-            'AI DÜZENLEME DEĞERLENDİRMESİ\n\n' +
-            `Kabul edildi: ${review.accepted ? 'Evet' : 'Hayır'}\n` +
-            `Güven: %${confidence}\n` +
-            `Açıklama: ${review.reason || '-'}\n` +
-            `Önerilen son metin: ${review.recommended_text || '-'}\n` +
-            `AI önerisi değiştirildi: ${
-                review.changed_from_ai ? 'Evet' : 'Hayır'
-            }`;
+aiFeatureResult.innerHTML = '';
+
+const title = document.createElement('div');
+title.textContent = 'AI DÜZENLEME DEĞERLENDİRMESİ';
+title.style.fontWeight = '700';
+title.style.marginBottom = '10px';
+
+aiFeatureResult.appendChild(title);
+
+
+const reviewButton = document.createElement('button');
+
+reviewButton.type = 'button';
+reviewButton.style.display = 'block';
+reviewButton.style.width = '100%';
+reviewButton.style.textAlign = 'left';
+reviewButton.style.padding = '8px';
+reviewButton.style.cursor = 'pointer';
+
+const finalText =
+    review.recommended_text ||
+    userEdit;
+
+reviewButton.textContent =
+    `Kabul edildi: ${review.accepted ? 'Evet' : 'Hayır'}\n` +
+    `Güven: %${confidence}\n` +
+    `Açıklama: ${review.reason || '-'}\n` +
+    `Önerilen son metin: ${finalText || '-'}\n` +
+    `AI önerisi değiştirildi: ${
+        review.changed_from_ai ? 'Evet' : 'Hayır'
+    }`;
+
+reviewButton.addEventListener('click', () => {
+    assistantSelectedContext = {
+        type: 'reviewed_suggestion',
+        text: finalText,
+        details: review.reason || ''
+    };
+
+    assistantPanel.classList.remove('hidden');
+
+    assistantInput.placeholder =
+        `"${finalText}" hakkında sor...`;
+
+    assistantInput.focus();
+});
+
+aiFeatureResult.appendChild(reviewButton);
 
     } catch (error) {
         console.error(
@@ -2890,6 +3467,25 @@ if (aiAnalyzeSelectionBtn) {
             runAiSuggestedQuestions
         );
     }
+
+      [
+        aiPredictionsBtn,
+        aiQuestionsBtn,
+        aiResearchBtn,
+        aiEntitiesBtn,
+        aiAnalyzeSelectionBtn,
+        aiSuggestionsBtn,
+        aiReviewSuggestionBtn
+    ].forEach((button) => {
+        if (!button) return;
+
+        button.addEventListener('click', () => {
+            aiFeatureResult.textContent =
+                'AI sonucu hazırlanıyor...';
+
+            openAiFeatureModal();
+        });
+    });
 
     assistantInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {

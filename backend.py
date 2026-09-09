@@ -1310,6 +1310,13 @@ def assistant_endpoint():
         if not isinstance(history, list):
             history = []
 
+        selected_context = data.get(
+            "selected_context"
+        )
+
+        if not isinstance(selected_context, dict):
+            selected_context = None
+
         user_message = (
             data.get("message")
             or ""
@@ -1337,6 +1344,7 @@ def assistant_endpoint():
             question=user_message,
             top_k=3,
             history=history,
+            selected_context=selected_context,
         )
 
         return jsonify(

@@ -642,15 +642,7 @@
                     </div>
                 </div>
 
-                <pre id="aiFeatureResult" style="
-                    white-space: pre-wrap;
-                    overflow: auto;
-                    max-height: 220px;
-                    font-size: 11px;
-                    margin-top: 8px;
-                    padding: 8px;
-                    border: 1px solid rgba(255,255,255,0.12);
-                ">AI sonucu burada görünecek.</pre>
+
             </div>
         <div class="assistant-panel-input-row">
             <input type="text" id="assistantInput" class="assistant-input" placeholder="Bir soru sorun..." autocomplete="off">
@@ -662,6 +654,57 @@
             </button>
         </div>
     </div>
+                <!-- AI Feature Result Modal -->
+        <div id="aiFeatureModal" class="modal-overlay hidden">
+            <div class="modal-card" style="
+                width: min(680px, 92vw);
+                max-height: 82vh;
+                overflow: hidden;
+                display: flex;
+                flex-direction: column;
+            ">
+                <div class="modal-header" style="
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    gap: 12px;
+                ">
+                    <div>
+                        <h3 style="margin: 0;">
+                            AI Belge Analizi
+                        </h3>
+                        <p style="
+                            margin: 4px 0 0;
+                            font-size: 12px;
+                            opacity: 0.7;
+                        ">
+                            Sonuçlardan birine tıklayarak sohbet konusu yapabilirsiniz.
+                        </p>
+                    </div>
+
+                    <button
+                        type="button"
+                        id="aiFeatureModalClose"
+                        class="assistant-panel-close"
+                        aria-label="Kapat"
+                    >
+                        &times;
+                    </button>
+                </div>
+
+                <div
+                    id="aiFeatureResult"
+                    style="
+                        overflow-y: auto;
+                        padding: 16px;
+                        white-space: pre-wrap;
+                        flex: 1;
+                    "
+                >
+                    AI sonucu burada görünecek.
+                </div>
+            </div>
+        </div>
 
     <!-- Custom JavaScript -->
     <script src="app.js?v=20260818-2"></script>

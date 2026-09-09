@@ -176,58 +176,58 @@ class AISuggestionGenerator:
         if not isinstance(alternatives, list):
             alternatives = []
 
-            recommended_text = str(
-                recommended.get("text", "")
+        recommended_text = str(
+            recommended.get("text", "")
+        ).strip()
+
+        recommended_reason = str(
+            recommended.get("reason", "")
+        ).strip()
+
+        try:
+            recommended_confidence = float(
+                recommended.get("confidence", 0.0)
+            )
+        except (TypeError, ValueError):
+            recommended_confidence = 0.0
+
+        recommended_confidence = max(
+            0.0,
+            min(recommended_confidence, 1.0),
+        )
+
+        normalized_alternatives = []
+
+        for alternative in alternatives[:1]:
+            if not isinstance(alternative, dict):
+                continue
+
+            alternative_text = str(
+                alternative.get("text", "")
             ).strip()
 
-            recommended_reason = str(
-                recommended.get("reason", "")
+            reason = str(
+                alternative.get("reason", "")
             ).strip()
 
             try:
-                recommended_confidence = float(
-                    recommended.get("confidence", 0.0)
+                confidence = float(
+                    alternative.get("confidence", 0.0)
                 )
             except (TypeError, ValueError):
-                recommended_confidence = 0.0
+                confidence = 0.0
 
-            recommended_confidence = max(
+            confidence = max(
                 0.0,
-                min(recommended_confidence, 1.0),
+                min(confidence, 1.0),
             )
 
-            normalized_alternatives = []
-
-            for alternative in alternatives[:1]:
-                if not isinstance(alternative, dict):
-                    continue
-
-                text = str(
-                    alternative.get("text", "")
-                ).strip()
-
-                reason = str(
-                    alternative.get("reason", "")
-                ).strip()
-
-                try:
-                    confidence = float(
-                        alternative.get("confidence", 0.0)
-                    )
-                except (TypeError, ValueError):
-                    confidence = 0.0
-
-                confidence = max(
-                    0.0,
-                    min(confidence, 1.0),
-                )
-
-                if text:
-                    normalized_alternatives.append({
-                        "text": text,
-                        "confidence": confidence,
-                        "reason": reason,
-                    })
+            if alternative_text:
+                normalized_alternatives.append({
+                    "text": alternative_text,
+                    "confidence": confidence,
+                    "reason": reason,
+                })
 
         uncertainty = result.get(
             "uncertainty",
