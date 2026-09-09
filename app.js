@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ocrText: '',
         transText: '',
         translitText: '',
+        lastAnalysis: null,
         apiKey: localStorage.getItem('gemini_api_key') || '',
         engine: localStorage.getItem('translation_engine') || 'gemini-flash',
         history: JSON.parse(localStorage.getItem('translation_history') || '[]')
@@ -58,17 +59,33 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const ocrOutputBox = document.getElementById('ocrOutputBox');
     const ocrEmptyState = document.getElementById('ocrEmptyState');
+    const ocrEmptyStateText = ocrEmptyState.querySelector('p');
+    const ocrEmptyStateDefaultText = ocrEmptyStateText.textContent;
     const ocrTextDisplay = document.getElementById('ocrTextDisplay');
     const ocrTools = document.getElementById('ocrTools');
     const copyOcrBtn = document.getElementById('copyOcrBtn');
+    const ocrTtsBtn = document.getElementById('ocrTtsBtn');
+    const ocrStopTtsBtn = document.getElementById('ocrStopTtsBtn');
+
+    const translitOutputBox = document.getElementById('translitOutputBox');
+    const translitEmptyState = document.getElementById('translitEmptyState');
+    const translitEmptyStateText = translitEmptyState.querySelector('p');
+    const translitEmptyStateDefaultText = translitEmptyStateText.textContent;
+    const translitTextDisplay = document.getElementById('translitTextDisplay');
+    const translitTools = document.getElementById('translitTools');
+    const copyTranslitBtn = document.getElementById('copyTranslitBtn');
+    const translitTtsBtn = document.getElementById('translitTtsBtn');
+    const translitStopTtsBtn = document.getElementById('translitStopTtsBtn');
 
     const transOutputBox = document.getElementById('transOutputBox');
     const transEmptyState = document.getElementById('transEmptyState');
+    const transEmptyStateText = transEmptyState.querySelector('p');
+    const transEmptyStateDefaultText = transEmptyStateText.textContent;
     const transTextDisplay = document.getElementById('transTextDisplay');
     const transTools = document.getElementById('transTools');
     const copyTransBtn = document.getElementById('copyTransBtn');
     const ttsBtn = document.getElementById('ttsBtn');
-    const ocrTtsBtn = document.getElementById('ocrTtsBtn');
+    const transStopTtsBtn = document.getElementById('transStopTtsBtn');
     const downloadReportBtn = document.getElementById('downloadReportBtn');
 
     const enOutputBox = document.getElementById('enOutputBox');
@@ -84,36 +101,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveSettingsBtn = document.getElementById('saveSettingsBtn');
     const historyList = document.getElementById('historyList');
 
-    const enhancedEmptyState = document.getElementById('enhancedEmptyState');
-    const enhancedImageWrapper = document.getElementById('enhancedImageWrapper');
-    const enhancedImage = document.getElementById('enhancedImage');
     const documentProfile = document.getElementById('documentProfile');
     const enhancedToggle = document.getElementById('enhancedToggle');
     const enhanceStatusIcon = document.getElementById('enhanceStatusIcon');
-    const workbenchCard = document.querySelector('.workbench-card');
     const heroStartBtn = document.getElementById('heroStartBtn');
 
-    // Belge Bilgileri sidebar elements
-    const infoSidebarCol = document.getElementById('infoSidebarCol');
-    const resultCardConfidenceBadge = document.getElementById('resultCardConfidenceBadge');
-    const resultDetailsLink = document.getElementById('resultDetailsLink');
+    // Output tab dropdowns ("Osmanlıca Metin" script dropdown, translation
+    // language dropdown) and the "Bilgi" tab.
     const ocrTabBtn = document.getElementById('ocrTabBtn');
+    const translitTabBtn = document.getElementById('translitTabBtn');
+    const scriptDropdown = document.getElementById('scriptDropdown');
+    const scriptDropdownTrigger = document.getElementById('scriptDropdownTrigger');
+    const scriptDropdownMenu = document.getElementById('scriptDropdownMenu');
     const langDropdown = document.getElementById('langDropdown');
     const langDropdownTrigger = document.getElementById('langDropdownTrigger');
     const langDropdownMenu = document.getElementById('langDropdownMenu');
     const langDropdownLabel = document.getElementById('langDropdownLabel');
-    const infoDocType = document.getElementById('infoDocType');
-    const infoDocPurpose = document.getElementById('infoDocPurpose');
-    const infoScriptType = document.getElementById('infoScriptType');
-    const infoPeriod = document.getElementById('infoPeriod');
-    const infoStyle = document.getElementById('infoStyle');
-    const infoDateHijri = document.getElementById('infoDateHijri');
-    const infoDateGregorian = document.getElementById('infoDateGregorian');
-    const infoConfidenceValue = document.getElementById('infoConfidenceValue');
-    const infoConfidenceBar = document.getElementById('infoConfidenceBar');
 
-    // Detailed Results Panel elements
-    const resultsPanel = document.getElementById('resultsPanel');
+    // "Bilgi" output tab (belge analizi) elements
+    const infoTabBtn = document.getElementById('infoTabBtn');
+    const infoOutputBox = document.getElementById('infoOutputBox');
+    const infoEmptyState = document.getElementById('infoEmptyState');
+    const infoContentWrapper = document.getElementById('infoContentWrapper');
     const resultDocType = document.getElementById('resultDocType');
     const resultConfidencePill = document.getElementById('resultConfidencePill');
     const resultConfidenceValue = document.getElementById('resultConfidenceValue');
@@ -159,6 +168,20 @@ Dışarıdan ülkeye insan getirmelerine de engel olunmayacaktır.
 Yeri ve göğü yaratan Allah adına, Kur'an adına, Peygamber adına, bütün peygamberler adına ve kuşandığım kılıç adına yemin ederim ki bu hükümlere kimse karşı gelmeyecektir.
 Onlar benim emrime bağlı kaldıkları sürece bu güvence devam edecektir.
 Böyle bilinsin.`,
+            translit: `Nişân-ı hümâyûn oldur ki, ben ki Sultân Mehemmed Hânım.
+Cümle havâss u avâm ma'lûm ola ki, işbu dârendegân-ı fermân-ı hümâyûn Bosna râhiblerine mezîd-i inâyetim zuhûr idüp buyurdum ki, mezbûrlara ve kilîsâlarına kimesne mâni' ve müzâhim olmayup ihtiyâtsız memleketimde duralar.
+Ve kaçup gidenler dahi emn ü emânda olalar.
+Gelüp bizim hâssa memleketimizde havfsız sâkin olup kilîsâlarında mütemekkin olalar.
+Ve yüce hazretimden ve vezîrlerimden ve kullarımdan ve reâyâmdan ve cümle ehâlî-i memleketimden kimesne mezbûrlara dahl ü taarruz idüp incitmeyeler.
+Kendülerine ve cânlarına ve mâllarına ve kilîsâlarına ve dahi yabandan hâssa memleketimize âdem gelürler ise yemîn-i muġallaza iderem ki:
+Yiri ve göki yaradan Perverdigâr hakkı içün
+Ve mushaf hakkı içün
+Ve ulu Peygamberimiz hakkı içün
+Ve yüz yigirmi dört bin Peygamberler hakkı içün
+Ve kuşandığım kılıç hakkı içün
+Bu yazılganlara hiç ferd muhâlefet itmeye.
+Mâdâm ki bunlar benim emrime mutî' ü munkâd olalar.
+Şöyle bilesiz.`,
             // Curated demo analysis for this sample — not AI-generated, written
             // to showcase the results panel. Real uploads get this from the
             // backend /api/translate response instead.
@@ -241,6 +264,59 @@ Böyle bilinsin.`,
 حقیدر حر یاشامش بایراغمڭ حریت
 حقیدر حقه طاپان ملتمڭ استقلال`,
             tr: `Korkma, sönmez bu şafaklarda yüzen al sancak;
+Sönmeden yurdumun üstünde tüten en son ocak.
+O benim milletimin yıldızıdır, parlayacak;
+O benimdir, o benim milletimindir ancak.
+
+Çatma, kurban olayım, çehreni ey nazlı hilâl!
+Kahraman ırkıma bir gül; ne bu şiddet, bu celâl?
+Sana olmaz dökülen kanlarımız sonra helâl.
+Hakkıdır, Hakk'a tapan milletimin istiklâl!
+
+Ben ezelden beridir hür yaşadım, hür yaşarım.
+Hangi çılgın bana zincir vuracakmış? Şaşarım!
+Kükremiş sel gibiyim, bendimi çiğner, aşarım.
+Yırtarım dağları, enginlere sığmam, taşarım.
+
+Garbın âfâkını sarmışsa çelik zırhlı duvar,
+Benim iman dolu göğsüm gibi serhaddim var.
+Ulusun, korkma! Nasıl böyle bir îmânı boğar,
+"Medeniyet!" dediğin tek dişi kalmış canavar?
+
+Arkadaş! Yurduma alçakları uğratma, sakın.
+Siper et gövdeni, dursun bu hayâsızca akın.
+Doğacaktır sana va'dettiği günler Hakk'ın...
+Kim bilir, belki yarın, belki yarından da yakın.
+
+Bastığın yerleri "toprak!" diyerek geçme, tanı!
+Düşün altındaki binlerce kefensiz yatanı.
+Sen şehid oğlusun, incitme, yazıktır atanı;
+Verme, dünyaları alsan da, bu cennet vatanı.
+
+Kim bu cennet vatanın uğruna olmaz ki fedâ?
+Şühedâ fışkıracak toprağı sıksan, şühedâ!
+Cânı, cânânı, bütün varımı alsın da Huda,
+Etmesin tek vatanımdan beni dünyada cüdâ.
+
+Ruhumun senden, İlâhî, şudur ancak emeli:
+Değmesin mabedimin göğsüne nâ-mahrem eli.
+Bu ezanlar -ki şehadetleri dînin temeli-
+Ebedî yurdumun üstünde benim inlemeli.
+
+O zaman vecd ile bin secde eder -varsa- taşım;
+Her cerîhamdan, İlâhî, boşanıp kanlı yaşım,
+Fışkırır ruh-ı mücerret gibi yerden na'şım;
+O zaman yükselerek Arş'a değer, belki başım.
+
+Dalgalan sen de şafaklar gibi ey şanlı hilâl!
+Olsun artık dökülen kanlarımın hepsi helâl.
+Ebediyen sana yok, ırkıma yok izmihlâl:
+Hakkıdır, hür yaşamış, bayrağımın hürriyet;
+Hakkıdır, Hakk'a tapan milletimin istiklâl!`,
+            // İstiklâl Marşı zaten 1921'den beri aynı sözlerle okunduğu için,
+            // Arap harfli aslının Latin harfli okunuşu ile günümüz Türkçesi
+            // neredeyse birebir aynıdır — ayrı bir sadeleştirme gerekmez.
+            translit: `Korkma, sönmez bu şafaklarda yüzen al sancak;
 Sönmeden yurdumun üstünde tüten en son ocak.
 O benim milletimin yıldızıdır, parlayacak;
 O benimdir, o benim milletimindir ancak.
@@ -475,6 +551,101 @@ Fuzûlî'nin sözleri, senin övgünü söylemenin uğuru sayesinde inciye dön�
 Mahşer günü gaflet uykusundan uyanıp, sana duyulan hasretin gözyaşlarını uyanık gözlerden döktüğümde...
 
 Umudum şudur ki kıyamet gününde senin yüzünü görmekten mahrum kalmayayım. Ben, senin güzel yüzünü görmeye susamış biriyim; kavuşma çeşmen bana su versin, yani bana vuslatını ve şefaatini nasip etsin.`,
+            translit: `Saçma ey göz eşkden gönlümdeki odlara su
+Kim bu denlü tutuşan odlara kılmaz çâre su
+
+Âb-gûndur günbed-i devvâr rengi bilmezem
+Yâ muhît olmuş gözümden günbed-i devvâre su
+
+Zevk-i tîgundan aceb yok olsa gönlüm çâk çâk
+Kim mürûr eyler iken bırakır rahneler dîvâre su
+
+Vehm ile söyler dil-i mecrûh peykânun sözin
+İhtiyât ile içer her kimde olsa yare su
+
+Suya versün bağban gülzârı zahmet çekmesün
+Bir gül açılmaz yüzün tek versem bin gülzâre su
+
+Ohşadabilmez gubârını muharrir hattuna
+Hâme tek bakmakdan inse gözlerine kare su
+
+Ârızun yâdıyla nemnâk olsa müjgânım n'ola
+Zâyi olmaz gül temennâsıyla vermek hâre su
+
+Gam gecesi itme dil-i bîmârdan tîgun dirîg
+Hayırdır vermek karanuluk gicede bîmâre su
+
+İste peykânun gönül hicrinde şevkim sâkin it
+Susuzum bir kez bu sahrâda benim çün ara su
+
+Men lebün müştâkıyam zühhâd kevser tâlibi
+Nitekim meste mey içmek hoş gelir hüşyâre su
+
+Ravza-i kûyına her dem durmayup eyler güzer
+Âşık olmuş gâlibâ ol serv-i hoş-reftâre su
+
+Su yolın ol kûydan toprak olup tutsam gerek
+Çün rakîbimdir dahi ol kûye koyman vâre su
+
+Dest-bûsı ârzûsıyla ger ölürsem dostlar
+Kûze eylen toprağum sunun anıla yâre su
+
+Serv-i serkeşlik kılur kumriy niyâzından meğer
+Dâmenin tutup ayağına düşe yalvara su
+
+İçmek ister bülbülün kanın meğer bir rengile
+Gül budağının mizâcına gire kurtara su
+
+Tıynet-i pâkini rûşen kılmış ehl-i âleme
+İktida kılmış tarîk-i Ahmed-i Muhtâr'a su
+
+Seyyid-i nev-i beşer deryâ-yı dürr-i istifâ
+Kim sepüpdür mucizâtı âteş-i eşrâre su
+
+Kılmağıçun tâze gülzâr-ı nübüvvet revnakın
+Mucizinden eylemiş izhâr seng-i hâre su
+
+Mucizi bir bahr-i bî-pâyân imiş âlemde kim
+Yetmiş andan bin bin âteş-hâneye kefâre su
+
+Hayret ile parmağın dişler kim etse istimâ
+Parmağından verdigi şiddet günü Ensâr'e su
+
+Dostı ger zehr-i mâr içse olur âb-ı hayât
+Hasmı su içse döner elbette zehr-i mâre su
+
+Eylemiş her katreden bin bahr-i rahmet mevc-hîz
+El sunup urgaç vuzû içün gül-i ruhsâre su
+
+Hâk-i pâyine yetem dir ömrler dir muttasıl
+Başını taşdan taşa urup gezer âvâre su
+
+Zerre zerre hâk-i dergâhına ister sâla nûr
+Dönmez ol dergâhdan ger olsa pâre pâre su
+
+Zikr-i na'tin virdini dermân bilür ehl-i hatâ
+Eyle kim def'-i humâr içün içer meyhâre su
+
+Yâ Habîballah yâ Hayre'l-Beşer müştâkunam
+Eyle kim leb-teşneler yansun diler hemvâre su
+
+Sensin ol bahr-i kerâmet kim şeb-i mi'râcda
+Şebnem-i feyzin yetürmüş sâbit ü seyyâre su
+
+Çeşme-i hurşîdden her dem zülâl-i feyz iner
+Hâcet olsa merkadin tecdîd iden mi'mâre su
+
+Bîm-i dûzah nâr-ı gam salmış dil-i sûzânıma
+Var ümîdim ebr-i ihsânun sepe ol nâre su
+
+Yümn-i na'tından güher olmuş Fuzûlî sözleri
+Ebr-i nîsandan dönen tek lü'lü-i şehvâre su
+
+Hâb-ı gafletten aç gözüni bîdâr ol kim rûz-ı haşr
+Eşk-i hasretden döker didare bîdâre su
+
+Umduğum oldur ki rûz-ı haşr mahrûm olmayam
+Çeşme-i vaslın veren teşne didâre su`,
             analysis: {
                 document_type: 'Kaside (Na\'t-ı Nebevî)',
                 confidence: 97,
@@ -516,41 +687,6 @@ Umudum şudur ki kıyamet gününde senin yüzünü görmekten mahrum kalmayayı
 
     document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
 
-    
-    // --- Workflow Steps: gold highlight follows scroll position through the section ---
-    const workflowSection = document.querySelector('.workflow-section');
-    const workflowStepCards = [1, 2, 3, 4].map(n => document.getElementById(`stepCard${n}`));
-
-    function setScrollStepHighlight(stepNum) {
-        workflowStepCards.forEach((card, i) => {
-            if (card) card.classList.toggle('scroll-active', i + 1 === stepNum);
-        });
-    }
-
-    function updateWorkflowScrollHighlight() {
-        if (!workflowSection) return;
-        const rect = workflowSection.getBoundingClientRect();
-        // Bu çarpanı büyütürsen geçişler daha YAVAŞ (daha fazla scroll gerekir),
-        // küçültürsen daha ERKEN/HIZLI olur.
-        const sweepDistance = window.innerHeight * 1.4;
-        let progress = (window.innerHeight - rect.top) / sweepDistance;
-        progress = Math.max(0, Math.min(0.999, progress));
-        const stepNum = Math.floor(progress * 4) + 1;
-        setScrollStepHighlight(stepNum);
-    }
-    let workflowScrollTicking = false;
-    window.addEventListener('scroll', () => {
-        if (!workflowScrollTicking) {
-            requestAnimationFrame(() => {
-                updateWorkflowScrollHighlight();
-                workflowScrollTicking = false;
-            });
-            workflowScrollTicking = true;
-        }
-    });
-    window.addEventListener('resize', updateWorkflowScrollHighlight);
-    updateWorkflowScrollHighlight();
-
     // --- Theme Toggle (defaults to dark unless the user explicitly chose light) ---
     if (localStorage.getItem('theme') === 'light') {
         document.body.classList.remove('dark-theme');
@@ -585,15 +721,20 @@ Umudum şudur ki kıyamet gününde senin yüzünü görmekten mahrum kalmayayı
     enhancedToggle.addEventListener('change', updatePreviewImage);
 
     
-    // --- Output Selector: standalone "Osmanlıca Metin" button + a
-    // translation-language dropdown (Türkçe / İngilizce, more languages
-    // can be added to the dropdown later without touching the OCR button).
+    // --- Output Selector: three tab groups side by side, like sheet tabs —
+    // "Transkript" dropdown (Osmanlıca Arapça harfler / Türkçe harfler), a
+    // translation language dropdown (Türkçe / İngilizce), and a plain
+    // "Bilgi" tab for the document analysis (see renderResultsPanel /
+    // clearInfoTab). Unlike the language dropdown, the Transkript trigger
+    // keeps its static "Transkript" label regardless of which script is
+    // selected — it names the category, not the current choice.
     const TRANSLATION_TAB_LABELS = {
         trans: 'Türkçe Çeviri',
         en: 'İngilizce Çeviri',
     };
 
     function setOutputTab(tab) {
+        closeEntityPopover();
         document.querySelectorAll('.output-select-btn').forEach(b => {
             b.classList.toggle('active', b.getAttribute('data-output-tab') === tab);
         });
@@ -601,17 +742,25 @@ Umudum şudur ki kıyamet gününde senin yüzünü görmekten mahrum kalmayayı
             t.classList.toggle('tab-active', t.getAttribute('data-tools-for') === tab);
         });
         ocrOutputBox.classList.toggle('hidden', tab !== 'ocr');
+        translitOutputBox.classList.toggle('hidden', tab !== 'translit');
         transOutputBox.classList.toggle('hidden', tab !== 'trans');
         enOutputBox.classList.toggle('hidden', tab !== 'en');
+        infoOutputBox.classList.toggle('hidden', tab !== 'info');
 
-        // The dropdown only ever represents a translation language, so it
-        // stays on the last-selected language (and its own highlight)
-        // rather than switching to "Osmanlıca Metin" when that button is
-        // picked instead.
+        // The Transkript trigger's label stays static ("Transkript"); it
+        // only highlights "active" while one of its own options (not a
+        // sibling group's) is the selected tab.
+        scriptDropdownTrigger.classList.toggle('active', tab === 'ocr' || tab === 'translit');
+
         if (TRANSLATION_TAB_LABELS[tab]) {
             langDropdownLabel.textContent = TRANSLATION_TAB_LABELS[tab];
         }
-        langDropdownTrigger.classList.toggle('active', tab !== 'ocr');
+        langDropdownTrigger.classList.toggle('active', tab === 'trans' || tab === 'en');
+    }
+
+    function closeScriptDropdown() {
+        scriptDropdownMenu.classList.add('hidden');
+        scriptDropdownTrigger.setAttribute('aria-expanded', 'false');
     }
 
     function closeLangDropdown() {
@@ -619,7 +768,19 @@ Umudum şudur ki kıyamet gününde senin yüzünü görmekten mahrum kalmayayı
         langDropdownTrigger.setAttribute('aria-expanded', 'false');
     }
 
-    ocrTabBtn.addEventListener('click', () => setOutputTab('ocr'));
+    scriptDropdownTrigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = !scriptDropdownMenu.classList.contains('hidden');
+        scriptDropdownMenu.classList.toggle('hidden', isOpen);
+        scriptDropdownTrigger.setAttribute('aria-expanded', String(!isOpen));
+    });
+
+    scriptDropdownMenu.addEventListener('click', (e) => {
+        const item = e.target.closest('.lang-dropdown-item');
+        if (!item) return;
+        setOutputTab(item.getAttribute('data-output-tab'));
+        closeScriptDropdown();
+    });
 
     langDropdownTrigger.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -635,7 +796,10 @@ Umudum şudur ki kıyamet gününde senin yüzünü görmekten mahrum kalmayayı
         closeLangDropdown();
     });
 
+    infoTabBtn.addEventListener('click', () => setOutputTab('info'));
+
     document.addEventListener('click', (e) => {
+        if (!scriptDropdown.contains(e.target)) closeScriptDropdown();
         if (!langDropdown.contains(e.target)) closeLangDropdown();
     });
 
@@ -656,38 +820,7 @@ Umudum şudur ki kıyamet gününde senin yüzünü görmekten mahrum kalmayayı
             return;
         }
 
-        try {
-            statusBadge.classList.remove('hidden');
-            statusMessage.textContent = 'Yeni belge profiliyle görüntü iyileştiriliyor...';
-            enhanceStatusIcon.classList.remove('done');
-            enhanceStatusIcon.classList.add('spinning');
-
-            const enhancedResult = await enhanceUploadedImage(
-                state.selectedFile,
-                documentProfile.value
-            );
-
-            if (state.enhancedImageUrl) {
-                URL.revokeObjectURL(state.enhancedImageUrl);
-            }
-
-            state.enhancedImageBlob = enhancedResult.blob;
-            state.enhancedImageUrl = enhancedResult.url;
-
-            enhancedImage.src = enhancedResult.url;
-
-            enhancedEmptyState.classList.add('hidden');
-            enhancedImageWrapper.classList.remove('hidden');
-
-            statusMessage.textContent = 'Görüntü iyileştirme tamamlandı.';
-            updatePreviewImage();
-            enhanceStatusIcon.classList.remove('spinning');
-            enhanceStatusIcon.classList.add('done');
-        } catch (error) {
-            console.error('Enhancement error:', error);
-            statusMessage.textContent = 'Hata: ' + error.message;
-            enhanceStatusIcon.classList.remove('spinning', 'done');
-        }
+        await runImageEnhancement(state.selectedFile, documentProfile.value);
     });
 
     dropZone.addEventListener('dragover', (e) => {
@@ -763,22 +896,28 @@ Umudum şudur ki kıyamet gününde senin yüzünü görmekten mahrum kalmayayı
         state.transTextEn = '';
         state.translitText = '';
 
+        clearProcessingFailure();
+
         ocrTextDisplay.textContent = '';
+        translitTextDisplay.textContent = '';
         transTextDisplay.textContent = '';
         enTextDisplay.textContent = '';
 
         ocrTextDisplay.classList.add('hidden');
+        translitTextDisplay.classList.add('hidden');
         transTextDisplay.classList.add('hidden');
         enTextDisplay.classList.add('hidden');
 
         ocrEmptyState.classList.remove('hidden');
+        translitEmptyState.classList.remove('hidden');
         transEmptyState.classList.remove('hidden');
         enEmptyState.classList.remove('hidden');
 
         ocrTools.classList.remove('tools-ready');
+        translitTools.classList.remove('tools-ready');
         transTools.classList.remove('tools-ready');
 
-        hideResultsPanel();
+        clearInfoTab();
         setOutputTab('trans');
         fileName.textContent = file.name;
         fileSize.textContent = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
@@ -794,40 +933,7 @@ Umudum şudur ki kıyamet gününde senin yüzünü görmekten mahrum kalmayayı
 
             triggerTranslateBtn.disabled = true;
 
-            enhancedEmptyState.classList.remove('hidden');
-            enhancedImageWrapper.classList.add('hidden');
-
-            setStepActive(1);
-
-            try {
-                statusBadge.classList.remove('hidden');
-                statusMessage.textContent = 'Görüntü iyileştiriliyor...';
-                enhanceStatusIcon.classList.remove('done');
-                enhanceStatusIcon.classList.add('spinning');
-
-                const enhancedResult = await enhanceUploadedImage(
-                    state.selectedFile,
-                    documentProfile.value
-                );
-
-                state.enhancedImageBlob = enhancedResult.blob;
-                state.enhancedImageUrl = enhancedResult.url;
-
-                enhancedImage.src = enhancedResult.url;
-
-                enhancedEmptyState.classList.add('hidden');
-                enhancedImageWrapper.classList.remove('hidden');
-
-                statusMessage.textContent = 'Görüntü iyileştirme tamamlandı.';
-                updatePreviewImage();
-                triggerTranslateBtn.disabled = false;
-                enhanceStatusIcon.classList.remove('spinning');
-                enhanceStatusIcon.classList.add('done');
-            } catch (error) {
-                console.error('Enhancement error:', error);
-                statusMessage.textContent = 'Hata: ' + error.message;
-                enhanceStatusIcon.classList.remove('spinning', 'done');
-            }
+            await runImageEnhancement(state.selectedFile, documentProfile.value);
         };
         reader.readAsDataURL(file);
     }
@@ -844,15 +950,11 @@ Umudum şudur ki kıyamet gününde senin yüzünü görmekten mahrum kalmayayı
                 fileName.textContent = sample.name;
                 fileSize.textContent = sample.size;
                 previewImage.src = sample.file;
-                enhancedImage.src = sample.file;
-                enhancedEmptyState.classList.add('hidden');
-                enhancedImageWrapper.classList.remove('hidden');
                 uploadIdleState.classList.add('hidden');
                 uploadActiveState.classList.remove('hidden');
                 triggerTranslateBtn.disabled = false;
 
                 smoothScrollTo(dropZone);
-                setStepActive(1);
 
                 // Auto process sample
                 processTranslation(sample);
@@ -861,10 +963,14 @@ Umudum şudur ki kıyamet gününde senin yüzünü görmekten mahrum kalmayayı
     });
 
     function resetState() {
+        closeEntityPopover();
         state.selectedFile = null;
         state.imageDataUrl = null;
         state.translitText = '';
+        state.lastAnalysis = null;
         statusHint.classList.add('hidden');
+        statusBadge.classList.add('hidden');
+        clearProcessingFailure();
         fileInput.value = '';
         uploadIdleState.classList.remove('hidden');
         uploadActiveState.classList.add('hidden');
@@ -875,6 +981,11 @@ Umudum şudur ki kıyamet gününde senin yüzünü görmekten mahrum kalmayayı
         ocrTools.classList.remove('tools-ready');
         ocrTextDisplay.textContent = '';
 
+        translitEmptyState.classList.remove('hidden');
+        translitTextDisplay.classList.add('hidden');
+        translitTools.classList.remove('tools-ready');
+        translitTextDisplay.textContent = '';
+
         transEmptyState.classList.remove('hidden');
         transTextDisplay.classList.add('hidden');
         transTools.classList.remove('tools-ready');
@@ -883,10 +994,6 @@ Umudum şudur ki kıyamet gününde senin yüzünü görmekten mahrum kalmayayı
         enEmptyState.classList.remove('hidden');
         enTextDisplay.classList.add('hidden');
         enTextDisplay.textContent = '';
-
-        enhancedEmptyState.classList.remove('hidden');
-        enhancedImageWrapper.classList.add('hidden');
-        enhancedImage.src = '';
 
         if (state.enhancedImageUrl) {
             URL.revokeObjectURL(state.enhancedImageUrl);
@@ -897,9 +1004,8 @@ Umudum şudur ki kıyamet gününde senin yüzünü görmekten mahrum kalmayayı
 
         enhanceStatusIcon.classList.remove('spinning', 'done');
 
-        hideResultsPanel();
+        clearInfoTab();
         setOutputTab('trans');
-        setStepActive(1);
     }
 
     // --- Detailed Results Panel (tabbed) ---
@@ -917,9 +1023,13 @@ Umudum şudur ki kıyamet gününde senin yüzünü görmekten mahrum kalmayayı
         });
     });
 
-    function hideResultsPanel() {
-        resultsPanel.classList.add('hidden');
-        hideInfoSidebar();
+    // Clears the "Bilgi" tab back to its empty state and hides the tab
+    // button itself — there's nothing useful to show until a translation
+    // with analysis data has completed.
+    function clearInfoTab() {
+        infoEmptyState.classList.remove('hidden');
+        infoContentWrapper.classList.add('hidden');
+        infoTabBtn.classList.add('hidden');
     }
 
     // Builds a row of label/value cards for an info-grid section.
@@ -1053,125 +1163,155 @@ Umudum şudur ki kıyamet gününde senin yüzünü görmekten mahrum kalmayayı
         // Notlar
         resultNotes.textContent = data.notes || 'Bu belge için ek not bulunmuyor.';
 
-        resultsPanel.classList.remove('hidden');
+        infoTabBtn.classList.remove('hidden');
+        infoEmptyState.classList.add('hidden');
+        infoContentWrapper.classList.remove('hidden');
     }
 
-    // --- Belge Bilgileri Sidebar ---
-    // Renders the same analysis payload used by renderResultsPanel() into the
-    // sidebar that sits next to the translation tab.
-    function renderInfoSidebar(data) {
-        infoDocType.textContent = data.document_type || '—';
-        infoDocPurpose.textContent = data.script_purpose || '—';
-        infoScriptType.textContent = data.script_type || '—';
-        infoPeriod.textContent = data.period_estimate || '—';
-        infoStyle.textContent = data.style || '—';
-        infoDateHijri.textContent = data.date_hijri || '—';
-        infoDateGregorian.textContent = data.date_gregorian || '—';
-
-        const confidence = typeof data.confidence === 'number' ? Math.round(data.confidence) : null;
-        infoConfidenceBar.classList.remove('confidence-low', 'confidence-mid', 'confidence-high');
-
-        if (confidence !== null) {
-            resultCardConfidenceBadge.textContent = `Güven Skoru %${confidence}`;
-            infoConfidenceValue.textContent = `%${confidence}`;
-            infoConfidenceBar.style.width = `${Math.max(0, Math.min(100, confidence))}%`;
-
-            const tier = confidence < 60 ? 'confidence-low' : confidence < 85 ? 'confidence-mid' : 'confidence-high';
-            infoConfidenceBar.classList.add(tier);
-        } else {
-            resultCardConfidenceBadge.textContent = 'Güven Skoru %—';
-            infoConfidenceValue.textContent = '—';
-            infoConfidenceBar.style.width = '0%';
-        }
-
-        infoSidebarCol.classList.remove('hidden');
-    }
-
-    function hideInfoSidebar() {
-        infoSidebarCol.classList.add('hidden');
-    }
-
-    // --- Workflow Step Visual Control ---
-    function setStepActive(stepNum) {
-        for (let i = 1; i <= 4; i++) {
-            const card = document.getElementById(`stepCard${i}`);
-            if (card) {
-                if (i <= stepNum) {
-                    card.classList.add('active');
-                } else {
-                    card.classList.remove('active');
-                }
-            }
-        }
-    }
-
-    // --- Translation Engine Execution ---
+// --- Translation Engine Execution ---
     triggerTranslateBtn.addEventListener('click', () => {
         if (!state.imageDataUrl) return;
         processTranslation();
     });
 
-    function generateTemporaryFallback() {
-    return {
-        ocr: `بسم الله الرحمن الرحيم
-دولت عليه عثمانيه فرمانى مقتضاسنجه
-دولت و ملتڭ سلامتى ايچون امر شريف اولنمشدر.`,
+    // Backend hata mesajları (bkz. backend.py) zaten anlaşılır Türkçe metinler
+    // döndürüyor — zaman aşımı, dosya/görsel çok büyük, API kotası/rate limit,
+    // modelin token sınırına takılması (uzun/karmaşık metin) gibi durumların her
+    // biri için ayrı bir mesaj var. Burada sadece tarayıcı kaynaklı, İngilizce ve
+    // anlaşılmaz ağ hatalarını ("Failed to fetch" vb.) kullanıcı dostu Türkçe bir
+    // mesaja çeviriyoruz; backend'den gelen mesajı olduğu gibi kullanıyoruz.
+    function classifyTranslationError(err) {
+        const message = (err && err.message) ? err.message : String(err || '');
 
-        trans: `Rahmân ve Rahîm olan Allah'ın adıyla.
-
-Yüce Osmanlı Devleti'nin emri gereğince,
-devletin ve milletin esenliği için gerekli emir verilmiştir.`,
-
-        analysis: {
-            document_type: 'Osmanlıca Belge',
-            confidence: 70,
-            style: 'Tarihî / Osmanlı Türkçesi',
-
-            summary:
-                'Bu sonuç geçici demo modu kullanılarak oluşturulmuştur. Yapay zekâ servisine ulaşılamadığı için örnek belge analizi gösterilmektedir.',
-
-            key_points: [
-                'Belge Osmanlı Türkçesiyle hazırlanmıştır.',
-                'Metin resmî veya tarihî bir belge niteliği taşımaktadır.',
-                'Ayrıntılı analiz için yapay zekâ servisi gereklidir.'
-            ],
-
-            people: [],
-            places: [],
-            concepts: [
-                'Osmanlı Türkçesi',
-                'Tarihî Belge'
-            ],
-
-            script_type: 'Belirlenemedi',
-            script_purpose: 'Belirlenemedi',
-            period_estimate: 'Osmanlı dönemi',
-            date_hijri: 'Belirtilmemiş',
-            date_gregorian: 'Belirtilmemiş',
-
-            notes:
-                'Demo modu aktiftir. Bu bilgiler yapay zekâ tarafından mevcut belge analiz edilerek üretilmemiştir.'
+        if (/failed to fetch|networkerror|load failed/i.test(message)) {
+            return 'Sunucuya ulaşılamadı. İnternet bağlantınızı kontrol edip tekrar deneyin.';
         }
-    };
-}
+
+        return message || 'Çeviri sırasında beklenmeyen bir hata oluştu.';
+    }
+
+    // Görüntü iyileştirme ya da OCR/çeviri isteği gerçekten başarısız olduğunda,
+    // sahte/örnek bir sonuç göstermek ya da hatayı yalnızca butonun yanındaki küçük
+    // durum rozetinde bırakmak yerine, "Çeviri sonucu burada görüntülenecek." gibi
+    // boş-durum metinlerinin yerine nedenini yazar — kullanıcı hatayı sağdaki
+    // sonuç panelinde, tam çevirinin görüneceği yerde görür. Ayrıca çeviri
+    // butonunu tekrar tıklanabilir hale getirir (aşağıdaki processTranslation()
+    // eksik kalan iyileştirmeyi kendisi yeniden dener), böylece kullanıcı
+    // sayfayı yenilemek zorunda kalmaz.
+    function showProcessingFailure(reasonMessage) {
+        statusBadge.classList.add('status-error');
+        statusMessage.textContent = 'İşlem başarısız oldu.';
+        statusHint.classList.add('hidden');
+
+        clearInfoTab();
+
+        const errorText = 'Hata: ' + reasonMessage;
+
+        ocrEmptyStateText.textContent = errorText;
+        ocrEmptyState.classList.remove('hidden');
+        ocrEmptyState.classList.add('state-error');
+        ocrTextDisplay.classList.add('hidden');
+        ocrTools.classList.remove('tools-ready');
+
+        transEmptyStateText.textContent = errorText;
+        transEmptyState.classList.remove('hidden');
+        transEmptyState.classList.add('state-error');
+        transTextDisplay.classList.add('hidden');
+        transTools.classList.remove('tools-ready');
+
+        enEmptyState.classList.remove('hidden');
+        enTextDisplay.classList.add('hidden');
+
+        scanLine.classList.remove('scanning');
+        enhanceStatusIcon.classList.remove('spinning', 'done');
+        state.isProcessing = false;
+        triggerTranslateBtn.disabled = false;
+        actionSpinner.classList.add('hidden');
+        translateBtnLabel.textContent = 'Çeviriyi Başlat';
+    }
+
+    // Bir önceki denemeden kalmış olabilecek hata metnini ve stilini, boş-durum
+    // alanlarını orijinal placeholder metnine döndürerek temizler.
+    function clearProcessingFailure() {
+        statusBadge.classList.remove('status-error');
+        ocrEmptyStateText.textContent = ocrEmptyStateDefaultText;
+        ocrEmptyState.classList.remove('state-error');
+        transEmptyStateText.textContent = transEmptyStateDefaultText;
+        transEmptyState.classList.remove('state-error');
+    }
+
+    // Görüntüyü backend'in /api/enhance uç noktasında iyileştirir ve state'i
+    // günceller. handleFileSelect, belge profili değiştiğinde ve
+    // processTranslation (iyileştirme daha önce başarısız kaldıysa, "Çeviriyi
+    // Başlat" butonuna tekrar basıldığında yeniden denemek için) tarafından
+    // ortak olarak kullanılır — böylece hata her yerde aynı şekilde (sağdaki
+    // panelde, Türkçe olarak) gösterilir ve buton asla kalıcı olarak kilitli
+    // kalmaz.
+    async function runImageEnhancement(file, profile) {
+        statusBadge.classList.remove('hidden');
+        clearProcessingFailure();
+        statusMessage.textContent = 'Görüntü iyileştiriliyor...';
+        enhanceStatusIcon.classList.remove('done');
+        enhanceStatusIcon.classList.add('spinning');
+
+        try {
+            const enhancedResult = await enhanceUploadedImage(file, profile);
+
+            if (state.enhancedImageUrl) {
+                URL.revokeObjectURL(state.enhancedImageUrl);
+            }
+
+            state.enhancedImageBlob = enhancedResult.blob;
+            state.enhancedImageUrl = enhancedResult.url;
+
+            statusMessage.textContent = 'Görüntü iyileştirme tamamlandı.';
+            updatePreviewImage();
+            triggerTranslateBtn.disabled = false;
+            enhanceStatusIcon.classList.remove('spinning');
+            enhanceStatusIcon.classList.add('done');
+            return true;
+        } catch (error) {
+            console.error('Enhancement error:', error);
+            showProcessingFailure(classifyTranslationError(error));
+            return false;
+        }
+    }
 
     async function processTranslation(presetData = null) {
+        closeEntityPopover();
         state.isProcessing = true;
         triggerTranslateBtn.disabled = true;
         actionSpinner.classList.remove('hidden');
         translateBtnLabel.textContent = 'İşleniyor...';
         statusBadge.classList.remove('hidden');
+        clearProcessingFailure();
         statusHint.classList.remove('hidden');
         scanLine.classList.add('scanning');
 
+        // Görüntü iyileştirme daha önce başarısız olmuş olabilir (ya da hiç
+        // çalışmamış olabilir). Kullanıcıyı "Çeviriyi Başlat" butonu kalıcı
+        // olarak kilitli kalmış, sayfayı yenilemek zorunda bırakmak yerine
+        // burada kendimiz yeniden deneriz; yine başarısız olursa
+        // runImageEnhancement hatayı zaten sağ paneldeki boş-durum alanına
+        // yazıp butonu tekrar tıklanabilir hale getirir.
+        if (!presetData && !state.enhancedImageBlob) {
+            const enhanced = await runImageEnhancement(state.selectedFile, documentProfile.value);
+            if (!enhanced) {
+                return;
+            }
+            // runImageEnhancement, kendi başarı durumunda butonu tekrar aktif
+            // eder (tek başına kullanıldığında bu doğrudur); ama burada çeviri
+            // işlemine kesintisiz devam ediyoruz, bu yüzden butonu tekrar
+            // kilitliyoruz.
+            triggerTranslateBtn.disabled = true;
+        }
+
         // Step 2: OCR Extraction
         statusMessage.textContent = 'Görüntü iyileştiriliyor & Osmanlıca OCR yapılıyor...';
-        setStepActive(2);
         await new Promise(r => setTimeout(r, 1200));
 
         // Step 3: AI Translation
-        statusMessage.textContent = 'Yapay Zeka (mT5 / Gemini) ile Türkçe çeviri oluşturuluyor...';
-        setStepActive(3);
+        statusMessage.textContent = 'Yapay Zeka ile Türkçe çeviri oluşturuluyor...';
         await new Promise(r => setTimeout(r, 1400));
 
         let finalOcr = '';
@@ -1179,7 +1319,6 @@ devletin ve milletin esenliği için gerekli emir verilmiştir.`,
         let finalTransEn = '';
         let finalTranslit = '';
         let finalAnalysis = null; // optional richer data for the results panel
-        let usedFallback = false;
 
         if (presetData) {
             finalOcr = presetData.ocr;
@@ -1222,10 +1361,10 @@ devletin ve milletin esenliği için gerekli emir verilmiştir.`,
                 }, 250000);
 
                 if (!apiRes.ok) {
-                    const errorData = await apiRes.json();
-                    // Include the backend's detailed error (e.g. Gemini's raw
-                    // response) so the user can see the real cause directly
-                    // in the alert popup, without needing to open DevTools.
+                    const errorData = await apiRes.json().catch(() => ({}));
+                    // Include the backend's detailed error (e.g. the relay's raw
+                    // response) so the user can see the real cause directly in
+                    // the output box, without needing to open DevTools.
                     let detailMsg = '';
                     if (errorData.details) {
                         const rawDetails = typeof errorData.details === 'string'
@@ -1253,33 +1392,12 @@ devletin ve milletin esenliği için gerekli emir verilmiştir.`,
                 }
             } catch (err) {
                 console.error('Backend OCR / translation error:', err);
-                console.warn(
-                    'AI servisi kullanılamadı. Geçici demo fallback çalıştırılıyor.'
-                );
-
-                const fallback = generateTemporaryFallback();
-
-                finalOcr = fallback.ocr;
-                finalTrans = fallback.trans;
-                finalAnalysis = fallback.analysis;
-
-                usedFallback = true;
-                success = true;
-
-                statusMessage.textContent =
-                    'AI servisine ulaşılamadı — geçici demo sonucu gösteriliyor.';
+                showProcessingFailure(classifyTranslationError(err));
+                return;
             }
 
             if (!success) {
-                state.isProcessing = false;
-                triggerTranslateBtn.disabled = false;
-                actionSpinner.classList.add('hidden');
-                translateBtnLabel.textContent = 'Çeviriyi Başlat';
-                scanLine.classList.remove('scanning');
-                statusMessage.textContent = 'Çeviri başarısız oldu. Lütfen tekrar deneyin.';
-                statusHint.classList.add('hidden');
-                setStepActive(1);
-                alert('Belge işlenemedi. Sunucudan geçerli bir sonuç alınamadı. Lütfen tekrar deneyin.');
+                showProcessingFailure('Sunucudan geçerli bir çeviri sonucu alınamadı. Lütfen tekrar deneyin.');
                 return;
             }
         }
@@ -1290,9 +1408,20 @@ devletin ve milletin esenliği için gerekli emir verilmiştir.`,
         renderWithGuessMarkers(ocrTextDisplay, finalOcr);
         ocrTools.classList.add('tools-ready');
 
+        if (finalTranslit) {
+            translitEmptyState.classList.add('hidden');
+            translitTextDisplay.classList.remove('hidden');
+            renderWithGuessMarkers(translitTextDisplay, finalTranslit);
+            translitTools.classList.add('tools-ready');
+        } else {
+            translitEmptyState.classList.remove('hidden');
+            translitTextDisplay.classList.add('hidden');
+            translitTools.classList.remove('tools-ready');
+        }
+
         transEmptyState.classList.add('hidden');
         transTextDisplay.classList.remove('hidden');
-        renderWithGuessMarkers(transTextDisplay, finalTrans);
+        renderTranslationWithEntities(transTextDisplay, finalTrans, finalAnalysis);
         transTools.classList.add('tools-ready');
 
         if (finalTransEn) {
@@ -1308,40 +1437,23 @@ devletin ve milletin esenliği için gerekli emir verilmiştir.`,
         state.transText = finalTrans;
         state.transTextEn = finalTransEn;
         state.translitText = finalTranslit;
+        state.lastAnalysis = finalAnalysis;
 
-        // Detailed Results Panel — only show it when we actually have
-        // analysis data to display; otherwise leave it hidden rather than
-        // rendering an empty/misleading panel.
+        // "Bilgi" tab — only populate/reveal it when we actually have
+        // analysis data; otherwise leave it hidden rather than showing an
+        // empty/misleading tab.
         if (finalAnalysis) {
-            renderInfoSidebar(finalAnalysis);
             renderResultsPanel(finalAnalysis);
-            setOutputTab('trans');
-            smoothScrollTo(transOutputBox);
         } else {
-            hideResultsPanel();
+            clearInfoTab();
         }
+        setOutputTab('trans');
+        smoothScrollTo(transOutputBox);
 
         // Step 4: Completed
-        setStepActive(4);
-        if (usedFallback) {
-                statusMessage.textContent =
-                    'AI servisine ulaşılamadı — geçici demo sonucu gösteriliyor.';
-            } else {
-                statusMessage.textContent =
-                    'Çeviri tamamlandı!';
-            }
+        statusMessage.textContent = 'Çeviri tamamlandı!';
         statusHint.classList.add('hidden');
         scanLine.classList.remove('scanning');
-
-        // Briefly show all 4 steps as completed, then hand the highlight
-        // back to the scroll-based sweep so it keeps working afterwards.
-        setTimeout(() => {
-            for (let i = 1; i <= 4; i++) {
-                const card = document.getElementById(`stepCard${i}`);
-                if (card) card.classList.remove('active');
-            }
-            updateWorkflowScrollHighlight();
-        }, 2000);
 
         state.isProcessing = false;
         triggerTranslateBtn.disabled = false;
@@ -1359,8 +1471,20 @@ devletin ve milletin esenliği için gerekli emir verilmiştir.`,
 
     // --- Interactive Tools & Actions ---
     copyOcrBtn.addEventListener('click', () => copyToClipboard(ocrTextDisplay.textContent, 'Osmanlıca metin kopyalandı!'));
+    copyTranslitBtn.addEventListener('click', () => copyToClipboard(translitTextDisplay.textContent, 'Okunuş metni kopyalandı!'));
     copyTransBtn.addEventListener('click', () => copyToClipboard(transTextDisplay.textContent, 'Türkçe çeviri kopyalandı!'));
     copyEnBtn.addEventListener('click', () => copyToClipboard(enTextDisplay.textContent, 'English translation copied!'));
+
+    function escapeHtml(text) {
+        return (text || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    }
+
+    function escapeRegExp(text) {
+        return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
 
     // Backend, modelin tahmin ettiği (okuyamadığı ama bağlamdan tahmin
     // ettiği) kelime/ifadeleri **böyle** işaretleyerek gönderiyor. Burada
@@ -1368,13 +1492,208 @@ devletin ve milletin esenliği için gerekli emir verilmiştir.`,
     // escape edip sonra sadece **...** çiftlerini kalınlaştırıyoruz, ham
     // model çıktısını doğrudan innerHTML'e basmıyoruz (XSS'e karşı).
     function renderWithGuessMarkers(el, rawText) {
-        const escaped = (rawText || '')
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;');
-
-        el.innerHTML = escaped.replace(/\*\*(.+?)\*\*/gs, '<strong>$1</strong>');
+        el.innerHTML = escapeHtml(rawText).replace(/\*\*(.+?)\*\*/gs, '<strong>$1</strong>');
     }
+
+    const ENTITY_TYPE_LABELS = { person: 'Kişi', place: 'Yer', date: 'Tarih' };
+
+    // "Fatih Sultan Mehmed (Sultan Mehmed Han)" gibi bir analiz girdisinden,
+    // çeviri metninde gerçekten geçebilecek adayları çıkarır: parantez
+    // içindeki takma adı ayrı bir aday olarak, "/" ile ayrılmış isimleri de
+    // ayrı adaylar olarak ele alır.
+    function extractEntityCandidates(rawText) {
+        let candidates = [rawText];
+        const parenMatch = rawText.match(/^(.*?)\s*\(([^)]+)\)\s*$/);
+        if (parenMatch) {
+            candidates = [parenMatch[1], parenMatch[2]];
+        }
+        return candidates
+            .flatMap(c => c.split('/'))
+            .map(c => c.trim())
+            .filter(Boolean);
+    }
+
+    // Bir belge analizinden (bkz. backend /api/translate yanıtı ve
+    // sampleDatabase'deki "analysis" alanları), çeviri metninde vurgulanacak
+    // kişi/yer/tarih adaylarını çıkarır. En uzun eşleşme önce denenmesi için
+    // (örn. "Sultan Mehmed Han" ifadesi, içindeki tek başına "Mehmed"
+    // kelimesinden önce eşleşsin diye) uzunluğa göre azalan sırada döner.
+    function buildEntityIndex(analysis) {
+        if (!analysis) return [];
+        const raw = [];
+
+        (analysis.people || []).forEach(p => raw.push({ raw: p, type: 'person' }));
+        (analysis.places || []).forEach(p => raw.push({ raw: p, type: 'place' }));
+        if (analysis.date_hijri) raw.push({ raw: analysis.date_hijri, type: 'date' });
+        if (analysis.date_gregorian) raw.push({ raw: analysis.date_gregorian, type: 'date' });
+
+        const seen = new Set();
+        const entries = [];
+
+        raw.forEach(({ raw: rawEntry, type }) => {
+            if (typeof rawEntry !== 'string') return;
+            extractEntityCandidates(rawEntry).forEach(text => {
+                if (text.length < 3) return;
+                const key = text.toLowerCase();
+                if (seen.has(key)) return;
+                seen.add(key);
+                entries.push({ text, type });
+            });
+        });
+
+        return entries.sort((a, b) => b.text.length - a.text.length);
+    }
+
+    // "**tahmin**" işaretlerini <strong>'e çeviren bölünme mantığını
+    // renderWithGuessMarkers ile aynı tutar, ama parçaları birleştirmeden
+    // önce her düz-metin parçasına ayrıca entity vurgulaması uygulayabilmek
+    // için segment listesi olarak döner.
+    function splitGuessSegments(escapedText) {
+        const segments = [];
+        const re = /\*\*(.+?)\*\*/gs;
+        let lastIndex = 0;
+        let match;
+
+        while ((match = re.exec(escapedText)) !== null) {
+            if (match.index > lastIndex) {
+                segments.push({ bold: false, text: escapedText.slice(lastIndex, match.index) });
+            }
+            segments.push({ bold: true, text: match[1] });
+            lastIndex = re.lastIndex;
+        }
+
+        if (lastIndex < escapedText.length) {
+            segments.push({ bold: false, text: escapedText.slice(lastIndex) });
+        }
+
+        return segments;
+    }
+
+    // escapedText zaten HTML-escape edilmiş düz metin olmalı. entities,
+    // buildEntityIndex()'ten gelen {text, type} listesidir (text'ler de
+    // escape edilmemiş orijinal hâlleriyle karşılaştırılabilmesi için burada
+    // ayrıca escape edilir).
+    function highlightEntitiesInSegment(escapedText, entities) {
+        if (!entities.length) return escapedText;
+
+        const pattern = entities
+            .map(e => escapeRegExp(escapeHtml(e.text)))
+            .join('|');
+
+        if (!pattern) return escapedText;
+
+        const re = new RegExp(`(${pattern})`, 'gi');
+
+        return escapedText.replace(re, (matched) => {
+            const entity = entities.find(
+                e => escapeHtml(e.text).toLowerCase() === matched.toLowerCase()
+            );
+            const type = entity ? entity.type : 'concept';
+            const safeAttr = matched.replace(/"/g, '&quot;');
+            return `<span class="entity-tag entity-${type}" data-entity="${safeAttr}" data-type="${type}">${matched}</span>`;
+        });
+    }
+
+    // transTextDisplay için: **tahmin** kalınlaştırmasını korurken, ayrıca
+    // analiz verisindeki kişi/yer/tarihleri metin içinde tıklanabilir şekilde
+    // vurgular (bkz. showEntityPopover). Diğer çıktı kutuları (Osmanlıca
+    // metin, İngilizce çeviri) hâlâ sade renderWithGuessMarkers kullanır.
+    function renderTranslationWithEntities(el, rawText, analysis) {
+        const escaped = escapeHtml(rawText);
+        const entities = buildEntityIndex(analysis);
+        const segments = splitGuessSegments(escaped);
+
+        el.innerHTML = segments
+            .map(seg => seg.bold
+                ? `<strong>${seg.text}</strong>`
+                : highlightEntitiesInSegment(seg.text, entities))
+            .join('');
+    }
+
+    // Bir entity için "ilgili bilgi" olarak, analizin summary/key_points
+    // alanlarında o entity'den bahseden ilk cümleyi/maddeyi bulur (varsa).
+    function findEntityContext(analysis, entityText) {
+        if (!analysis) return '';
+        const haystacks = [];
+
+        if (analysis.summary) {
+            haystacks.push(...analysis.summary.split(/(?<=[.!?])\s+/));
+        }
+        if (Array.isArray(analysis.key_points)) {
+            haystacks.push(...analysis.key_points);
+        }
+
+        const lowerEntity = entityText.toLowerCase();
+        return haystacks.find(s => s.toLowerCase().includes(lowerEntity)) || '';
+    }
+
+    let activeEntityPopover = null;
+
+    function closeEntityPopover() {
+        if (activeEntityPopover) {
+            activeEntityPopover.remove();
+            activeEntityPopover = null;
+        }
+    }
+
+    function showEntityPopover(targetEl) {
+        closeEntityPopover();
+
+        const type = targetEl.dataset.type;
+        const text = targetEl.dataset.entity;
+        const label = ENTITY_TYPE_LABELS[type] || 'Bilgi';
+        const context = findEntityContext(state.lastAnalysis, text);
+
+        const popover = document.createElement('div');
+        popover.className = 'entity-popover';
+
+        const typeEl = document.createElement('div');
+        typeEl.className = `entity-popover-type entity-popover-type-${type}`;
+        typeEl.textContent = label;
+        popover.appendChild(typeEl);
+
+        const textEl = document.createElement('div');
+        textEl.className = 'entity-popover-text';
+        textEl.textContent = text;
+        popover.appendChild(textEl);
+
+        if (context) {
+            const contextEl = document.createElement('div');
+            contextEl.className = 'entity-popover-context';
+            contextEl.textContent = context;
+            popover.appendChild(contextEl);
+        }
+
+        document.body.appendChild(popover);
+
+        const rect = targetEl.getBoundingClientRect();
+        const popRect = popover.getBoundingClientRect();
+        const maxLeft = window.scrollX + document.documentElement.clientWidth - popRect.width - 12;
+        const left = Math.max(12, Math.min(rect.left + window.scrollX, maxLeft));
+        const top = rect.bottom + window.scrollY + 8;
+
+        popover.style.left = `${left}px`;
+        popover.style.top = `${top}px`;
+
+        activeEntityPopover = popover;
+    }
+
+    transTextDisplay.addEventListener('click', (e) => {
+        const tag = e.target.closest('.entity-tag');
+        if (!tag) return;
+        e.stopPropagation();
+        showEntityPopover(tag);
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!activeEntityPopover) return;
+        if (activeEntityPopover.contains(e.target) || e.target.closest('.entity-tag')) return;
+        closeEntityPopover();
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeEntityPopover();
+    });
 
     function copyToClipboard(text, msg) {
         navigator.clipboard.writeText(text).then(() => {
@@ -1465,7 +1784,16 @@ devletin ve milletin esenliği için gerekli emir verilmiştir.`,
         speakNext();
     }
 
+    // Konuşmayı hemen durdurur ve zinciri geçersiz kılar (bkz. ttsPlaybackId
+    // yorumu yukarıda) — bir "Sesi Durdur" butonuna basıldığında, henüz
+    // sırada bekleyen parçaların çalmaya devam etmesini engeller.
+    function stopSpeaking() {
+        ttsPlaybackId++;
+        window.speechSynthesis.cancel();
+    }
+
     ttsBtn.addEventListener('click', () => speakText(transTextDisplay.textContent));
+    transStopTtsBtn.addEventListener('click', stopSpeaking);
 
     // Osmanlıca transliterasyonuna özgü diyakritikli harfleri (ḳ, ġ, ā, ḥ,
     // ṣ, ṭ, ñ vb.) TTS motorunun tanıyabildiği düz Türkçe harflere çevirir.
@@ -1491,32 +1819,29 @@ devletin ve milletin esenliği için gerekli emir verilmiştir.`,
         return text.replace(/[āĀḳḲġĠḥḤḫḪṣṢṭṬñÑūŪīĪżŻḍḌʿʾʻʼ]/g, (ch) => diacriticMap[ch] ?? ch);
     }
 
-    ocrTtsBtn.addEventListener('click', () => {
+    // Osmanlıca (Arap harfli) metin doğrudan seslendirilemediği için, hem
+    // "Transkript" sekmesindeki Arapça harfli görünümün hem de Türkçe
+    // harfli (okunuş) görünümün sesli oku butonu aynı temizlenmiş okunuş
+    // metnini kullanır — kullanıcı hangi yazıyı görüntülüyorsa görüntülesin
+    // sesli dinleyebilir.
+    function speakTranslit() {
         if (!state.translitText) {
             alert('Bu belge için sesli okuma verisi bulunamadı.');
             return;
         }
-        // DEBUG: backend'den gelen ham "translit" alanının ve TTS'e
-        // gönderilmeden önce temizlenmiş halinin karşılaştırılması için.
-        // Karışık (translit + trans) içerik varsa buradan görülebilir.
-        console.log('[OCR TTS DEBUG] Ham state.translitText (backend "translit" alanı):', state.translitText);
         const cleanedForTts = cleanTranslitForTts(state.translitText);
-        console.log('[OCR TTS DEBUG] Temizlenmiş, TTS motoruna gönderilen metin:', cleanedForTts);
         speakText(cleanedForTts);
-    });
+    }
 
-
-    // "Detayları Gör" — scrolls down to the (unchanged) Detaylı Belge Analizi
-    // panel, which is already rendered/visible alongside this card.
-    resultDetailsLink.addEventListener('click', (e) => {
-        e.preventDefault();
-        smoothScrollTo(resultsPanel);
-    });
+    ocrTtsBtn.addEventListener('click', speakTranslit);
+    translitTtsBtn.addEventListener('click', speakTranslit);
+    ocrStopTtsBtn.addEventListener('click', stopSpeaking);
+    translitStopTtsBtn.addEventListener('click', stopSpeaking);
 
     // Download Report
     downloadReportBtn.addEventListener('click', () => {
         const content = `================================================
-OSMANLICA ÇEVİRİ SİSTEMİ - BELGE RAPORU
+DIVANE - BELGE RAPORU
 Tarih: ${new Date().toLocaleString('tr-TR')}
 ================================================
 
@@ -1533,7 +1858,7 @@ ${transTextDisplay.textContent}
         const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
         const a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = `Osmanlica_Ceviri_${Date.now()}.txt`;
+        a.download = `Divane_Rapor_${Date.now()}.txt`;
         a.click();
     });
 

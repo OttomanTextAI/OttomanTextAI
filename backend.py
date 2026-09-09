@@ -26,6 +26,14 @@ import jwt
 from datetime import datetime, timedelta
 import uuid
 from functools import wraps
+
+from src.ai.rag.retriever import DocumentRetriever
+from src.ai.assistant.qa import DocumentQA
+from src.ai.analysis.selected_text import SelectedTextAnalyzer
+from src.ai.analysis.suggestions import AISuggestionGenerator
+from src.ai.assistant.question_generator import DocumentQuestionGenerator
+from src.ai.analysis.research import ResearchSuggestionGenerator
+from src.ai.filters.entity_filter import EntityFilterClassifier
 # Loads RELAY_API_KEY / RELAY_BASE_URL / GEMINI_API_KEY from a local .env for
 # development. In production (Render) these are set directly as environment
 # variables and no .env file is present, so this is a no-op there.
@@ -37,6 +45,10 @@ app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db.init_app(app)
 bcrypt = Bcrypt(app)
+
+document_retriever = None
+document_qa = None
+
 # All /api/* routes (enhance, translate, assistant, health) share this one
 # allowlist so a route can never end up with looser or stricter CORS than
 # the others.
@@ -914,6 +926,65 @@ ANALYSIS_PROMPT = (
     "yalnızca bir kez ifade et."
 )
 
+def _index_translation_for_rag(result):
+    """
+    Index the modern Turkish translation for the document assistant.
+
+    RAG indexing is best-effort: a failure here must never cause
+    the main translation request to fail.
+    """
+    global document_retriever, document_qa
+
+    try:
+        if not isinstance(result, dict):
+            return
+
+        modern_text = (result.get("trans") or "").strip()
+
+        if not modern_text:
+            print(
+                "[RAG INDEX] No modern Turkish text found; skipping.",
+                flush=True,
+            )
+            return
+
+        llm_config = get_llm_config()
+        model = llm_config.get("model")
+
+        if not model:
+            print(
+                "[RAG INDEX] LLM model is not configured; skipping.",
+                flush=True,
+            )
+            return
+
+        retriever = DocumentRetriever()
+
+        chunks = retriever.index_document(modern_text)
+
+        qa = DocumentQA(
+            retriever=retriever,
+            model=model,
+        )
+
+        # Replace the active document only after indexing succeeds.
+        document_retriever = retriever
+        document_qa = qa
+
+        print(
+            f"[RAG INDEX] Document indexed successfully "
+            f"({len(chunks)} chunks).",
+            flush=True,
+        )
+
+    except Exception as error:
+        # RAG must never break the translation pipeline.
+        print(
+            f"[RAG INDEX] Failed: "
+            f"{type(error).__name__}: {error}",
+            flush=True,
+        )
+
 
 @app.route("/api/translate", methods=["POST"])
 def translate_endpoint():
@@ -1069,7 +1140,9 @@ def translate_endpoint():
         )
 
         if main_result["ok"]:
-            return jsonify(main_result["parsed"])
+            result = main_result["parsed"]
+            _index_translation_for_rag(result)
+            return jsonify(result)
 
         if main_result["reason"] == "network":
             return jsonify(
@@ -1106,6 +1179,7 @@ def translate_endpoint():
         )
 
         if split_result is not None:
+            _index_translation_for_rag(split_result)
             return jsonify(split_result)
 
         # Split strategy also failed. Last resort: try the whole
@@ -1140,8 +1214,10 @@ def translate_endpoint():
                 label="fallback-model",
             )
 
-            if fallback_result["ok"]:
-                return jsonify(fallback_result["parsed"])
+        if fallback_result["ok"]:
+            result = fallback_result["parsed"]
+            _index_translation_for_rag(result)
+            return jsonify(result)
 
         return TIME_BUDGET_ERROR_RESPONSE
 
@@ -1174,7 +1250,7 @@ def translate_endpoint():
         ), 500
 
 ASSISTANT_SYSTEM_PROMPT = (
-    "Sen 'Osmanlıca Çeviri Sistemi' adlı web uygulamasının yardımcı "
+    "Sen 'Divane' adlı Osmanlıca çeviri web uygulamasının yardımcı "
     "asistanısın. Kullanıcılara Osmanlı Türkçesi, Osmanlıca belgeler, "
     "eski yazı/Arap harfleri, tarih ve bu uygulamanın nasıl kullanılacağı "
     "hakkında kısa, açık ve doğru cevaplar ver. Emin olmadığın bir konuda "
@@ -1182,121 +1258,686 @@ ASSISTANT_SYSTEM_PROMPT = (
     "kullanıcı dostu olsun, gereksiz uzatma."
 )
 
-
 @app.route("/api/assistant", methods=["POST"])
 def assistant_endpoint():
     """
-    Text-only chat assistant for general questions about Ottoman Turkish
-    and how to use the app. Separate from /api/translate; does not touch
-    image OCR/enhancement logic.
+    Document-aware AI assistant.
+
+    Answers questions primarily from the currently indexed document.
+    The response format keeps the existing "reply" field so the
+    current frontend remains compatible.
 
     Expects:
-        JSON body: { "message": "...", "history": [{"role": "user"|"bot", "text": "..."}] }
+        JSON body:
+        {
+            "message": "...",
+            "history": [...]
+        }
 
     Returns:
-        JSON: { "reply": "..." }
+        JSON:
+        {
+            "reply": "...",
+            "sources": [...]
+        }
     """
-    api_key = (os.getenv("GEMINI_API_KEY") or "").strip().strip('"').strip("'")
+    global document_qa
 
-    if not api_key:
+    try:
+        data = request.get_json(silent=True) or {}
+
+        history = data.get(
+            "history",
+            [],
+        )
+
+        if not isinstance(history, list):
+            history = []
+
+        user_message = (
+            data.get("message")
+            or ""
+        ).strip()
+
+        if not user_message:
+            return jsonify(
+                {
+                    "error": "message field is required."
+                }
+            ), 400
+
+        if document_qa is None:
+            return jsonify(
+                {
+                    "reply": (
+                        "Belge hakkında yardımcı olabilmem için "
+                        "önce bir belgenin işlenmesi gerekiyor."
+                    ),
+                    "sources": [],
+                }
+            )
+
+        result = document_qa.answer(
+            question=user_message,
+            top_k=3,
+            history=history,
+        )
+
         return jsonify(
             {
-                "error": "GEMINI_API_KEY is not configured."
+                "reply": result["answer"],
+                "answer_type": result["answer_type"],
+                "related_information": result[
+                    "related_information"
+                ],
+                "external_answer_available": result[
+                    "external_answer_available"
+                ],
+                "sources": result["sources"],
+            }
+        )
+
+    except Exception as error:
+        print(
+            f"[ASSISTANT RAG] "
+            f"{type(error).__name__}: {error}",
+            flush=True,
+        )
+
+        return jsonify(
+            {
+                "error": "Assistant request failed.",
+                "details": str(error),
             }
         ), 500
 
-    data = request.get_json(silent=True) or {}
-    user_message = (data.get("message") or "").strip()
-    history = data.get("history") or []
+EXTERNAL_ASSISTANT_SYSTEM_PROMPT = """
+Sen Divane adlı Osmanlıca belge analiz uygulamasının araştırma asistanısın.
 
-    if not user_message:
-        return jsonify(
-            {
-                "error": "message field is required."
-            }
-        ), 400
+Kullanıcı, daha önce yüklediği belgeyle ilgili bir soru sordu.
+Belge içinde bu sorunun doğrudan cevabı bulunamadığı için,
+kullanıcı özellikle belge dışı bilgilerle devam etmeyi seçti.
 
-    model = "gemini-3.6-flash"
+Görevin:
+- Kullanıcının sorusunu genel tarihsel ve akademik bilginle cevaplamak.
+- Belgeye ait bilgi ile belge dışı genel bilgiyi birbirine karıştırmamak.
+- Kesin olmadığın bilgileri kesinmiş gibi sunmamak.
+- Gerekirse "genel tarihsel bilgiye göre" gibi ifadeler kullanmak.
+- Cevabı Türkçe, açık ve gereksiz uzatmadan vermek.
+""".strip()
 
-    url = (
-        "https://generativelanguage.googleapis.com/"
-        f"v1beta/models/{model}:generateContent"
-    )
 
-    headers = {
-        "x-goog-api-key": api_key,
-        "Content-Type": "application/json",
-    }
+@app.route("/api/assistant/external", methods=["POST"])
+def assistant_external_endpoint():
+    """
+    Answer a question using general model knowledge after the user
+    explicitly chooses to continue outside the uploaded document.
 
-    contents = [
-        {"role": "user", "parts": [{"text": ASSISTANT_SYSTEM_PROMPT}]},
-        {"role": "model", "parts": [{"text": "Anladım, yardımcı olmaya hazırım."}]},
-    ]
+    Expected JSON:
+        {
+            "message": "...",
+            "document_context": "..."
+        }
 
-    for turn in history[-10:]:
-        role = "user" if turn.get("role") == "user" else "model"
-        text = (turn.get("text") or "").strip()
-        if text:
-            contents.append({"role": role, "parts": [{"text": text}]})
-
-    contents.append({"role": "user", "parts": [{"text": user_message}]})
-
-    payload = {
-        "contents": contents,
-        "generationConfig": {
-            "temperature": 0.4,
-        },
-    }
-
+    Returns:
+        {
+            "reply": "...",
+            "answer_type": "external"
+        }
+    """
     try:
-        response = requests.post(
-            url,
-            json=payload,
-            headers=headers,
-            timeout=45,
-        )
+        data = request.get_json(silent=True) or {}
 
-        if not response.ok:
+
+        user_message = (
+            data.get("message")
+            or ""
+        ).strip()
+
+        document_context = (
+            data.get("document_context")
+            or ""
+        ).strip()
+
+        if not user_message:
             return jsonify(
                 {
-                    "error": "Gemini API request failed.",
-                    "details": response.text,
+                    "error": "message field is required."
                 }
-            ), response.status_code
+            ), 400
 
-        response_data = response.json()
+        llm_config = get_llm_config()
+        model = llm_config.get("model")
+
+        if not model:
+            return jsonify(
+                {
+                    "error": "LLM model is not configured."
+                }
+            ), 500
+
+        api_key = (
+            os.getenv("RELAY_API_KEY")
+            or ""
+        ).strip()
+
+        base_url = (
+            os.getenv("RELAY_BASE_URL")
+            or ""
+        ).strip()
+
+        if not api_key:
+            return jsonify(
+                {
+                    "error": "RELAY_API_KEY is not configured."
+                }
+            ), 500
+
+        if not base_url:
+            return jsonify(
+                {
+                    "error": "RELAY_BASE_URL is not configured."
+                }
+            ), 500
+
+        client = OpenAI(
+            api_key=api_key,
+            base_url=base_url,
+        )
+
+        context_text = ""
+
+        if document_context:
+            context_text = (
+                "\n\nBELGEDE BULUNAN YAKIN BİLGİ:\n"
+                f"{document_context}"
+            )
+
+        user_prompt = (
+            f"KULLANICI SORUSU:\n"
+            f"{user_message}"
+            f"{context_text}"
+        )
+
+        completion = client.chat.completions.create(
+            model=model,
+            messages=[
+                {
+                    "role": "system",
+                    "content": EXTERNAL_ASSISTANT_SYSTEM_PROMPT,
+                },
+                {
+                    "role": "user",
+                    "content": user_prompt,
+                },
+            ],
+            temperature=0.2,
+            max_tokens=900,
+        )
 
         reply_text = (
-            response_data
-            .get("candidates", [{}])[0]
-            .get("content", {})
-            .get("parts", [{}])[0]
-            .get("text", "")
+            completion.choices[0].message.content
+            or ""
         ).strip()
 
         if not reply_text:
             return jsonify(
                 {
-                    "error": "Model bir yanıt üretemedi."
+                    "error": (
+                        "Model did not produce an answer."
+                    )
                 }
             ), 502
 
-        return jsonify({"reply": reply_text})
-
-    except requests.exceptions.Timeout:
         return jsonify(
             {
-                "error": "Sunucu yanıt vermedi (zaman aşımı). Lütfen tekrar deneyin."
+                "reply": reply_text,
+                "answer_type": "external",
             }
-        ), 504
+        )
 
     except Exception as error:
+        print(
+            f"[ASSISTANT EXTERNAL] "
+            f"{type(error).__name__}: {error}",
+            flush=True,
+        )
+
         return jsonify(
             {
-                "error": str(error)
+                "error": "External assistant request failed.",
+                "details": str(error),
             }
         ), 500
 
+@app.route("/api/ai/suggestions", methods=["POST"])
+def ai_suggestions():
+    """
+    Generate AI alternatives for an uncertain reading,
+    interpretation or translation.
+
+    Expected JSON:
+        {
+            "text": "..."
+        }
+    """
+    try:
+        data = request.get_json(silent=True) or {}
+
+        text = (
+            data.get("text")
+            or ""
+        ).strip()
+
+        if not text:
+            return jsonify(
+                {
+                    "error": "Text is required."
+                }
+            ), 400
+
+        llm_config = get_llm_config()
+        model = llm_config.get("model")
+
+        if not model:
+            return jsonify(
+                {
+                    "error": "LLM model is not configured."
+                }
+            ), 500
+
+        generator = AISuggestionGenerator(
+            model=model,
+        )
+
+        result = generator.generate(
+            text=text,
+        )
+
+        return jsonify(
+            {
+                "success": True,
+                "suggestion": result,
+            }
+        )
+
+    except Exception as error:
+        print(
+            f"[AI SUGGESTIONS] "
+            f"{type(error).__name__}: {error}",
+            flush=True,
+        )
+
+        return jsonify(
+            {
+                "error": "AI suggestion generation failed.",
+                "details": str(error),
+            }
+        ), 500
+
+    
+@app.route("/api/ai/analyze-selection", methods=["POST"])
+def ai_analyze_selection():
+    """
+    Analyze a user-selected section of document text.
+
+    Expected JSON:
+        {
+            "text": "..."
+        }
+
+    Returns AI-generated analysis of only the selected text.
+    """
+    try:
+        data = request.get_json(silent=True) or {}
+
+        selected_text = (
+            data.get("text")
+            or ""
+        ).strip()
+
+        if not selected_text:
+            return jsonify(
+                {
+                    "error": "Selected text is required."
+                }
+            ), 400
+
+        llm_config = get_llm_config()
+        model = llm_config.get("model")
+
+        if not model:
+            return jsonify(
+                {
+                    "error": "LLM model is not configured."
+                }
+            ), 500
+
+        analyzer = SelectedTextAnalyzer(
+            model=model,
+        )
+
+        result = analyzer.analyze(
+            selected_text=selected_text,
+        )
+
+        return jsonify(
+            {
+                "success": True,
+                "analysis": result,
+            }
+        )
+
+    except Exception as error:
+        print(
+            f"[AI SELECTION] "
+            f"{type(error).__name__}: {error}",
+            flush=True,
+        )
+
+        return jsonify(
+            {
+                "error": "Selected text analysis failed.",
+                "details": str(error),
+            }
+        ), 500
+
+@app.route("/api/ai/entity-filter", methods=["GET"])
+def ai_entity_filter():
+    global document_retriever
+
+    if (
+        document_retriever is None
+        or not document_retriever.document_indexed
+        or not document_retriever.document_text
+    ):
+        return jsonify(
+            {
+                "error": (
+                    "Entity classification requires "
+                    "an indexed document."
+                )
+            }
+        ), 400
+
+    try:
+        model = get_llm_config().get("model")
+
+        classifier = EntityFilterClassifier(
+            model=model,
+        )
+
+        entities = classifier.classify(
+            document_text=document_retriever.document_text,
+        )
+
+        return jsonify(
+            {
+                "success": True,
+                "entities": entities,
+            }
+        )
+
+    except Exception as error:
+        print(
+            "[ENTITY FILTER]",
+            type(error).__name__,
+            str(error),
+            flush=True,
+        )
+
+        return jsonify(
+            {
+                "error": (
+                    "Entity classification failed."
+                ),
+                "details": str(error),
+            }
+        ), 500
+
+    
+@app.route("/api/ai/research-suggestions", methods=["GET"])
+def ai_research_suggestions():
+    global document_retriever
+
+    if (
+        document_retriever is None
+        or not document_retriever.document_indexed
+        or not document_retriever.document_text
+    ):
+        return jsonify(
+            {
+                "error": (
+                    "Research suggestions require "
+                    "an indexed document."
+                )
+            }
+        ), 400
+
+    try:
+        model = get_llm_config().get("model")
+
+        generator = ResearchSuggestionGenerator(
+            model=model,
+        )
+
+        suggestions = generator.generate(
+            document_text=document_retriever.document_text,
+        )
+
+        return jsonify(
+            {
+                "success": True,
+                "suggestions": suggestions,
+            }
+        )
+
+    except Exception as error:
+        print(
+            "[RESEARCH SUGGESTIONS]",
+            type(error).__name__,
+            str(error),
+            flush=True,
+        )
+
+        return jsonify(
+            {
+                "error": (
+                    "Research suggestion generation failed."
+                ),
+                "details": str(error),
+            }
+        ), 500
+    
+@app.route("/api/ai/suggested-questions", methods=["GET"])
+def ai_suggested_questions():
+    """
+    Generate suggested questions for the currently indexed document.
+
+    The active document text is reused from the RAG retriever,
+    so the frontend does not need to send the document again.
+    """
+    global document_retriever
+
+    try:
+        if (
+            document_retriever is None
+            or not document_retriever.document_indexed
+            or not document_retriever.document_text
+        ):
+            return jsonify(
+                {
+                    "error": "No document has been indexed yet."
+                }
+            ), 400
+
+        llm_config = get_llm_config()
+        model = llm_config.get("model")
+
+        if not model:
+            return jsonify(
+                {
+                    "error": "LLM model is not configured."
+                }
+            ), 500
+
+        generator = DocumentQuestionGenerator(
+            model=model,
+        )
+
+        questions = generator.generate(
+            document_text=document_retriever.document_text,
+        )
+
+        return jsonify(
+            {
+                "success": True,
+                "questions": questions,
+            }
+        )
+
+    except Exception as error:
+        print(
+            f"[AI QUESTIONS] "
+            f"{type(error).__name__}: {error}",
+            flush=True,
+        )
+
+        return jsonify(
+            {
+                "error": "Question generation failed.",
+                "details": str(error),
+            }
+        ), 500
+
+    
+@app.route("/api/ai/index-document", methods=["POST"])
+def ai_index_document():
+    """
+    Index modern Turkish document text for RAG-based
+    document question answering.
+
+    Expected JSON:
+        {
+            "text": "..."
+        }
+    """
+    global document_retriever, document_qa
+
+    try:
+        data = request.get_json(silent=True) or {}
+        text = (data.get("text") or "").strip()
+
+        if not text:
+            return jsonify(
+                {
+                    "error": "Document text is required."
+                }
+            ), 400
+
+        llm_config = get_llm_config()
+        model = llm_config.get("model")
+
+        if not model:
+            return jsonify(
+                {
+                    "error": "LLM model is not configured."
+                }
+            ), 500
+
+        retriever = DocumentRetriever()
+
+        chunks = retriever.index_document(text)
+
+        qa = DocumentQA(
+            retriever=retriever,
+            model=model,
+        )
+
+        # Replace the active document only after the new
+        # document has been indexed successfully.
+        document_retriever = retriever
+        document_qa = qa
+
+        return jsonify(
+            {
+                "success": True,
+                "chunk_count": len(chunks),
+            }
+        )
+
+    except Exception as error:
+        print(
+            f"[AI INDEX] {type(error).__name__}: {error}",
+            flush=True,
+        )
+
+        return jsonify(
+            {
+                "error": "Document indexing failed.",
+                "details": str(error),
+            }
+        ), 500
+
+
+@app.route("/api/ai/ask", methods=["POST"])
+def ai_ask_document():
+    """
+    Answer a question using only the currently indexed document.
+
+    Expected JSON:
+        {
+            "question": "..."
+        }
+    """
+    global document_qa
+
+    try:
+        if document_qa is None:
+            return jsonify(
+                {
+                    "error": (
+                        "No document has been indexed yet."
+                    )
+                }
+            ), 400
+
+        data = request.get_json(silent=True) or {}
+        question = (data.get("question") or "").strip()
+
+        if not question:
+            return jsonify(
+                {
+                    "error": "Question is required."
+                }
+            ), 400
+
+        result = document_qa.answer(
+            question=question,
+            top_k=3,
+        )
+
+        return jsonify(
+            {
+                "success": True,
+                "answer": result["answer"],
+                "sources": result["sources"],
+            }
+        )
+
+    except Exception as error:
+        print(
+            f"[AI ASK] {type(error).__name__}: {error}",
+            flush=True,
+        )
+
+        return jsonify(
+            {
+                "error": "Document question answering failed.",
+                "details": str(error),
+            }
+        ), 500
+    
 @app.route("/api/health", methods=["GET"])
 def health():
     return jsonify(
