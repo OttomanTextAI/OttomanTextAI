@@ -92,6 +92,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const enEmptyState = document.getElementById('enEmptyState');
     const enTextDisplay = document.getElementById('enTextDisplay');
     const copyEnBtn = document.getElementById('copyEnBtn');
+    const enTtsBtn = document.getElementById('enTtsBtn');
+    const enStopTtsBtn = document.getElementById('enStopTtsBtn');
 
     const themeToggleBtn = document.getElementById('themeToggleBtn');
     const settingsBtn = document.getElementById('settingsBtn');
@@ -890,6 +892,7 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
             return;
         }
 
+        hardStopTts();
         state.selectedFile = file;
         state.ocrText = '';
         state.transText = '';
@@ -963,6 +966,7 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     });
 
     function resetState() {
+        hardStopTts();
         closeEntityPopover();
         state.selectedFile = null;
         state.imageDataUrl = null;
@@ -1278,6 +1282,7 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     }
 
     async function processTranslation(presetData = null) {
+        hardStopTts();
         closeEntityPopover();
         state.isProcessing = true;
         triggerTranslateBtn.disabled = true;
@@ -1486,13 +1491,61 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
 
+    // rawText'i, TTS'in kullandığı AYNI kurala göre (yalnızca . ! ? — satır
+    // sonları sayılmaz) art arda gelen, kayıpsız birleştirilebilir (yani
+    // parçaları concat edince rawText'i tam olarak veren) parçalara böler.
+    // speakText()'in ürettiği cümle listesiyle 1:1 hizalı kalması için bölme
+    // mantığı splitIntoSentences() ile birebir aynı iskelet üzerine kurulu;
+    // tek fark burada parçalar TRIM EDİLMEDEN (baştaki/sondaki boşluk ve \n
+    // korunarak) döner, çünkü bu parçalar doğrudan ekrana (pre-wrap) yazılan
+    // <span class="tts-sentence"> içeriği olacak.
+    function partitionSentencesRaw(text) {
+        const pieces = text.split(/([.!?]+)/);
+        const parts = [];
+        let current = '';
+        for (const piece of pieces) {
+            current += piece;
+            if (/[.!?]/.test(piece) && current.trim()) {
+                parts.push(current);
+                current = '';
+            }
+        }
+        if (current) parts.push(current);
+        return parts.length ? parts : [text];
+    }
+
     // Backend, modelin tahmin ettiği (okuyamadığı ama bağlamdan tahmin
     // ettiği) kelime/ifadeleri **böyle** işaretleyerek gönderiyor. Burada
     // bunu güvenli şekilde <strong>'e çevirip gösteriyoruz — önce HTML'i
     // escape edip sonra sadece **...** çiftlerini kalınlaştırıyoruz, ham
     // model çıktısını doğrudan innerHTML'e basmıyoruz (XSS'e karşı).
+    //
+    // Ayrıca her cümleyi (partitionSentencesRaw ile) ayrı bir
+    // <span class="tts-sentence" data-tts-idx="N"> içine sarar, böylece
+    // speakText() o an okunan cümleyi aynı N indeksiyle vurgulayabilir
+    // (bkz. TTS bölümü). entities verilirse (Türkçe çeviri sekmesi), her
+    // cümle içinde ayrıca kişi/yer/tarih vurgulaması da uygulanır.
+    function renderSentenceSpansHtml(rawText, entities) {
+        const parts = partitionSentencesRaw(rawText || '');
+        return parts.map((raw, idx) => {
+            const escaped = escapeHtml(raw);
+            let inner;
+            if (entities && entities.length) {
+                const segments = splitGuessSegments(escaped);
+                inner = segments
+                    .map(seg => seg.bold
+                        ? `<strong>${seg.text}</strong>`
+                        : highlightEntitiesInSegment(seg.text, entities))
+                    .join('');
+            } else {
+                inner = escaped.replace(/\*\*(.+?)\*\*/gs, '<strong>$1</strong>');
+            }
+            return `<span class="tts-sentence" data-tts-idx="${idx}">${inner}</span>`;
+        }).join('');
+    }
+
     function renderWithGuessMarkers(el, rawText) {
-        el.innerHTML = escapeHtml(rawText).replace(/\*\*(.+?)\*\*/gs, '<strong>$1</strong>');
+        el.innerHTML = renderSentenceSpansHtml(rawText, null);
     }
 
     const ENTITY_TYPE_LABELS = { person: 'Kişi', place: 'Yer', date: 'Tarih' };
@@ -1598,16 +1651,11 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     // analiz verisindeki kişi/yer/tarihleri metin içinde tıklanabilir şekilde
     // vurgular (bkz. showEntityPopover). Diğer çıktı kutuları (Osmanlıca
     // metin, İngilizce çeviri) hâlâ sade renderWithGuessMarkers kullanır.
+    // Cümle bazlı TTS highlight sarmalaması renderSentenceSpansHtml
+    // içinde, entity vurgulamasıyla birlikte uygulanır.
     function renderTranslationWithEntities(el, rawText, analysis) {
-        const escaped = escapeHtml(rawText);
         const entities = buildEntityIndex(analysis);
-        const segments = splitGuessSegments(escaped);
-
-        el.innerHTML = segments
-            .map(seg => seg.bold
-                ? `<strong>${seg.text}</strong>`
-                : highlightEntitiesInSegment(seg.text, entities))
-            .join('');
+        el.innerHTML = renderSentenceSpansHtml(rawText, entities);
     }
 
     // Bir entity için "ilgili bilgi" olarak, analizin summary/key_points
@@ -1702,29 +1750,43 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     }
 
     // Text To Speech
+    // Üç sekme de (Osmanlıca Metin grubu, Türkçe Çeviri, İngilizce Çeviri)
+    // aynı speakText()/handleTtsToggle() altyapısını, sadece dil/metin/
+    // buton parametreleri farklı olacak şekilde paylaşır. Ana ses butonları
+    // (ocrTtsBtn, translitTtsBtn, ttsBtn, enTtsBtn) 🔊 ↔ ⏸ ↔ ▶ arasında
+    // duraklat/devam ettir davranışı gösterir; ayrı "Sesi Durdur" (⏹)
+    // butonları (ocrStopTtsBtn, translitStopTtsBtn, transStopTtsBtn,
+    // enStopTtsBtn) bu toggle mantığının tamamen DIŞINDADIR ve her zaman
+    // tam durdurma yapar (bkz. stopSpeaking).
+
     // Uzun metinlerde tek bir SpeechSynthesisUtterance tarayıcılarda sessizce
     // başarısız olabiliyor (bilinen bir speechSynthesis kısıtı). Bunu önlemek
-    // için metni cümlelere/parçalara bölüp her parçayı ayrı bir utterance
-    // olarak, bir öncekinin bitişini (onend) bekleyerek sırayla okutuyoruz.
-    // Kısa metinlerde tek parça oluşur, davranış öncekiyle aynı kalır.
-    function splitTextForTts(text) {
-        // Noktalama işaretlerinden (. ! ? ve satır sonu) sonra böl, işareti
-        // parçanın sonunda tut. (Lookbehind kullanmıyoruz, geniş tarayıcı
-        // uyumluluğu için split+capture-group ile eşdeğerini elde ediyoruz.)
-        const pieces = text.split(/([.!?\n]+)/);
-        const chunks = [];
+    // için metni cümlelere bölüp her cümleyi ayrı bir utterance olarak, bir
+    // öncekinin bitişini (onend) bekleyerek sırayla okutuyoruz.
+    //
+    // Bölme SADECE gerçek noktalama işaretlerine (. ! ?) göre yapılır; satır
+    // sonları (\n) cümle bitişi SAYILMAZ — bölmeden önce tüm \n'ler tek bir
+    // boşluğa çevrilir, böylece satır kesmeleri sadece görsel bir birleştirme
+    // noktası olur, okumada duraksama yaratmaz. Bu iskelet, ekrandaki cümle
+    // span'lerini üreten partitionSentencesRaw() (yukarıda) ile birebir
+    // aynıdır — ikisi de aynı sayıda/sırada cümle üretir, böylece highlight
+    // her zaman doğru <span data-tts-idx>'e denk gelir.
+    function splitIntoSentences(text) {
+        const normalized = text.replace(/\n+/g, ' ');
+        const pieces = normalized.split(/([.!?]+)/);
+        const sentences = [];
         let current = '';
         for (const piece of pieces) {
             current += piece;
-            if (/[.!?\n]/.test(piece)) {
+            if (/[.!?]/.test(piece)) {
                 const trimmed = current.trim();
-                if (trimmed) chunks.push(trimmed);
+                if (trimmed) sentences.push(trimmed);
                 current = '';
             }
         }
         const trimmedRest = current.trim();
-        if (trimmedRest) chunks.push(trimmedRest);
-        return chunks.length > 0 ? chunks : [text];
+        if (trimmedRest) sentences.push(trimmedRest);
+        return sentences.length > 0 ? sentences : (text.trim() ? [text.trim()] : []);
     }
 
     // Her speakText() çağrısına ait zincirin kimliği. window.speechSynthesis
@@ -1738,8 +1800,43 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     // çağrısını bir öncekinden ayırt ederek eski zincirin artık geçersiz
     // sayılıp sessizce durmasını sağlıyor.
     let ttsPlaybackId = 0;
+    // 'osmanli' | 'trans' | 'en' — o an okuyan/duraklatılmış olan kanal.
+    // Osmanlıca grubu (ocrTtsBtn + translitTtsBtn) TEK bir kanalı paylaşır,
+    // ikisinin ikonu da birlikte güncellenir.
+    let ttsActiveChannel = null;
+    let ttsState = 'idle'; // 'idle' | 'speaking' | 'paused'
 
-    function speakText(text) {
+    function setTtsIcon(buttons, icon) {
+        buttons.forEach(btn => { if (btn) btn.textContent = icon; });
+    }
+
+    // Tüm ana ses butonlarını 🔊'e sıfırlar ve ekrandaki cümle vurgularını
+    // temizler. "Sesi Durdur" butonlarına VE bir okuma zinciri sonuna
+    // gelindiğinde çağrılır.
+    function resetAllTtsUi() {
+        setTtsIcon([ocrTtsBtn, translitTtsBtn, ttsBtn, enTtsBtn], '🔊');
+        document.querySelectorAll('.tts-sentence-active').forEach(el => el.classList.remove('tts-sentence-active'));
+        ttsActiveChannel = null;
+        ttsState = 'idle';
+    }
+
+    function highlightSentence(displays, idx) {
+        document.querySelectorAll('.tts-sentence-active').forEach(el => el.classList.remove('tts-sentence-active'));
+        displays.forEach(displayEl => {
+            if (!displayEl) return;
+            const span = displayEl.querySelector(`.tts-sentence[data-tts-idx="${idx}"]`);
+            if (span) {
+                span.classList.add('tts-sentence-active');
+                span.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        });
+    }
+
+    // text: okunacak düz metin (\n içerebilir, splitIntoSentences içinde
+    // normalize edilir). channelKey/buttons: bu okumanın ait olduğu ana ses
+    // butonu/butonları (ikon burada güncellenir — osmanlı grubunda ikisi
+    // birden). displays: highlight uygulanacak eleman(lar).
+    function speakText(text, { lang = 'tr-TR', displays = [], buttons = [], channelKey = null } = {}) {
         if (!text) return;
         if (!('speechSynthesis' in window)) {
             alert('Tarayıcınız sesli okuma özelliğini desteklemiyor.');
@@ -1752,17 +1849,29 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         // "güncel" görünüp devam ederdi.
         const myPlaybackId = ++ttsPlaybackId;
         window.speechSynthesis.cancel();
-        const chunks = splitTextForTts(text);
+        resetAllTtsUi();
+
+        const sentences = splitIntoSentences(text);
         let index = 0;
+
+        ttsState = 'speaking';
+        ttsActiveChannel = channelKey;
+        setTtsIcon(buttons, '⏸');
 
         function speakNext() {
             // Bu zincir, aradan başka bir speakText() çağrısı yapılarak
             // (cancel() ile) geçersiz kılınmışsa burada dur.
             if (myPlaybackId !== ttsPlaybackId) return;
-            if (index >= chunks.length) return;
+            if (index >= sentences.length) {
+                resetAllTtsUi();
+                return;
+            }
 
-            const utterance = new SpeechSynthesisUtterance(chunks[index]);
-            utterance.lang = 'tr-TR';
+            const currentIdx = index;
+            highlightSentence(displays, currentIdx);
+
+            const utterance = new SpeechSynthesisUtterance(sentences[currentIdx]);
+            utterance.lang = lang;
             utterance.rate = 0.9;
             index++;
 
@@ -1773,7 +1882,12 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
             const advanceOnce = () => {
                 if (advanced) return;
                 advanced = true;
-                speakNext();
+                if (myPlaybackId !== ttsPlaybackId) return;
+                // Cümleler arasında kısa, doğal bir bekleme.
+                setTimeout(() => {
+                    if (myPlaybackId !== ttsPlaybackId) return;
+                    speakNext();
+                }, 180);
             };
             utterance.onend = advanceOnce;
             utterance.onerror = advanceOnce;
@@ -1785,14 +1899,58 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     }
 
     // Konuşmayı hemen durdurur ve zinciri geçersiz kılar (bkz. ttsPlaybackId
-    // yorumu yukarıda) — bir "Sesi Durdur" butonuna basıldığında, henüz
-    // sırada bekleyen parçaların çalmaya devam etmesini engeller.
+    // yorumu yukarıda) — "Sesi Durdur" (⏹) butonlarına basıldığında, henüz
+    // sırada bekleyen cümlelerin çalmaya devam etmesini engeller ve tüm ana
+    // ses butonlarını/highlight'ı sıfırlar. Bu davranış ana ses butonlarının
+    // duraklat/devam ettir toggle'ından TAMAMEN AYRIDIR ve değişmez.
     function stopSpeaking() {
         ttsPlaybackId++;
         window.speechSynthesis.cancel();
+        resetAllTtsUi();
     }
 
-    ttsBtn.addEventListener('click', () => speakText(transTextDisplay.textContent));
+    // Yeni bir belge seçildiğinde/işlenmeye başlarken önceki okumanın
+    // kesintisiz durmasını garanti eder — iki farklı belgenin sesi asla üst
+    // üste binmemeli (bkz. handleFileSelect / processTranslation).
+    function hardStopTts() {
+        if (ttsState !== 'idle') stopSpeaking();
+    }
+
+    // Ana ses butonları için ortak toggle mantığı: metin yoksa uyarı verir;
+    // bu kanal zaten okuyorsa duraklatır, duraklatılmışsa kaldığı yerden
+    // devam ettirir; başka bir kanal aktifse (ya da hiç okuma yoksa) eski
+    // okumayı tamamen durdurup yenisini baştan başlatır — asla iki ses
+    // üst üste binmez.
+    function handleTtsToggle({ getText, lang, displays, buttons, channelKey, emptyMessage }) {
+        if (ttsActiveChannel === channelKey && ttsState === 'speaking') {
+            window.speechSynthesis.pause();
+            ttsState = 'paused';
+            setTtsIcon(buttons, '▶');
+            return;
+        }
+        if (ttsActiveChannel === channelKey && ttsState === 'paused') {
+            window.speechSynthesis.resume();
+            ttsState = 'speaking';
+            setTtsIcon(buttons, '⏸');
+            return;
+        }
+
+        const text = getText();
+        if (!text) {
+            alert(emptyMessage);
+            return;
+        }
+        speakText(text, { lang, displays, buttons, channelKey });
+    }
+
+    ttsBtn.addEventListener('click', () => handleTtsToggle({
+        getText: () => transTextDisplay.textContent,
+        lang: 'tr-TR',
+        displays: [transTextDisplay],
+        buttons: [ttsBtn],
+        channelKey: 'trans',
+        emptyMessage: 'Bu belge için sesli okuma verisi bulunamadı.'
+    }));
     transStopTtsBtn.addEventListener('click', stopSpeaking);
 
     // Osmanlıca transliterasyonuna özgü diyakritikli harfleri (ḳ, ġ, ā, ḥ,
@@ -1822,21 +1980,38 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     // Osmanlıca (Arap harfli) metin doğrudan seslendirilemediği için, hem
     // "Transkript" sekmesindeki Arapça harfli görünümün hem de Türkçe
     // harfli (okunuş) görünümün sesli oku butonu aynı temizlenmiş okunuş
-    // metnini kullanır — kullanıcı hangi yazıyı görüntülüyorsa görüntülesin
-    // sesli dinleyebilir.
-    function speakTranslit() {
-        if (!state.translitText) {
-            alert('Bu belge için sesli okuma verisi bulunamadı.');
-            return;
-        }
-        const cleanedForTts = cleanTranslitForTts(state.translitText);
-        speakText(cleanedForTts);
+    // metnini, AYNI paylaşılan 'osmanli' kanalı üzerinden kullanır —
+    // kullanıcı hangi yazıyı görüntülüyorsa görüntülesin sesli dinleyebilir
+    // ve iki butonun ikonu (🔊/⏸/▶) her zaman birlikte güncellenir; hangi
+    // panel görünürse görünsün highlight ilgili panelde uygulanır.
+    function handleOsmanliTtsToggle() {
+        handleTtsToggle({
+            getText: () => cleanTranslitForTts(state.translitText),
+            lang: 'tr-TR',
+            displays: [ocrTextDisplay, translitTextDisplay],
+            buttons: [ocrTtsBtn, translitTtsBtn],
+            channelKey: 'osmanli',
+            emptyMessage: 'Bu belge için sesli okuma verisi bulunamadı.'
+        });
     }
 
-    ocrTtsBtn.addEventListener('click', speakTranslit);
-    translitTtsBtn.addEventListener('click', speakTranslit);
+    ocrTtsBtn.addEventListener('click', handleOsmanliTtsToggle);
+    translitTtsBtn.addEventListener('click', handleOsmanliTtsToggle);
     ocrStopTtsBtn.addEventListener('click', stopSpeaking);
     translitStopTtsBtn.addEventListener('click', stopSpeaking);
+
+    // İngilizce çeviri sekmesi — o belgede İngilizce çeviri yoksa (state
+    // boşsa) diğer iki dilden bağımsız, ayrı bir uyarı gösterir (bkz.
+    // handleTtsToggle'daki emptyMessage kontrolü).
+    enTtsBtn.addEventListener('click', () => handleTtsToggle({
+        getText: () => enTextDisplay.textContent,
+        lang: 'en-US',
+        displays: [enTextDisplay],
+        buttons: [enTtsBtn],
+        channelKey: 'en',
+        emptyMessage: 'Bu belge için İngilizce çeviri bulunamadı.'
+    }));
+    enStopTtsBtn.addEventListener('click', stopSpeaking);
 
     // Download Report
     downloadReportBtn.addEventListener('click', () => {

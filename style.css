@@ -819,6 +819,15 @@ body.dark-theme .hero-section::after {
     transition: background-color var(--transition-fast);
 }
 
+/* Currently-spoken sentence highlight for TTS (see speakText() in app.js).
+   Applied to the .tts-sentence span wrapping each sentence. */
+.tts-sentence-active {
+    background-color: var(--color-gold-bg);
+    box-shadow: 0 0 0 1px var(--color-gold-bg);
+    border-radius: 3px;
+    transition: background-color var(--transition-fast);
+}
+
 .entity-tag:hover {
     background-color: var(--color-gold-bg);
 }
