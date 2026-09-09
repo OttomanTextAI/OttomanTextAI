@@ -9,7 +9,7 @@ from pathlib import Path
 from flask_bcrypt import Bcrypt
 import time
 import random
-from models import db, User, TokenBlocklist
+from models import db, User, TokenBlocklist, Document
 import cv2
 import numpy as np
 import requests
@@ -34,6 +34,8 @@ from src.ai.analysis.suggestions import AISuggestionGenerator
 from src.ai.assistant.question_generator import DocumentQuestionGenerator
 from src.ai.analysis.research import ResearchSuggestionGenerator
 from src.ai.filters.entity_filter import EntityFilterClassifier
+from werkzeug.utils import secure_filename
+from supabase import create_client
 # Loads RELAY_API_KEY / RELAY_BASE_URL / GEMINI_API_KEY from a local .env for
 # development. In production (Render) these are set directly as environment
 # variables and no .env file is present, so this is a no-op there.
@@ -45,7 +47,10 @@ app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db.init_app(app)
 bcrypt = Bcrypt(app)
+supabase_client = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_SERVICE_KEY"))
 
+ALLOWED_DOCUMENT_EXTENSIONS = {"pdf", "doc", "docx", "txt"}
+DOCUMENTS_BUCKET = "documents"
 document_retriever = None
 document_qa = None
 
@@ -2104,6 +2109,150 @@ def get_current_user(current_user):
         "email": current_user.email,
         "created_at": current_user.created_at.isoformat(),
     })
+@app.route("/api/documents/upload", methods=["POST"])
+@token_required
+def upload_document(current_user):
+    if "file" not in request.files:
+        return jsonify({"error": "Dosya bulunamadı."}), 400
+
+    uploaded_file = request.files["file"]
+
+    if uploaded_file.filename == "":
+        return jsonify({"error": "Dosya seçilmedi."}), 400
+
+    original_filename = secure_filename(uploaded_file.filename)
+    extension = original_filename.rsplit(".", 1)[-1].lower() if "." in original_filename else ""
+
+    if extension not in ALLOWED_DOCUMENT_EXTENSIONS:
+        return jsonify({"error": "Sadece PDF, DOC, DOCX ve TXT dosyaları yüklenebilir."}), 400
+
+    file_bytes = uploaded_file.read()
+    storage_path = f"{current_user.id}/{uuid.uuid4()}_{original_filename}"
+
+    try:
+        supabase_client.storage.from_(DOCUMENTS_BUCKET).upload(
+            storage_path,
+            file_bytes,
+            {"content-type": uploaded_file.mimetype},
+        )
+    except Exception as error:
+        return jsonify({"error": f"Dosya depolamaya yüklenemedi: {error}"}), 502
+
+    new_document = Document(
+        user_id=current_user.id,
+        filename=original_filename,
+        storage_path=storage_path,
+        file_type=extension,
+        file_size=len(file_bytes),
+    )
+
+    db.session.add(new_document)
+    db.session.commit()
+
+    return jsonify({
+        "message": "Dosya yüklendi.",
+        "document_id": new_document.id,
+        "filename": new_document.filename,
+        "file_type": new_document.file_type,
+        "file_size": new_document.file_size,
+    }), 201
+
+
+@app.route("/api/documents", methods=["GET"])
+@token_required
+def list_documents(current_user):
+    documents = (
+        Document.query
+        .filter_by(user_id=current_user.id)
+        .order_by(Document.uploaded_at.desc())
+        .all()
+    )
+
+    return jsonify([
+        {
+            "id": doc.id,
+            "filename": doc.filename,
+            "file_type": doc.file_type,
+            "file_size": doc.file_size,
+            "uploaded_at": doc.uploaded_at.isoformat(),
+            "updated_at": doc.updated_at.isoformat(),
+        }
+        for doc in documents
+    ])
+@app.route("/api/documents/<int:document_id>", methods=["DELETE"])
+@token_required
+def delete_document(current_user, document_id):
+    document = Document.query.filter_by(id=document_id, user_id=current_user.id).first()
+
+    if not document:
+        return jsonify({"error": "Belge bulunamadı."}), 404
+
+    try:
+        supabase_client.storage.from_(DOCUMENTS_BUCKET).remove([document.storage_path])
+    except Exception as error:
+        return jsonify({"error": f"Dosya depolamadan silinemedi: {error}"}), 502
+
+    db.session.delete(document)
+    db.session.commit()
+
+    return jsonify({"message": "Belge silindi."})
+@app.route("/api/documents/<int:document_id>", methods=["PUT"])
+@token_required
+def update_document(current_user, document_id):
+    document = Document.query.filter_by(id=document_id, user_id=current_user.id).first()
+
+    if not document:
+        return jsonify({"error": "Belge bulunamadı."}), 404
+
+    if "file" not in request.files:
+        return jsonify({"error": "Dosya bulunamadı."}), 400
+
+    uploaded_file = request.files["file"]
+
+    if uploaded_file.filename == "":
+        return jsonify({"error": "Dosya seçilmedi."}), 400
+
+    original_filename = secure_filename(uploaded_file.filename)
+    extension = original_filename.rsplit(".", 1)[-1].lower() if "." in original_filename else ""
+
+    if extension not in ALLOWED_DOCUMENT_EXTENSIONS:
+        return jsonify({"error": "Sadece PDF, DOC, DOCX ve TXT dosyaları yüklenebilir."}), 400
+
+    file_bytes = uploaded_file.read()
+    new_storage_path = f"{current_user.id}/{uuid.uuid4()}_{original_filename}"
+
+    try:
+        supabase_client.storage.from_(DOCUMENTS_BUCKET).upload(
+            new_storage_path,
+            file_bytes,
+            {"content-type": uploaded_file.mimetype},
+        )
+    except Exception as error:
+        return jsonify({"error": f"Dosya depolamaya yüklenemedi: {error}"}), 502
+
+    old_storage_path = document.storage_path
+
+    document.filename = original_filename
+    document.storage_path = new_storage_path
+    document.file_type = extension
+    document.file_size = len(file_bytes)
+
+    db.session.commit()
+
+    try:
+        supabase_client.storage.from_(DOCUMENTS_BUCKET).remove([old_storage_path])
+    except Exception:
+        pass
+
+    return jsonify({
+        "message": "Belge güncellendi.",
+        "document_id": document.id,
+        "filename": document.filename,
+        "file_type": document.file_type,
+        "file_size": document.file_size,
+        "updated_at": document.updated_at.isoformat(),
+    })
+
 if __name__ == "__main__":
     app.run(
         host="0.0.0.0",
