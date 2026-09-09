@@ -9,7 +9,7 @@ from pathlib import Path
 from flask_bcrypt import Bcrypt
 import time
 import random
-from models import db, User, TokenBlocklist, Document
+from models import db, User, TokenBlocklist, Document, DocumentText, DocumentAnalysis
 import cv2
 import numpy as np
 import requests
@@ -59,7 +59,7 @@ else:
         flush=True,
     )
 
-ALLOWED_DOCUMENT_EXTENSIONS = {"pdf", "doc", "docx", "txt"}
+ALLOWED_DOCUMENT_EXTENSIONS = {"pdf", "doc", "docx", "txt", "jpg", "jpeg", "png", "webp"}
 DOCUMENTS_BUCKET = "documents"
 document_retriever = None
 document_qa = None
@@ -2235,24 +2235,34 @@ def upload_document(current_user):
 @app.route("/api/documents", methods=["GET"])
 @token_required
 def list_documents(current_user):
-    documents = (
+    page = request.args.get("page", 1, type=int)
+    per_page = request.args.get("per_page", 20, type=int)
+    per_page = min(per_page, 100)
+
+    pagination = (
         Document.query
         .filter_by(user_id=current_user.id)
         .order_by(Document.uploaded_at.desc())
-        .all()
+        .paginate(page=page, per_page=per_page, error_out=False)
     )
 
-    return jsonify([
-        {
-            "id": doc.id,
-            "filename": doc.filename,
-            "file_type": doc.file_type,
-            "file_size": doc.file_size,
-            "uploaded_at": doc.uploaded_at.isoformat(),
-            "updated_at": doc.updated_at.isoformat(),
-        }
-        for doc in documents
-    ])
+    return jsonify({
+        "documents": [
+            {
+                "id": doc.id,
+                "filename": doc.filename,
+                "file_type": doc.file_type,
+                "file_size": doc.file_size,
+                "uploaded_at": doc.uploaded_at.isoformat(),
+                "updated_at": doc.updated_at.isoformat(),
+            }
+            for doc in pagination.items
+        ],
+        "page": pagination.page,
+        "per_page": per_page,
+        "total_documents": pagination.total,
+        "total_pages": pagination.pages,
+    })
 @app.route("/api/documents/<int:document_id>", methods=["DELETE"])
 @token_required
 def delete_document(current_user, document_id):
@@ -2275,8 +2285,10 @@ def delete_document(current_user, document_id):
 @token_required
 def update_document(current_user, document_id):
     document = Document.query.filter_by(id=document_id, user_id=current_user.id).first()
+
     if supabase_client is None:
         return jsonify({"error": "Dosya depolama servisi şu anda yapılandırılmamış."}), 503
+
     if not document:
         return jsonify({"error": "Belge bulunamadı."}), 404
 
@@ -2328,6 +2340,132 @@ def update_document(current_user, document_id):
         "file_size": document.file_size,
         "updated_at": document.updated_at.isoformat(),
     })
+
+def _resize_image_if_large(image_bytes, max_dimension=2000):
+    """
+    Osmanlıca belge fotoğrafları genelde çok yüksek çözünürlüklü oluyor.
+    AI'ya göndermeden önce çok büyük görselleri küçültüyoruz — işlem
+    süresini belirgin şekilde azaltır, OCR kalitesini pratikte
+    etkilemez (vision modellerin zaten bir çözünürlük tavanı var).
+    """
+    image_array = np.frombuffer(image_bytes, dtype=np.uint8)
+    image = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
+
+    if image is None:
+        return image_bytes
+
+    height, width = image.shape[:2]
+
+    if max(height, width) <= max_dimension:
+        return image_bytes
+
+    scale = max_dimension / max(height, width)
+    new_size = (int(width * scale), int(height * scale))
+    resized = cv2.resize(image, new_size, interpolation=cv2.INTER_AREA)
+
+    success, encoded = cv2.imencode(".jpg", resized, [cv2.IMWRITE_JPEG_QUALITY, 90])
+
+    if not success:
+        return image_bytes
+
+    return encoded.tobytes()
+@app.route("/api/documents/<int:document_id>/analyze", methods=["POST"])
+@token_required
+def analyze_document(current_user, document_id):
+    document = Document.query.filter_by(id=document_id, user_id=current_user.id).first()
+
+    if not document:
+        return jsonify({"error": "Belge bulunamadı."}), 404
+
+    force_refresh = request.args.get("force") == "true"
+
+    existing_text = DocumentText.query.filter_by(document_id=document.id).first()
+    existing_analysis = DocumentAnalysis.query.filter_by(document_id=document.id).first()
+
+    if existing_text and existing_analysis and not force_refresh:
+        return jsonify({
+            "cached": True,
+            "ocr": existing_text.ocr_text,
+            "translit": existing_text.translit_text,
+            "trans": existing_text.trans_text,
+            "trans_en": existing_text.trans_text_en,
+            "document_type": existing_analysis.document_type,
+            "summary": existing_analysis.summary,
+            "confidence": existing_analysis.confidence,
+        })
+
+    if supabase_client is None:
+        return jsonify({"error": "Dosya depolama servisi şu anda yapılandırılmamış."}), 503
+
+    try:
+        llm_config = get_llm_config()
+        model = llm_config.get("model")
+        generation = llm_config.get("generation") or {}
+        temperature = generation.get("temperature", 0.2)
+        max_tokens = generation.get("max_tokens", 4096)
+    except (FileNotFoundError, ValueError) as error:
+        return jsonify({"error": f"configs/llm.yaml okunamadı: {error}"}), 500
+
+    api_key = (os.getenv("RELAY_API_KEY") or "").strip()
+    base_url = (os.getenv("RELAY_BASE_URL") or "").strip()
+
+    if not api_key or not base_url:
+        return jsonify({"error": "RELAY_API_KEY/RELAY_BASE_URL yapılandırılmamış."}), 500
+
+    try:
+        image_bytes = supabase_client.storage.from_(DOCUMENTS_BUCKET).download(document.storage_path)
+    except Exception as error:
+        return jsonify({"error": f"Dosya depolamadan indirilemedi: {error}"}), 502
+
+    image_bytes = _resize_image_if_large(image_bytes)
+    client = OpenAI(api_key=api_key, base_url=base_url)
+    messages = _build_messages(ANALYSIS_PROMPT, image_bytes)
+
+    result = _get_relay_result(client, model, messages, temperature, max_tokens, label="document-analyze")
+
+    if not result["ok"]:
+        if result["reason"] == "network":
+            return jsonify(result["message"]), result["status_code"]
+        return jsonify({"error": "Belge analiz edilemedi, model kullanılabilir bir sonuç üretemedi."}), 502
+
+    parsed = result["parsed"]
+
+    if not existing_text:
+        existing_text = DocumentText(document_id=document.id)
+        db.session.add(existing_text)
+
+    existing_text.ocr_text = parsed.get("ocr", "")
+    existing_text.translit_text = parsed.get("translit", "")
+    existing_text.trans_text = parsed.get("trans", "")
+    existing_text.trans_text_en = parsed.get("trans_en", "")
+
+    if not existing_analysis:
+        existing_analysis = DocumentAnalysis(document_id=document.id)
+        db.session.add(existing_analysis)
+
+    existing_analysis.document_type = parsed.get("document_type")
+    existing_analysis.style = parsed.get("style")
+    existing_analysis.summary = parsed.get("summary")
+    existing_analysis.script_type = parsed.get("script_type")
+    existing_analysis.script_purpose = parsed.get("script_purpose")
+    existing_analysis.period_estimate = parsed.get("period_estimate")
+    existing_analysis.date_hijri = parsed.get("date_hijri")
+    existing_analysis.date_gregorian = parsed.get("date_gregorian")
+    existing_analysis.notes = parsed.get("notes")
+    existing_analysis.confidence = parsed.get("confidence")
+
+    db.session.commit()
+
+    return jsonify({
+        "cached": False,
+        "ocr": existing_text.ocr_text,
+        "translit": existing_text.translit_text,
+        "trans": existing_text.trans_text,
+        "trans_en": existing_text.trans_text_en,
+        "document_type": existing_analysis.document_type,
+        "summary": existing_analysis.summary,
+        "confidence": existing_analysis.confidence,
+    }), 201
 
 if __name__ == "__main__":
     app.run(
