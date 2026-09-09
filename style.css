@@ -2084,3 +2084,111 @@ body.dark-theme .hero-section::after {
         right: 1.2rem;
     }
 }
+/* AI Belge Araçları */
+.ai-tools-section {
+    padding: 0.9rem 1rem 1rem;
+    border-top: 1px solid var(--color-border);
+    background: var(--bg-card);
+}
+
+.ai-tools-title {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--color-text-muted);
+    margin-bottom: 0.7rem;
+}
+
+.ai-tools-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.55rem;
+}
+
+.ai-tool-btn {
+    width: 100%;
+    min-height: 38px;
+    padding: 0.55rem 0.7rem;
+    background: var(--bg-input);
+    color: var(--color-text-main);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-sans);
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.ai-tool-btn:hover {
+    border-color: var(--color-gold);
+    color: var(--color-gold);
+    background: var(--color-gold-bg);
+}
+
+.ai-selection-box {
+    margin-top: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+}
+
+.ai-selected-textarea {
+    width: 100%;
+    min-height: 76px;
+    resize: vertical;
+    padding: 0.7rem 0.8rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-input);
+    color: var(--color-text-main);
+    font-family: var(--font-sans);
+    font-size: 0.82rem;
+    line-height: 1.45;
+    outline: none;
+}
+
+.ai-selected-textarea:focus {
+    border-color: var(--color-gold);
+}
+
+.ai-selection-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.55rem;
+}
+
+.ai-suggestion-input {
+    margin-top: 0.15rem;
+}
+
+.ai-review-btn {
+    width: 100%;
+    padding: 0.7rem 1rem;
+    font-size: 0.82rem;
+}
+
+.assistant-tools-row {
+    padding: 0.7rem 1rem;
+    border-top: 1px solid var(--color-border);
+    background: var(--bg-card);
+}
+
+.assistant-tools-btn {
+    width: 100%;
+    padding: 0.65rem 1rem;
+    background: var(--bg-input);
+    color: var(--color-text-main);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-family: var(--font-sans);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.assistant-tools-btn:hover {
+    border-color: var(--color-gold);
+    color: var(--color-gold);
+    background: var(--color-gold-bg);
+}

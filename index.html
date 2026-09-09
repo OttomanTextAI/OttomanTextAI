@@ -579,70 +579,16 @@
                     margin-bottom: 8px;
                     opacity: 0.8;
                 ">
-                    AI Belge Araçları
-                </div>
 
-                <div style="
-                    display: flex;
-                    flex-wrap: wrap;
-                    gap: 6px;
-                ">
-                    <button type="button" id="aiPredictionsBtn">
-                        Tahmin & Öneri
-                    </button>
-
-                    <button type="button" id="aiQuestionsBtn">
-                        Hazır Sorular
-                    </button>
-
-                    <button type="button" id="aiResearchBtn">
-                        Araştırma Önerileri
-                    </button>
-
-                    <button type="button" id="aiEntitiesBtn">
-                        Varlıkları Analiz Et
-                    </button>
-                </div>
-
-                <div style="margin-top: 8px;">
-                    <textarea
-                        id="aiSelectedTextInput"
-                        rows="3"
-                        placeholder="Analiz etmek istediğiniz metni buraya yapıştırın..."
-                        style="width: 100%; box-sizing: border-box;"
-                    ></textarea>
-
-                    <div style="
-                        display: flex;
-                        flex-wrap: wrap;
-                        gap: 6px;
-                        margin-top: 6px;
-                    ">
-                        <button type="button" id="aiAnalyzeSelectionBtn">
-                            Seçili Metni Analiz Et
-                        </button>
-
-                        <button type="button" id="aiSuggestionsBtn">
-                            Alternatif Öner
-                        </button>
-                        <input
-                            type="text"
-                            id="aiSuggestionEditInput"
-                            class="form-input"
-                            placeholder="AI önerisini burada düzenleyin..."
-                        >
-
-                        <button
-                            type="button"
-                            class="btn btn-outline"
-                            id="aiReviewSuggestionBtn"
-                        >
-                            Düzenlemeyi AI ile Değerlendir
-                        </button>
-                    </div>
-                </div>
-
-
+            </div>
+            <div class="assistant-tools-row">
+                <button
+                    type="button"
+                    id="assistantToolsBtn"
+                    class="assistant-tools-btn"
+                >
+                    ✦ Belge Araçları
+                </button>
             </div>
         <div class="assistant-panel-input-row">
             <input type="text" id="assistantInput" class="assistant-input" placeholder="Bir soru sorun..." autocomplete="off">
@@ -671,7 +617,7 @@
                 ">
                     <div>
                         <h3 style="margin: 0;">
-                            AI Belge Analizi
+                            AI Belge Araçları
                         </h3>
                         <p style="
                             margin: 4px 0 0;
@@ -691,7 +637,71 @@
                         &times;
                     </button>
                 </div>
+                 <div class="ai-tools-section">
+                    <div class="ai-tools-title">
+                        AI Belge Araçları
+                    </div>
 
+                    <div class="ai-tools-grid">
+                        <button type="button" id="aiPredictionsBtn" class="ai-tool-btn">
+                            Tahmin & Öneri
+                        </button>
+
+                        <button type="button" id="aiQuestionsBtn" class="ai-tool-btn">
+                            Hazır Sorular
+                        </button>
+
+                        <button type="button" id="aiResearchBtn" class="ai-tool-btn">
+                            Araştırma Önerileri
+                        </button>
+
+                        <button type="button" id="aiEntitiesBtn" class="ai-tool-btn">
+                            Varlıkları Analiz Et
+                        </button>
+                    </div>
+
+                    <div class="ai-selection-box">
+                        <textarea
+                            id="aiSelectedTextInput"
+                            rows="4"
+                            class="ai-selected-textarea"
+                            placeholder="Analiz etmek istediğiniz metni buraya yapıştırın..."
+                        ></textarea>
+
+                        <div class="ai-selection-actions">
+                            <button
+                                type="button"
+                                id="aiAnalyzeSelectionBtn"
+                                class="ai-tool-btn"
+                            >
+                                Seçili Metni Analiz Et
+                            </button>
+
+                            <button
+                                type="button"
+                                id="aiSuggestionsBtn"
+                                class="ai-tool-btn"
+                            >
+                                Alternatif Öner
+                            </button>
+                        </div>
+
+                        <input
+                            type="text"
+                            id="aiSuggestionEditInput"
+                            class="form-input ai-suggestion-input"
+                            placeholder="AI önerisini burada düzenleyin..."
+                        >
+
+                        <button
+                            type="button"
+                            class="btn btn-outline ai-review-btn"
+                            id="aiReviewSuggestionBtn"
+                        >
+                            Düzenlemeyi AI ile Değerlendir
+                        </button>
+                    </div>
+                </div>
                 <div
                     id="aiFeatureResult"
                     style="

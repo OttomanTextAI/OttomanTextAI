@@ -2258,6 +2258,8 @@ ${transTextDisplay.textContent}
     const aiFeatureResult = document.getElementById('aiFeatureResult');
     const aiFeatureModal =
         document.getElementById('aiFeatureModal');
+    const assistantToolsBtn =
+        document.getElementById('assistantToolsBtn');
 
     const aiFeatureModalClose =
         document.getElementById('aiFeatureModalClose');
@@ -2440,6 +2442,14 @@ ${transTextDisplay.textContent}
             'click',
             runAiPredictions
         );
+    }
+    if (assistantToolsBtn) {
+        assistantToolsBtn.addEventListener('click', () => {
+            aiFeatureResult.textContent =
+                'Bir AI belge aracı seçin.';
+
+            openAiFeatureModal();
+        });
     }
 
     aiFeatureModalClose.addEventListener(
@@ -3467,25 +3477,6 @@ if (aiAnalyzeSelectionBtn) {
             runAiSuggestedQuestions
         );
     }
-
-      [
-        aiPredictionsBtn,
-        aiQuestionsBtn,
-        aiResearchBtn,
-        aiEntitiesBtn,
-        aiAnalyzeSelectionBtn,
-        aiSuggestionsBtn,
-        aiReviewSuggestionBtn
-    ].forEach((button) => {
-        if (!button) return;
-
-        button.addEventListener('click', () => {
-            aiFeatureResult.textContent =
-                'AI sonucu hazırlanıyor...';
-
-            openAiFeatureModal();
-        });
-    });
 
     assistantInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
