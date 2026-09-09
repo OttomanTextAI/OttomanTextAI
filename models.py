@@ -35,3 +35,78 @@ class Document(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     owner = db.relationship("User", backref=db.backref("documents", lazy=True))
+
+
+class DocumentText(db.Model):
+    __tablename__ = "document_texts"
+
+    id = db.Column(db.Integer, primary_key=True)
+    document_id = db.Column(db.Integer, db.ForeignKey("documents.id"), nullable=False, unique=True)
+    ocr_text = db.Column(db.Text)
+    translit_text = db.Column(db.Text)
+    trans_text = db.Column(db.Text)
+    trans_text_en = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    document = db.relationship("Document", backref=db.backref("text", uselist=False))
+
+
+class DocumentAnalysis(db.Model):
+    __tablename__ = "document_analyses"
+
+    id = db.Column(db.Integer, primary_key=True)
+    document_id = db.Column(db.Integer, db.ForeignKey("documents.id"), nullable=False, unique=True)
+    document_type = db.Column(db.String(100))
+    style = db.Column(db.String(255))
+    summary = db.Column(db.Text)
+    script_type = db.Column(db.String(100))
+    script_purpose = db.Column(db.String(255))
+    period_estimate = db.Column(db.String(100))
+    date_hijri = db.Column(db.String(50))
+    date_gregorian = db.Column(db.String(50))
+    notes = db.Column(db.Text)
+    confidence = db.Column(db.Integer)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    document = db.relationship("Document", backref=db.backref("analysis", uselist=False))
+
+
+class DocumentEntity(db.Model):
+    __tablename__ = "document_entities"
+
+    id = db.Column(db.Integer, primary_key=True)
+    document_id = db.Column(db.Integer, db.ForeignKey("documents.id"), nullable=False)
+    text = db.Column(db.String(255), nullable=False)
+    category = db.Column(db.String(50), nullable=False)
+    context = db.Column(db.Text)
+    confidence = db.Column(db.Float)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    document = db.relationship("Document", backref=db.backref("entities", lazy=True))
+
+class AISuggestion(db.Model):
+    __tablename__ = "ai_suggestions"
+
+    id = db.Column(db.Integer, primary_key=True)
+    document_id = db.Column(db.Integer, db.ForeignKey("documents.id"), nullable=False)
+    suggestion_type = db.Column(db.String(50), nullable=False)
+    payload = db.Column(db.JSON, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+class ReadingProgress(db.Model):
+    __tablename__ = "reading_progress"
+
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    document_id = db.Column(db.Integer, db.ForeignKey("documents.id"), nullable=False)
+    progress_percent = db.Column(db.Integer, default=0)
+    last_read_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    __table_args__ = (
+        db.UniqueConstraint("user_id", "document_id", name="uq_user_document_progress"),
+    )
+
+    user = db.relationship("User")
+    document = db.relationship("Document")

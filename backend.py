@@ -47,7 +47,16 @@ app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db.init_app(app)
 bcrypt = Bcrypt(app)
-supabase_client = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_SERVICE_KEY"))
+if os.getenv("SUPABASE_URL") and os.getenv("SUPABASE_SERVICE_KEY"):
+    supabase_client = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_SERVICE_KEY"))
+else:
+    supabase_client = None
+    print(
+        "[startup] UYARI: SUPABASE_URL / SUPABASE_SERVICE_KEY tanımlı değil — "
+        "dosya yükleme/silme/güncelleme endpoint'leri çalışmayacak, ama "
+        "backend'in geri kalanı normal çalışmaya devam edecek.",
+        flush=True,
+    )
 
 ALLOWED_DOCUMENT_EXTENSIONS = {"pdf", "doc", "docx", "txt"}
 DOCUMENTS_BUCKET = "documents"
@@ -2112,6 +2121,8 @@ def get_current_user(current_user):
 @app.route("/api/documents/upload", methods=["POST"])
 @token_required
 def upload_document(current_user):
+    if supabase_client is None:
+        return jsonify({"error": "Dosya depolama servisi şu anda yapılandırılmamış."}), 503
     if "file" not in request.files:
         return jsonify({"error": "Dosya bulunamadı."}), 400
 
@@ -2183,7 +2194,8 @@ def list_documents(current_user):
 @token_required
 def delete_document(current_user, document_id):
     document = Document.query.filter_by(id=document_id, user_id=current_user.id).first()
-
+    if supabase_client is None:
+        return jsonify({"error": "Dosya depolama servisi şu anda yapılandırılmamış."}), 503
     if not document:
         return jsonify({"error": "Belge bulunamadı."}), 404
 
@@ -2200,7 +2212,8 @@ def delete_document(current_user, document_id):
 @token_required
 def update_document(current_user, document_id):
     document = Document.query.filter_by(id=document_id, user_id=current_user.id).first()
-
+    if supabase_client is None:
+        return jsonify({"error": "Dosya depolama servisi şu anda yapılandırılmamış."}), 503
     if not document:
         return jsonify({"error": "Belge bulunamadı."}), 404
 
