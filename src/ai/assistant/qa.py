@@ -250,6 +250,17 @@ class DocumentQA:
                 "external_answer_available": True,
             }
 
+        if not isinstance(parsed_answer, dict):
+            parsed_answer = {
+                "answer_type": "unavailable",
+                "answer": (
+                    "Belge yanıtı oluşturulurken bir biçimlendirme "
+                    "hatası oluştu. Lütfen sorunuzu tekrar deneyin."
+                ),
+                "related_information": [],
+                "external_answer_available": True,
+            }
+            
         answer_type = parsed_answer.get(
             "answer_type",
             "related",

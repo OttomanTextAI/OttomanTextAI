@@ -140,33 +140,26 @@ class AISuggestionGenerator:
             start = cleaned.find("{")
             end = cleaned.rfind("}")
 
-            if start == -1 or end == -1 or end <= start:
+            if start != -1 and end != -1 and end > start:
+                try:
+                    result = json.loads(
+                        cleaned[start:end + 1]
+                    )
+                except json.JSONDecodeError:
+                    result = {}
+            else:
+                result = {}
+
+            if not result:
                 print(
                     "[AI SUGGESTIONS] Invalid model response:",
-                    response_text,
+                    repr(response_text),
                     flush=True,
                 )
 
-                raise RuntimeError(
-                    "AI suggestion response was not valid JSON."
-                )
-
-            json_candidate = cleaned[start:end + 1]
-
-            try:
-                result = json.loads(json_candidate)
-
-            except json.JSONDecodeError as error:
-                print(
-                    "[AI SUGGESTIONS] Invalid model response:",
-                    response_text,
-                    flush=True,
-                )
-
-                raise RuntimeError(
-                    "AI suggestion response was not valid JSON."
-                ) from error
-
+        if not isinstance(result, dict):
+             result = {}
+        
         recommended = result.get(
             "recommended",
             {},
@@ -176,6 +169,65 @@ class AISuggestionGenerator:
             "alternatives",
             [],
         )
+
+        if not isinstance(recommended, dict):
+            recommended = {}
+
+        if not isinstance(alternatives, list):
+            alternatives = []
+
+            recommended_text = str(
+                recommended.get("text", "")
+            ).strip()
+
+            recommended_reason = str(
+                recommended.get("reason", "")
+            ).strip()
+
+            try:
+                recommended_confidence = float(
+                    recommended.get("confidence", 0.0)
+                )
+            except (TypeError, ValueError):
+                recommended_confidence = 0.0
+
+            recommended_confidence = max(
+                0.0,
+                min(recommended_confidence, 1.0),
+            )
+
+            normalized_alternatives = []
+
+            for alternative in alternatives[:1]:
+                if not isinstance(alternative, dict):
+                    continue
+
+                text = str(
+                    alternative.get("text", "")
+                ).strip()
+
+                reason = str(
+                    alternative.get("reason", "")
+                ).strip()
+
+                try:
+                    confidence = float(
+                        alternative.get("confidence", 0.0)
+                    )
+                except (TypeError, ValueError):
+                    confidence = 0.0
+
+                confidence = max(
+                    0.0,
+                    min(confidence, 1.0),
+                )
+
+                if text:
+                    normalized_alternatives.append({
+                        "text": text,
+                        "confidence": confidence,
+                        "reason": reason,
+                    })
 
         uncertainty = result.get(
             "uncertainty",
@@ -190,7 +242,11 @@ class AISuggestionGenerator:
             uncertainty = "medium"
 
         return {
-            "recommended": recommended,
-            "alternatives": alternatives[:1],
+            "recommended": {
+                "text": recommended_text,
+                "confidence": recommended_confidence,
+                "reason": recommended_reason,
+            },
+            "alternatives": normalized_alternatives,
             "uncertainty": uncertainty,
         }

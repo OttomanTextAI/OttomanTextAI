@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
         isProcessing: false,
         ocrText: '',
         transText: '',
+        transTextEn: '',
         translitText: '',
         lastAnalysis: null,
         apiKey: localStorage.getItem('gemini_api_key') || '',
@@ -970,6 +971,10 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         closeEntityPopover();
         state.selectedFile = null;
         state.imageDataUrl = null;
+
+        state.ocrText = '';
+        state.transText = '';
+        state.transTextEn = '';
         state.translitText = '';
         state.lastAnalysis = null;
         statusHint.classList.add('hidden');
@@ -1443,6 +1448,42 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         state.transTextEn = finalTransEn;
         state.translitText = finalTranslit;
         state.lastAnalysis = finalAnalysis;
+
+        // Index translated document for AI/RAG features
+    if (finalTrans && finalTrans.trim()) {
+        try {
+            const indexResponse = await fetchWithTimeout(
+                'https://ottoman-text-ai.onrender.com/api/ai/index-document',
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        text: finalTrans
+                    })
+                },
+                45000
+            );
+
+            const indexData = await indexResponse.json();
+
+            if (!indexResponse.ok) {
+                console.warn(
+                    '[AI INDEX]',
+                    indexData.error || 'Document could not be indexed.'
+                );
+            } else {
+                console.log('[AI INDEX] Document indexed successfully.');
+            }
+
+        } catch (error) {
+            console.warn(
+                '[AI INDEX] Index request failed:',
+                error
+            );
+        }
+    }
 
         // "Bilgi" tab — only populate/reveal it when we actually have
         // analysis data; otherwise leave it hidden rather than showing an
@@ -2149,7 +2190,10 @@ ${transTextDisplay.textContent}
         if (!text) return;
 
         appendAssistantMessage('user', text);
-        assistantHistory.push({ role: 'user', text });
+        assistantHistory.push({
+            role: 'user',
+            content: text
+        });
         assistantInput.value = '';
         assistantInput.disabled = true;
         assistantSendBtn.disabled = true;
@@ -2179,7 +2223,10 @@ ${transTextDisplay.textContent}
                 const data = await res.json();
                 const reply = data.reply || 'Bir yanıt alınamadı.';
                 appendAssistantMessage('bot', reply);
-                assistantHistory.push({ role: 'bot', text: reply });
+                assistantHistory.push({
+                    role: 'assistant',
+                    content: reply
+                });
             }
         } catch (err) {
             loadingMsg.remove();
@@ -2192,6 +2239,658 @@ ${transTextDisplay.textContent}
     }
 
     assistantSendBtn.addEventListener('click', sendAssistantMessage);
+
+    const aiPredictionsBtn = document.getElementById('aiPredictionsBtn');
+    const aiFeatureResult = document.getElementById('aiFeatureResult');
+
+    async function runAiPredictions() {
+        if (!state.transText || !state.transText.trim()) {
+            aiFeatureResult.textContent =
+                'Önce bir belgeyi çevirmeniz gerekiyor.';
+            return;
+        }
+
+        aiPredictionsBtn.disabled = true;
+        aiFeatureResult.textContent =
+            'AI tahmin ve önerileri hazırlanıyor...';
+
+        try {
+            const response = await fetchWithTimeout(
+                'https://ottoman-text-ai.onrender.com/api/ai/predictions',
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        document_text: state.transText
+                    })
+                },
+                45000
+            );
+
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+                throw new Error(
+                    data.error || 'AI tahmin isteği başarısız oldu.'
+                );
+            }
+
+            const result = data.analysis || {};
+            const predictions = Array.isArray(result.predictions)
+                ? result.predictions
+                : [];
+
+            const recommendations = Array.isArray(result.recommendations)
+                ? result.recommendations
+                : [];
+
+            let output = 'TAHMİNLER\n\n';
+
+            if (predictions.length === 0) {
+                output += 'Tahmin bulunamadı.\n';
+            } else {
+                predictions.forEach((item, index) => {
+                    const percent = Math.round(
+                        (Number(item.confidence) || 0) * 100
+                    );
+
+                    output +=
+                        `${index + 1}. ${item.prediction || '-'}\n` +
+                        `Güven: %${percent}\n` +
+                        `Neden: ${item.reason || '-'}\n\n`;
+                });
+            }
+
+            output += '\nÖNERİLER\n\n';
+
+            if (recommendations.length === 0) {
+                output += 'Öneri bulunamadı.';
+            } else {
+                recommendations.forEach((item, index) => {
+                    output +=
+                        `${index + 1}. ${item.recommendation || '-'}\n` +
+                        `Neden: ${item.reason || '-'}\n\n`;
+                });
+            }
+
+            aiFeatureResult.textContent = output.trim();
+
+        } catch (error) {
+            console.error('[AI PREDICTIONS]', error);
+
+            aiFeatureResult.textContent =
+                'Tahmin ve öneriler alınamadı: ' +
+                error.message;
+
+        } finally {
+            aiPredictionsBtn.disabled = false;
+        }
+    }
+
+    if (aiPredictionsBtn) {
+        aiPredictionsBtn.addEventListener(
+            'click',
+            runAiPredictions
+        );
+    }
+
+    const aiQuestionsBtn = document.getElementById('aiQuestionsBtn');
+
+    async function runAiSuggestedQuestions() {
+        if (!state.transText || !state.transText.trim()) {
+            aiFeatureResult.textContent =
+                'Önce bir belgeyi çevirmeniz gerekiyor.';
+            return;
+        }
+
+        aiQuestionsBtn.disabled = true;
+        aiFeatureResult.textContent =
+            'Belge için hazır sorular oluşturuluyor...';
+
+        try {
+            const response = await fetchWithTimeout(
+                'https://ottoman-text-ai.onrender.com/api/ai/suggested-questions',
+                {
+                    method: 'GET'
+                },
+                45000
+            );
+
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+                throw new Error(
+                    data.error || 'Hazır sorular oluşturulamadı.'
+                );
+            }
+
+            const questions = Array.isArray(data.questions)
+                ? data.questions
+                : [];
+
+            if (questions.length === 0) {
+                aiFeatureResult.textContent =
+                    'Bu belge için hazır soru üretilemedi.';
+                return;
+            }
+
+            let output = 'HAZIR SORULAR\n\n';
+
+            questions.forEach((question, index) => {
+                output += `${index + 1}. ${question}\n`;
+            });
+
+            aiFeatureResult.textContent = output.trim();
+
+        } catch (error) {
+            console.error('[AI QUESTIONS]', error);
+
+            aiFeatureResult.textContent =
+                'Hazır sorular alınamadı: ' +
+                error.message;
+
+        } finally {
+            aiQuestionsBtn.disabled = false;
+        }
+    }
+   
+    const aiResearchBtn = document.getElementById('aiResearchBtn');
+
+    async function runAiResearchSuggestions() {
+        if (!state.transText || !state.transText.trim()) {
+            aiFeatureResult.textContent =
+                'Önce bir belgeyi çevirmeniz gerekiyor.';
+            return;
+        }
+
+        aiResearchBtn.disabled = true;
+        aiFeatureResult.textContent =
+            'Araştırma önerileri hazırlanıyor...';
+
+        try {
+            const response = await fetchWithTimeout(
+                'https://ottoman-text-ai.onrender.com/api/ai/research-suggestions',
+                {
+                    method: 'GET'
+                },
+                45000
+            );
+
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+                throw new Error(
+                    data.error || 'Araştırma önerileri oluşturulamadı.'
+                );
+            }
+
+            const suggestions = data.suggestions;
+
+            if (!suggestions) {
+                aiFeatureResult.textContent =
+                    'Araştırma önerisi bulunamadı.';
+                return;
+            }
+
+            // Liste dönerse okunabilir şekilde göster
+            if (Array.isArray(suggestions)) {
+                let output = 'ARAŞTIRMA ÖNERİLERİ\n\n';
+
+                suggestions.forEach((item, index) => {
+                    if (typeof item === 'string') {
+                        output += `${index + 1}. ${item}\n\n`;
+                    } else {
+                        output +=
+                            `${index + 1}. ${JSON.stringify(item, null, 2)}\n\n`;
+                    }
+                });
+
+                aiFeatureResult.textContent = output.trim();
+                return;
+            }
+
+            // Object dönerse test aşamasında JSON olarak göster
+            if (typeof suggestions === 'object') {
+                aiFeatureResult.textContent =
+                    'ARAŞTIRMA ÖNERİLERİ\n\n' +
+                    JSON.stringify(suggestions, null, 2);
+
+                return;
+            }
+
+            aiFeatureResult.textContent =
+                'ARAŞTIRMA ÖNERİLERİ\n\n' +
+                String(suggestions);
+
+        } catch (error) {
+            console.error(
+                '[AI RESEARCH SUGGESTIONS]',
+                error
+            );
+
+            aiFeatureResult.textContent =
+                'Araştırma önerileri alınamadı: ' +
+                error.message;
+
+        } finally {
+            aiResearchBtn.disabled = false;
+        }
+    }
+
+const aiEntitiesBtn = document.getElementById('aiEntitiesBtn');
+
+async function runAiEntityFilter() {
+    if (!state.transText || !state.transText.trim()) {
+        aiFeatureResult.textContent =
+            'Önce bir belgeyi çevirmeniz gerekiyor.';
+        return;
+    }
+
+    aiEntitiesBtn.disabled = true;
+    aiFeatureResult.textContent =
+        'Belgedeki varlıklar analiz ediliyor...';
+
+    try {
+        const response = await fetchWithTimeout(
+            'https://ottoman-text-ai.onrender.com/api/ai/entity-filter',
+            {
+                method: 'GET'
+            },
+            45000
+        );
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            throw new Error(
+                data.error || 'Varlık analizi başarısız oldu.'
+            );
+        }
+
+        const entities = data.entities;
+
+        if (!entities) {
+            aiFeatureResult.textContent =
+                'Belgede sınıflandırılabilecek varlık bulunamadı.';
+            return;
+        }
+
+        if (Array.isArray(entities)) {
+            let output = 'VARLIK ANALİZİ\n\n';
+
+            entities.forEach((item, index) => {
+                if (typeof item === 'string') {
+                    output += `${index + 1}. ${item}\n`;
+                } else {
+                    output +=
+                        `${index + 1}. ${JSON.stringify(item, null, 2)}\n\n`;
+                }
+            });
+
+            aiFeatureResult.textContent = output.trim();
+            return;
+        }
+
+        if (typeof entities === 'object') {
+            aiFeatureResult.textContent =
+                'VARLIK ANALİZİ\n\n' +
+                JSON.stringify(entities, null, 2);
+
+            return;
+        }
+
+        aiFeatureResult.textContent =
+            'VARLIK ANALİZİ\n\n' +
+            String(entities);
+
+    } catch (error) {
+        console.error('[AI ENTITY FILTER]', error);
+
+        aiFeatureResult.textContent =
+            'Varlık analizi alınamadı: ' +
+            error.message;
+
+    } finally {
+        aiEntitiesBtn.disabled = false;
+    }
+}
+
+if (aiEntitiesBtn) {
+    aiEntitiesBtn.addEventListener(
+        'click',
+        runAiEntityFilter
+    );
+}
+
+const aiAnalyzeSelectionBtn =
+    document.getElementById('aiAnalyzeSelectionBtn');
+
+const aiSelectedTextInput =
+    document.getElementById('aiSelectedTextInput');
+
+async function runAiSelectedTextAnalysis() {
+    const selectedText =
+        aiSelectedTextInput.value.trim();
+
+    if (!selectedText) {
+        aiFeatureResult.textContent =
+            'Analiz etmek için bir metin girin.';
+        return;
+    }
+
+    aiAnalyzeSelectionBtn.disabled = true;
+
+    aiFeatureResult.textContent =
+        'Seçili metin analiz ediliyor...';
+
+    try {
+        const response = await fetchWithTimeout(
+            'https://ottoman-text-ai.onrender.com/api/ai/analyze-selection',
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    text: selectedText
+                })
+            },
+            45000
+        );
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            throw new Error(
+                data.error ||
+                'Seçili metin analizi başarısız oldu.'
+            );
+        }
+
+        const analysis = data.analysis;
+
+        if (!analysis) {
+            aiFeatureResult.textContent =
+                'Analiz sonucu oluşturulamadı.';
+            return;
+        }
+
+        aiFeatureResult.textContent =
+            'SEÇİLİ METİN ANALİZİ\n\n' +
+            JSON.stringify(
+                analysis,
+                null,
+                2
+            );
+
+    } catch (error) {
+        console.error(
+            '[AI SELECTED TEXT]',
+            error
+        );
+
+        aiFeatureResult.textContent =
+            'Seçili metin analizi alınamadı: ' +
+            error.message;
+
+    } finally {
+        aiAnalyzeSelectionBtn.disabled = false;
+    }
+}
+
+const aiSuggestionsBtn =
+    document.getElementById('aiSuggestionsBtn');
+
+const aiSuggestionEditInput =
+    document.getElementById('aiSuggestionEditInput');
+
+const aiReviewSuggestionBtn =
+    document.getElementById('aiReviewSuggestionBtn');
+
+let lastAiSuggestion = null;
+
+async function runAiSuggestions() {
+    const selectedText =
+        aiSelectedTextInput.value.trim();
+
+    if (!selectedText) {
+        aiFeatureResult.textContent =
+            'Alternatif üretmek için bir metin girin.';
+        return;
+    }
+
+    aiSuggestionsBtn.disabled = true;
+
+    aiFeatureResult.textContent =
+        'AI alternatifleri hazırlanıyor...';
+
+    try {
+        const response = await fetchWithTimeout(
+            'https://ottoman-text-ai.onrender.com/api/ai/suggestions',
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    text: selectedText
+                })
+            },
+            45000
+        );
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            throw new Error(
+                data.error ||
+                'Alternatif öneriler oluşturulamadı.'
+            );
+        }
+
+        const suggestion = data.suggestion;
+
+        if (!suggestion) {
+            aiFeatureResult.textContent =
+                'AI alternatif öneri oluşturamadı.';
+            return;
+        }
+
+                let suggestedText = '';
+
+        if (
+            suggestion.recommended &&
+            typeof suggestion.recommended === 'object'
+        ) {
+            suggestedText =
+                suggestion.recommended.text ||
+                suggestion.recommended.suggestion ||
+                suggestion.recommended.recommendation ||
+                '';
+        } else if (
+            typeof suggestion.recommended === 'string'
+        ) {
+            suggestedText = suggestion.recommended;
+        }
+
+        if (
+            !suggestedText &&
+            Array.isArray(suggestion.alternatives) &&
+            suggestion.alternatives.length > 0
+        ) {
+            const firstAlternative =
+                suggestion.alternatives[0];
+
+            if (typeof firstAlternative === 'string') {
+                suggestedText = firstAlternative;
+            } else if (
+                firstAlternative &&
+                typeof firstAlternative === 'object'
+            ) {
+                suggestedText =
+                    firstAlternative.text ||
+                    firstAlternative.suggestion ||
+                    firstAlternative.recommendation ||
+                    '';
+            }
+        }
+
+        lastAiSuggestion = {
+            originalText: selectedText,
+            aiSuggestion: suggestedText
+        };
+
+        if (aiSuggestionEditInput) {
+            aiSuggestionEditInput.value =
+                suggestedText;
+        }
+
+        aiFeatureResult.textContent =
+            'AI ALTERNATİF ÖNERİLERİ\n\n' +
+            JSON.stringify(
+                suggestion,
+                null,
+                2
+            );
+
+    } catch (error) {
+        console.error(
+            '[AI SUGGESTIONS]',
+            error
+        );
+
+        aiFeatureResult.textContent =
+            'Alternatif öneriler alınamadı: ' +
+            error.message;
+
+    } finally {
+        aiSuggestionsBtn.disabled = false;
+    }
+}
+
+async function runAiSuggestionReview() {
+    if (!lastAiSuggestion) {
+        aiFeatureResult.textContent =
+            'Önce AI alternatif önerisi oluşturun.';
+        return;
+    }
+
+    const userEdit =
+        aiSuggestionEditInput
+            ? aiSuggestionEditInput.value.trim()
+            : '';
+
+    if (!userEdit) {
+        aiFeatureResult.textContent =
+            'Değerlendirmek için düzenlenmiş metni girin.';
+        return;
+    }
+
+    aiReviewSuggestionBtn.disabled = true;
+
+    aiFeatureResult.textContent =
+        'Kullanıcı düzenlemesi AI tarafından değerlendiriliyor...';
+
+    try {
+        const response = await fetchWithTimeout(
+            'https://ottoman-text-ai.onrender.com/api/ai/review-suggestion',
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    original_text:
+                        lastAiSuggestion.originalText,
+                    ai_suggestion:
+                        lastAiSuggestion.aiSuggestion,
+                    user_edit:
+                        userEdit
+                })
+            },
+            45000
+        );
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            throw new Error(
+                data.error ||
+                'AI düzenleme değerlendirmesi başarısız oldu.'
+            );
+        }
+
+        const review = data.review;
+
+        if (!review) {
+            aiFeatureResult.textContent =
+                'AI değerlendirme sonucu oluşturulamadı.';
+            return;
+        }
+
+        const confidence = Math.round(
+            (Number(review.confidence) || 0) * 100
+        );
+
+        aiFeatureResult.textContent =
+            'AI DÜZENLEME DEĞERLENDİRMESİ\n\n' +
+            `Kabul edildi: ${review.accepted ? 'Evet' : 'Hayır'}\n` +
+            `Güven: %${confidence}\n` +
+            `Açıklama: ${review.reason || '-'}\n` +
+            `Önerilen son metin: ${review.recommended_text || '-'}\n` +
+            `AI önerisi değiştirildi: ${
+                review.changed_from_ai ? 'Evet' : 'Hayır'
+            }`;
+
+    } catch (error) {
+        console.error(
+            '[AI SUGGESTION REVIEW]',
+            error
+        );
+
+        aiFeatureResult.textContent =
+            'Düzenleme değerlendirilemedi: ' +
+            error.message;
+
+    } finally {
+        aiReviewSuggestionBtn.disabled = false;
+    }
+}
+if (aiSuggestionsBtn) {
+    aiSuggestionsBtn.addEventListener(
+        'click',
+        runAiSuggestions
+    );
+}
+if (aiReviewSuggestionBtn) {
+    aiReviewSuggestionBtn.addEventListener(
+        'click',
+        runAiSuggestionReview
+    );
+}
+
+if (aiAnalyzeSelectionBtn) {
+    aiAnalyzeSelectionBtn.addEventListener(
+        'click',
+        runAiSelectedTextAnalysis
+    );
+}
+
+    if (aiResearchBtn) {
+        aiResearchBtn.addEventListener(
+            'click',
+            runAiResearchSuggestions
+        );
+    }
+    if (aiQuestionsBtn) {
+        aiQuestionsBtn.addEventListener(
+            'click',
+            runAiSuggestedQuestions
+        );
+    }
+
     assistantInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();

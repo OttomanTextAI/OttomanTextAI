@@ -115,6 +115,9 @@ class DocumentPredictionGenerator:
             else:
                 result = {}
 
+        if not isinstance(result, dict):
+            result = {}
+            
         predictions = result.get(
             "predictions",
             [],

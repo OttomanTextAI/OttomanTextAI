@@ -568,6 +568,90 @@
                 Merhaba! Divane hakkında veya Osmanlı Türkçesiyle ilgili sorularınızı bana sorabilirsiniz.
             </div>
         </div>
+
+        <!-- Temporary AI Feature Test Area -->
+            <div id="aiFeatureTestArea" style="
+                padding: 10px;
+                border-top: 1px solid rgba(255,255,255,0.12);
+            ">
+                <div style="
+                    font-size: 12px;
+                    margin-bottom: 8px;
+                    opacity: 0.8;
+                ">
+                    AI Belge Araçları
+                </div>
+
+                <div style="
+                    display: flex;
+                    flex-wrap: wrap;
+                    gap: 6px;
+                ">
+                    <button type="button" id="aiPredictionsBtn">
+                        Tahmin & Öneri
+                    </button>
+
+                    <button type="button" id="aiQuestionsBtn">
+                        Hazır Sorular
+                    </button>
+
+                    <button type="button" id="aiResearchBtn">
+                        Araştırma Önerileri
+                    </button>
+
+                    <button type="button" id="aiEntitiesBtn">
+                        Varlıkları Analiz Et
+                    </button>
+                </div>
+
+                <div style="margin-top: 8px;">
+                    <textarea
+                        id="aiSelectedTextInput"
+                        rows="3"
+                        placeholder="Analiz etmek istediğiniz metni buraya yapıştırın..."
+                        style="width: 100%; box-sizing: border-box;"
+                    ></textarea>
+
+                    <div style="
+                        display: flex;
+                        flex-wrap: wrap;
+                        gap: 6px;
+                        margin-top: 6px;
+                    ">
+                        <button type="button" id="aiAnalyzeSelectionBtn">
+                            Seçili Metni Analiz Et
+                        </button>
+
+                        <button type="button" id="aiSuggestionsBtn">
+                            Alternatif Öner
+                        </button>
+                        <input
+                            type="text"
+                            id="aiSuggestionEditInput"
+                            class="form-input"
+                            placeholder="AI önerisini burada düzenleyin..."
+                        >
+
+                        <button
+                            type="button"
+                            class="btn btn-outline"
+                            id="aiReviewSuggestionBtn"
+                        >
+                            Düzenlemeyi AI ile Değerlendir
+                        </button>
+                    </div>
+                </div>
+
+                <pre id="aiFeatureResult" style="
+                    white-space: pre-wrap;
+                    overflow: auto;
+                    max-height: 220px;
+                    font-size: 11px;
+                    margin-top: 8px;
+                    padding: 8px;
+                    border: 1px solid rgba(255,255,255,0.12);
+                ">AI sonucu burada görünecek.</pre>
+            </div>
         <div class="assistant-panel-input-row">
             <input type="text" id="assistantInput" class="assistant-input" placeholder="Bir soru sorun..." autocomplete="off">
             <button class="assistant-send-btn" id="assistantSendBtn">

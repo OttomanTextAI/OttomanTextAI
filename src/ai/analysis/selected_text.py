@@ -150,32 +150,38 @@ class SelectedTextAnalyzer:
             start = cleaned.find("{")
             end = cleaned.rfind("}")
 
-            if start == -1 or end == -1 or end <= start:
+            if start != -1 and end != -1 and end > start:
+                try:
+                    result = json.loads(
+                        cleaned[start:end + 1]
+                    )
+                except json.JSONDecodeError:
+                    result = {}
+            else:
+                result = {}
+
+            if not result:
                 print(
                     "[SELECTED TEXT] Invalid model response:",
-                    response_text,
+                    repr(response_text),
                     flush=True,
                 )
+                
+        if not isinstance(result, dict):
+            result = {}
 
-                raise RuntimeError(
-                    "Selected text analysis response was not valid JSON."
-                )
+        list_fields = [
+            "people",
+            "places",
+            "dates",
+            "events",
+            "keywords",
+            "uncertain_points",
+        ]
 
-            json_candidate = cleaned[start:end + 1]
-
-            try:
-                result = json.loads(json_candidate)
-
-            except json.JSONDecodeError as error:
-                print(
-                    "[SELECTED TEXT] Invalid model response:",
-                    response_text,
-                    flush=True,
-                )
-
-                raise RuntimeError(
-                    "Selected text analysis response was not valid JSON."
-                ) from error
+        for field in list_fields:
+            if not isinstance(result.get(field, []), list):
+                result[field] = []
 
         return {
             "explanation": result.get(
