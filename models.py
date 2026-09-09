@@ -26,7 +26,7 @@ class Document(db.Model):
     __tablename__ = "documents"
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True) 
     filename = db.Column(db.String(255), nullable=False)
     storage_path = db.Column(db.String(500), nullable=False, unique=True)
     file_type = db.Column(db.String(20), nullable=False)
@@ -77,9 +77,9 @@ class DocumentEntity(db.Model):
     __tablename__ = "document_entities"
 
     id = db.Column(db.Integer, primary_key=True)
-    document_id = db.Column(db.Integer, db.ForeignKey("documents.id"), nullable=False)
+    document_id = db.Column(db.Integer, db.ForeignKey("documents.id"), nullable=False, index=True)
     text = db.Column(db.String(255), nullable=False)
-    category = db.Column(db.String(50), nullable=False)
+    category = db.Column(db.String(50), nullable=False, index=True)
     context = db.Column(db.Text)
     confidence = db.Column(db.Float)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -90,7 +90,7 @@ class AISuggestion(db.Model):
     __tablename__ = "ai_suggestions"
 
     id = db.Column(db.Integer, primary_key=True)
-    document_id = db.Column(db.Integer, db.ForeignKey("documents.id"), nullable=False)
+    document_id = db.Column(db.Integer, db.ForeignKey("documents.id"), nullable=False, index=True)
     suggestion_type = db.Column(db.String(50), nullable=False)
     payload = db.Column(db.JSON, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -114,8 +114,8 @@ class DocumentEdit(db.Model):
     __tablename__ = "document_edits"
 
     id = db.Column(db.Integer, primary_key=True)
-    document_id = db.Column(db.Integer, db.ForeignKey("documents.id"), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    document_id = db.Column(db.Integer, db.ForeignKey("documents.id"), nullable=False, index=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
     field_changed = db.Column(db.String(50), nullable=False)
     old_value = db.Column(db.Text)
     new_value = db.Column(db.Text)
