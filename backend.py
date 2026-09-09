@@ -34,6 +34,7 @@ from src.ai.analysis.suggestions import AISuggestionGenerator
 from src.ai.assistant.question_generator import DocumentQuestionGenerator
 from src.ai.analysis.research import ResearchSuggestionGenerator
 from src.ai.filters.entity_filter import EntityFilterClassifier
+from src.ai.analysis.suggestion_review import SuggestionReviewer
 from werkzeug.utils import secure_filename
 from supabase import create_client
 # Loads RELAY_API_KEY / RELAY_BASE_URL / GEMINI_API_KEY from a local .env for
@@ -1589,6 +1590,68 @@ def ai_suggestions():
             }
         ), 500
 
+@app.route("/api/ai/review-suggestion", methods=["POST"])
+def review_ai_suggestion():
+    try:
+        data = request.get_json(silent=True) or {}
+
+        original_text = str(
+            data.get("original_text", "")
+        ).strip()
+
+        ai_suggestion = str(
+            data.get("ai_suggestion", "")
+        ).strip()
+
+        user_edit = str(
+            data.get("user_edit", "")
+        ).strip()
+
+        if not original_text or not user_edit:
+            return jsonify({
+                "success": False,
+                "error": (
+                    "Original text and user edit are required."
+                ),
+            }), 400
+
+        llm_config = get_llm_config()
+        model = llm_config.get("model")
+
+        if not model:
+            return jsonify({
+                "success": False,
+                "error": "LLM model is not configured.",
+            }), 500
+
+        reviewer = SuggestionReviewer(
+            model=model
+        )
+
+        result = reviewer.review(
+            original_text=original_text,
+            ai_suggestion=ai_suggestion,
+            user_edit=user_edit,
+        )
+
+        return jsonify({
+            "success": True,
+            "review": result,
+        })
+
+    except Exception as error:
+        print(
+            "[AI SUGGESTION REVIEW]",
+            type(error).__name__,
+            str(error),
+            flush=True,
+        )
+
+        return jsonify({
+            "success": False,
+            "error": "AI suggestion review failed.",
+            "details": str(error),
+        }), 500
     
 @app.route("/api/ai/analyze-selection", methods=["POST"])
 def ai_analyze_selection():
