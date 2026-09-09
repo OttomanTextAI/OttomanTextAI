@@ -110,3 +110,16 @@ class ReadingProgress(db.Model):
 
     user = db.relationship("User")
     document = db.relationship("Document")
+class DocumentEdit(db.Model):
+    __tablename__ = "document_edits"
+
+    id = db.Column(db.Integer, primary_key=True)
+    document_id = db.Column(db.Integer, db.ForeignKey("documents.id"), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    field_changed = db.Column(db.String(50), nullable=False)
+    old_value = db.Column(db.Text)
+    new_value = db.Column(db.Text)
+    edited_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    document = db.relationship("Document", backref=db.backref("edits", lazy=True))
+    user = db.relationship("User")
