@@ -19,3 +19,8 @@ ipykernel
 requests
 openai
 python-dotenv
+flask-sqlalchemy
+psycopg2-binary
+pyjwt
+flask-bcrypt
+

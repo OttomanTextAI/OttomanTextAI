@@ -6,10 +6,10 @@ import traceback
 from concurrent.futures import ThreadPoolExecutor
 from io import BytesIO
 from pathlib import Path
-
+from flask_bcrypt import Bcrypt
 import time
 import random
-
+from models import db, User, TokenBlocklist
 import cv2
 import numpy as np
 import requests
@@ -22,7 +22,10 @@ from openai import OpenAI
 
 from src.common.config import load_yaml_config
 from src.image_enhancement.enhance import enhance_image
-
+import jwt
+from datetime import datetime, timedelta
+import uuid
+from functools import wraps
 # Loads RELAY_API_KEY / RELAY_BASE_URL / GEMINI_API_KEY from a local .env for
 # development. In production (Render) these are set directly as environment
 # variables and no .env file is present, so this is a no-op there.
@@ -30,6 +33,10 @@ load_dotenv()
 
 app = Flask(__name__)
 
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+db.init_app(app)
+bcrypt = Bcrypt(app)
 # All /api/* routes (enhance, translate, assistant, health) share this one
 # allowlist so a route can never end up with looser or stricter CORS than
 # the others.
@@ -1356,6 +1363,106 @@ def debug_relay():
 # --- end TEMPORARY DEBUG ENDPOINT ---
 
 
+@app.route("/api/auth/register", methods=["POST"])
+def register():
+    data = request.get_json(silent=True) or {}
+    email = (data.get("email") or "").strip().lower()
+    password = data.get("password") or ""
+
+    if not email or not password:
+        return jsonify({"error": "E-posta ve şifre zorunludur."}), 400
+
+    if len(password) < 6:
+        return jsonify({"error": "Şifre en az 6 karakter olmalıdır."}), 400
+
+    if User.query.filter_by(email=email).first():
+        return jsonify({"error": "Bu e-posta ile zaten bir hesap var."}), 409
+
+    password_hash = bcrypt.generate_password_hash(password).decode("utf-8")
+    new_user = User(email=email, password_hash=password_hash)
+
+    db.session.add(new_user)
+    db.session.commit()
+
+    return jsonify({"message": "Kayıt başarılı.", "user_id": new_user.id}), 201
+@app.route("/api/auth/login", methods=["POST"])
+def login():
+    data = request.get_json(silent=True) or {}
+    email = (data.get("email") or "").strip().lower()
+    password = data.get("password") or ""
+
+    if not email or not password:
+        return jsonify({"error": "E-posta ve şifre zorunludur."}), 400
+
+    user = User.query.filter_by(email=email).first()
+
+    if not user or not bcrypt.check_password_hash(user.password_hash, password):
+        return jsonify({"error": "E-posta veya şifre hatalı."}), 401
+
+    token_id = str(uuid.uuid4())
+
+    token = jwt.encode(
+        {
+            "user_id": user.id,
+            "jti": token_id,
+            "exp": datetime.utcnow() + timedelta(days=7),
+        },
+        os.getenv("JWT_SECRET_KEY"),
+        algorithm="HS256",
+    )
+
+    return jsonify({"token": token, "user_id": user.id, "email": user.email})
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        auth_header = request.headers.get("Authorization", "")
+
+        if not auth_header.startswith("Bearer "):
+            return jsonify({"error": "Giriş yapmanız gerekiyor."}), 401
+
+        token = auth_header.split(" ", 1)[1]
+
+        try:
+            payload = jwt.decode(
+                token, os.getenv("JWT_SECRET_KEY"), algorithms=["HS256"]
+            )
+        except jwt.ExpiredSignatureError:
+            return jsonify({"error": "Oturumunuzun süresi dolmuş, tekrar giriş yapın."}), 401
+        except jwt.InvalidTokenError:
+            return jsonify({"error": "Geçersiz oturum."}), 401
+
+        if TokenBlocklist.query.filter_by(jti=payload["jti"]).first():
+            return jsonify({"error": "Bu oturum sonlandırılmış, tekrar giriş yapın."}), 401
+
+        current_user = User.query.get(payload["user_id"])
+
+        if not current_user:
+            return jsonify({"error": "Kullanıcı bulunamadı."}), 401
+
+        return f(current_user, *args, **kwargs)
+
+    return decorated
+
+
+@app.route("/api/auth/logout", methods=["POST"])
+@token_required
+def logout(current_user):
+    auth_header = request.headers.get("Authorization", "")
+    token = auth_header.split(" ", 1)[1]
+    payload = jwt.decode(token, os.getenv("JWT_SECRET_KEY"), algorithms=["HS256"])
+
+    db.session.add(TokenBlocklist(jti=payload["jti"]))
+    db.session.commit()
+
+    return jsonify({"message": "Çıkış yapıldı."})
+@app.route("/api/auth/me", methods=["GET"])
+@token_required
+def get_current_user(current_user):
+    return jsonify({
+        "user_id": current_user.id,
+        "email": current_user.email,
+        "created_at": current_user.created_at.isoformat(),
+    })
 if __name__ == "__main__":
     app.run(
         host="0.0.0.0",
