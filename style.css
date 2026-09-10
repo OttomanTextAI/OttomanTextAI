@@ -824,7 +824,8 @@ body.dark-theme .hero-section::after {
     border-bottom: 1.5px dashed currentColor;
     border-radius: 2px;
     padding: 0 1px;
-    transition: background-color var(--transition-fast), opacity var(--transition-fast);
+    transition: background-color var(--transition-fast), opacity var(--transition-fast),
+        box-shadow var(--transition-fast), filter var(--transition-fast), font-weight var(--transition-fast);
 }
 
 /* Eşleşmeyen (entity olmayan) düz metin parçaları — bkz.
@@ -869,21 +870,23 @@ body.dark-theme .hero-section::after {
     transition: border-color var(--transition-fast), color var(--transition-fast), opacity var(--transition-fast);
 }
 
-/* Kategoriye göre filtrele (bkz. showEntityFilterPanel() app.js'te) —
-   transTextDisplay'e data-entity-filter="person|place|date|concept"
+/* Kategoriye göre filtrele (bkz. renderEntityFilterMenu()/applyEntityFilter()
+   app.js'te) — transTextDisplay'e data-entity-filter="person|place|date|concept"
    eklenince devreye girer. Sadece .entity-tag/.entity-plain/.uncertain-word
    ÜÇÜ DE kendi opacity'sine sahip olduğu için (opacity üst elemente
    uygulanıp alt elemente miras bırakılamaz — stacking context çarpımsaldır)
-   her biri ayrı ayrı soluklaştırılıyor; eşleşen kategori ikinci kuralla
-   opacity:1'e geri getiriliyor. DOM'a hiç dokunmuyor, sadece bu tek
-   attribute değişiyor.
+   her biri ayrı ayrı soluklaştırılıyor; eşleşen kategori ikinci/üçüncü
+   kurallarla hem opacity:1'e getiriliyor hem de kendi tipinin rengiyle
+   (person=gold, place=blue, date=green, concept=purple) parlatılıyor —
+   kontrast bariz olsun diye soluk taraf normalden de biraz daha düşük
+   (0.3) tutuldu. DOM'a hiç dokunmuyor, sadece bu tek attribute değişiyor.
    NOT: Bu kurallar SADECE #transTextDisplay'i hedefliyor — özellik
    tasarım gereği yalnızca Türkçe Çeviri sekmesinde çalışır (diğer
    sekmelerde zaten .entity-tag/.entity-plain hiç üretilmiyor). */
 #transTextDisplay[data-entity-filter] .entity-plain,
 #transTextDisplay[data-entity-filter] .uncertain-word,
 #transTextDisplay[data-entity-filter] .entity-tag {
-    opacity: 0.35;
+    opacity: 0.3;
 }
 
 #transTextDisplay[data-entity-filter="person"] .entity-tag[data-type="person"],
@@ -891,7 +894,28 @@ body.dark-theme .hero-section::after {
 #transTextDisplay[data-entity-filter="date"] .entity-tag[data-type="date"],
 #transTextDisplay[data-entity-filter="concept"] .entity-tag[data-type="concept"] {
     opacity: 1;
-    background-color: var(--color-gold-bg);
+    font-weight: 700;
+    filter: brightness(1.2) saturate(1.2);
+}
+
+#transTextDisplay[data-entity-filter="person"] .entity-tag[data-type="person"] {
+    background-color: rgba(197, 160, 89, 0.32);
+    box-shadow: 0 0 0 1px rgba(197, 160, 89, 0.75), 0 0 10px rgba(197, 160, 89, 0.55);
+}
+
+#transTextDisplay[data-entity-filter="place"] .entity-tag[data-type="place"] {
+    background-color: rgba(63, 124, 196, 0.28);
+    box-shadow: 0 0 0 1px rgba(63, 124, 196, 0.75), 0 0 10px rgba(63, 124, 196, 0.5);
+}
+
+#transTextDisplay[data-entity-filter="date"] .entity-tag[data-type="date"] {
+    background-color: rgba(43, 138, 62, 0.28);
+    box-shadow: 0 0 0 1px rgba(43, 138, 62, 0.75), 0 0 10px rgba(43, 138, 62, 0.5);
+}
+
+#transTextDisplay[data-entity-filter="concept"] .entity-tag[data-type="concept"] {
+    background-color: rgba(139, 95, 191, 0.28);
+    box-shadow: 0 0 0 1px rgba(139, 95, 191, 0.75), 0 0 10px rgba(139, 95, 191, 0.5);
 }
 
 .uncertain-word:hover,
@@ -1048,25 +1072,12 @@ body.dark-theme .hero-section::after {
     background: var(--color-gold-light);
 }
 
-/* Kategoriye göre filtrele paneli (bkz. showEntityFilterPanel() app.js'te)
-   — entity/word-alt kartlarıyla aynı konumlandırma (positionPopoverNear)
-   ve kart dilini paylaşır. */
-.entity-filter-popover {
-    position: absolute;
-    z-index: 1000;
-    min-width: 190px;
-    background: var(--bg-card);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    box-shadow: var(--shadow-lg);
-    padding: 0.6rem;
-    font-size: 0.85rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    animation: entity-popover-in 0.15s ease-out;
-}
-
+/* "Filtrele ▾" dropdown'ının içeriği (bkz. renderEntityFilterMenu()
+   app.js'te) — #entityFilterMenu'nün kendisi zaten .lang-dropdown-menu
+   class'ını taşıyor (scriptDropdown/langDropdown menüleriyle birebir aynı
+   konumlandırma/kart görünümü: position:absolute; top:100%; vb.), burada
+   sadece İÇİNDEKİ kategori butonlarının/"Tümünü Göster" butonunun kendine
+   özgü stilleri var. */
 .entity-filter-empty {
     color: var(--color-text-muted);
     padding: 0.3rem 0.5rem;

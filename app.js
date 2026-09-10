@@ -87,7 +87,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const copyTransBtn = document.getElementById('copyTransBtn');
     const ttsBtn = document.getElementById('ttsBtn');
     const transStopTtsBtn = document.getElementById('transStopTtsBtn');
-    const entityFilterBtn = document.getElementById('entityFilterBtn');
     const downloadReportBtn = document.getElementById('downloadReportBtn');
 
     const enOutputBox = document.getElementById('enOutputBox');
@@ -121,6 +120,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const langDropdownTrigger = document.getElementById('langDropdownTrigger');
     const langDropdownMenu = document.getElementById('langDropdownMenu');
     const langDropdownLabel = document.getElementById('langDropdownLabel');
+    const entityFilterDropdown = document.getElementById('entityFilterDropdown');
+    const entityFilterTrigger = document.getElementById('entityFilterTrigger');
+    const entityFilterMenu = document.getElementById('entityFilterMenu');
 
     // "Bilgi" output tab (belge analizi) elements
     const infoTabBtn = document.getElementById('infoTabBtn');
@@ -740,7 +742,7 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     function setOutputTab(tab) {
         closeEntityPopover();
         closeWordAlternativesPopover();
-        closeEntityFilterPopover();
+        closeEntityFilterDropdown();
         resetEntityFilter();
         document.querySelectorAll('.output-select-btn').forEach(b => {
             b.classList.toggle('active', b.getAttribute('data-output-tab') === tab);
@@ -805,9 +807,28 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
 
     infoTabBtn.addEventListener('click', () => setOutputTab('info'));
 
+    // entityFilterTrigger/entityFilterMenu ("Filtrele ▾") diğer sekme
+    // dropdown'larıyla (scriptDropdown/langDropdown) AYNI aç/kapa ve
+    // dış-tıklama mantığını kullanır — tek fark, menü içeriğinin sabit
+    // olmayıp her açılışta renderEntityFilterMenu() ile yeniden kurulması
+    // (bkz. aşağıdaki "Kategoriye Göre Filtrele" bölümü), çünkü kategori
+    // listesi belgeye göre değişiyor. setOutputTab() ÇAĞIRMAZ — panel
+    // içindeki bir kategoriye tıklamak sekme değiştirmez, sadece
+    // transTextDisplay'e bir filtre attribute'u uygular.
+    entityFilterTrigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        closeEntityPopover();
+        closeWordAlternativesPopover();
+        const isOpen = !entityFilterMenu.classList.contains('hidden');
+        if (!isOpen) renderEntityFilterMenu();
+        entityFilterMenu.classList.toggle('hidden', isOpen);
+        entityFilterTrigger.setAttribute('aria-expanded', String(!isOpen));
+    });
+
     document.addEventListener('click', (e) => {
         if (!scriptDropdown.contains(e.target)) closeScriptDropdown();
         if (!langDropdown.contains(e.target)) closeLangDropdown();
+        if (!entityFilterDropdown.contains(e.target)) closeEntityFilterDropdown();
     });
 
     selectFileBtn.addEventListener('click', (e) => {
@@ -983,7 +1004,7 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         hardStopTts();
         closeEntityPopover();
         closeWordAlternativesPopover();
-        closeEntityFilterPopover();
+        closeEntityFilterDropdown();
         resetEntityFilter();
         state.selectedFile = null;
         state.imageDataUrl = null;
@@ -1060,6 +1081,15 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         infoEmptyState.classList.remove('hidden');
         infoContentWrapper.classList.add('hidden');
         infoTabBtn.classList.add('hidden');
+        // "Filtrele ▾" de aynı "henüz gösterecek bir şey yok" anlarında
+        // (yeni belge seçildi/sıfırlandı/işlem başarısız oldu) gizlenmeli
+        // — clearInfoTab() zaten tam bu 4 noktada çağrıldığı için buraya
+        // eklemek, ayrı bir fonksiyonu aynı 4 yerde çağırmayı unutma
+        // riskinden kaçınıyor. Gösterme kararı processTranslation'da,
+        // transTextDisplay'de gerçekten entity-tag var mı diye bakılarak
+        // ayrıca veriliyor (bkz. aşağısı).
+        entityFilterDropdown.classList.add('hidden');
+        closeEntityFilterDropdown();
     }
 
     // Builds a row of label/value cards for an info-grid section.
@@ -1311,7 +1341,7 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         hardStopTts();
         closeEntityPopover();
         closeWordAlternativesPopover();
-        closeEntityFilterPopover();
+        closeEntityFilterDropdown();
         resetEntityFilter();
         state.isProcessing = true;
         triggerTranslateBtn.disabled = true;
@@ -1466,6 +1496,12 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         renderTranslationWithEntities(transTextDisplay, finalTrans, finalAnalysis, { clickableGuesses: true, field: 'trans' });
         applyStoredWordCorrections(state.documentId, 'trans', transTextDisplay);
         transTools.classList.add('tools-ready');
+
+        // "Filtrele ▾" sekme çubuğunda sadece gerçekten filtrelenecek bir
+        // şey varsa görünsün — backend'in people/places/concepts dediğine
+        // değil, ekranda fiilen render edilmiş .entity-tag sayısına bak.
+        const hasFilterableEntities = transTextDisplay.querySelector('.entity-tag') !== null;
+        entityFilterDropdown.classList.toggle('hidden', !hasFilterableEntities);
 
         if (finalTransEn) {
             enEmptyState.classList.add('hidden');
@@ -1741,11 +1777,11 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     //
     // Eşleşmeyen (entity olmayan) parçalar da artık .entity-plain içine
     // sarılıyor — bunun tek amacı, kategori filtresinin (bkz.
-    // showEntityFilterPanel) CSS opacity'yi entity-tag'lerden bağımsız
-    // olarak düz metne de uygulayabilmesi: opacity, üst elemente
-    // uygulandığında alt elemente "kendi opacity'sini" geri kazandıramaz
-    // (stacking context çarpımsaldır), bu yüzden soluklaştırılacak her
-    // parçanın KENDİ elementi olması gerekiyor.
+    // renderEntityFilterMenu/applyEntityFilter) CSS opacity'yi entity-
+    // tag'lerden bağımsız olarak düz metne de uygulayabilmesi: opacity,
+    // üst elemente uygulandığında alt elemente "kendi opacity'sini" geri
+    // kazandıramaz (stacking context çarpımsaldır), bu yüzden
+    // soluklaştırılacak her parçanın KENDİ elementi olması gerekiyor.
     function highlightEntitiesInSegment(escapedText, entities) {
         if (!entities.length) return wrapPlainText(escapedText);
 
@@ -1837,7 +1873,7 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     function showEntityPopover(targetEl) {
         closeEntityPopover();
         closeWordAlternativesPopover();
-        closeEntityFilterPopover();
+        closeEntityFilterDropdown();
 
         const type = targetEl.dataset.type;
         const text = targetEl.dataset.entity;
@@ -1887,43 +1923,99 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         if (e.key === 'Escape') {
             closeEntityPopover();
             closeWordAlternativesPopover();
-            closeEntityFilterPopover();
+            closeEntityFilterDropdown();
         }
     });
 
     // --- Kategoriye Göre Filtrele (entity filter) ---
-    // Türkçe Çeviri sekmesine ÖZEL: entityFilterBtn'e basılınca, belgede
-    // gerçekten bulunan kategorileri (Kişiler/Yerler/Tarihler/Kavramlar —
-    // hangisinden en az 1 entity-tag varsa) sayılarıyla listeleyen küçük
-    // bir kart açılır (bkz. positionPopoverNear — entity/kelime kartlarıyla
-    // aynı konumlandırma mantığı). Bir kategoriye tıklanınca DOM yeniden
-    // render EDİLMEZ — sadece transTextDisplay'e data-entity-filter
+    // "Filtrele ▾" (entityFilterTrigger/entityFilterMenu), scriptDropdown/
+    // langDropdown ile AYNI HTML/CSS kalıbını (.lang-dropdown,
+    // .lang-dropdown-trigger, .lang-dropdown-menu) kullanan, sekme
+    // çubuğuna entegre bir dropdown'dur (bkz. yukarıdaki aç/kapa/dış-
+    // tıklama kablolaması). Menü içeriği SABİT değil — her açılışta
+    // renderEntityFilterMenu() ile, belgede GERÇEKTEN bulunan kategoriler
+    // (Kişiler/Yerler/Tarihler/Kavramlar — hangisinden en az 1 entity-tag
+    // varsa) sayılarıyla yeniden kurulur. Bir kategoriye tıklanınca DOM
+    // yeniden render EDİLMEZ — sadece transTextDisplay'e data-entity-filter
     // attribute'u eklenir/kaldırılır, geri kalanı tamamen CSS'te
     // (style.css'teki [data-entity-filter] kuralları) halledilir.
-    let activeEntityFilterPopover = null;
     // null: filtre yok. 'person' | 'place' | 'date' | 'concept': aktif
     // kategori. Sekme değişince/yeni belge işlenince sıfırlanır (bkz.
     // resetEntityFilter, setOutputTab/resetState/processTranslation'daki
     // çağrılar).
     let activeEntityFilterType = null;
 
-    function closeEntityFilterPopover() {
-        if (activeEntityFilterPopover) {
-            activeEntityFilterPopover.remove();
-            activeEntityFilterPopover = null;
-        }
+    function closeEntityFilterDropdown() {
+        entityFilterMenu.classList.add('hidden');
+        entityFilterTrigger.setAttribute('aria-expanded', 'false');
     }
 
     // Aktif filtreyi tamamen kaldırır (metni normale döndürür) — TTS'e,
     // kelime alternatifi kartına, entity popover'a dokunmaz, onlar filtre
-    // aktifken de tamamen normal çalışmaya devam eder (opacity dışında
-    // hiçbir davranışları değişmiyor zaten).
+    // aktifken de tamamen normal çalışmaya devam eder (opacity/vurgu
+    // dışında hiçbir davranışları değişmiyor zaten).
     function resetEntityFilter() {
         activeEntityFilterType = null;
         transTextDisplay.removeAttribute('data-entity-filter');
     }
 
-    // type: 'person' | 'place' | 'date' | 'concept'. Aynı kategoriye
+    // Filtre uygulanabilecek kategorileri, ekranda GERÇEKTEN render edilmiş
+    // .entity-tag sayısından belirlemek için kullanılan buton başına belge
+    // içindeki gerçek dağılımı yansıtır — backend'in people/places/concepts
+    // listesinden değil (bir isim analizde geçse bile çeviri metninde
+    // birebir eşleşmemiş olabilir; kullanıcıya sadece gerçekten tıklayıp
+    // göreceği kategoriler gösterilmeli).
+    function getEntityFilterCategories() {
+        return [
+            { type: 'person', label: 'Kişiler' },
+            { type: 'place', label: 'Yerler' },
+            { type: 'date', label: 'Tarihler' },
+            { type: 'concept', label: 'Kavramlar' },
+        ]
+            .map(cat => ({
+                ...cat,
+                count: transTextDisplay.querySelectorAll(`.entity-tag[data-type="${cat.type}"]`).length
+            }))
+            .filter(cat => cat.count > 0);
+    }
+
+    // entityFilterMenu'yü (dropdown içeriğini) sıfırdan kurar — hem menü
+    // ilk açıldığında hem bir kategori seçimi/temizleme sonrası (aktif/
+    // "Tümünü Göster" durumlarını güncel tutmak için) çağrılır.
+    function renderEntityFilterMenu() {
+        entityFilterMenu.innerHTML = '';
+
+        const categories = getEntityFilterCategories();
+
+        if (categories.length === 0) {
+            const emptyEl = document.createElement('div');
+            emptyEl.className = 'entity-filter-empty';
+            emptyEl.textContent = 'Bu belgede filtrelenecek bir kategori bulunamadı.';
+            entityFilterMenu.appendChild(emptyEl);
+            return;
+        }
+
+        categories.forEach(cat => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'entity-filter-option';
+            btn.dataset.filterType = cat.type;
+            btn.classList.toggle('active', activeEntityFilterType === cat.type);
+            btn.textContent = `${cat.label} (${cat.count})`;
+            btn.addEventListener('click', () => applyEntityFilter(cat.type));
+            entityFilterMenu.appendChild(btn);
+        });
+
+        const clearBtn = document.createElement('button');
+        clearBtn.type = 'button';
+        clearBtn.className = 'entity-filter-clear';
+        clearBtn.classList.toggle('hidden', !activeEntityFilterType);
+        clearBtn.textContent = 'Tümünü Göster';
+        clearBtn.addEventListener('click', () => applyEntityFilter(null));
+        entityFilterMenu.appendChild(clearBtn);
+    }
+
+    // type: 'person' | 'place' | 'date' | 'concept' | null. Aynı kategoriye
     // tekrar basılırsa filtre kapanır (spec: "aynı kategoriye tekrar
     // tıklarsa filtre kaldırılsın").
     function applyEntityFilter(type) {
@@ -1935,88 +2027,10 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
             transTextDisplay.removeAttribute('data-entity-filter');
         }
 
-        if (activeEntityFilterPopover) {
-            activeEntityFilterPopover.querySelectorAll('.entity-filter-option').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.filterType === activeEntityFilterType);
-            });
-            const clearBtn = activeEntityFilterPopover.querySelector('.entity-filter-clear');
-            if (clearBtn) clearBtn.classList.toggle('hidden', !activeEntityFilterType);
+        if (!entityFilterMenu.classList.contains('hidden')) {
+            renderEntityFilterMenu();
         }
     }
-
-    const ENTITY_FILTER_CATEGORIES = [
-        { type: 'person', label: 'Kişiler' },
-        { type: 'place', label: 'Yerler' },
-        { type: 'date', label: 'Tarihler' },
-        { type: 'concept', label: 'Kavramlar' },
-    ];
-
-    function showEntityFilterPanel() {
-        closeEntityPopover();
-        closeWordAlternativesPopover();
-
-        // Aynı butona tekrar basılırsa paneli kapat (basit aç/kapa toggle).
-        if (activeEntityFilterPopover) {
-            closeEntityFilterPopover();
-            return;
-        }
-
-        // Kategori listesini, backend'in söylediği people/places/concepts
-        // listesinden değil, ekranda GERÇEKTEN render edilmiş .entity-tag
-        // sayısından çıkarıyoruz — bir isim analizde geçse bile çeviri
-        // metninde birebir eşleşmemiş olabilir; kullanıcıya sadece
-        // gerçekten tıklayıp göreceği kategoriler gösterilmeli.
-        const categories = ENTITY_FILTER_CATEGORIES
-            .map(cat => ({
-                ...cat,
-                count: transTextDisplay.querySelectorAll(`.entity-tag[data-type="${cat.type}"]`).length
-            }))
-            .filter(cat => cat.count > 0);
-
-        const popover = document.createElement('div');
-        popover.className = 'entity-filter-popover';
-
-        if (categories.length === 0) {
-            const emptyEl = document.createElement('div');
-            emptyEl.className = 'entity-filter-empty';
-            emptyEl.textContent = 'Bu belgede filtrelenecek bir kategori bulunamadı.';
-            popover.appendChild(emptyEl);
-        } else {
-            categories.forEach(cat => {
-                const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.className = 'entity-filter-option';
-                btn.dataset.filterType = cat.type;
-                btn.classList.toggle('active', activeEntityFilterType === cat.type);
-                btn.textContent = `${cat.label} (${cat.count})`;
-                btn.addEventListener('click', () => applyEntityFilter(cat.type));
-                popover.appendChild(btn);
-            });
-
-            const clearBtn = document.createElement('button');
-            clearBtn.type = 'button';
-            clearBtn.className = 'entity-filter-clear';
-            clearBtn.classList.toggle('hidden', !activeEntityFilterType);
-            clearBtn.textContent = 'Tümünü Göster';
-            clearBtn.addEventListener('click', () => applyEntityFilter(null));
-            popover.appendChild(clearBtn);
-        }
-
-        document.body.appendChild(popover);
-        positionPopoverNear(popover, entityFilterBtn);
-        activeEntityFilterPopover = popover;
-    }
-
-    entityFilterBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        showEntityFilterPanel();
-    });
-
-    document.addEventListener('click', (e) => {
-        if (!activeEntityFilterPopover) return;
-        if (activeEntityFilterPopover.contains(e.target) || e.target.closest('#entityFilterBtn')) return;
-        closeEntityFilterPopover();
-    });
 
     // --- Belirsiz Kelime Alternatifleri (uncertain-word) ---
     // translit ve Türkçe çeviri sekmelerindeki **tahmin** işaretli
@@ -2103,7 +2117,7 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     async function showWordAlternativesPopover(targetEl) {
         closeEntityPopover();
         closeWordAlternativesPopover();
-        closeEntityFilterPopover();
+        closeEntityFilterDropdown();
 
         const myToken = wordPopoverToken;
         const wordText = targetEl.textContent;
