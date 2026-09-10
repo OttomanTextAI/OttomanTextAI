@@ -1358,7 +1358,7 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         // çağırıyor) — yani buraya gelindiğinde biri mutlaka doğru.
 
         // Step 2: OCR Extraction
-        statusMessage.textContent = 'Görüntü iyileştiriliyor & Osmanlıca OCR yapılıyor...';
+        statusMessage.textContent = 'Görüntü iyileştirme tamamlandı. Yapay Zeka ile Türkçe çeviri oluşturuluyor...';
         await new Promise(r => setTimeout(r, 1200));
 
         // Step 3: AI Translation
