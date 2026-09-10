@@ -109,7 +109,7 @@ class EntityFilterClassifier:
                 },
             ],
             temperature=0.1,
-            max_tokens=1800,
+            max_tokens=2200,
         )
 
         finish_reason = completion.choices[0].finish_reason
@@ -136,33 +136,82 @@ class EntityFilterClassifier:
             cleaned = cleaned[:-3]
 
         cleaned = cleaned.strip()
-
         try:
             result = json.loads(cleaned)
 
         except json.JSONDecodeError:
-            start = cleaned.find("{")
-            end = cleaned.rfind("}")
+            print(
+                "[ENTITY FILTER] Invalid or truncated JSON. Retrying...",
+                flush=True,
+            )
 
-            if start != -1 and end != -1 and end > start:
-                try:
-                    result = json.loads(
-                        cleaned[start:end + 1]
-                    )
-                except json.JSONDecodeError:
-                    result = {}
-            else:
-                result = {}
+            retry_completion = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": ENTITY_FILTER_SYSTEM_PROMPT,
+                    },
+                    {
+                        "role": "user",
+                        "content": (
+                            "BELGE METNİ:\n"
+                            f"{optimized_text}\n\n"
+                            "Önceki cevap geçerli JSON olarak tamamlanamadı. "
+                            "Bu kez çok kısa cevap ver. "
+                            "En fazla 10 öğe döndür. "
+                            "context alanları en fazla 8 kelime olsun. "
+                            "JSON nesnesini mutlaka tamamen kapat."
+                        ),
+                    },
+                ],
+                temperature=0.1,
+                max_tokens=2200,
+            )
 
-            if not result:
+            retry_finish_reason = (
+                retry_completion.choices[0].finish_reason
+            )
+
+            print(
+                "[ENTITY FILTER RETRY FINISH REASON]",
+                retry_finish_reason,
+                flush=True,
+            )
+
+            retry_text = (
+                retry_completion.choices[0].message.content or ""
+            ).strip()
+
+            print(
+                "[ENTITY FILTER RETRY RESPONSE]",
+                repr(retry_text),
+                flush=True,
+            )
+
+            if retry_text.startswith("```json"):
+                retry_text = retry_text[7:]
+
+            if retry_text.startswith("```"):
+                retry_text = retry_text[3:]
+
+            if retry_text.endswith("```"):
+                retry_text = retry_text[:-3]
+
+            retry_text = retry_text.strip()
+
+            try:
+                result = json.loads(retry_text)
+
+            except json.JSONDecodeError:
                 print(
-                    "[ENTITY FILTER] Invalid model response:",
-                    repr(response_text),
+                    "[ENTITY FILTER] Retry JSON parsing failed.",
                     flush=True,
                 )
+                result = {}
                 
         if not isinstance(result, dict):
-             result = {}
+            result = {}
 
         entities = result.get(
             "entities",
