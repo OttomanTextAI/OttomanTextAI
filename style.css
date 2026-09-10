@@ -2441,3 +2441,258 @@ body.dark-theme .hero-section::after {
     color: var(--color-gold);
     background: var(--color-gold-bg);
 }
+
+/* ==========================================================================
+   AI Tahminler ve Öneriler
+   ========================================================================== */
+
+.ai-result-header {
+    font-family: var(--font-heading);
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--color-text-main);
+    padding-bottom: 0.8rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.ai-result-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    margin-bottom: 1.4rem;
+}
+
+.ai-result-section:last-child {
+    margin-bottom: 0;
+}
+
+.ai-result-section-title {
+    font-size: 0.76rem;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--color-gold);
+    margin-bottom: 0.15rem;
+}
+
+.ai-result-card {
+    width: 100%;
+    display: block;
+    text-align: left;
+
+    padding: 0.9rem 1rem;
+
+    background: var(--bg-input);
+    color: var(--color-text-main);
+
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+
+    font-family: var(--font-sans);
+
+    cursor: pointer;
+
+    transition:
+        border-color var(--transition-fast),
+        background-color var(--transition-fast),
+        transform var(--transition-fast),
+        box-shadow var(--transition-fast);
+}
+
+.ai-result-card:hover {
+    border-color: var(--color-gold);
+    background: var(--color-gold-bg);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.ai-result-card-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.7rem;
+}
+
+.ai-result-number {
+    width: 25px;
+    height: 25px;
+    flex-shrink: 0;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: var(--radius-full);
+
+    background: var(--color-gold-bg);
+    border: 1px solid rgba(197, 160, 89, 0.35);
+
+    color: var(--color-gold);
+
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.ai-result-card-title {
+    flex: 1;
+
+    color: var(--color-text-main);
+
+    font-size: 0.9rem;
+    font-weight: 700;
+    line-height: 1.45;
+}
+
+.ai-result-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    margin-top: 0.65rem;
+    margin-left: 2rem;
+}
+
+.ai-confidence-badge {
+    display: inline-flex;
+    align-items: center;
+
+    padding: 0.2rem 0.6rem;
+
+    border-radius: var(--radius-full);
+
+    background: rgba(43, 138, 62, 0.1);
+    color: var(--color-accent-green);
+
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+.ai-result-reason {
+    margin-top: 0.55rem;
+    margin-left: 2rem;
+
+    color: var(--color-text-muted);
+
+    font-size: 0.8rem;
+    line-height: 1.5;
+}
+
+.ai-result-empty {
+    padding: 0.8rem 1rem;
+
+    background: var(--bg-input);
+    border: 1px dashed var(--color-border);
+    border-radius: var(--radius-sm);
+
+    color: var(--color-text-light);
+
+    font-size: 0.82rem;
+    font-style: italic;
+}
+
+.ai-result-card:focus-visible {
+    outline: 2px solid var(--color-gold);
+    outline-offset: 2px;
+}
+
+/* ==========================================================================
+   AI Belge Araçları - Ortak Sonuç Tasarımı
+   ========================================================================== */
+
+#aiFeatureResult {
+    color: var(--color-text-main);
+    font-family: var(--font-sans);
+}
+
+/* AI sonuç alanında oluşturulan bütün butonların ortak görünümü */
+#aiFeatureResult button {
+    width: 100%;
+    display: block;
+    text-align: left;
+
+    background: var(--bg-input);
+    color: var(--color-text-main);
+
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+
+    padding: 0.85rem 1rem;
+    margin-bottom: 0.6rem;
+
+    font-family: var(--font-sans);
+    font-size: 0.85rem;
+    line-height: 1.5;
+
+    cursor: pointer;
+
+    transition:
+        background-color var(--transition-fast),
+        border-color var(--transition-fast),
+        color var(--transition-fast),
+        transform var(--transition-fast),
+        box-shadow var(--transition-fast);
+}
+
+#aiFeatureResult button:hover {
+    background: var(--color-gold-bg);
+    border-color: var(--color-gold);
+    color: var(--color-text-main);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+#aiFeatureResult button:focus-visible {
+    outline: 2px solid var(--color-gold);
+    outline-offset: 2px;
+}
+
+#aiFeatureResult button:last-child {
+    margin-bottom: 0;
+}
+/* Varlık Analizi */
+
+.ai-entity-type {
+    margin-top: 0.15rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+}
+
+.ai-importance-badge,
+.ai-entity-mentions {
+    display: inline-flex;
+    align-items: center;
+
+    padding: 0.2rem 0.6rem;
+
+    border-radius: var(--radius-full);
+
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+.ai-importance-high {
+    background: rgba(217, 83, 79, 0.1);
+    color: var(--color-accent-red);
+}
+
+.ai-importance-medium {
+    background: var(--color-gold-bg);
+    color: var(--color-gold);
+}
+
+.ai-importance-low {
+    background: var(--bg-card-subtle);
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border);
+}
+
+.ai-entity-mentions {
+    background: rgba(63, 124, 196, 0.1);
+    color: var(--color-accent-blue);
+}
+
+.ai-result-reason strong {
+    color: var(--color-text-main);
+    font-weight: 600;
+}

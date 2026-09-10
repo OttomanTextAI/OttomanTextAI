@@ -2812,29 +2812,30 @@ ${transTextDisplay.textContent}
 
             aiFeatureResult.innerHTML = '';
 
-            const title = document.createElement('div');
-            title.textContent = 'TAHMİNLER';
-            title.style.fontWeight = '700';
-            title.style.marginBottom = '10px';
+            aiFeatureResult.innerHTML = '';
 
-            aiFeatureResult.appendChild(title);
+            // Ana başlık
+            const header = document.createElement('div');
+            header.className = 'ai-result-header';
+            header.textContent = 'Tahminler ve Öneriler';
+            aiFeatureResult.appendChild(header);
+
+            // TAHMİNLER
+            const predictionsSection = document.createElement('div');
+            predictionsSection.className = 'ai-result-section';
+
+            const predictionsTitle = document.createElement('div');
+            predictionsTitle.className = 'ai-result-section-title';
+            predictionsTitle.textContent = 'Tahminler';
+            predictionsSection.appendChild(predictionsTitle);
 
             if (predictions.length === 0) {
                 const empty = document.createElement('div');
+                empty.className = 'ai-result-empty';
                 empty.textContent = 'Tahmin bulunamadı.';
-                aiFeatureResult.appendChild(empty);
+                predictionsSection.appendChild(empty);
             } else {
                 predictions.forEach((item, index) => {
-                    const button = document.createElement('button');
-
-                    button.type = 'button';
-                    button.style.display = 'block';
-                    button.style.width = '100%';
-                    button.style.textAlign = 'left';
-                    button.style.marginBottom = '8px';
-                    button.style.padding = '8px';
-                    button.style.cursor = 'pointer';
-
                     const predictionText =
                         item.prediction || 'Tahmin';
 
@@ -2842,12 +2843,43 @@ ${transTextDisplay.textContent}
                         (Number(item.confidence) || 0) * 100
                     );
 
-                    button.textContent =
-                        `${index + 1}. ${predictionText}\n` +
-                        `Güven: %${percent}\n` +
-                        `Neden: ${item.reason || '-'}`;
+                    const card = document.createElement('button');
+                    card.type = 'button';
+                    card.className = 'ai-result-card';
 
-                    button.addEventListener('click', () => {
+                    const top = document.createElement('div');
+                    top.className = 'ai-result-card-top';
+
+                    const number = document.createElement('span');
+                    number.className = 'ai-result-number';
+                    number.textContent = index + 1;
+
+                    const text = document.createElement('span');
+                    text.className = 'ai-result-card-title';
+                    text.textContent = predictionText;
+
+                    top.appendChild(number);
+                    top.appendChild(text);
+
+                    const meta = document.createElement('div');
+                    meta.className = 'ai-result-meta';
+
+                    const confidence = document.createElement('span');
+                    confidence.className = 'ai-confidence-badge';
+                    confidence.textContent = `Güven %${percent}`;
+
+                    meta.appendChild(confidence);
+
+                    const reason = document.createElement('div');
+                    reason.className = 'ai-result-reason';
+                    reason.textContent =
+                        item.reason || 'Açıklama bulunamadı.';
+
+                    card.appendChild(top);
+                    card.appendChild(meta);
+                    card.appendChild(reason);
+
+                    card.addEventListener('click', () => {
                         assistantSelectedContext = {
                             type: 'prediction',
                             text: predictionText,
@@ -2862,46 +2894,68 @@ ${transTextDisplay.textContent}
                         assistantInput.focus();
                     });
 
-                    aiFeatureResult.appendChild(button);
+                    predictionsSection.appendChild(card);
                 });
             }
 
+            aiFeatureResult.appendChild(predictionsSection);
 
             // ÖNERİLER
-
-            const recommendationTitle =
+            const recommendationsSection =
                 document.createElement('div');
 
-            recommendationTitle.textContent = 'ÖNERİLER';
-            recommendationTitle.style.fontWeight = '700';
-            recommendationTitle.style.margin = '14px 0 10px 0';
+            recommendationsSection.className =
+                'ai-result-section';
 
-            aiFeatureResult.appendChild(recommendationTitle);
+            const recommendationsTitle =
+                document.createElement('div');
+
+            recommendationsTitle.className =
+                'ai-result-section-title';
+
+            recommendationsTitle.textContent = 'Öneriler';
+
+            recommendationsSection.appendChild(
+                recommendationsTitle
+            );
 
             if (recommendations.length === 0) {
                 const empty = document.createElement('div');
+                empty.className = 'ai-result-empty';
                 empty.textContent = 'Öneri bulunamadı.';
-                aiFeatureResult.appendChild(empty);
+                recommendationsSection.appendChild(empty);
             } else {
                 recommendations.forEach((item, index) => {
-                    const button = document.createElement('button');
-
-                    button.type = 'button';
-                    button.style.display = 'block';
-                    button.style.width = '100%';
-                    button.style.textAlign = 'left';
-                    button.style.marginBottom = '8px';
-                    button.style.padding = '8px';
-                    button.style.cursor = 'pointer';
-
                     const recommendationText =
                         item.recommendation || 'Öneri';
 
-                    button.textContent =
-                        `${index + 1}. ${recommendationText}\n` +
-                        `Neden: ${item.reason || '-'}`;
+                    const card = document.createElement('button');
+                    card.type = 'button';
+                    card.className = 'ai-result-card';
 
-                    button.addEventListener('click', () => {
+                    const top = document.createElement('div');
+                    top.className = 'ai-result-card-top';
+
+                    const number = document.createElement('span');
+                    number.className = 'ai-result-number';
+                    number.textContent = index + 1;
+
+                    const text = document.createElement('span');
+                    text.className = 'ai-result-card-title';
+                    text.textContent = recommendationText;
+
+                    top.appendChild(number);
+                    top.appendChild(text);
+
+                    const reason = document.createElement('div');
+                    reason.className = 'ai-result-reason';
+                    reason.textContent =
+                        item.reason || 'Açıklama bulunamadı.';
+
+                    card.appendChild(top);
+                    card.appendChild(reason);
+
+                    card.addEventListener('click', () => {
                         assistantSelectedContext = {
                             type: 'recommendation',
                             text: recommendationText,
@@ -2916,9 +2970,13 @@ ${transTextDisplay.textContent}
                         assistantInput.focus();
                     });
 
-                    aiFeatureResult.appendChild(button);
+                    recommendationsSection.appendChild(card);
                 });
             }
+
+            aiFeatureResult.appendChild(
+                recommendationsSection
+            );
 
         } catch (error) {
             console.error('[AI PREDICTIONS]', error);
@@ -2976,7 +3034,7 @@ ${transTextDisplay.textContent}
                 {
                     method: 'GET'
                 },
-                45000
+                75000
             );
 
             const data = await response.json();
@@ -3242,11 +3300,39 @@ if (Array.isArray(entities)) {
     aiFeatureResult.innerHTML = '';
 
     const title = document.createElement('div');
-    title.textContent = 'VARLIK ANALİZİ';
-    title.style.fontWeight = '700';
-    title.style.marginBottom = '10px';
+    title.className = 'ai-result-header';
+    title.textContent = 'Varlık Analizi';
 
     aiFeatureResult.appendChild(title);
+
+    if (entities.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'ai-result-empty';
+        empty.textContent =
+            'Belgede sınıflandırılabilecek varlık bulunamadı.';
+
+        aiFeatureResult.appendChild(empty);
+        return;
+    }
+
+    const categoryLabels = {
+        person: 'Kişi',
+        place: 'Yer',
+        date: 'Tarih',
+        event: 'Olay',
+        concept: 'Kavram',
+        institution: 'Kurum',
+        organization: 'Kurum',
+        role: 'Unvan / Rol',
+        work: 'Eser / Belge',
+        entity: 'Varlık'
+    };
+
+    const importanceLabels = {
+        high: 'Yüksek önem',
+        medium: 'Orta önem',
+        low: 'Düşük önem'
+    };
 
     entities.forEach((item, index) => {
         const entity =
@@ -3254,67 +3340,153 @@ if (Array.isArray(entities)) {
                 ? {
                     text: item,
                     category: 'entity',
+                    subtype: '',
+                    importance: 'medium',
+                    role: '',
                     context: '',
+                    mentions: null,
                     confidence: null
                 }
                 : item;
-
-        const button = document.createElement('button');
-
-        button.type = 'button';
-        button.style.display = 'block';
-        button.style.width = '100%';
-        button.style.textAlign = 'left';
-        button.style.marginBottom = '10px';
-        button.style.padding = '8px';
-        button.style.cursor = 'pointer';
 
         const entityText =
             entity.text ||
             entity.name ||
             'Varlık';
 
-        const categoryLabels = {
-            person: 'Kişi',
-            place: 'Yer',
-            date: 'Tarih',
-            event: 'Olay',
-            concept: 'Kavram',
-            organization: 'Kurum',
-            entity: 'Varlık'
-        };
-
         const categoryText =
             categoryLabels[entity.category] ||
             entity.category ||
             'Varlık';
 
-        let text =
-            `${index + 1}. ${entityText}\n` +
-            `Tür: ${categoryText}`;
+        const card = document.createElement('button');
+        card.type = 'button';
+        card.className = 'ai-result-card';
 
-        if (entity.confidence !== null &&
-            entity.confidence !== undefined) {
+        // Üst kısım
+        const top = document.createElement('div');
+        top.className = 'ai-result-card-top';
 
-            const confidencePercent =
-                Math.round(
-                    (Number(entity.confidence) || 0) * 100
-                );
+        const number = document.createElement('span');
+        number.className = 'ai-result-number';
+        number.textContent = index + 1;
 
-            text += `\nGüven: %${confidencePercent}`;
+        const nameArea = document.createElement('div');
+        nameArea.style.flex = '1';
+
+        const name = document.createElement('div');
+        name.className = 'ai-result-card-title';
+        name.textContent = entityText;
+
+        const type = document.createElement('div');
+        type.className = 'ai-entity-type';
+
+        if (entity.subtype) {
+            type.textContent =
+                `${categoryText} · ${entity.subtype}`;
+        } else {
+            type.textContent = categoryText;
         }
 
+        nameArea.appendChild(name);
+        nameArea.appendChild(type);
+
+        top.appendChild(number);
+        top.appendChild(nameArea);
+
+        card.appendChild(top);
+
+        // Badge alanı
+        const meta = document.createElement('div');
+        meta.className = 'ai-result-meta';
+
+        if (entity.importance) {
+            const importance = document.createElement('span');
+            importance.className =
+                `ai-importance-badge ai-importance-${entity.importance}`;
+
+            importance.textContent =
+                importanceLabels[entity.importance] ||
+                entity.importance;
+
+            meta.appendChild(importance);
+        }
+
+        if (
+            entity.confidence !== null &&
+            entity.confidence !== undefined
+        ) {
+            const confidencePercent = Math.round(
+                (Number(entity.confidence) || 0) * 100
+            );
+
+            const confidence = document.createElement('span');
+            confidence.className = 'ai-confidence-badge';
+            confidence.textContent =
+                `Güven %${confidencePercent}`;
+
+            meta.appendChild(confidence);
+        }
+
+        if (
+            entity.mentions !== null &&
+            entity.mentions !== undefined
+        ) {
+            const mentions = document.createElement('span');
+            mentions.className = 'ai-entity-mentions';
+            mentions.textContent =
+                `${entity.mentions} kez geçiyor`;
+
+            meta.appendChild(mentions);
+        }
+
+        if (meta.children.length > 0) {
+            card.appendChild(meta);
+        }
+
+        // Rol
+        if (entity.role) {
+            const role = document.createElement('div');
+            role.className = 'ai-result-reason';
+
+            const roleLabel = document.createElement('strong');
+            roleLabel.textContent = 'Rol: ';
+
+            role.appendChild(roleLabel);
+            role.appendChild(
+                document.createTextNode(entity.role)
+            );
+
+            card.appendChild(role);
+        }
+
+        // Bağlam
         if (entity.context) {
-            text += `\nBağlam: ${entity.context}`;
+            const context = document.createElement('div');
+            context.className = 'ai-result-reason';
+
+            const contextLabel = document.createElement('strong');
+            contextLabel.textContent = 'Bağlam: ';
+
+            context.appendChild(contextLabel);
+            context.appendChild(
+                document.createTextNode(entity.context)
+            );
+
+            card.appendChild(context);
         }
 
-        button.textContent = text;
-
-        button.addEventListener('click', () => {
+        card.addEventListener('click', () => {
             assistantSelectedContext = {
                 type: entity.category || 'entity',
                 text: entityText,
-                details: entity.context || ''
+                details: [
+                    entity.subtype,
+                    entity.role,
+                    entity.context
+                ]
+                    .filter(Boolean)
+                    .join(' - ')
             };
 
             assistantPanel.classList.remove('hidden');
@@ -3325,10 +3497,11 @@ if (Array.isArray(entities)) {
             assistantInput.focus();
         });
 
-        aiFeatureResult.appendChild(button);
+        aiFeatureResult.appendChild(card);
     });
 
     return;
+
 }
 
 aiFeatureResult.textContent =
@@ -3560,6 +3733,16 @@ const aiReviewSuggestionBtn =
     document.getElementById('aiReviewSuggestionBtn');
 
 let lastAiSuggestion = null;
+
+if (aiSelectedTextInput) {
+    aiSelectedTextInput.addEventListener('input', () => {
+        lastAiSuggestion = null;
+
+        if (aiSuggestionEditInput) {
+            aiSuggestionEditInput.value = '';
+        }
+    });
+}
 
 async function runAiSuggestions() {
     const selectedText =

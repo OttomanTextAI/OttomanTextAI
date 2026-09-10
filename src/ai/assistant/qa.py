@@ -365,6 +365,35 @@ class DocumentQA:
                     external_completion.choices[0].message.content or ""
                 ).strip()
 
+                external_finish_reason = (
+                    external_completion.choices[0].finish_reason
+                )
+
+                if external_finish_reason == "length":
+                    print(
+                        "[DOCUMENT QA] External answer truncated. Retrying...",
+                        flush=True,
+                    )
+
+                    external_completion = self.client.chat.completions.create(
+                        model=self.model,
+                        messages=[
+                            {
+                                "role": "user",
+                                "content": (
+                                    external_prompt
+                                    + "\n\nYanıtını en fazla 2 kısa cümlede tamamla. "
+                                    "Cümleyi yarıda bırakma."
+                                ),
+                            }
+                        ],
+                        temperature=0.1,
+                        max_tokens=700,
+                    )
+
+                    external_answer = (
+                        external_completion.choices[0].message.content or ""
+                    ).strip()
                 if external_answer:
                     document_answer = str(
                         parsed_answer.get("answer", "")
