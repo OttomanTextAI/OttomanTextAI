@@ -92,9 +92,7 @@ body.dark-theme {
     --color-text-muted: #9AA6B8;
     --color-text-light: #A59B8B;
     --color-border: #233452;
-<<<<<<< Updated upstream
     --color-uncertain-underline: rgba(255, 255, 255, 0.55);
-=======
 
     --hero-bg-start: #0D1627;
     --hero-bg-mid: #141F36;
@@ -108,7 +106,6 @@ body.dark-theme {
     --on-header-text-hover: #FFFFFF;
     --on-header-icon-bg: rgba(255, 255, 255, 0.06);
     --on-header-icon-border: rgba(197, 160, 89, 0.3);
->>>>>>> Stashed changes
 }
 
 /* Reset & Base Reset */
