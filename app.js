@@ -2451,6 +2451,19 @@ ${transTextDisplay.textContent}
             openAiFeatureModal();
         });
     }
+if (aiFeatureResult) {
+    aiFeatureResult.addEventListener('click', (e) => {
+        const clickedResult =
+            e.target.closest('button');
+
+        if (!clickedResult) return;
+
+        closeAiFeatureModal();
+
+        assistantPanel.classList.remove('hidden');
+        assistantInput.focus();
+    });
+}
 
     aiFeatureModalClose.addEventListener(
         'click',
@@ -2933,13 +2946,23 @@ mainButton.style.cursor = 'pointer';
 let mainText =
     `Metin: ${selectedText}`;
 
-if (analysis.explanation) {
-    mainText += `\nAçıklama: ${analysis.explanation}`;
-}
+mainText +=
+    `\nAçıklama: ${
+        analysis.explanation ||
+        'Açıklama oluşturulamadı.'
+    }`;
 
-if (analysis.context) {
-    mainText += `\nBağlam: ${analysis.context}`;
-}
+mainText +=
+    `\nSadeleştirilmiş: ${
+        analysis.simplified ||
+        'Sadeleştirme oluşturulamadı.'
+    }`;
+
+mainText +=
+    `\nBağlam: ${
+        analysis.context ||
+        'Bu seçim için yeterli bağlam belirlenemedi.'
+    }`;
 
 mainButton.textContent = mainText;
 
@@ -2968,7 +2991,8 @@ const sections = [
     ['Kişiler', analysis.people, 'person'],
     ['Yerler', analysis.places, 'place'],
     ['Tarihler', analysis.dates, 'date'],
-    ['Olaylar', analysis.events, 'event']
+    ['Olaylar', analysis.events, 'event'],
+    ['Belirsiz Noktalar', analysis.uncertain_points, 'uncertain']
 ];
 
 sections.forEach(([label, items, type]) => {
@@ -3008,10 +3032,13 @@ sections.forEach(([label, items, type]) => {
             assistantSelectedContext = {
                 type: type,
                 text: itemText,
-                details:
-                    analysis.context ||
-                    analysis.explanation ||
-                    ''
+                details: [
+                    analysis.explanation,
+                    analysis.simplified,
+                    analysis.context
+                ]
+                    .filter(Boolean)
+                    .join(' | ')
             };
 
             assistantPanel.classList.remove('hidden');
