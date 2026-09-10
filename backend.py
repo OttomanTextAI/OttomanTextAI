@@ -2341,34 +2341,6 @@ def update_document(current_user, document_id):
         "updated_at": document.updated_at.isoformat(),
     })
 
-def _resize_image_if_large(image_bytes, max_dimension=2000):
-    """
-    Osmanlıca belge fotoğrafları genelde çok yüksek çözünürlüklü oluyor.
-    AI'ya göndermeden önce çok büyük görselleri küçültüyoruz — işlem
-    süresini belirgin şekilde azaltır, OCR kalitesini pratikte
-    etkilemez (vision modellerin zaten bir çözünürlük tavanı var).
-    """
-    image_array = np.frombuffer(image_bytes, dtype=np.uint8)
-    image = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
-
-    if image is None:
-        return image_bytes
-
-    height, width = image.shape[:2]
-
-    if max(height, width) <= max_dimension:
-        return image_bytes
-
-    scale = max_dimension / max(height, width)
-    new_size = (int(width * scale), int(height * scale))
-    resized = cv2.resize(image, new_size, interpolation=cv2.INTER_AREA)
-
-    success, encoded = cv2.imencode(".jpg", resized, [cv2.IMWRITE_JPEG_QUALITY, 90])
-
-    if not success:
-        return image_bytes
-
-    return encoded.tobytes()
 @app.route("/api/documents/<int:document_id>/analyze", methods=["POST"])
 @token_required
 def analyze_document(current_user, document_id):
@@ -2417,7 +2389,6 @@ def analyze_document(current_user, document_id):
     except Exception as error:
         return jsonify({"error": f"Dosya depolamadan indirilemedi: {error}"}), 502
 
-    image_bytes = _resize_image_if_large(image_bytes)
     client = OpenAI(api_key=api_key, base_url=base_url)
     messages = _build_messages(ANALYSIS_PROMPT, image_bytes)
 
