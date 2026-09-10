@@ -109,6 +109,9 @@ class SuggestionReviewer:
             else:
                 result = {}
 
+        if not isinstance(result, dict):
+            result = {}
+            
         if not result:
             return {
                 "accepted": False,

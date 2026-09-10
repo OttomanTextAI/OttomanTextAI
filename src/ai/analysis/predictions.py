@@ -15,7 +15,9 @@ Görevin:
 - Belge dışında kesin bilgi uydurmamak.
 - Belge metninde açık dayanağı olmayan kurum, kişi, unvan, arşiv, mevzuat veya dönem adı üretme.
 - Recommendation alanında yalnızca belge metninden doğrudan türetilebilecek inceleme adımları öner.
-- Genel tarih bilgisini belge bilgisiymiş gibi kullanma.
+- Recommendation alanında belge üzerinde yapılabilecek anlamlı sonraki inceleme adımları öner.
+- Örneğin kişi, yer, tarih, olay, kavram, dil, dönem veya belge türü açısından daha ayrıntılı inceleme önerebilirsin.
+- Ancak belgede hiç geçmeyen özel kişi, kurum, arşiv veya olay isimleri uydurma.
 - Tahmin ile doğrudan belge bilgisini birbirinden ayırmak.
 - Her tahmine 0.0 ile 1.0 arasında confidence vermek.
 - Emin olmadığın çıkarımlarda düşük confidence kullanmak.
@@ -42,10 +44,15 @@ JSON formatı:
 }
 
 Kurallar:
+- Belge metni anlamlı ve boş değilse en az 1 prediction üret.
+- Belge metni anlamlı ve boş değilse en az 1 recommendation üret.
 - En fazla 3 prediction üret.
 - En fazla 3 recommendation üret.
-- reason alanları kısa olsun.
-- Belgede yeterli dayanak yoksa listeyi boş bırak.
+- prediction alanları yalnızca belge metninden çıkarılabilir yorumlar olsun.
+- recommendation alanları belge üzerinde yapılabilecek sonraki analiz veya inceleme adımları olsun.
+- reason alanları kısa ve belgeye dayalı olsun.
+- Kesin olmayan çıkarımları düşük confidence ile belirt.
+- Yalnızca belge tamamen anlamsız, boş veya analiz edilemeyecek durumdaysa listeyi boş bırak.
 """
 
 
@@ -85,12 +92,18 @@ class DocumentPredictionGenerator:
                 },
             ],
             temperature=0.1,
-            max_tokens=1800,
+            max_tokens=2200,
         )
 
         answer_text = (
             response.choices[0].message.content or ""
         ).strip()
+
+        print(
+            "[AI PREDICTIONS] Raw model response:",
+            repr(answer_text),
+            flush=True,
+        )
 
         if answer_text.startswith("```"):
             answer_text = answer_text.strip("`").strip()
@@ -102,19 +115,63 @@ class DocumentPredictionGenerator:
             result = json.loads(answer_text)
 
         except json.JSONDecodeError:
-            start = answer_text.find("{")
-            end = answer_text.rfind("}")
+            print(
+                "[AI PREDICTIONS] Invalid or truncated JSON. Retrying...",
+                flush=True,
+            )
 
-            if start != -1 and end != -1 and end > start:
-                try:
-                    result = json.loads(
-                        answer_text[start:end + 1]
-                    )
-                except json.JSONDecodeError:
-                    result = {}
-            else:
+            retry_response = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": PREDICTION_SYSTEM_PROMPT,
+                    },
+                    {
+                        "role": "user",
+                        "content": (
+                            "BELGE METNİ:\n"
+                            f"{context}\n\n"
+                            "Önceki cevap geçerli JSON olarak tamamlanamadı. "
+                            "Bu kez çok kısa cevap ver. "
+                            "En fazla 2 prediction ve 2 recommendation üret. "
+                            "Reason alanları en fazla 12 kelime olsun. "
+                            "JSON nesnesini mutlaka tamamen kapat."
+                        ),
+                    },
+                ],
+                temperature=0.1,
+                max_tokens=1200,
+            )
+
+            retry_text = (
+                retry_response.choices[0].message.content or ""
+            ).strip()
+
+            print(
+                "[AI PREDICTIONS] Retry response:",
+                repr(retry_text),
+                flush=True,
+            )
+
+            if retry_text.startswith("```"):
+                retry_text = retry_text.strip("`").strip()
+
+                if retry_text.startswith("json"):
+                    retry_text = retry_text[4:].strip()
+
+            try:
+                result = json.loads(retry_text)
+            except json.JSONDecodeError:
+                print(
+                    "[AI PREDICTIONS] Retry JSON parsing failed.",
+                    flush=True,
+                )
                 result = {}
 
+        if not isinstance(result, dict):
+            result = {}
+            
         predictions = result.get(
             "predictions",
             [],
@@ -185,8 +242,15 @@ class DocumentPredictionGenerator:
                 cleaned_recommendations.append({
                     "recommendation": recommendation,
                     "reason": reason,
-                })
-
+             })
+        print(
+            "[AI PREDICTIONS] Parsed result:",
+            {
+                "predictions": cleaned_predictions,
+                "recommendations": cleaned_recommendations,
+            },
+            flush=True,
+        )
         return {
             "predictions": cleaned_predictions,
             "recommendations": cleaned_recommendations,

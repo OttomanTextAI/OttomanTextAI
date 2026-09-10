@@ -9,48 +9,71 @@ Sen Divane adlı Osmanlıca belge analiz uygulamasının
 seçili metin analiz asistanısın.
 
 Kullanıcı, bir belgenin belirli bir bölümünü seçti.
+Seçim tek bir kelime, kısa bir ifade, cümle veya daha uzun
+bir metin olabilir.
 
-Görevin yalnızca sana verilen seçili metni analiz etmektir.
+Görevin sana verilen seçili metni dilsel ve içerik açısından
+analiz etmektir.
 
 Şunları üret:
 
 1. explanation
-Seçili bölümün açık ve kısa açıklaması.
+- Seçili metnin açık ve kısa anlamını açıkla.
+- Tek bir kelime seçilmişse kelimenin anlamını veya olası
+  anlamlarını belirt.
+- Eski, Osmanlıca veya günümüzde daha az kullanılan bir ifade
+  ise günümüz Türkçesindeki karşılığını açıkla.
 
 2. simplified
-Metni anlamını bozmadan daha sade ve güncel Türkçeyle ifade et.
+- Metni anlamını bozmadan sade ve güncel Türkçeyle ifade et.
+- Tek kelimeyse en uygun güncel Türkçe karşılığını yaz.
+- Zaten güncel Türkçeyse aynı veya daha anlaşılır karşılığını ver.
 
 3. context
-Bu bölümün kendi içeriğinden anlaşılabilen bağlamı açıkla.
-Belgede olmayan tarihsel bilgileri ekleme.
+- Seçili bölümün yalnızca kendi içeriğinden anlaşılabilecek
+  bağlamını açıkla.
+- Metin çok kısaysa veya tek kelimeyse bağlamın sınırlı olduğunu
+  açıkça belirt.
+- Belgenin seçili olmayan bölümleri hakkında varsayım yapma.
 
 4. people
-Bu bölümde geçen kişi isimleri.
+Seçili bölümde açıkça geçen kişi isimleri.
 
 5. places
-Bu bölümde geçen yer, şehir, bölge veya ülke isimleri.
+Seçili bölümde açıkça geçen yer, şehir, bölge veya ülke isimleri.
 
 6. dates
-Bu bölümde geçen tarih veya dönem ifadeleri.
+Seçili bölümde açıkça geçen tarih veya dönem ifadeleri.
 
 7. events
-Bu bölümde geçen önemli olaylar, savaşlar, kuşatmalar,
-antlaşmalar veya tarihsel gelişmeler.
+Seçili bölümde açıkça geçen önemli olaylar, savaşlar,
+kuşatmalar, antlaşmalar veya tarihsel gelişmeler.
 
 8. keywords
-Bölümü temsil eden önemli kelime ve kavramlar.
+- Bölümü temsil eden önemli kelime ve kavramlar.
+- Tek kelimelik seçimlerde anlamlıysa seçilen kelimeyi de ekle.
 
 9. uncertain_points
-Anlamı kesin olmayan, yoruma açık veya bağlam gerektiren
-ifadeler varsa belirt.
+- Anlamı kesin olmayan, birden fazla anlama gelebilen,
+  yazımından emin olunamayan veya daha geniş belge bağlamına
+  ihtiyaç duyan noktaları belirt.
+- Tek kelimelik seçimlerde farklı yorum ihtimali varsa burada açıkla.
 
 Kurallar:
-- Yalnızca verilen metni kullan.
+- Analizin merkezinde yalnızca kullanıcının seçtiği metin olsun.
+- Seçili metinde bulunmayan kişi, tarih, yer veya tarihsel olay ekleme.
+- Ancak kelime anlamını ve güncel Türkçe karşılığını açıklamak için
+  genel dil bilgisini kullanabilirsin.
+- Genel tarih bilgisi ekleme.
 - Bilgi uydurma.
-- Genel tarih bilgisini cevaba ekleme.
 - Bir bilgi metinde yoksa ilgili listeyi boş bırak.
+- explanation alanını boş bırakma.
+- simplified alanını mümkün olduğunca boş bırakma.
+- context alanını boş bırakma; bağlam yoksa bunu açıkça belirt.
 - Kısa ve anlaşılır cevaplar üret.
+- Cevabı Türkçe ver.
 - SADECE geçerli JSON döndür.
+- Markdown kullanma.
 
 JSON formatı:
 
@@ -122,7 +145,7 @@ class SelectedTextAnalyzer:
                 },
             ],
             temperature=0.1,
-            max_tokens=900,
+            max_tokens=2200,
         )
 
         response_text = (
@@ -130,6 +153,12 @@ class SelectedTextAnalyzer:
             or ""
         ).strip()
 
+        print(
+            "[SELECTED TEXT] Finish reason:",
+            completion.choices[0].finish_reason,
+            flush=True,
+        )
+        
         cleaned = response_text
 
         if cleaned.startswith("```json"):
@@ -147,35 +176,87 @@ class SelectedTextAnalyzer:
             result = json.loads(cleaned)
 
         except json.JSONDecodeError:
-            start = cleaned.find("{")
-            end = cleaned.rfind("}")
+            print(
+                "[SELECTED TEXT] Invalid or truncated JSON. Retrying...",
+                flush=True,
+            )
 
-            if start == -1 or end == -1 or end <= start:
-                print(
-                    "[SELECTED TEXT] Invalid model response:",
-                    response_text,
-                    flush=True,
-                )
+            retry_completion = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": SELECTED_TEXT_SYSTEM_PROMPT,
+                    },
+                    {
+                        "role": "user",
+                        "content": (
+                            "SEÇİLİ METİN:\n"
+                            f"{selected_text.strip()}\n\n"
+                            "Önceki cevap geçerli JSON olarak tamamlanamadı. "
+                            "Bu kez çok kısa cevap ver. "
+                            "Her metin alanını en fazla 1 cümle yaz. "
+                            "Liste alanlarında en fazla 3 öğe kullan. "
+                            "JSON nesnesini mutlaka tamamen kapat."
+                        ),
+                    },
+                ],
+                temperature=0.1,
+                max_tokens=2200,
+            )
 
-                raise RuntimeError(
-                    "Selected text analysis response was not valid JSON."
-                )
+            retry_text = (
+                retry_completion.choices[0].message.content
+                or ""
+            ).strip()
+            
+            print(
+                "[SELECTED TEXT] Retry finish reason:",
+                retry_completion.choices[0].finish_reason,
+                flush=True,
+            )
+            print(
+                "[SELECTED TEXT] Retry response:",
+                repr(retry_text),
+                flush=True,
+            )
 
-            json_candidate = cleaned[start:end + 1]
+            if retry_text.startswith("```json"):
+                retry_text = retry_text[7:]
+
+            if retry_text.startswith("```"):
+                retry_text = retry_text[3:]
+
+            if retry_text.endswith("```"):
+                retry_text = retry_text[:-3]
+
+            retry_text = retry_text.strip()
 
             try:
-                result = json.loads(json_candidate)
+                result = json.loads(retry_text)
 
-            except json.JSONDecodeError as error:
+            except json.JSONDecodeError:
                 print(
-                    "[SELECTED TEXT] Invalid model response:",
-                    response_text,
+                    "[SELECTED TEXT] Retry JSON parsing failed.",
                     flush=True,
                 )
+                result = {}
+                
+        if not isinstance(result, dict):
+            result = {}
 
-                raise RuntimeError(
-                    "Selected text analysis response was not valid JSON."
-                ) from error
+        list_fields = [
+            "people",
+            "places",
+            "dates",
+            "events",
+            "keywords",
+            "uncertain_points",
+        ]
+
+        for field in list_fields:
+            if not isinstance(result.get(field, []), list):
+                result[field] = []
 
         return {
             "explanation": result.get(

@@ -236,6 +236,8 @@
                             </div>
                             <div class="output-tab-tools box-tools" id="enTools" data-tools-for="en">
                                 <button class="tool-btn" id="copyEnBtn" title="Copy Translation">📋</button>
+                                <button class="tool-btn" id="enTtsBtn" title="Read Aloud">🔊</button>
+                                <button class="tool-btn" id="enStopTtsBtn" title="Stop">⏹</button>
                             </div>
                         </div>
 
@@ -566,6 +568,28 @@
                 Merhaba! Divane hakkında veya Osmanlı Türkçesiyle ilgili sorularınızı bana sorabilirsiniz.
             </div>
         </div>
+
+        <!-- Temporary AI Feature Test Area -->
+            <div id="aiFeatureTestArea" style="
+                padding: 10px;
+                border-top: 1px solid rgba(255,255,255,0.12);
+            ">
+                <div style="
+                    font-size: 12px;
+                    margin-bottom: 8px;
+                    opacity: 0.8;
+                ">
+
+            </div>
+            <div class="assistant-tools-row">
+                <button
+                    type="button"
+                    id="assistantToolsBtn"
+                    class="assistant-tools-btn"
+                >
+                    ✦ Belge Araçları
+                </button>
+            </div>
         <div class="assistant-panel-input-row">
             <input type="text" id="assistantInput" class="assistant-input" placeholder="Bir soru sorun..." autocomplete="off">
             <button class="assistant-send-btn" id="assistantSendBtn">
@@ -576,6 +600,125 @@
             </button>
         </div>
     </div>
+                <!-- AI Feature Result Modal -->
+        <div id="aiFeatureModal" class="modal-overlay hidden">
+            <div class="modal-card" style="
+                width: min(680px, 92vw);
+                max-height: 88vh;
+                overflow-y: auto;
+                display: flex;
+                flex-direction: column;
+            ">
+                <div class="modal-header" style="
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    gap: 12px;
+                ">
+                    <div>
+                        <h3 style="margin: 0;">
+                            AI Belge Araçları
+                        </h3>
+                        <p style="
+                            margin: 4px 0 0;
+                            font-size: 12px;
+                            opacity: 0.7;
+                        ">
+                            Sonuçlardan birine tıklayarak sohbet konusu yapabilirsiniz.
+                        </p>
+                    </div>
+
+                    <button
+                        type="button"
+                        id="aiFeatureModalClose"
+                        class="assistant-panel-close"
+                        aria-label="Kapat"
+                    >
+                        &times;
+                    </button>
+                </div>
+                 <div class="ai-tools-section">
+                    <div class="ai-tools-title">
+                        AI Belge Araçları
+                    </div>
+
+                    <div class="ai-tools-grid">
+                        <button type="button" id="aiPredictionsBtn" class="ai-tool-btn">
+                            Tahmin & Öneri
+                        </button>
+
+                        <button type="button" id="aiQuestionsBtn" class="ai-tool-btn">
+                            Hazır Sorular
+                        </button>
+
+                        <button type="button" id="aiResearchBtn" class="ai-tool-btn">
+                            Araştırma Önerileri
+                        </button>
+
+                        <button type="button" id="aiEntitiesBtn" class="ai-tool-btn">
+                            Varlıkları Analiz Et
+                        </button>
+                    </div>
+
+                    <div class="ai-selection-box">
+                        <textarea
+                            id="aiSelectedTextInput"
+                            rows="4"
+                            class="ai-selected-textarea"
+                            placeholder="Analiz etmek istediğiniz metni buraya yapıştırın..."
+                        ></textarea>
+
+                        <div class="ai-selection-actions">
+                            <button
+                                type="button"
+                                id="aiAnalyzeSelectionBtn"
+                                class="ai-tool-btn"
+                            >
+                                Seçili Metni Analiz Et
+                            </button>
+
+                            <button
+                                type="button"
+                                id="aiSuggestionsBtn"
+                                class="ai-tool-btn"
+                            >
+                                Alternatif Öner
+                            </button>
+                        </div>
+
+                        <input
+                            type="text"
+                            id="aiSuggestionEditInput"
+                            class="form-input ai-suggestion-input"
+                            placeholder="AI önerisini burada düzenleyin..."
+                        >
+
+                        <button
+                            type="button"
+                            class="btn btn-outline ai-review-btn"
+                            id="aiReviewSuggestionBtn"
+                        >
+                            Düzenlemeyi AI ile Değerlendir
+                        </button>
+                    </div>
+                </div>
+                <div
+                    id="aiFeatureResult"
+                    style="
+                    overflow-y: auto;
+                    padding: 20px;
+                    white-space: pre-wrap;
+                    flex: none;
+                    min-height: 220px;
+                    max-height: 360px;
+                    margin-top: 18px;
+                    border-top: 1px solid var(--color-border);
+                    "
+                >
+                    AI sonucu burada görünecek.
+                </div>
+            </div>
+        </div>
 
     <!-- Custom JavaScript -->
     <script src="app.js?v=20260818-2"></script>

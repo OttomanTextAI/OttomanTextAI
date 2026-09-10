@@ -35,6 +35,7 @@ from src.ai.assistant.question_generator import DocumentQuestionGenerator
 from src.ai.analysis.research import ResearchSuggestionGenerator
 from src.ai.filters.entity_filter import EntityFilterClassifier
 from src.ai.analysis.suggestion_review import SuggestionReviewer
+from src.ai.analysis.predictions import DocumentPredictionGenerator
 from werkzeug.utils import secure_filename
 from supabase import create_client
 # Loads RELAY_API_KEY / RELAY_BASE_URL / GEMINI_API_KEY from a local .env for
@@ -1309,6 +1310,13 @@ def assistant_endpoint():
         if not isinstance(history, list):
             history = []
 
+        selected_context = data.get(
+            "selected_context"
+        )
+
+        if not isinstance(selected_context, dict):
+            selected_context = None
+
         user_message = (
             data.get("message")
             or ""
@@ -1336,6 +1344,7 @@ def assistant_endpoint():
             question=user_message,
             top_k=3,
             history=history,
+            selected_context=selected_context,
         )
 
         return jsonify(
@@ -1956,7 +1965,58 @@ def ai_index_document():
             }
         ), 500
 
+@app.route("/api/ai/predictions", methods=["POST"])
+def ai_predictions():
+    try:
+        data = request.get_json(silent=True) or {}
 
+        document_text = str(
+            data.get("document_text", "")
+        ).strip()
+
+        if not document_text:
+            return jsonify({
+                "success": False,
+                "error": "Document text is required.",
+            }), 400
+
+        llm_config = get_llm_config()
+        model = llm_config.get("model")
+
+        if not model:
+            return jsonify({
+                "success": False,
+                "error": "LLM model is not configured.",
+            }), 500
+
+        generator = DocumentPredictionGenerator(
+            model=model
+        )
+
+        result = generator.generate(
+            document_text=document_text
+        )
+
+        return jsonify({
+            "success": True,
+            "analysis": result,
+        })
+
+    except Exception as error:
+        print(
+            "[AI PREDICTIONS]",
+            type(error).__name__,
+            str(error),
+            flush=True,
+        )
+
+        return jsonify({
+            "success": False,
+            "error": "AI prediction generation failed.",
+            "details": str(error),
+        }), 500
+
+    
 @app.route("/api/ai/ask", methods=["POST"])
 def ai_ask_document():
     """

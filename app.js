@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
         isProcessing: false,
         ocrText: '',
         transText: '',
+        transTextEn: '',
         translitText: '',
         lastAnalysis: null,
         apiKey: localStorage.getItem('gemini_api_key') || '',
@@ -92,6 +93,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const enEmptyState = document.getElementById('enEmptyState');
     const enTextDisplay = document.getElementById('enTextDisplay');
     const copyEnBtn = document.getElementById('copyEnBtn');
+    const enTtsBtn = document.getElementById('enTtsBtn');
+    const enStopTtsBtn = document.getElementById('enStopTtsBtn');
 
     const themeToggleBtn = document.getElementById('themeToggleBtn');
     const settingsBtn = document.getElementById('settingsBtn');
@@ -890,6 +893,12 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
             return;
         }
 
+        hardStopTts();
+
+        assistantHistory.length = 0;
+        assistantSelectedContext = null;
+        assistantMessages.innerHTML = '';
+
         state.selectedFile = file;
         state.ocrText = '';
         state.transText = '';
@@ -944,6 +953,9 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
             const key = card.getAttribute('data-sample');
             const sample = sampleDatabase[key];
             if (sample) {
+                assistantHistory.length = 0;
+                assistantSelectedContext = null;
+                assistantMessages.innerHTML = '';
                 state.selectedFile = { name: sample.name };
                 state.imageDataUrl = sample.file;
                 state.enhancedImageUrl = sample.file;
@@ -963,11 +975,20 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     });
 
     function resetState() {
+        hardStopTts();
         closeEntityPopover();
         state.selectedFile = null;
         state.imageDataUrl = null;
+
+        state.ocrText = '';
+        state.transText = '';
+        state.transTextEn = '';
         state.translitText = '';
         state.lastAnalysis = null;
+
+        assistantHistory.length = 0;
+        assistantSelectedContext = null;
+        assistantMessages.innerHTML = '';
         statusHint.classList.add('hidden');
         statusBadge.classList.add('hidden');
         clearProcessingFailure();
@@ -1278,6 +1299,7 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     }
 
     async function processTranslation(presetData = null) {
+        hardStopTts();
         closeEntityPopover();
         state.isProcessing = true;
         triggerTranslateBtn.disabled = true;
@@ -1439,6 +1461,42 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         state.translitText = finalTranslit;
         state.lastAnalysis = finalAnalysis;
 
+        // Index translated document for AI/RAG features
+    if (finalTrans && finalTrans.trim()) {
+        try {
+            const indexResponse = await fetchWithTimeout(
+                'https://ottoman-text-ai.onrender.com/api/ai/index-document',
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        text: finalTrans
+                    })
+                },
+                45000
+            );
+
+            const indexData = await indexResponse.json();
+
+            if (!indexResponse.ok) {
+                console.warn(
+                    '[AI INDEX]',
+                    indexData.error || 'Document could not be indexed.'
+                );
+            } else {
+                console.log('[AI INDEX] Document indexed successfully.');
+            }
+
+        } catch (error) {
+            console.warn(
+                '[AI INDEX] Index request failed:',
+                error
+            );
+        }
+    }
+
         // "Bilgi" tab — only populate/reveal it when we actually have
         // analysis data; otherwise leave it hidden rather than showing an
         // empty/misleading tab.
@@ -1486,13 +1544,61 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
 
+    // rawText'i, TTS'in kullandığı AYNI kurala göre (yalnızca . ! ? — satır
+    // sonları sayılmaz) art arda gelen, kayıpsız birleştirilebilir (yani
+    // parçaları concat edince rawText'i tam olarak veren) parçalara böler.
+    // speakText()'in ürettiği cümle listesiyle 1:1 hizalı kalması için bölme
+    // mantığı splitIntoSentences() ile birebir aynı iskelet üzerine kurulu;
+    // tek fark burada parçalar TRIM EDİLMEDEN (baştaki/sondaki boşluk ve \n
+    // korunarak) döner, çünkü bu parçalar doğrudan ekrana (pre-wrap) yazılan
+    // <span class="tts-sentence"> içeriği olacak.
+    function partitionSentencesRaw(text) {
+        const pieces = text.split(/([.!?]+)/);
+        const parts = [];
+        let current = '';
+        for (const piece of pieces) {
+            current += piece;
+            if (/[.!?]/.test(piece) && current.trim()) {
+                parts.push(current);
+                current = '';
+            }
+        }
+        if (current) parts.push(current);
+        return parts.length ? parts : [text];
+    }
+
     // Backend, modelin tahmin ettiği (okuyamadığı ama bağlamdan tahmin
     // ettiği) kelime/ifadeleri **böyle** işaretleyerek gönderiyor. Burada
     // bunu güvenli şekilde <strong>'e çevirip gösteriyoruz — önce HTML'i
     // escape edip sonra sadece **...** çiftlerini kalınlaştırıyoruz, ham
     // model çıktısını doğrudan innerHTML'e basmıyoruz (XSS'e karşı).
+    //
+    // Ayrıca her cümleyi (partitionSentencesRaw ile) ayrı bir
+    // <span class="tts-sentence" data-tts-idx="N"> içine sarar, böylece
+    // speakText() o an okunan cümleyi aynı N indeksiyle vurgulayabilir
+    // (bkz. TTS bölümü). entities verilirse (Türkçe çeviri sekmesi), her
+    // cümle içinde ayrıca kişi/yer/tarih vurgulaması da uygulanır.
+    function renderSentenceSpansHtml(rawText, entities) {
+        const parts = partitionSentencesRaw(rawText || '');
+        return parts.map((raw, idx) => {
+            const escaped = escapeHtml(raw);
+            let inner;
+            if (entities && entities.length) {
+                const segments = splitGuessSegments(escaped);
+                inner = segments
+                    .map(seg => seg.bold
+                        ? `<strong>${seg.text}</strong>`
+                        : highlightEntitiesInSegment(seg.text, entities))
+                    .join('');
+            } else {
+                inner = escaped.replace(/\*\*(.+?)\*\*/gs, '<strong>$1</strong>');
+            }
+            return `<span class="tts-sentence" data-tts-idx="${idx}">${inner}</span>`;
+        }).join('');
+    }
+
     function renderWithGuessMarkers(el, rawText) {
-        el.innerHTML = escapeHtml(rawText).replace(/\*\*(.+?)\*\*/gs, '<strong>$1</strong>');
+        el.innerHTML = renderSentenceSpansHtml(rawText, null);
     }
 
     const ENTITY_TYPE_LABELS = { person: 'Kişi', place: 'Yer', date: 'Tarih' };
@@ -1598,16 +1704,11 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     // analiz verisindeki kişi/yer/tarihleri metin içinde tıklanabilir şekilde
     // vurgular (bkz. showEntityPopover). Diğer çıktı kutuları (Osmanlıca
     // metin, İngilizce çeviri) hâlâ sade renderWithGuessMarkers kullanır.
+    // Cümle bazlı TTS highlight sarmalaması renderSentenceSpansHtml
+    // içinde, entity vurgulamasıyla birlikte uygulanır.
     function renderTranslationWithEntities(el, rawText, analysis) {
-        const escaped = escapeHtml(rawText);
         const entities = buildEntityIndex(analysis);
-        const segments = splitGuessSegments(escaped);
-
-        el.innerHTML = segments
-            .map(seg => seg.bold
-                ? `<strong>${seg.text}</strong>`
-                : highlightEntitiesInSegment(seg.text, entities))
-            .join('');
+        el.innerHTML = renderSentenceSpansHtml(rawText, entities);
     }
 
     // Bir entity için "ilgili bilgi" olarak, analizin summary/key_points
@@ -1702,29 +1803,43 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     }
 
     // Text To Speech
+    // Üç sekme de (Osmanlıca Metin grubu, Türkçe Çeviri, İngilizce Çeviri)
+    // aynı speakText()/handleTtsToggle() altyapısını, sadece dil/metin/
+    // buton parametreleri farklı olacak şekilde paylaşır. Ana ses butonları
+    // (ocrTtsBtn, translitTtsBtn, ttsBtn, enTtsBtn) 🔊 ↔ ⏸ ↔ ▶ arasında
+    // duraklat/devam ettir davranışı gösterir; ayrı "Sesi Durdur" (⏹)
+    // butonları (ocrStopTtsBtn, translitStopTtsBtn, transStopTtsBtn,
+    // enStopTtsBtn) bu toggle mantığının tamamen DIŞINDADIR ve her zaman
+    // tam durdurma yapar (bkz. stopSpeaking).
+
     // Uzun metinlerde tek bir SpeechSynthesisUtterance tarayıcılarda sessizce
     // başarısız olabiliyor (bilinen bir speechSynthesis kısıtı). Bunu önlemek
-    // için metni cümlelere/parçalara bölüp her parçayı ayrı bir utterance
-    // olarak, bir öncekinin bitişini (onend) bekleyerek sırayla okutuyoruz.
-    // Kısa metinlerde tek parça oluşur, davranış öncekiyle aynı kalır.
-    function splitTextForTts(text) {
-        // Noktalama işaretlerinden (. ! ? ve satır sonu) sonra böl, işareti
-        // parçanın sonunda tut. (Lookbehind kullanmıyoruz, geniş tarayıcı
-        // uyumluluğu için split+capture-group ile eşdeğerini elde ediyoruz.)
-        const pieces = text.split(/([.!?\n]+)/);
-        const chunks = [];
+    // için metni cümlelere bölüp her cümleyi ayrı bir utterance olarak, bir
+    // öncekinin bitişini (onend) bekleyerek sırayla okutuyoruz.
+    //
+    // Bölme SADECE gerçek noktalama işaretlerine (. ! ?) göre yapılır; satır
+    // sonları (\n) cümle bitişi SAYILMAZ — bölmeden önce tüm \n'ler tek bir
+    // boşluğa çevrilir, böylece satır kesmeleri sadece görsel bir birleştirme
+    // noktası olur, okumada duraksama yaratmaz. Bu iskelet, ekrandaki cümle
+    // span'lerini üreten partitionSentencesRaw() (yukarıda) ile birebir
+    // aynıdır — ikisi de aynı sayıda/sırada cümle üretir, böylece highlight
+    // her zaman doğru <span data-tts-idx>'e denk gelir.
+    function splitIntoSentences(text) {
+        const normalized = text.replace(/\n+/g, ' ');
+        const pieces = normalized.split(/([.!?]+)/);
+        const sentences = [];
         let current = '';
         for (const piece of pieces) {
             current += piece;
-            if (/[.!?\n]/.test(piece)) {
+            if (/[.!?]/.test(piece)) {
                 const trimmed = current.trim();
-                if (trimmed) chunks.push(trimmed);
+                if (trimmed) sentences.push(trimmed);
                 current = '';
             }
         }
         const trimmedRest = current.trim();
-        if (trimmedRest) chunks.push(trimmedRest);
-        return chunks.length > 0 ? chunks : [text];
+        if (trimmedRest) sentences.push(trimmedRest);
+        return sentences.length > 0 ? sentences : (text.trim() ? [text.trim()] : []);
     }
 
     // Her speakText() çağrısına ait zincirin kimliği. window.speechSynthesis
@@ -1738,8 +1853,43 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     // çağrısını bir öncekinden ayırt ederek eski zincirin artık geçersiz
     // sayılıp sessizce durmasını sağlıyor.
     let ttsPlaybackId = 0;
+    // 'osmanli' | 'trans' | 'en' — o an okuyan/duraklatılmış olan kanal.
+    // Osmanlıca grubu (ocrTtsBtn + translitTtsBtn) TEK bir kanalı paylaşır,
+    // ikisinin ikonu da birlikte güncellenir.
+    let ttsActiveChannel = null;
+    let ttsState = 'idle'; // 'idle' | 'speaking' | 'paused'
 
-    function speakText(text) {
+    function setTtsIcon(buttons, icon) {
+        buttons.forEach(btn => { if (btn) btn.textContent = icon; });
+    }
+
+    // Tüm ana ses butonlarını 🔊'e sıfırlar ve ekrandaki cümle vurgularını
+    // temizler. "Sesi Durdur" butonlarına VE bir okuma zinciri sonuna
+    // gelindiğinde çağrılır.
+    function resetAllTtsUi() {
+        setTtsIcon([ocrTtsBtn, translitTtsBtn, ttsBtn, enTtsBtn], '🔊');
+        document.querySelectorAll('.tts-sentence-active').forEach(el => el.classList.remove('tts-sentence-active'));
+        ttsActiveChannel = null;
+        ttsState = 'idle';
+    }
+
+    function highlightSentence(displays, idx) {
+        document.querySelectorAll('.tts-sentence-active').forEach(el => el.classList.remove('tts-sentence-active'));
+        displays.forEach(displayEl => {
+            if (!displayEl) return;
+            const span = displayEl.querySelector(`.tts-sentence[data-tts-idx="${idx}"]`);
+            if (span) {
+                span.classList.add('tts-sentence-active');
+                span.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+        });
+    }
+
+    // text: okunacak düz metin (\n içerebilir, splitIntoSentences içinde
+    // normalize edilir). channelKey/buttons: bu okumanın ait olduğu ana ses
+    // butonu/butonları (ikon burada güncellenir — osmanlı grubunda ikisi
+    // birden). displays: highlight uygulanacak eleman(lar).
+    function speakText(text, { lang = 'tr-TR', displays = [], buttons = [], channelKey = null } = {}) {
         if (!text) return;
         if (!('speechSynthesis' in window)) {
             alert('Tarayıcınız sesli okuma özelliğini desteklemiyor.');
@@ -1752,17 +1902,29 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         // "güncel" görünüp devam ederdi.
         const myPlaybackId = ++ttsPlaybackId;
         window.speechSynthesis.cancel();
-        const chunks = splitTextForTts(text);
+        resetAllTtsUi();
+
+        const sentences = splitIntoSentences(text);
         let index = 0;
+
+        ttsState = 'speaking';
+        ttsActiveChannel = channelKey;
+        setTtsIcon(buttons, '⏸');
 
         function speakNext() {
             // Bu zincir, aradan başka bir speakText() çağrısı yapılarak
             // (cancel() ile) geçersiz kılınmışsa burada dur.
             if (myPlaybackId !== ttsPlaybackId) return;
-            if (index >= chunks.length) return;
+            if (index >= sentences.length) {
+                resetAllTtsUi();
+                return;
+            }
 
-            const utterance = new SpeechSynthesisUtterance(chunks[index]);
-            utterance.lang = 'tr-TR';
+            const currentIdx = index;
+            highlightSentence(displays, currentIdx);
+
+            const utterance = new SpeechSynthesisUtterance(sentences[currentIdx]);
+            utterance.lang = lang;
             utterance.rate = 0.9;
             index++;
 
@@ -1773,7 +1935,12 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
             const advanceOnce = () => {
                 if (advanced) return;
                 advanced = true;
-                speakNext();
+                if (myPlaybackId !== ttsPlaybackId) return;
+                // Cümleler arasında kısa, doğal bir bekleme.
+                setTimeout(() => {
+                    if (myPlaybackId !== ttsPlaybackId) return;
+                    speakNext();
+                }, 180);
             };
             utterance.onend = advanceOnce;
             utterance.onerror = advanceOnce;
@@ -1785,14 +1952,58 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     }
 
     // Konuşmayı hemen durdurur ve zinciri geçersiz kılar (bkz. ttsPlaybackId
-    // yorumu yukarıda) — bir "Sesi Durdur" butonuna basıldığında, henüz
-    // sırada bekleyen parçaların çalmaya devam etmesini engeller.
+    // yorumu yukarıda) — "Sesi Durdur" (⏹) butonlarına basıldığında, henüz
+    // sırada bekleyen cümlelerin çalmaya devam etmesini engeller ve tüm ana
+    // ses butonlarını/highlight'ı sıfırlar. Bu davranış ana ses butonlarının
+    // duraklat/devam ettir toggle'ından TAMAMEN AYRIDIR ve değişmez.
     function stopSpeaking() {
         ttsPlaybackId++;
         window.speechSynthesis.cancel();
+        resetAllTtsUi();
     }
 
-    ttsBtn.addEventListener('click', () => speakText(transTextDisplay.textContent));
+    // Yeni bir belge seçildiğinde/işlenmeye başlarken önceki okumanın
+    // kesintisiz durmasını garanti eder — iki farklı belgenin sesi asla üst
+    // üste binmemeli (bkz. handleFileSelect / processTranslation).
+    function hardStopTts() {
+        if (ttsState !== 'idle') stopSpeaking();
+    }
+
+    // Ana ses butonları için ortak toggle mantığı: metin yoksa uyarı verir;
+    // bu kanal zaten okuyorsa duraklatır, duraklatılmışsa kaldığı yerden
+    // devam ettirir; başka bir kanal aktifse (ya da hiç okuma yoksa) eski
+    // okumayı tamamen durdurup yenisini baştan başlatır — asla iki ses
+    // üst üste binmez.
+    function handleTtsToggle({ getText, lang, displays, buttons, channelKey, emptyMessage }) {
+        if (ttsActiveChannel === channelKey && ttsState === 'speaking') {
+            window.speechSynthesis.pause();
+            ttsState = 'paused';
+            setTtsIcon(buttons, '▶');
+            return;
+        }
+        if (ttsActiveChannel === channelKey && ttsState === 'paused') {
+            window.speechSynthesis.resume();
+            ttsState = 'speaking';
+            setTtsIcon(buttons, '⏸');
+            return;
+        }
+
+        const text = getText();
+        if (!text) {
+            alert(emptyMessage);
+            return;
+        }
+        speakText(text, { lang, displays, buttons, channelKey });
+    }
+
+    ttsBtn.addEventListener('click', () => handleTtsToggle({
+        getText: () => transTextDisplay.textContent,
+        lang: 'tr-TR',
+        displays: [transTextDisplay],
+        buttons: [ttsBtn],
+        channelKey: 'trans',
+        emptyMessage: 'Bu belge için sesli okuma verisi bulunamadı.'
+    }));
     transStopTtsBtn.addEventListener('click', stopSpeaking);
 
     // Osmanlıca transliterasyonuna özgü diyakritikli harfleri (ḳ, ġ, ā, ḥ,
@@ -1822,21 +2033,38 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     // Osmanlıca (Arap harfli) metin doğrudan seslendirilemediği için, hem
     // "Transkript" sekmesindeki Arapça harfli görünümün hem de Türkçe
     // harfli (okunuş) görünümün sesli oku butonu aynı temizlenmiş okunuş
-    // metnini kullanır — kullanıcı hangi yazıyı görüntülüyorsa görüntülesin
-    // sesli dinleyebilir.
-    function speakTranslit() {
-        if (!state.translitText) {
-            alert('Bu belge için sesli okuma verisi bulunamadı.');
-            return;
-        }
-        const cleanedForTts = cleanTranslitForTts(state.translitText);
-        speakText(cleanedForTts);
+    // metnini, AYNI paylaşılan 'osmanli' kanalı üzerinden kullanır —
+    // kullanıcı hangi yazıyı görüntülüyorsa görüntülesin sesli dinleyebilir
+    // ve iki butonun ikonu (🔊/⏸/▶) her zaman birlikte güncellenir; hangi
+    // panel görünürse görünsün highlight ilgili panelde uygulanır.
+    function handleOsmanliTtsToggle() {
+        handleTtsToggle({
+            getText: () => cleanTranslitForTts(state.translitText),
+            lang: 'tr-TR',
+            displays: [ocrTextDisplay, translitTextDisplay],
+            buttons: [ocrTtsBtn, translitTtsBtn],
+            channelKey: 'osmanli',
+            emptyMessage: 'Bu belge için sesli okuma verisi bulunamadı.'
+        });
     }
 
-    ocrTtsBtn.addEventListener('click', speakTranslit);
-    translitTtsBtn.addEventListener('click', speakTranslit);
+    ocrTtsBtn.addEventListener('click', handleOsmanliTtsToggle);
+    translitTtsBtn.addEventListener('click', handleOsmanliTtsToggle);
     ocrStopTtsBtn.addEventListener('click', stopSpeaking);
     translitStopTtsBtn.addEventListener('click', stopSpeaking);
+
+    // İngilizce çeviri sekmesi — o belgede İngilizce çeviri yoksa (state
+    // boşsa) diğer iki dilden bağımsız, ayrı bir uyarı gösterir (bkz.
+    // handleTtsToggle'daki emptyMessage kontrolü).
+    enTtsBtn.addEventListener('click', () => handleTtsToggle({
+        getText: () => enTextDisplay.textContent,
+        lang: 'en-US',
+        displays: [enTextDisplay],
+        buttons: [enTtsBtn],
+        channelKey: 'en',
+        emptyMessage: 'Bu belge için İngilizce çeviri bulunamadı.'
+    }));
+    enStopTtsBtn.addEventListener('click', stopSpeaking);
 
     // Download Report
     downloadReportBtn.addEventListener('click', () => {
@@ -1949,6 +2177,7 @@ ${transTextDisplay.textContent}
     const assistantSendBtn = document.getElementById('assistantSendBtn');
 
     const assistantHistory = [];
+    let assistantSelectedContext = null;
 
     function appendAssistantMessage(role, text) {
         const msg = document.createElement('div');
@@ -1974,7 +2203,10 @@ ${transTextDisplay.textContent}
         if (!text) return;
 
         appendAssistantMessage('user', text);
-        assistantHistory.push({ role: 'user', text });
+        assistantHistory.push({
+            role: 'user',
+            content: text
+        });
         assistantInput.value = '';
         assistantInput.disabled = true;
         assistantSendBtn.disabled = true;
@@ -1990,8 +2222,9 @@ ${transTextDisplay.textContent}
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    message: text,
-                    history: assistantHistory.slice(-10)
+                message: text,
+                history: assistantHistory.slice(-10),
+                selected_context: assistantSelectedContext
                 })
             }, 45000);
 
@@ -2004,7 +2237,10 @@ ${transTextDisplay.textContent}
                 const data = await res.json();
                 const reply = data.reply || 'Bir yanıt alınamadı.';
                 appendAssistantMessage('bot', reply);
-                assistantHistory.push({ role: 'bot', text: reply });
+                assistantHistory.push({
+                    role: 'assistant',
+                    content: reply
+                });
             }
         } catch (err) {
             loadingMsg.remove();
@@ -2017,6 +2253,1258 @@ ${transTextDisplay.textContent}
     }
 
     assistantSendBtn.addEventListener('click', sendAssistantMessage);
+
+    const aiPredictionsBtn = document.getElementById('aiPredictionsBtn');
+    const aiFeatureResult = document.getElementById('aiFeatureResult');
+    const aiFeatureModal =
+        document.getElementById('aiFeatureModal');
+    const assistantToolsBtn =
+        document.getElementById('assistantToolsBtn');
+
+    const aiFeatureModalClose =
+        document.getElementById('aiFeatureModalClose');
+
+        function openAiFeatureModal() {
+        aiFeatureModal.classList.remove('hidden');
+    }
+
+    function closeAiFeatureModal() {
+        aiFeatureModal.classList.add('hidden');
+    }
+
+    async function runAiPredictions() {
+        if (!state.transText || !state.transText.trim()) {
+            aiFeatureResult.textContent =
+                'Önce bir belgeyi çevirmeniz gerekiyor.';
+            return;
+        }
+
+        aiPredictionsBtn.disabled = true;
+        aiFeatureResult.textContent =
+            'AI tahmin ve önerileri hazırlanıyor...';
+
+        try {
+            const response = await fetchWithTimeout(
+                'https://ottoman-text-ai.onrender.com/api/ai/predictions',
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        document_text: state.transText
+                    })
+                },
+                45000
+            );
+
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+                throw new Error(
+                    data.error || 'AI tahmin isteği başarısız oldu.'
+                );
+            }
+
+            const result = data.analysis || {};
+            const predictions = Array.isArray(result.predictions)
+                ? result.predictions
+                : [];
+
+            const recommendations = Array.isArray(result.recommendations)
+                ? result.recommendations
+                : [];
+
+            aiFeatureResult.innerHTML = '';
+
+            const title = document.createElement('div');
+            title.textContent = 'TAHMİNLER';
+            title.style.fontWeight = '700';
+            title.style.marginBottom = '10px';
+
+            aiFeatureResult.appendChild(title);
+
+            if (predictions.length === 0) {
+                const empty = document.createElement('div');
+                empty.textContent = 'Tahmin bulunamadı.';
+                aiFeatureResult.appendChild(empty);
+            } else {
+                predictions.forEach((item, index) => {
+                    const button = document.createElement('button');
+
+                    button.type = 'button';
+                    button.style.display = 'block';
+                    button.style.width = '100%';
+                    button.style.textAlign = 'left';
+                    button.style.marginBottom = '8px';
+                    button.style.padding = '8px';
+                    button.style.cursor = 'pointer';
+
+                    const predictionText =
+                        item.prediction || 'Tahmin';
+
+                    const percent = Math.round(
+                        (Number(item.confidence) || 0) * 100
+                    );
+
+                    button.textContent =
+                        `${index + 1}. ${predictionText}\n` +
+                        `Güven: %${percent}\n` +
+                        `Neden: ${item.reason || '-'}`;
+
+                    button.addEventListener('click', () => {
+                        assistantSelectedContext = {
+                            type: 'prediction',
+                            text: predictionText,
+                            details: item.reason || ''
+                        };
+
+                        assistantPanel.classList.remove('hidden');
+
+                        assistantInput.placeholder =
+                            `"${predictionText}" hakkında sor...`;
+
+                        assistantInput.focus();
+                    });
+
+                    aiFeatureResult.appendChild(button);
+                });
+            }
+
+
+            // ÖNERİLER
+
+            const recommendationTitle =
+                document.createElement('div');
+
+            recommendationTitle.textContent = 'ÖNERİLER';
+            recommendationTitle.style.fontWeight = '700';
+            recommendationTitle.style.margin = '14px 0 10px 0';
+
+            aiFeatureResult.appendChild(recommendationTitle);
+
+            if (recommendations.length === 0) {
+                const empty = document.createElement('div');
+                empty.textContent = 'Öneri bulunamadı.';
+                aiFeatureResult.appendChild(empty);
+            } else {
+                recommendations.forEach((item, index) => {
+                    const button = document.createElement('button');
+
+                    button.type = 'button';
+                    button.style.display = 'block';
+                    button.style.width = '100%';
+                    button.style.textAlign = 'left';
+                    button.style.marginBottom = '8px';
+                    button.style.padding = '8px';
+                    button.style.cursor = 'pointer';
+
+                    const recommendationText =
+                        item.recommendation || 'Öneri';
+
+                    button.textContent =
+                        `${index + 1}. ${recommendationText}\n` +
+                        `Neden: ${item.reason || '-'}`;
+
+                    button.addEventListener('click', () => {
+                        assistantSelectedContext = {
+                            type: 'recommendation',
+                            text: recommendationText,
+                            details: item.reason || ''
+                        };
+
+                        assistantPanel.classList.remove('hidden');
+
+                        assistantInput.placeholder =
+                            `"${recommendationText}" hakkında sor...`;
+
+                        assistantInput.focus();
+                    });
+
+                    aiFeatureResult.appendChild(button);
+                });
+            }
+
+        } catch (error) {
+            console.error('[AI PREDICTIONS]', error);
+
+            aiFeatureResult.textContent =
+                'Tahmin ve öneriler alınamadı: ' +
+                error.message;
+
+        } finally {
+            aiPredictionsBtn.disabled = false;
+        }
+    }
+
+    if (aiPredictionsBtn) {
+        aiPredictionsBtn.addEventListener(
+            'click',
+            runAiPredictions
+        );
+    }
+    if (assistantToolsBtn) {
+        assistantToolsBtn.addEventListener('click', () => {
+            aiFeatureResult.textContent =
+                'Bir AI belge aracı seçin.';
+
+            openAiFeatureModal();
+        });
+    }
+if (aiFeatureResult) {
+    aiFeatureResult.addEventListener('click', (e) => {
+        const clickedResult =
+            e.target.closest('button');
+
+        if (!clickedResult) return;
+
+        closeAiFeatureModal();
+
+        assistantPanel.classList.remove('hidden');
+        assistantInput.focus();
+    });
+}
+
+    aiFeatureModalClose.addEventListener(
+        'click',
+        closeAiFeatureModal
+    );
+
+    aiFeatureModal.addEventListener('click', (e) => {
+        if (e.target === aiFeatureModal) {
+            closeAiFeatureModal();
+        }
+    });
+    const aiQuestionsBtn = document.getElementById('aiQuestionsBtn');
+
+    async function runAiSuggestedQuestions() {
+        if (!state.transText || !state.transText.trim()) {
+            aiFeatureResult.textContent =
+                'Önce bir belgeyi çevirmeniz gerekiyor.';
+            return;
+        }
+
+        aiQuestionsBtn.disabled = true;
+        aiFeatureResult.textContent =
+            'Belge için hazır sorular oluşturuluyor...';
+
+        try {
+            const response = await fetchWithTimeout(
+                'https://ottoman-text-ai.onrender.com/api/ai/suggested-questions',
+                {
+                    method: 'GET'
+                },
+                45000
+            );
+
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+                throw new Error(
+                    data.error || 'Hazır sorular oluşturulamadı.'
+                );
+            }
+
+            const questions = Array.isArray(data.questions)
+                ? data.questions
+                : [];
+
+            if (questions.length === 0) {
+                aiFeatureResult.textContent =
+                    'Bu belge için hazır soru üretilemedi.';
+                return;
+            }
+
+            aiFeatureResult.innerHTML = '';
+
+            const title = document.createElement('div');
+            title.textContent = 'HAZIR SORULAR';
+            title.style.fontWeight = '700';
+            title.style.marginBottom = '10px';
+
+            aiFeatureResult.appendChild(title);
+
+            questions.forEach((question, index) => {
+                const button = document.createElement('button');
+
+                button.type = 'button';
+                button.style.display = 'block';
+                button.style.width = '100%';
+                button.style.textAlign = 'left';
+                button.style.marginBottom = '8px';
+                button.style.padding = '8px';
+                button.style.cursor = 'pointer';
+
+                button.textContent =
+                    `${index + 1}. ${question}`;
+
+                button.addEventListener('click', () => {
+                    assistantPanel.classList.remove('hidden');
+
+                    assistantInput.value = question;
+                    assistantInput.focus();
+
+                    sendAssistantMessage();
+                });
+
+                aiFeatureResult.appendChild(button);
+            });
+
+        } catch (error) {
+            console.error('[AI QUESTIONS]', error);
+
+            aiFeatureResult.textContent =
+                'Hazır sorular alınamadı: ' +
+                error.message;
+
+        } finally {
+            aiQuestionsBtn.disabled = false;
+        }
+    }
+   
+    const aiResearchBtn = document.getElementById('aiResearchBtn');
+
+    async function runAiResearchSuggestions() {
+        if (!state.transText || !state.transText.trim()) {
+            aiFeatureResult.textContent =
+                'Önce bir belgeyi çevirmeniz gerekiyor.';
+            return;
+        }
+
+        aiResearchBtn.disabled = true;
+        aiFeatureResult.textContent =
+            'Araştırma önerileri hazırlanıyor...';
+
+        try {
+            const response = await fetchWithTimeout(
+                'https://ottoman-text-ai.onrender.com/api/ai/research-suggestions',
+                {
+                    method: 'GET'
+                },
+                45000
+            );
+
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+                throw new Error(
+                    data.error || 'Araştırma önerileri oluşturulamadı.'
+                );
+            }
+
+            let suggestions = data.suggestions;
+
+            if (!suggestions) {
+                aiFeatureResult.textContent =
+                    'Araştırma önerisi bulunamadı.';
+                return;
+            }
+        if (typeof suggestions === 'object') {
+            suggestions = Object.values(suggestions)
+                .flat()
+                .filter(Boolean);
+        }
+// Liste dönerse okunabilir ve tıklanabilir şekilde göster
+if (Array.isArray(suggestions)) {
+    aiFeatureResult.innerHTML = '';
+
+    const title = document.createElement('div');
+    title.textContent = 'ARAŞTIRMA ÖNERİLERİ';
+    title.style.fontWeight = '700';
+    title.style.marginBottom = '10px';
+
+    aiFeatureResult.appendChild(title);
+
+    suggestions.forEach((item, index) => {
+        const suggestion =
+            typeof item === 'string'
+                ? {
+                    title: item,
+                    query: item,
+                    reason: '',
+                    type: 'research'
+                }
+                : item;
+
+        const button = document.createElement('button');
+
+        button.type = 'button';
+        button.style.display = 'block';
+        button.style.width = '100%';
+        button.style.textAlign = 'left';
+        button.style.marginBottom = '10px';
+        button.style.padding = '8px';
+        button.style.cursor = 'pointer';
+
+        const titleText =
+            suggestion.title ||
+            suggestion.query ||
+            'Araştırma önerisi';
+
+        let text =
+            `${index + 1}. ${titleText}`;
+
+        if (suggestion.query) {
+            text += `\nAraştırma: ${suggestion.query}`;
+        }
+
+        if (suggestion.reason) {
+            text += `\nNeden: ${suggestion.reason}`;
+        }
+
+        if (suggestion.type) {
+            text += `\nTür: ${suggestion.type}`;
+        }
+
+        button.textContent = text;
+
+        button.addEventListener('click', () => {
+            assistantSelectedContext = {
+                type: suggestion.type || 'research',
+                text: titleText,
+                details:
+                    suggestion.reason ||
+                    suggestion.query ||
+                    ''
+            };
+
+            assistantPanel.classList.remove('hidden');
+
+            assistantInput.placeholder =
+                `"${titleText}" hakkında sor...`;
+
+            assistantInput.focus();
+        });
+
+        aiFeatureResult.appendChild(button);
+    });
+
+    return;
+}
+
+            // Object dönerse test aşamasında JSON olarak göster
+        if (typeof suggestions === 'object') {
+            const objectSuggestions = Object.values(suggestions)
+                .flat()
+                .filter(Boolean);
+
+            suggestions = objectSuggestions;
+        }
+
+
+
+            aiFeatureResult.textContent =
+                'ARAŞTIRMA ÖNERİLERİ\n\n' +
+                String(suggestions);
+
+        } catch (error) {
+            console.error(
+                '[AI RESEARCH SUGGESTIONS]',
+                error
+            );
+
+            aiFeatureResult.textContent =
+                'Araştırma önerileri alınamadı: ' +
+                error.message;
+
+        } finally {
+            aiResearchBtn.disabled = false;
+        }
+    }
+
+const aiEntitiesBtn = document.getElementById('aiEntitiesBtn');
+
+async function runAiEntityFilter() {
+    if (!state.transText || !state.transText.trim()) {
+        aiFeatureResult.textContent =
+            'Önce bir belgeyi çevirmeniz gerekiyor.';
+        return;
+    }
+
+    aiEntitiesBtn.disabled = true;
+    aiFeatureResult.textContent =
+        'Belgedeki varlıklar analiz ediliyor...';
+
+    try {
+        const response = await fetchWithTimeout(
+            'https://ottoman-text-ai.onrender.com/api/ai/entity-filter',
+            {
+                method: 'GET'
+            },
+            45000
+        );
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            throw new Error(
+                data.error || 'Varlık analizi başarısız oldu.'
+            );
+        }
+
+        let entities = data.entities;
+
+        if (!entities) {
+            aiFeatureResult.textContent =
+                'Belgede sınıflandırılabilecek varlık bulunamadı.';
+            return;
+        }
+
+        if (typeof entities === 'object' && !Array.isArray(entities)) {
+            entities = Object.values(entities)
+                .flat()
+                .filter(Boolean);
+        }
+
+if (Array.isArray(entities)) {
+    aiFeatureResult.innerHTML = '';
+
+    const title = document.createElement('div');
+    title.textContent = 'VARLIK ANALİZİ';
+    title.style.fontWeight = '700';
+    title.style.marginBottom = '10px';
+
+    aiFeatureResult.appendChild(title);
+
+    entities.forEach((item, index) => {
+        const entity =
+            typeof item === 'string'
+                ? {
+                    text: item,
+                    category: 'entity',
+                    context: '',
+                    confidence: null
+                }
+                : item;
+
+        const button = document.createElement('button');
+
+        button.type = 'button';
+        button.style.display = 'block';
+        button.style.width = '100%';
+        button.style.textAlign = 'left';
+        button.style.marginBottom = '10px';
+        button.style.padding = '8px';
+        button.style.cursor = 'pointer';
+
+        const entityText =
+            entity.text ||
+            entity.name ||
+            'Varlık';
+
+        const categoryLabels = {
+            person: 'Kişi',
+            place: 'Yer',
+            date: 'Tarih',
+            event: 'Olay',
+            concept: 'Kavram',
+            organization: 'Kurum',
+            entity: 'Varlık'
+        };
+
+        const categoryText =
+            categoryLabels[entity.category] ||
+            entity.category ||
+            'Varlık';
+
+        let text =
+            `${index + 1}. ${entityText}\n` +
+            `Tür: ${categoryText}`;
+
+        if (entity.confidence !== null &&
+            entity.confidence !== undefined) {
+
+            const confidencePercent =
+                Math.round(
+                    (Number(entity.confidence) || 0) * 100
+                );
+
+            text += `\nGüven: %${confidencePercent}`;
+        }
+
+        if (entity.context) {
+            text += `\nBağlam: ${entity.context}`;
+        }
+
+        button.textContent = text;
+
+        button.addEventListener('click', () => {
+            assistantSelectedContext = {
+                type: entity.category || 'entity',
+                text: entityText,
+                details: entity.context || ''
+            };
+
+            assistantPanel.classList.remove('hidden');
+
+            assistantInput.placeholder =
+                `"${entityText}" hakkında sor...`;
+
+            assistantInput.focus();
+        });
+
+        aiFeatureResult.appendChild(button);
+    });
+
+    return;
+}
+
+aiFeatureResult.textContent =
+    'VARLIK ANALİZİ\n\n' +
+    String(entities);
+
+    } catch (error) {
+        console.error('[AI ENTITY FILTER]', error);
+
+        aiFeatureResult.textContent =
+            'Varlık analizi alınamadı: ' +
+            error.message;
+
+    } finally {
+        aiEntitiesBtn.disabled = false;
+    }
+}
+
+if (aiEntitiesBtn) {
+    aiEntitiesBtn.addEventListener(
+        'click',
+        runAiEntityFilter
+    );
+}
+
+const aiAnalyzeSelectionBtn =
+    document.getElementById('aiAnalyzeSelectionBtn');
+
+const aiSelectedTextInput =
+    document.getElementById('aiSelectedTextInput');
+
+async function runAiSelectedTextAnalysis() {
+    const selectedText =
+        aiSelectedTextInput.value.trim();
+
+    if (!selectedText) {
+        aiFeatureResult.textContent =
+            'Analiz etmek için bir metin girin.';
+        return;
+    }
+
+    aiAnalyzeSelectionBtn.disabled = true;
+
+    aiFeatureResult.textContent =
+        'Seçili metin analiz ediliyor...';
+
+    try {
+        const response = await fetchWithTimeout(
+            'https://ottoman-text-ai.onrender.com/api/ai/analyze-selection',
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    text: selectedText
+                })
+            },
+            45000
+        );
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            throw new Error(
+                data.error ||
+                'Seçili metin analizi başarısız oldu.'
+            );
+        }
+
+        const analysis = data.analysis;
+
+        if (!analysis) {
+            aiFeatureResult.textContent =
+                'Analiz sonucu oluşturulamadı.';
+            return;
+        }
+
+aiFeatureResult.innerHTML = '';
+
+const title = document.createElement('div');
+title.textContent = 'SEÇİLİ METİN ANALİZİ';
+title.style.fontWeight = '700';
+title.style.marginBottom = '10px';
+
+aiFeatureResult.appendChild(title);
+
+const mainButton = document.createElement('button');
+mainButton.type = 'button';
+mainButton.style.display = 'block';
+mainButton.style.width = '100%';
+mainButton.style.textAlign = 'left';
+mainButton.style.marginBottom = '10px';
+mainButton.style.padding = '8px';
+mainButton.style.cursor = 'pointer';
+
+let mainText =
+    `Metin: ${selectedText}`;
+
+mainText +=
+    `\nAçıklama: ${
+        analysis.explanation ||
+        'Açıklama oluşturulamadı.'
+    }`;
+
+mainText +=
+    `\nSadeleştirilmiş: ${
+        analysis.simplified ||
+        'Sadeleştirme oluşturulamadı.'
+    }`;
+
+mainText +=
+    `\nBağlam: ${
+        analysis.context ||
+        'Bu seçim için yeterli bağlam belirlenemedi.'
+    }`;
+
+mainButton.textContent = mainText;
+
+mainButton.addEventListener('click', () => {
+    assistantSelectedContext = {
+        type: 'selected_text',
+        text: selectedText,
+        details:
+            analysis.explanation ||
+            analysis.context ||
+            ''
+    };
+
+    assistantPanel.classList.remove('hidden');
+
+    assistantInput.placeholder =
+        `"${selectedText}" hakkında sor...`;
+
+    assistantInput.focus();
+});
+
+aiFeatureResult.appendChild(mainButton);
+
+const sections = [
+    ['Anahtar Kelimeler', analysis.keywords, 'concept'],
+    ['Kişiler', analysis.people, 'person'],
+    ['Yerler', analysis.places, 'place'],
+    ['Tarihler', analysis.dates, 'date'],
+    ['Olaylar', analysis.events, 'event'],
+    ['Belirsiz Noktalar', analysis.uncertain_points, 'uncertain']
+];
+
+sections.forEach(([label, items, type]) => {
+    if (!Array.isArray(items) || items.length === 0) {
+        return;
+    }
+
+    const sectionTitle = document.createElement('div');
+    sectionTitle.textContent = label;
+    sectionTitle.style.fontWeight = '600';
+    sectionTitle.style.margin =
+        '10px 0 6px 0';
+
+    aiFeatureResult.appendChild(sectionTitle);
+
+    items.forEach((item) => {
+        const itemText =
+            typeof item === 'string'
+                ? item
+                : item.text ||
+                  item.name ||
+                  JSON.stringify(item);
+
+        const button = document.createElement('button');
+
+        button.type = 'button';
+        button.style.display = 'block';
+        button.style.width = '100%';
+        button.style.textAlign = 'left';
+        button.style.marginBottom = '6px';
+        button.style.padding = '7px';
+        button.style.cursor = 'pointer';
+
+        button.textContent = itemText;
+
+        button.addEventListener('click', () => {
+            assistantSelectedContext = {
+                type: type,
+                text: itemText,
+                details: [
+                    analysis.explanation,
+                    analysis.simplified,
+                    analysis.context
+                ]
+                    .filter(Boolean)
+                    .join(' | ')
+            };
+
+            assistantPanel.classList.remove('hidden');
+
+            assistantInput.placeholder =
+                `"${itemText}" hakkında sor...`;
+
+            assistantInput.focus();
+        });
+
+        aiFeatureResult.appendChild(button);
+    });
+});
+
+    } catch (error) {
+        console.error(
+            '[AI SELECTED TEXT]',
+            error
+        );
+
+        aiFeatureResult.textContent =
+            'Seçili metin analizi alınamadı: ' +
+            error.message;
+
+    } finally {
+        aiAnalyzeSelectionBtn.disabled = false;
+    }
+}
+
+const aiSuggestionsBtn =
+    document.getElementById('aiSuggestionsBtn');
+
+const aiSuggestionEditInput =
+    document.getElementById('aiSuggestionEditInput');
+
+const aiReviewSuggestionBtn =
+    document.getElementById('aiReviewSuggestionBtn');
+
+let lastAiSuggestion = null;
+
+async function runAiSuggestions() {
+    const selectedText =
+        aiSelectedTextInput.value.trim();
+
+    if (!selectedText) {
+        aiFeatureResult.textContent =
+            'Alternatif üretmek için bir metin girin.';
+        return;
+    }
+
+    aiSuggestionsBtn.disabled = true;
+
+    aiFeatureResult.textContent =
+        'AI alternatifleri hazırlanıyor...';
+
+    try {
+        const response = await fetchWithTimeout(
+            'https://ottoman-text-ai.onrender.com/api/ai/suggestions',
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    text: selectedText
+                })
+            },
+            45000
+        );
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            throw new Error(
+                data.error ||
+                'Alternatif öneriler oluşturulamadı.'
+            );
+        }
+
+        const suggestion = data.suggestion;
+
+        if (!suggestion) {
+            aiFeatureResult.textContent =
+                'AI alternatif öneri oluşturamadı.';
+            return;
+        }
+
+                let suggestedText = '';
+
+        if (
+            suggestion.recommended &&
+            typeof suggestion.recommended === 'object'
+        ) {
+            suggestedText =
+                suggestion.recommended.text ||
+                suggestion.recommended.suggestion ||
+                suggestion.recommended.recommendation ||
+                '';
+        } else if (
+            typeof suggestion.recommended === 'string'
+        ) {
+            suggestedText = suggestion.recommended;
+        }
+
+        if (
+            !suggestedText &&
+            Array.isArray(suggestion.alternatives) &&
+            suggestion.alternatives.length > 0
+        ) {
+            const firstAlternative =
+                suggestion.alternatives[0];
+
+            if (typeof firstAlternative === 'string') {
+                suggestedText = firstAlternative;
+            } else if (
+                firstAlternative &&
+                typeof firstAlternative === 'object'
+            ) {
+                suggestedText =
+                    firstAlternative.text ||
+                    firstAlternative.suggestion ||
+                    firstAlternative.recommendation ||
+                    '';
+            }
+        }
+
+        lastAiSuggestion = {
+            originalText: selectedText,
+            aiSuggestion: suggestedText
+        };
+
+        if (aiSuggestionEditInput) {
+            aiSuggestionEditInput.value =
+                suggestedText;
+        }
+
+    aiFeatureResult.innerHTML = '';
+
+    const title = document.createElement('div');
+    title.textContent = 'AI ALTERNATİF ÖNERİLERİ';
+    title.style.fontWeight = '700';
+    title.style.marginBottom = '10px';
+
+    aiFeatureResult.appendChild(title);
+
+
+    // Önerilen ana metin
+    if (suggestedText) {
+        const recommendedButton =
+            document.createElement('button');
+
+        recommendedButton.type = 'button';
+        recommendedButton.style.display = 'block';
+        recommendedButton.style.width = '100%';
+        recommendedButton.style.textAlign = 'left';
+        recommendedButton.style.marginBottom = '10px';
+        recommendedButton.style.padding = '8px';
+        recommendedButton.style.cursor = 'pointer';
+
+        let recommendedDetails = '';
+
+        if (
+            suggestion.recommended &&
+            typeof suggestion.recommended === 'object'
+        ) {
+            recommendedDetails =
+                suggestion.recommended.reason ||
+                suggestion.recommended.explanation ||
+                '';
+        }
+
+        recommendedButton.textContent =
+            `Önerilen: ${suggestedText}` +
+            (
+                recommendedDetails
+                    ? `\nAçıklama: ${recommendedDetails}`
+                    : ''
+            );
+
+        recommendedButton.addEventListener(
+            'click',
+            () => {
+                assistantSelectedContext = {
+                    type: 'ai_suggestion',
+                    text: suggestedText,
+                    details: recommendedDetails
+                };
+
+                assistantPanel.classList.remove('hidden');
+
+                assistantInput.placeholder =
+                    `"${suggestedText}" hakkında sor...`;
+
+                assistantInput.focus();
+            }
+        );
+
+        aiFeatureResult.appendChild(
+            recommendedButton
+        );
+    }
+
+
+    // Diğer alternatifler
+    const alternatives =
+        Array.isArray(suggestion.alternatives)
+            ? suggestion.alternatives
+            : [];
+
+    if (alternatives.length > 0) {
+        const alternativesTitle =
+            document.createElement('div');
+
+        alternativesTitle.textContent =
+            'Diğer Alternatifler';
+
+        alternativesTitle.style.fontWeight = '600';
+        alternativesTitle.style.margin =
+            '10px 0 6px 0';
+
+        aiFeatureResult.appendChild(
+            alternativesTitle
+        );
+
+        alternatives.forEach((item, index) => {
+            const alternativeText =
+                typeof item === 'string'
+                    ? item
+                    : (
+                        item.text ||
+                        item.suggestion ||
+                        item.recommendation ||
+                        ''
+                    );
+
+            if (!alternativeText) {
+                return;
+            }
+
+            const details =
+                typeof item === 'object'
+                    ? (
+                        item.reason ||
+                        item.explanation ||
+                        ''
+                    )
+                    : '';
+
+            const button =
+                document.createElement('button');
+
+            button.type = 'button';
+            button.style.display = 'block';
+            button.style.width = '100%';
+            button.style.textAlign = 'left';
+            button.style.marginBottom = '6px';
+            button.style.padding = '7px';
+            button.style.cursor = 'pointer';
+
+            button.textContent =
+                `${index + 1}. ${alternativeText}` +
+                (
+                    details
+                        ? `\nAçıklama: ${details}`
+                        : ''
+                );
+
+            button.addEventListener(
+                'click',
+                () => {
+                    assistantSelectedContext = {
+                        type: 'ai_alternative',
+                        text: alternativeText,
+                        details: details
+                    };
+
+                    assistantPanel.classList.remove(
+                        'hidden'
+                    );
+
+                    assistantInput.placeholder =
+                        `"${alternativeText}" hakkında sor...`;
+
+                    assistantInput.focus();
+                }
+            );
+
+            aiFeatureResult.appendChild(button);
+        });
+    }
+
+    } catch (error) {
+        console.error(
+            '[AI SUGGESTIONS]',
+            error
+        );
+
+        aiFeatureResult.textContent =
+            'Alternatif öneriler alınamadı: ' +
+            error.message;
+
+    } finally {
+        aiSuggestionsBtn.disabled = false;
+    }
+}
+
+async function runAiSuggestionReview() {
+    if (!lastAiSuggestion) {
+        aiFeatureResult.textContent =
+            'Önce AI alternatif önerisi oluşturun.';
+        return;
+    }
+
+    const userEdit =
+        aiSuggestionEditInput
+            ? aiSuggestionEditInput.value.trim()
+            : '';
+
+    if (!userEdit) {
+        aiFeatureResult.textContent =
+            'Değerlendirmek için düzenlenmiş metni girin.';
+        return;
+    }
+
+    aiReviewSuggestionBtn.disabled = true;
+
+    aiFeatureResult.textContent =
+        'Kullanıcı düzenlemesi AI tarafından değerlendiriliyor...';
+
+    try {
+        const response = await fetchWithTimeout(
+            'https://ottoman-text-ai.onrender.com/api/ai/review-suggestion',
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    original_text:
+                        lastAiSuggestion.originalText,
+                    ai_suggestion:
+                        lastAiSuggestion.aiSuggestion,
+                    user_edit:
+                        userEdit
+                })
+            },
+            45000
+        );
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            throw new Error(
+                data.error ||
+                'AI düzenleme değerlendirmesi başarısız oldu.'
+            );
+        }
+
+        const review = data.review;
+
+        if (!review) {
+            aiFeatureResult.textContent =
+                'AI değerlendirme sonucu oluşturulamadı.';
+            return;
+        }
+
+        const confidence = Math.round(
+            (Number(review.confidence) || 0) * 100
+        );
+
+aiFeatureResult.innerHTML = '';
+
+const title = document.createElement('div');
+title.textContent = 'AI DÜZENLEME DEĞERLENDİRMESİ';
+title.style.fontWeight = '700';
+title.style.marginBottom = '10px';
+
+aiFeatureResult.appendChild(title);
+
+
+const reviewButton = document.createElement('button');
+
+reviewButton.type = 'button';
+reviewButton.style.display = 'block';
+reviewButton.style.width = '100%';
+reviewButton.style.textAlign = 'left';
+reviewButton.style.padding = '8px';
+reviewButton.style.cursor = 'pointer';
+
+const finalText =
+    review.recommended_text ||
+    userEdit;
+
+reviewButton.textContent =
+    `Kabul edildi: ${review.accepted ? 'Evet' : 'Hayır'}\n` +
+    `Güven: %${confidence}\n` +
+    `Açıklama: ${review.reason || '-'}\n` +
+    `Önerilen son metin: ${finalText || '-'}\n` +
+    `AI önerisi değiştirildi: ${
+        review.changed_from_ai ? 'Evet' : 'Hayır'
+    }`;
+
+reviewButton.addEventListener('click', () => {
+    assistantSelectedContext = {
+        type: 'reviewed_suggestion',
+        text: finalText,
+        details: review.reason || ''
+    };
+
+    assistantPanel.classList.remove('hidden');
+
+    assistantInput.placeholder =
+        `"${finalText}" hakkında sor...`;
+
+    assistantInput.focus();
+});
+
+aiFeatureResult.appendChild(reviewButton);
+
+    } catch (error) {
+        console.error(
+            '[AI SUGGESTION REVIEW]',
+            error
+        );
+
+        aiFeatureResult.textContent =
+            'Düzenleme değerlendirilemedi: ' +
+            error.message;
+
+    } finally {
+        aiReviewSuggestionBtn.disabled = false;
+    }
+}
+if (aiSuggestionsBtn) {
+    aiSuggestionsBtn.addEventListener(
+        'click',
+        runAiSuggestions
+    );
+}
+if (aiReviewSuggestionBtn) {
+    aiReviewSuggestionBtn.addEventListener(
+        'click',
+        runAiSuggestionReview
+    );
+}
+
+if (aiAnalyzeSelectionBtn) {
+    aiAnalyzeSelectionBtn.addEventListener(
+        'click',
+        runAiSelectedTextAnalysis
+    );
+}
+
+    if (aiResearchBtn) {
+        aiResearchBtn.addEventListener(
+            'click',
+            runAiResearchSuggestions
+        );
+    }
+    if (aiQuestionsBtn) {
+        aiQuestionsBtn.addEventListener(
+            'click',
+            runAiSuggestedQuestions
+        );
+    }
+
     assistantInput.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();

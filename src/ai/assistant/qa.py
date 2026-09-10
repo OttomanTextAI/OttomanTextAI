@@ -13,46 +13,63 @@ Görevin, kullanıcının sorusunu yalnızca sana verilen belge
 bağlamına dayanarak değerlendirmek ve cevaplamaktır.
 
 Üç olası durum vardır:
-
 1. DIRECT
 Sorunun cevabı belge bağlamında açıkça bulunuyorsa:
 - answer_type = "direct"
 - Soruyu doğrudan cevapla.
 - Belgede olmayan hiçbir bilgi ekleme.
+- answer yalnızca belgeye dayanmalı.
 
 2. RELATED
-Sorunun doğrudan cevabı belgede bulunmuyorsa ancak soruyla
-ilişkili veya cevaba yaklaşmaya yardımcı olabilecek bilgiler varsa:
+Sorunun doğrudan cevabı belge bağlamında bulunmuyorsa ancak soru:
+- yüklenen belgeyle,
+- belgede geçen kişi, yer, olay, dönem veya kavramlarla,
+- Osmanlıca, Osmanlı tarihi, tarihsel belgeler veya belge analiziyle
+anlamlı şekilde ilişkiliyse:
 - answer_type = "related"
-- Doğrudan cevabın belgede bulunmadığını açıkça belirt.
-- Belgede bulunan en yakın bilgileri açıkla.
-- Bu bilgilerden kesin olarak çıkarılamayan sonuçları gerçekmiş
-  gibi sunma.
-- related_information alanına ilgili bilgileri kısa maddeler
-  halinde ekle.
+- Önce, doğrudan cevabın yüklenen belgede bulunmadığını açıkça belirt.
+- Belgede soruyla ilişkili bilgi varsa bunu kısa şekilde açıkla.
+- Bu aşamada genel bilgi kullanma.
+- Yalnızca belge bağlamında bulunan en yakın bilgiyi açıkla.
+- Genel bilgi gerekiyorsa bunu sen üretme; yalnızca external_answer_available = true olarak işaretle.
+- Belgede kesin olarak çıkarılamayan sonuçları gerçekmiş gibi sunma.
+- related_information alanına belge içinde bulunan ilgili bilgileri
+  en fazla 3 kısa madde halinde ekle.
 
 3. UNAVAILABLE
-Belgelerde soruyla anlamlı şekilde ilişkili bilgi de yoksa:
+Sorunun cevabı belge bağlamında bulunmuyorsa ve soru:
+- yüklenen belgeyle,
+- belgede geçen kişi, yer, olay, dönem veya kavramlarla,
+- Osmanlıca, Osmanlı tarihi, tarihsel belgeler veya belge analiziyle
+anlamlı şekilde ilişkili değilse:
 - answer_type = "unavailable"
-- Belgede bu soruyu cevaplamak için yeterli bilgi olmadığını belirt.
+- Sorunun sistemin kapsamı dışında olduğunu kısa şekilde belirt.
+- Genel bilgi kullanarak cevap verme.
 - related_information boş liste olsun.
 
 Genel kurallar:
-- Yalnızca verilen belge bağlamını kullan.
-- Genel bilgini kullanarak boşlukları doldurma.
+- Öncelik her zaman verilen belge bağlamıdır.
+- Belge içinde cevap varsa genel bilgi kullanma.
+- Genel bilgi yalnızca answer_type = "related" olduğunda kullanılabilir.
+- answer_type = "unavailable" olduğunda genel bilgi kullanma.
 - Bilgi uydurma.
 - Cevabı Türkçe ver.
-- Tarih, kişi, yer ve olay adlarını belgede geçtiği biçimiyle koru.
+- Tarih, kişi, yer ve olay adlarını belge bilgisinden aktarırken belgede geçtiği biçimiyle koru.
 - answer alanını kısa ve doğrudan tut.
-- answer en fazla 3 cümle olsun.
+- answer en fazla 4 cümle olsun.
 - related_information en fazla 3 kısa madde içersin.
 - JSON dışında hiçbir metin üretme.
 - Markdown kullanma.
 - Önceki konuşma verilmişse takip sorularını bu konuşmaya göre yorumla.
-- Önceki konuşmadaki bilgileri yalnızca belge bağlamıyla uyumluysa kullan.
+- Önceki konuşmadaki bilgileri yalnızca belge bağlamı ve aktif konu ile uyumluysa kullan.
+
+Örnek kararlar:
+- Belgede "Fatih Sultan Mehmed" geçiyor ve kullanıcı "Fatih Sultan Mehmed kaç yaşında öldü?" diye soruyorsa:
+  answer_type = "related"
+- Kullanıcı "Fransa nerede?" diye soruyorsa ve bunun belgeyle veya sistemin alanıyla ilgisi yoksa:
+  answer_type = "unavailable"
 
 SADECE geçerli JSON döndür.
-
 JSON formatı:
 
 {
@@ -65,7 +82,7 @@ JSON formatı:
 external_answer_available:
 - direct için false
 - related için true
-- unavailable için true
+- unavailable için false
 """.strip()
 
 
@@ -101,26 +118,31 @@ class DocumentQA:
         question: str,
         top_k: int = 3,
         history: list | None = None,
+        selected_context: dict | None = None,
     ) -> dict:
         if not question or not question.strip():
             raise ValueError("Question cannot be empty.")
 
+        retrieval_query = question.strip()
+
+        if isinstance(selected_context, dict):
+            selected_context_text = str(
+                selected_context.get("text", "")
+            ).strip()
+
+            if selected_context_text:
+                retrieval_query = (
+                    f"{selected_context_text}\n"
+                    f"{retrieval_query}"
+                )
+
         results = self.retriever.retrieve(
-            query=question,
+            query=retrieval_query,
             top_k=top_k,
         )
 
         if not results:
-            return {
-                "answer_type": "unavailable",
-                "answer": (
-                    "Bu soruya cevap verebilmek için "
-                    "belgede yeterli bilgi bulunamadı."
-                ),
-                "related_information": [],
-                "external_answer_available": True,
-                "sources": [],
-            }
+            results = []
 
         context_parts = []
 
@@ -132,6 +154,11 @@ class DocumentQA:
 
         context = "\n\n".join(context_parts)
 
+        if not context.strip():
+            context = (
+                "Bu soru için belge bağlamından "
+                "ilgili bir parça getirilemedi."
+            )
         history = history or []
 
         recent_history = history[-4:]
@@ -181,9 +208,43 @@ class DocumentQA:
                 f"{conversation_history}\n\n"
             )
 
+        selected_context_section = ""
+
+        if isinstance(selected_context, dict):
+            context_type = str(
+                selected_context.get("type", "")
+            ).strip()
+
+            context_text = str(
+                selected_context.get("text", "")
+            ).strip()
+
+            context_details = str(
+                selected_context.get("details", "")
+            ).strip()
+
+            if context_text:
+                selected_context_section = (
+                    "KULLANICININ SEÇTİĞİ AKTİF KONU:\n"
+                    f"Tür: {context_type or 'belirtilmedi'}\n"
+                    f"İçerik: {context_text}\n"
+                )
+
+                if context_details:
+                    selected_context_section += (
+                        f"Ek bilgi: {context_details}\n"
+                    )
+
+                selected_context_section += (
+                    "Takip sorularındaki 'bu kişi', 'bu konu', "
+                    "'bu olay', 'bu kavram' gibi ifadeleri öncelikle "
+                    "bu aktif konuya göre yorumla.\n\n"
+                )
+
         user_prompt = (
             f"BELGE BAĞLAMI:\n"
             f"{context}\n\n"
+            f"{selected_context_section}"
             f"{history_section}"
             f"KULLANICI SORUSU:\n"
             f"{question.strip()}"
@@ -250,6 +311,17 @@ class DocumentQA:
                 "external_answer_available": True,
             }
 
+        if not isinstance(parsed_answer, dict):
+            parsed_answer = {
+                "answer_type": "unavailable",
+                "answer": (
+                    "Belge yanıtı oluşturulurken bir biçimlendirme "
+                    "hatası oluştu. Lütfen sorunuzu tekrar deneyin."
+                ),
+                "related_information": [],
+                "external_answer_available": True,
+            }
+            
         answer_type = parsed_answer.get(
             "answer_type",
             "related",
@@ -262,6 +334,61 @@ class DocumentQA:
         }:
             answer_type = "related"
 
+        if answer_type == "related":
+            try:
+                external_prompt = (
+                    "Sen Akıllı Osmanlıca Asistanı'nın genel bilgi asistanısın.\n\n"
+                    "Kullanıcının sorusu yüklenen belgede doğrudan "
+                    "cevaplanamamıştır ancak belge, Osmanlıca, Osmanlı tarihi, "
+                    "tarihsel kişi, yer, olay, dönem veya kavramlarla "
+                    "anlamlı şekilde ilişkilidir.\n\n"
+                    f"KULLANICI SORUSU:\n{question.strip()}\n\n"
+                    "Soruyu genel bilgine dayanarak Türkçe ve kısa şekilde cevapla.\n"
+                    "En fazla 3 cümle kullan.\n"
+                    "Bilmediğin veya emin olmadığın bilgiyi uydurma.\n"
+                    "Sadece kullanıcıya gösterilecek cevabı üret."
+                )
+
+                external_completion = self.client.chat.completions.create(
+                    model=self.model,
+                    messages=[
+                        {
+                            "role": "user",
+                            "content": external_prompt,
+                        }
+                    ],
+                    temperature=0.1,
+                    max_tokens=500,
+                )
+
+                external_answer = (
+                    external_completion.choices[0].message.content or ""
+                ).strip()
+
+                if external_answer:
+                    document_answer = str(
+                        parsed_answer.get("answer", "")
+                    ).strip()
+
+                    if document_answer:
+                        parsed_answer["answer"] = (
+                            f"{document_answer}\n\n"
+                            f"Genel bilgilere göre: {external_answer}"
+                        )
+                    else:
+                        parsed_answer["answer"] = (
+                            "Yüklenen belgede bu sorunun doğrudan cevabı "
+                            "bulunmuyor.\n\n"
+                            f"Genel bilgilere göre: {external_answer}"
+                        )
+
+            except Exception as exc:
+                print(
+                    "[DOCUMENT QA] External answer failed:",
+                    repr(exc),
+                    flush=True,
+                )
+                    
         related_information = parsed_answer.get(
             "related_information",
             [],
@@ -280,12 +407,7 @@ class DocumentQA:
             ),
             "related_information": related_information,
 
-            "external_answer_available": bool(
-                parsed_answer.get(
-                    "external_answer_available",
-                    answer_type != "direct",
-                )
-            ),
+            "external_answer_available": answer_type == "related",
             "sources": [
                 {
                     "chunk_id": result.chunk.chunk_id,

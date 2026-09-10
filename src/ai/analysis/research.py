@@ -145,32 +145,25 @@ class ResearchSuggestionGenerator:
             start = cleaned.find("{")
             end = cleaned.rfind("}")
 
-            if start == -1 or end == -1 or end <= start:
+            if start != -1 and end != -1 and end > start:
+                try:
+                    result = json.loads(
+                        cleaned[start:end + 1]
+                    )
+                except json.JSONDecodeError:
+                    result = {}
+            else:
+                result = {}
+
+            if not result:
                 print(
                     "[RESEARCH SUGGESTIONS] Invalid model response:",
-                    response_text,
+                    repr(response_text),
                     flush=True,
                 )
-
-                raise RuntimeError(
-                    "Research suggestion response was not valid JSON."
-                )
-
-            json_candidate = cleaned[start:end + 1]
-
-            try:
-                result = json.loads(json_candidate)
-
-            except json.JSONDecodeError as error:
-                print(
-                    "[RESEARCH SUGGESTIONS] Invalid model response:",
-                    response_text,
-                    flush=True,
-                )
-
-                raise RuntimeError(
-                    "Research suggestion response was not valid JSON."
-                ) from error
+                
+        if not isinstance(result, dict):
+            result = {}
 
         suggestions = result.get(
             "suggestions",
