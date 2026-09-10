@@ -1362,7 +1362,7 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         await new Promise(r => setTimeout(r, 1200));
 
         // Step 3: AI Translation
-        statusMessage.textContent = 'Yapay Zeka ile Türkçe çeviri oluşturuluyor...';
+        statusMessage.textContent = 'Görüntü iyileştirme tamamlandı. Yapay Zeka ile Türkçe çeviri oluşturuluyor...';
         await new Promise(r => setTimeout(r, 1400));
 
         let finalOcr = '';
