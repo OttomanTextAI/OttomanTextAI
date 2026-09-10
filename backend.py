@@ -704,13 +704,13 @@ def _try_split_image_translation(
             messages,
             temperature,
             max_tokens,
-            # Real usage data shows Gemini's 2nd attempt almost never
-            # produces a different result than the 1st when it loops/fails
-            # — the retry just burns time that the GPT fallback stage
-            # needs, and has caused the whole cascade to time out on
-            # documents GPT could otherwise have translated in time. One
-            # attempt per half, then move straight to the next stage.
-            max_repetition_attempts=1,
+            # Tried dropping this to 1 (2026-09), but real usage showed
+            # documents that used to succeed on the 2nd attempt started
+            # failing the whole cascade outright (main + both halves +
+            # fallback model all failing with the same "repetition
+            # detected" reason) — the 2nd attempt DOES sometimes recover
+            # where the 1st looped. Reverted: reliability over speed.
+            max_repetition_attempts=2,
             label=label,
         )
 
@@ -1166,10 +1166,10 @@ def translate_endpoint():
             temperature,
             max_tokens,
             # See the matching comment in _try_split_image_translation's
-            # get_half(): a 2nd same-model attempt after a loop/failure
-            # almost never changes the outcome, it just spends time the
-            # GPT fallback stage needs later in the cascade.
-            max_repetition_attempts=1,
+            # get_half(): dropping this to 1 caused documents that used
+            # to succeed on the 2nd attempt to fail the whole cascade
+            # outright. Reverted to 2 — reliability over speed.
+            max_repetition_attempts=2,
             label="main",
         )
 
@@ -1183,12 +1183,12 @@ def translate_endpoint():
                 main_result["message"]
             ), main_result["status_code"]
 
-        # reason == "unusable": the main attempt looped, returned
-        # empty/invalid JSON, or was missing ocr/trans (single shot now —
-        # see max_repetition_attempts=1 above). Instead of failing right
-        # away, try splitting the image into top/bottom halves — a
-        # difficult full-page image often succeeds once each half is a
-        # simpler, smaller request.
+        # reason == "unusable": both attempts either looped, returned
+        # empty/invalid JSON, or were missing ocr/trans, after already
+        # retrying once internally. Instead of failing right away, try
+        # splitting the image into top/bottom halves — a difficult
+        # full-page image often succeeds once each half is a simpler,
+        # smaller request.
         if _time_budget_exceeded():
             print(
                 "[translate] Aborting cascade early: time budget (240s) "
@@ -1199,7 +1199,7 @@ def translate_endpoint():
 
         print(
             "[translate] Falling back to split-image strategy after "
-            "main attempt failed",
+            "2 failed attempts",
             flush=True,
         )
 
