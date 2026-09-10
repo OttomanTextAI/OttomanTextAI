@@ -2765,19 +2765,6 @@ ${transTextDisplay.textContent}
             openAiFeatureModal();
         });
     }
-if (aiFeatureResult) {
-    aiFeatureResult.addEventListener('click', (e) => {
-        const clickedResult =
-            e.target.closest('button');
-
-        if (!clickedResult) return;
-
-        closeAiFeatureModal();
-
-        assistantPanel.classList.remove('hidden');
-        assistantInput.focus();
-    });
-}
 
     aiFeatureModalClose.addEventListener(
         'click',

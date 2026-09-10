@@ -478,6 +478,9 @@ def _parse_and_clean_relay_response(raw_text):
         "people",
         "places",
         "concepts",
+        "keywords",
+        "dates",
+        "events",
     ]
 
     for field in optional_list_fields:
@@ -636,7 +639,15 @@ def _merge_split_results(top, bottom):
         if value:
             merged[field] = value
 
-    list_fields = ["key_points", "people", "places", "concepts"]
+    list_fields = [
+        "key_points",
+        "people",
+        "places",
+        "concepts",
+        "keywords",
+        "dates",
+        "events",
+    ]
 
     for field in list_fields:
         combined = list(top.get(field, [])) + list(bottom.get(field, []))
@@ -921,6 +932,19 @@ ANALYSIS_PROMPT = (
 
     "concepts: Belgede geçen önemli tarihî, idarî, dinî veya "
     "kültürel kavramları yaz. Yoksa boş liste döndür. "
+
+    "keywords: Belgenin içeriğini temsil eden en önemli 3-8 anahtar "
+    "kelime veya kısa ifadeyi yaz. Yalnızca belge içeriğinden çıkar. "
+    "Yoksa boş liste döndür. "
+
+    "dates: Belgede açıkça geçen tüm önemli tarihleri listele. "
+    "Hicrî, Rûmî veya Miladî tarihleri metinde geçtiği biçimiyle koru. "
+    "Metinde bulunmayan tarihleri tahmin etme. Yoksa boş liste döndür. "
+
+    "events: Belgede açıkça geçen veya belgenin içeriğinden doğrudan "
+    "çıkarılabilen önemli olayları listele. Savaş, antlaşma, ferman, "
+    "atama, fetih, toplantı, karar veya benzeri tarihî olaylar buna "
+    "dahildir. Belgeye dayanmayan olay ekleme. Yoksa boş liste döndür. "
 
     "script_type: Görüntüden güvenle anlaşılabiliyorsa yazı türünü belirt. "
     "Örnek: Nesih, Rik'a, Divanî, Ta'lik, Siyakat. "
