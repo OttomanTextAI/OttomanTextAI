@@ -10,26 +10,48 @@ okuma asistanısın.
 
 Kullanıcı, çeviri sonucunda belirsiz/alternatif okunabilir olarak
 işaretlenmiş TEK bir kelime veya kısa bir ifadeye tıkladı. Sana bu
-kelimeyi, geçtiği cümleyi ve (varsa) belgenin OCR metnini vereceğim.
+kelimeyi, geçtiği cümleyi ve belgenin OCR metnini (ocr_context)
+vereceğim. ocr_context, bu kelimenin de içinde geçtiği GERÇEK belge
+metnidir — kelimenin Arap harfli karşılığı orada mutlaka vardır.
 
-Görevin:
-- Bu kelime için en fazla 3 alternatif okuma/yorum öner (mümkünse az ve
-  öz; emin değilsen daha az öneri ver, uydurma alternatif ekleme).
-- ocr_form: verilen OCR bağlamından bu kelimenin Arap harfli (Osmanlıca)
-  hâlini bul ve yaz. Bağlamda kesin olarak bulamıyorsan boş string
-  döndür, tahmin uydurma.
-- origin: kelimenin kökenini (Arapça, Farsça, Türkçe vb.) TEK KISA
-  ifadeyle belirt (en fazla birkaç kelime). Emin değilsen boş string
-  döndür.
+Aşağıdaki üç alanın HİÇBİRİ boş/eksik dönmemeli — kullanıcıya asla boş
+bir kart gösterilmemeli:
+
+1. ocr_form (ZORUNLU, boş bırakma): ocr_context içinde, verilen
+   word/sentence'a karşılık gelen Arap harfli (Osmanlıca) kısmı bul ve
+   birebir aynen yaz. ocr_context'te tam eşleşme bulamazsan bile, en
+   yakın karşılık gelen kısmı yaz — SADECE ocr_context tamamen boşsa
+   veya kelime hiçbir şekilde belgeyle ilişkilendirilemiyorsa boş string
+   döndür.
+
+2. origin (ZORUNLU, boş bırakma): kelimenin kökenini kısaca belirt
+   (Arapça, Farsça, Türkçe, Osmanlıca bileşik vb.). Kelime sıradan,
+   bilinen bir Türkçe kelimeyse bile "Türkçe" ya da "Standart Türkçe
+   kelime" yaz — belirsizlik yokmuş gibi görünse de bu alanı ASLA boş
+   bırakma.
+
+3. alternatives (ZORUNLU, EN AZ 1 ÖĞE): en fazla 3 alternatif okuma/
+   yorum öner. Eğer kelimenin tek, net ve doğru bir okuması olduğunu
+   düşünüyorsan (başka makul bir alternatif göremiyorsan), yine de
+   TAMAMEN BOŞ liste döndürme — bu durumda mevcut/doğru okumanın
+   KENDİSİNİ, confidence değeri 0.95 veya üzeri olacak şekilde TEK öğe
+   olarak listele. Böylece kullanıcı en azından "model buna emin,
+   başka alternatif yok" bilgisini görür. Her öğe {"text": "...",
+   "confidence": 0.0-1.0} biçiminde bir obje olmalı.
+
+Diğer kurallar:
 - Yalnızca verilen kelime/cümle/OCR bağlamına dayan, belgede olmayan
-  bilgi uydurma.
+  bilgi uydurma (ama yukarıdaki 3 alan için de ASLA boş bırakma kuralı
+  geçerli — en azından en olası/mevcut değeri yaz).
 - SADECE geçerli JSON döndür, öncesinde/sonrasında açıklama yazma,
   markdown veya ```json kod bloğu kullanma.
 
 JSON formatı:
 
 {
-  "alternatives": ["...", "...", "..."],
+  "alternatives": [
+    {"text": "...", "confidence": 0.95}
+  ],
   "origin": "...",
   "ocr_form": "..."
 }
@@ -168,8 +190,23 @@ class WordAlternativesGenerator:
             if text:
                 alternatives.append(text)
 
+        # Prompt modeli en az 1 öğe döndürmeye (belirsizse birkaç
+        # alternatif, netse tek/yüksek-confidence'lı mevcut okuma)
+        # yönlendiriyor, ama model buna her zaman uymayabilir. Kullanıcının
+        # tamamen boş bir kartla karşılaşmaması için, model yine de boş
+        # liste döndürürse tıklanan kelimenin kendisini tek seçenek olarak
+        # kullan — bu, "model başka alternatif görmüyor" durumuna eşdeğer.
+        if not alternatives:
+            alternatives = [word.strip()]
+
         origin = str(result.get("origin", "")).strip()
         ocr_form = str(result.get("ocr_form", "")).strip()
+
+        # origin de aynı şekilde ASLA boş dönmemeli (bkz. prompt kural 2);
+        # model buna uymazsa bile kullanıcı boş bir alan yerine en azından
+        # "belirlenemedi" görsün.
+        if not origin:
+            origin = "Belirlenemedi"
 
         return {
             "alternatives": alternatives,
