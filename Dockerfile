@@ -21,4 +21,4 @@ COPY . .
 
 ENV PYTHONPATH=/app
 
-CMD ["gunicorn", "--bind", "0.0.0.0:10000", "--timeout", "280", "backend:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:10000", "--timeout", "400", "backend:app"]

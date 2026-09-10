@@ -1426,15 +1426,15 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
                 // each with its own retry) and finally a different model —
                 // worst case is several relay calls, so this needs more
                 // headroom than the default 45s. The backend's own internal
-                // time budget aborts the cascade cleanly at 240s and its
-                // gunicorn --timeout is 280s (Dockerfile); 250s here sits
+                // time budget aborts the cascade cleanly at 350s and its
+                // gunicorn --timeout is 400s (Dockerfile); 360s here sits
                 // just above the backend's clean-abort point so the app
                 // waits long enough to receive that JSON error response
                 // instead of timing out on the frontend first.
                 const apiRes = await fetchWithTimeout('https://ottoman-text-ai.onrender.com/api/translate', {
                     method: 'POST',
                     body: formData
-                }, 250000);
+                }, 360000);
 
                 if (!apiRes.ok) {
                     const errorData = await apiRes.json().catch(() => ({}));

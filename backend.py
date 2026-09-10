@@ -1069,7 +1069,7 @@ def translate_endpoint():
     # Captured first thing so the time budget below covers the entire
     # request, not just the OCR/translation cascade.
     request_start_time = time.monotonic()
-    TIME_BUDGET_SECONDS = 240
+    TIME_BUDGET_SECONDS = 350
 
     def _time_budget_exceeded():
         return (time.monotonic() - request_start_time) > TIME_BUDGET_SECONDS
