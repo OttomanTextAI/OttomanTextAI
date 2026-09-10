@@ -51,9 +51,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const removeFileBtn = document.getElementById('removeFileBtn');
     const scanLine = document.getElementById('scanLine');
 
-    const triggerTranslateBtn = document.getElementById('triggerTranslateBtn');
-    const translateBtnLabel = document.getElementById('translateBtnLabel');
-    const actionSpinner = document.getElementById('actionSpinner');
     const statusBadge = document.getElementById('statusBadge');
     const statusMessage = document.getElementById('statusMessage');
     const statusHint = document.getElementById('statusHint');
@@ -966,8 +963,6 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
             uploadIdleState.classList.add('hidden');
             uploadActiveState.classList.remove('hidden');
 
-            triggerTranslateBtn.disabled = true;
-
             const enhanced = await runImageEnhancement(state.selectedFile, documentProfile.value);
 
             // İlk (otomatik) iyileştirme başarılı olduysa, kullanıcı hiçbir
@@ -1004,7 +999,6 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
                 previewImage.src = sample.file;
                 uploadIdleState.classList.add('hidden');
                 uploadActiveState.classList.remove('hidden');
-                triggerTranslateBtn.disabled = false;
 
                 smoothScrollTo(dropZone);
 
@@ -1038,7 +1032,6 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         fileInput.value = '';
         uploadIdleState.classList.remove('hidden');
         uploadActiveState.classList.add('hidden');
-        triggerTranslateBtn.disabled = true;
 
         ocrEmptyState.classList.remove('hidden');
         ocrTextDisplay.classList.add('hidden');
@@ -1243,10 +1236,10 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     }
 
 // --- Translation Engine Execution ---
-    triggerTranslateBtn.addEventListener('click', () => {
-        if (!state.imageDataUrl) return;
-        processTranslation();
-    });
+    // Manuel bir "Çeviriyi Başlat" butonu artık yok — süreç, görsel
+    // seçilir seçilmez handleFileSelect() içinde otomatik başlıyor (bkz.
+    // reader.onload). processTranslation() buradan sample kartları ve
+    // handleFileSelect'in otomatik akışı tarafından çağrılıyor.
 
     // Backend hata mesajları (bkz. backend.py) zaten anlaşılır Türkçe metinler
     // döndürüyor — zaman aşımı, dosya/görsel çok büyük, API kotası/rate limit,
@@ -1265,13 +1258,12 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     }
 
     // Görüntü iyileştirme ya da OCR/çeviri isteği gerçekten başarısız olduğunda,
-    // sahte/örnek bir sonuç göstermek ya da hatayı yalnızca butonun yanındaki küçük
-    // durum rozetinde bırakmak yerine, "Çeviri sonucu burada görüntülenecek." gibi
-    // boş-durum metinlerinin yerine nedenini yazar — kullanıcı hatayı sağdaki
-    // sonuç panelinde, tam çevirinin görüneceği yerde görür. Ayrıca çeviri
-    // butonunu tekrar tıklanabilir hale getirir (aşağıdaki processTranslation()
-    // eksik kalan iyileştirmeyi kendisi yeniden dener), böylece kullanıcı
-    // sayfayı yenilemek zorunda kalmaz.
+    // sahte/örnek bir sonuç göstermek ya da hatayı yalnızca durum rozetinde
+    // bırakmak yerine, "Çeviri sonucu burada görüntülenecek." gibi boş-durum
+    // metinlerinin yerine nedenini yazar — kullanıcı hatayı sağdaki sonuç
+    // panelinde, tam çevirinin görüneceği yerde görür. Tekrar deneme yolu
+    // "Yeniden Seç" (reselectBtn) ile sağlanıyor — yeni bir dosya seçmek
+    // handleFileSelect()'i baştan çalıştırır.
     function showProcessingFailure(reasonMessage) {
         statusBadge.classList.add('status-error');
         statusMessage.textContent = 'İşlem başarısız oldu.';
@@ -1299,9 +1291,6 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         scanLine.classList.remove('scanning');
         enhanceStatusIcon.classList.remove('spinning', 'done');
         state.isProcessing = false;
-        triggerTranslateBtn.disabled = false;
-        actionSpinner.classList.add('hidden');
-        translateBtnLabel.textContent = 'Çeviriyi Başlat';
     }
 
     // Bir önceki denemeden kalmış olabilecek hata metnini ve stilini, boş-durum
@@ -1340,7 +1329,6 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
 
             statusMessage.textContent = 'Görüntü iyileştirme tamamlandı.';
             updatePreviewImage();
-            triggerTranslateBtn.disabled = false;
             enhanceStatusIcon.classList.remove('spinning');
             enhanceStatusIcon.classList.add('done');
             return true;
@@ -1358,31 +1346,16 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         closeEntityFilterDropdown();
         resetEntityFilter();
         state.isProcessing = true;
-        triggerTranslateBtn.disabled = true;
-        actionSpinner.classList.remove('hidden');
-        translateBtnLabel.textContent = 'İşleniyor...';
         statusBadge.classList.remove('hidden');
         clearProcessingFailure();
         statusHint.classList.remove('hidden');
         scanLine.classList.add('scanning');
 
-        // Görüntü iyileştirme daha önce başarısız olmuş olabilir (ya da hiç
-        // çalışmamış olabilir). Kullanıcıyı "Çeviriyi Başlat" butonu kalıcı
-        // olarak kilitli kalmış, sayfayı yenilemek zorunda bırakmak yerine
-        // burada kendimiz yeniden deneriz; yine başarısız olursa
-        // runImageEnhancement hatayı zaten sağ paneldeki boş-durum alanına
-        // yazıp butonu tekrar tıklanabilir hale getirir.
-        if (!presetData && !state.enhancedImageBlob) {
-            const enhanced = await runImageEnhancement(state.selectedFile, documentProfile.value);
-            if (!enhanced) {
-                return;
-            }
-            // runImageEnhancement, kendi başarı durumunda butonu tekrar aktif
-            // eder (tek başına kullanıldığında bu doğrudur); ama burada çeviri
-            // işlemine kesintisiz devam ediyoruz, bu yüzden butonu tekrar
-            // kilitliyoruz.
-            triggerTranslateBtn.disabled = true;
-        }
+        // processTranslation() sadece iki yerden çağrılıyor: sample
+        // kartları (presetData ile, görüntü iyileştirmeye ihtiyaç duymaz)
+        // ve handleFileSelect()'in otomatik akışı (runImageEnhancement
+        // başarıyla bitip state.enhancedImageBlob dolduktan SONRA
+        // çağırıyor) — yani buraya gelindiğinde biri mutlaka doğru.
 
         // Step 2: OCR Extraction
         statusMessage.textContent = 'Görüntü iyileştiriliyor & Osmanlıca OCR yapılıyor...';
@@ -1594,14 +1567,6 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         scanLine.classList.remove('scanning');
 
         state.isProcessing = false;
-        // Çeviri başarıyla tamamlandıktan sonra buton KASITLI olarak
-        // devre dışı kalır — aynı belge için tekrar tıklanabilir
-        // olmamalı. Sadece yeni bir belge seçildiğinde (handleFileSelect
-        // → runImageEnhancement başarısı) tekrar aktif olur. Hata
-        // durumunda (showProcessingFailure) buton ayrıca tekrar
-        // aktifleştirilir — bu davranış burada değişmedi.
-        actionSpinner.classList.add('hidden');
-        translateBtnLabel.textContent = 'Çeviriyi Başlat';
 
         // Save to History
         saveHistoryItem({

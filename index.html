@@ -378,12 +378,11 @@
 
             </div>
 
-            <!-- Translate Command Bar / Status Footer -->
+            <!-- Status Footer: çeviri artık görsel seçilir seçilmez
+                 otomatik başlıyor (bkz. app.js handleFileSelect), bu yüzden
+                 manuel bir "Çeviriyi Başlat" butonu yok — sadece süreç
+                 durumunu gösteren rozet kalıyor. -->
             <div class="action-bar-container">
-                <button class="btn btn-action-translate" id="triggerTranslateBtn">
-                    <span class="btn-spinner hidden" id="actionSpinner"></span>
-                    <span id="translateBtnLabel">Çeviriyi Başlat</span>
-                </button>
                 <div class="status-badge hidden" id="statusBadge">
                     <span class="status-dot pulsing"></span>
                     <span id="statusMessage">Görsel işleniyor...</span>
