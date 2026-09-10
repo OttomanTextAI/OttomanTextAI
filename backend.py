@@ -32,6 +32,7 @@ from src.ai.assistant.qa import DocumentQA
 from src.ai.analysis.selected_text import SelectedTextAnalyzer
 from src.ai.analysis.suggestions import AISuggestionGenerator
 from src.ai.analysis.word_alternatives import WordAlternativesGenerator
+from src.ai.analysis.entity_info import EntityInfoGenerator
 from src.ai.assistant.question_generator import DocumentQuestionGenerator
 from src.ai.analysis.research import ResearchSuggestionGenerator
 from src.ai.filters.entity_filter import EntityFilterClassifier
@@ -1720,6 +1721,84 @@ def word_alternatives():
         return jsonify(
             {
                 "error": "Word alternatives generation failed.",
+                "details": str(error),
+            }
+        ), 500
+
+@app.route("/api/entity-info", methods=["POST"])
+def entity_info():
+    """
+    Lazily generate a short (2-4 sentence), context-aware explanation for
+    a person/place/concept/date the user clicked on in the translation
+    (one of the .entity-tag spans already present in the trans text).
+
+    Like /api/word-alternatives, this is intentionally separate from the
+    main /api/translate request: a small, fast, per-click call so opening
+    the entity's popover doesn't wait on (or add cost/latency to) the
+    full-document OCR + translation pipeline.
+
+    Expected JSON:
+        {
+            "entity": "...",       (required)
+            "entity_type": "person" | "place" | "concept" | "date",  (optional)
+            "sentence": "..."      (optional, the sentence it appears in)
+        }
+    """
+    try:
+        data = request.get_json(silent=True) or {}
+
+        entity = (
+            data.get("entity")
+            or ""
+        ).strip()
+
+        if not entity:
+            return jsonify(
+                {
+                    "error": "Entity is required."
+                }
+            ), 400
+
+        entity_type = str(data.get("entity_type") or "")
+        sentence = str(data.get("sentence") or "")
+
+        llm_config = get_llm_config()
+        model = llm_config.get("model")
+
+        if not model:
+            return jsonify(
+                {
+                    "error": "LLM model is not configured."
+                }
+            ), 500
+
+        generator = EntityInfoGenerator(
+            model=model,
+        )
+
+        result = generator.generate(
+            entity=entity,
+            entity_type=entity_type,
+            sentence=sentence,
+        )
+
+        return jsonify(
+            {
+                "success": True,
+                "info": result["info"],
+            }
+        )
+
+    except Exception as error:
+        print(
+            f"[ENTITY INFO] "
+            f"{type(error).__name__}: {error}",
+            flush=True,
+        )
+
+        return jsonify(
+            {
+                "error": "Entity info generation failed.",
                 "details": str(error),
             }
         ), 500

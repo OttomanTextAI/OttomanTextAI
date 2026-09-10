@@ -969,6 +969,17 @@ body.dark-theme .hero-section::after {
     color: var(--color-text-muted);
 }
 
+/* /api/entity-info tembel yüklemesi sırasında (bkz. showEntityPopover()
+   app.js'te) — kelime alternatifi kartındaki yükleniyor/hata desenleriyle
+   tutarlı. */
+.entity-popover-context.entity-popover-loading {
+    font-style: italic;
+}
+
+.entity-popover-context.entity-popover-error {
+    color: var(--color-accent-red);
+}
+
 /* Belirsiz kelime kartı (bkz. showWordAlternativesPopover() app.js'te) —
    .entity-popover ile aynı konumlandırma/kart dilini paylaşır, ama kendi
    içeriği (OCR hali, köken, alternatif okuma seçenekleri, onay formu) için

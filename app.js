@@ -1830,23 +1830,6 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         el.innerHTML = renderSentenceSpansHtml(rawText, entities, options);
     }
 
-    // Bir entity için "ilgili bilgi" olarak, analizin summary/key_points
-    // alanlarında o entity'den bahseden ilk cümleyi/maddeyi bulur (varsa).
-    function findEntityContext(analysis, entityText) {
-        if (!analysis) return '';
-        const haystacks = [];
-
-        if (analysis.summary) {
-            haystacks.push(...analysis.summary.split(/(?<=[.!?])\s+/));
-        }
-        if (Array.isArray(analysis.key_points)) {
-            haystacks.push(...analysis.key_points);
-        }
-
-        const lowerEntity = entityText.toLowerCase();
-        return haystacks.find(s => s.toLowerCase().includes(lowerEntity)) || '';
-    }
-
     // İki popover türü de (entity kartı ve aşağıdaki kelime-alternatifleri
     // kartı) aynı "hedef elemanın hemen altına, ekran dışına taşmadan
     // konumlan" mantığını paylaşır — tek yerde tutulur, ikisi de kullanır.
@@ -1862,23 +1845,40 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     }
 
     let activeEntityPopover = null;
+    // entity metni+tipine göre önbellek — aynı entity'ye tekrar
+    // tıklandığında /api/entity-info'yu tekrar çağırmadan önceki cevabı
+    // gösterir. Sadece bu sayfa yüklemesi boyunca geçerli (state'e değil,
+    // düz bir JS objesine yazılıyor — kalıcı saklamaya gerek yok, bkz.
+    // word-alternatives'teki localStorage'dan farklı olarak burası sadece
+    // aynı oturumda gereksiz istek tekrarını önlemek için).
+    const entityInfoCache = {};
+    // wordPopoverToken ile aynı desen: her showEntityPopover() çağrısı bu
+    // sayacı artırır; async /api/entity-info cevabı geldiğinde kart hâlâ
+    // AYNI açılışa mı ait diye bununla kontrol edilir — kullanıcı kart
+    // yanıt gelmeden kapatır ya da başka bir entity'ye tıklarsa, bayat
+    // cevabın yanlış karta yazılmasını önler.
+    let entityPopoverToken = 0;
 
     function closeEntityPopover() {
         if (activeEntityPopover) {
             activeEntityPopover.remove();
             activeEntityPopover = null;
         }
+        entityPopoverToken++;
     }
 
-    function showEntityPopover(targetEl) {
+    async function showEntityPopover(targetEl) {
         closeEntityPopover();
         closeWordAlternativesPopover();
         closeEntityFilterDropdown();
 
+        const myToken = entityPopoverToken;
         const type = targetEl.dataset.type;
         const text = targetEl.dataset.entity;
         const label = ENTITY_TYPE_LABELS[type] || 'Bilgi';
-        const context = findEntityContext(state.lastAnalysis, text);
+        const sentenceEl = targetEl.closest('.tts-sentence');
+        const sentenceText = sentenceEl ? sentenceEl.textContent : text;
+        const cacheKey = `${type}:${text.toLowerCase()}`;
 
         const popover = document.createElement('div');
         popover.className = 'entity-popover';
@@ -1893,17 +1893,62 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         textEl.textContent = text;
         popover.appendChild(textEl);
 
-        if (context) {
-            const contextEl = document.createElement('div');
-            contextEl.className = 'entity-popover-context';
-            contextEl.textContent = context;
-            popover.appendChild(contextEl);
-        }
+        const contextEl = document.createElement('div');
+        contextEl.className = 'entity-popover-context';
+        popover.appendChild(contextEl);
 
         document.body.appendChild(popover);
         positionPopoverNear(popover, targetEl);
-
         activeEntityPopover = popover;
+
+        // Önbellekte varsa, ağ isteği atmadan doğrudan göster.
+        if (entityInfoCache[cacheKey]) {
+            contextEl.textContent = entityInfoCache[cacheKey];
+            return;
+        }
+
+        contextEl.textContent = 'Bilgi yükleniyor...';
+        contextEl.classList.add('entity-popover-loading');
+
+        let infoText = '';
+        let errorMessage = '';
+
+        try {
+            const response = await fetchWithTimeout(
+                'https://ottoman-text-ai.onrender.com/api/entity-info',
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        entity: text,
+                        entity_type: type,
+                        sentence: sentenceText
+                    })
+                },
+                30000
+            );
+            const data = await response.json();
+            if (!response.ok || !data.success) {
+                throw new Error(data.error || 'Bilgi alınamadı.');
+            }
+            infoText = (data.info || '').trim();
+        } catch (err) {
+            errorMessage = err.message || 'Bilgi alınamadı.';
+        }
+
+        // Bu arada kart kapatıldıysa ya da başka bir entity için yeniden
+        // açıldıysa, bu cevabı artık hiçbir yere yazma.
+        if (myToken !== entityPopoverToken || activeEntityPopover !== popover) return;
+
+        contextEl.classList.remove('entity-popover-loading');
+
+        if (infoText) {
+            entityInfoCache[cacheKey] = infoText;
+            contextEl.textContent = infoText;
+        } else {
+            contextEl.textContent = errorMessage || 'Bu öğe için bilgi alınamadı.';
+            contextEl.classList.add('entity-popover-error');
+        }
     }
 
     transTextDisplay.addEventListener('click', (e) => {
