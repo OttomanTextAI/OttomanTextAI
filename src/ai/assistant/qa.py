@@ -29,10 +29,10 @@ anlamlı şekilde ilişkiliyse:
 - answer_type = "related"
 - Önce, doğrudan cevabın yüklenen belgede bulunmadığını açıkça belirt.
 - Belgede soruyla ilişkili bilgi varsa bunu kısa şekilde açıkla.
-- Ardından, genel bilgi kullanarak soruya cevap verebilirsin.
-- Genel bilgi ile belge bilgisini birbirine karıştırma.
-- Genel bilgi kısmını "Genel bilgilere göre" ifadesiyle açıkça ayır.
-- Kesin olmayan bilgileri kesin gerçekmiş gibi sunma.
+- Bu aşamada genel bilgi kullanma.
+- Yalnızca belge bağlamında bulunan en yakın bilgiyi açıkla.
+- Genel bilgi gerekiyorsa bunu sen üretme; yalnızca external_answer_available = true olarak işaretle.
+- Belgede kesin olarak çıkarılamayan sonuçları gerçekmiş gibi sunma.
 - related_information alanına belge içinde bulunan ilgili bilgileri
   en fazla 3 kısa madde halinde ekle.
 
@@ -407,12 +407,7 @@ class DocumentQA:
             ),
             "related_information": related_information,
 
-            "external_answer_available": bool(
-                parsed_answer.get(
-                    "external_answer_available",
-                    answer_type != "direct",
-                )
-            ),
+            "external_answer_available": answer_type == "related",
             "sources": [
                 {
                     "chunk_id": result.chunk.chunk_id,

@@ -145,7 +145,7 @@ class SelectedTextAnalyzer:
                 },
             ],
             temperature=0.1,
-            max_tokens=900,
+            max_tokens=2200,
         )
 
         response_text = (
@@ -153,6 +153,12 @@ class SelectedTextAnalyzer:
             or ""
         ).strip()
 
+        print(
+            "[SELECTED TEXT] Finish reason:",
+            completion.choices[0].finish_reason,
+            flush=True,
+        )
+        
         cleaned = response_text
 
         if cleaned.startswith("```json"):
@@ -170,25 +176,71 @@ class SelectedTextAnalyzer:
             result = json.loads(cleaned)
 
         except json.JSONDecodeError:
-            start = cleaned.find("{")
-            end = cleaned.rfind("}")
+            print(
+                "[SELECTED TEXT] Invalid or truncated JSON. Retrying...",
+                flush=True,
+            )
 
-            if start != -1 and end != -1 and end > start:
-                try:
-                    result = json.loads(
-                        cleaned[start:end + 1]
-                    )
-                except json.JSONDecodeError:
-                    result = {}
-            else:
-                result = {}
+            retry_completion = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": SELECTED_TEXT_SYSTEM_PROMPT,
+                    },
+                    {
+                        "role": "user",
+                        "content": (
+                            "SEÇİLİ METİN:\n"
+                            f"{selected_text.strip()}\n\n"
+                            "Önceki cevap geçerli JSON olarak tamamlanamadı. "
+                            "Bu kez çok kısa cevap ver. "
+                            "Her metin alanını en fazla 1 cümle yaz. "
+                            "Liste alanlarında en fazla 3 öğe kullan. "
+                            "JSON nesnesini mutlaka tamamen kapat."
+                        ),
+                    },
+                ],
+                temperature=0.1,
+                max_tokens=2200,
+            )
 
-            if not result:
+            retry_text = (
+                retry_completion.choices[0].message.content
+                or ""
+            ).strip()
+            
+            print(
+                "[SELECTED TEXT] Retry finish reason:",
+                retry_completion.choices[0].finish_reason,
+                flush=True,
+            )
+            print(
+                "[SELECTED TEXT] Retry response:",
+                repr(retry_text),
+                flush=True,
+            )
+
+            if retry_text.startswith("```json"):
+                retry_text = retry_text[7:]
+
+            if retry_text.startswith("```"):
+                retry_text = retry_text[3:]
+
+            if retry_text.endswith("```"):
+                retry_text = retry_text[:-3]
+
+            retry_text = retry_text.strip()
+
+            try:
+                result = json.loads(retry_text)
+
+            except json.JSONDecodeError:
                 print(
-                    "[SELECTED TEXT] Invalid model response:",
-                    repr(response_text),
+                    "[SELECTED TEXT] Retry JSON parsing failed.",
                     flush=True,
                 )
+                result = {}
                 
         if not isinstance(result, dict):
             result = {}
