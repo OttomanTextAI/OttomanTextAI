@@ -31,6 +31,7 @@ from src.ai.rag.retriever import DocumentRetriever
 from src.ai.assistant.qa import DocumentQA
 from src.ai.analysis.selected_text import SelectedTextAnalyzer
 from src.ai.analysis.suggestions import AISuggestionGenerator
+from src.ai.analysis.word_alternatives import WordAlternativesGenerator
 from src.ai.assistant.question_generator import DocumentQuestionGenerator
 from src.ai.analysis.research import ResearchSuggestionGenerator
 from src.ai.filters.entity_filter import EntityFilterClassifier
@@ -1595,6 +1596,89 @@ def ai_suggestions():
         return jsonify(
             {
                 "error": "AI suggestion generation failed.",
+                "details": str(error),
+            }
+        ), 500
+
+@app.route("/api/word-alternatives", methods=["POST"])
+def word_alternatives():
+    """
+    Lazily generate up to 3 alternative readings + origin + the Ottoman
+    (OCR) form for a SINGLE word/phrase the user clicked on (one of the
+    **guess-marked** spans already present in the translit/trans text).
+
+    This is intentionally separate from the main /api/translate request:
+    it's a small, fast, per-click call so opening the word's popover
+    doesn't wait on (or add cost/latency to) the full-document OCR +
+    translation pipeline.
+
+    Expected JSON:
+        {
+            "word": "...",          (required)
+            "sentence": "...",      (optional, the sentence it appears in)
+            "ocr_context": "...",   (optional, the document's OCR text)
+            "target_lang": "translit" | "trans"  (optional, just for context)
+        }
+    """
+    try:
+        data = request.get_json(silent=True) or {}
+
+        word = (
+            data.get("word")
+            or ""
+        ).strip()
+
+        if not word:
+            return jsonify(
+                {
+                    "error": "Word is required."
+                }
+            ), 400
+
+        sentence = str(data.get("sentence") or "")
+        ocr_context = str(data.get("ocr_context") or "")
+        target_lang = str(data.get("target_lang") or "")
+
+        llm_config = get_llm_config()
+        model = llm_config.get("model")
+
+        if not model:
+            return jsonify(
+                {
+                    "error": "LLM model is not configured."
+                }
+            ), 500
+
+        generator = WordAlternativesGenerator(
+            model=model,
+        )
+
+        result = generator.generate(
+            word=word,
+            sentence=sentence,
+            ocr_context=ocr_context,
+            target_lang=target_lang,
+        )
+
+        return jsonify(
+            {
+                "success": True,
+                "alternatives": result["alternatives"],
+                "origin": result["origin"],
+                "ocr_form": result["ocr_form"],
+            }
+        )
+
+    except Exception as error:
+        print(
+            f"[WORD ALTERNATIVES] "
+            f"{type(error).__name__}: {error}",
+            flush=True,
+        )
+
+        return jsonify(
+            {
+                "error": "Word alternatives generation failed.",
                 "details": str(error),
             }
         ), 500

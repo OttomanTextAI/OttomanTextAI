@@ -27,6 +27,12 @@
     --color-accent-green: #2B8A3E;
     --color-accent-blue: #3F7CC4;
 
+    /* Belirsiz/tıklanabilir kelime alt çizgisi (bkz. .uncertain-word) —
+       kart/entity-tag/TTS highlight renkleriyle karışmaması için ayrı bir
+       token. Açık temada koyu, koyu temada açık: her iki zeminde de
+       kontrast oluşturur. */
+    --color-uncertain-underline: rgba(28, 36, 52, 0.45);
+
     --font-heading: 'Playfair Display', 'Cormorant Garamond', Georgia, serif;
     --font-brand: 'Cinzel Decorative', 'Playfair Display', serif;
     --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
@@ -60,6 +66,7 @@ body.dark-theme {
     --color-text-main: #EAE6DF;
     --color-text-muted: #9AA6B8;
     --color-border: #233452;
+    --color-uncertain-underline: rgba(255, 255, 255, 0.55);
 }
 
 /* Reset & Base Reset */
@@ -836,6 +843,27 @@ body.dark-theme .hero-section::after {
 .entity-tag.entity-place { color: var(--color-accent-blue); }
 .entity-tag.entity-date { color: var(--color-accent-green); }
 
+/* Belirsiz/alternatif okuması olabilecek kelimeler (translit ve Türkçe
+   çeviri sekmelerinde) — bkz. renderSentenceSpansHtml() ve
+   showWordAlternativesPopover() app.js'te. Kasıtlı olarak .entity-tag
+   (kesikli çizgi, renkli metin) ve .tts-sentence-active (altın arka plan)
+   ile KARIŞMAYACAK, düz/belirgin bir alt çizgi kullanır — kullanıcı bunu
+   "tıklanabilir" olarak ayırt edebilsin diye. Mevcut <strong> kalınlığına
+   dokunmaz, üzerine eklenir. */
+.uncertain-word {
+    cursor: pointer;
+    border-bottom: 2px solid var(--color-uncertain-underline);
+    padding-bottom: 1px;
+    border-radius: 1px;
+    transition: border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.uncertain-word:hover,
+.uncertain-word:focus-visible {
+    color: var(--color-gold-light);
+    border-color: var(--color-gold-light);
+}
+
 .entity-popover {
     position: absolute;
     z-index: 1000;
@@ -878,6 +906,109 @@ body.dark-theme .hero-section::after {
 
 .entity-popover-context {
     color: var(--color-text-muted);
+}
+
+/* Belirsiz kelime kartı (bkz. showWordAlternativesPopover() app.js'te) —
+   .entity-popover ile aynı konumlandırma/kart dilini paylaşır, ama kendi
+   içeriği (OCR hali, köken, alternatif okuma seçenekleri, onay formu) için
+   ayrı bir sınıf altında. */
+.word-alt-popover {
+    position: absolute;
+    z-index: 1000;
+    width: 260px;
+    max-width: calc(100vw - 24px);
+    background: var(--bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    padding: 0.9rem 1rem;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    animation: entity-popover-in 0.15s ease-out;
+}
+
+.word-alt-popover-loading {
+    color: var(--color-text-muted);
+    font-style: italic;
+}
+
+.word-alt-popover-word {
+    font-weight: 700;
+    color: var(--color-text-main);
+    margin-bottom: 0.5rem;
+}
+
+.word-alt-popover-ocr {
+    font-family: var(--font-arabic);
+    font-size: 1.1rem;
+    color: var(--color-gold);
+    margin-bottom: 0.4rem;
+}
+
+.word-alt-popover-origin {
+    color: var(--color-text-muted);
+    font-size: 0.78rem;
+    margin-bottom: 0.7rem;
+}
+
+.word-alt-popover-error {
+    color: var(--color-accent-red);
+}
+
+.word-alt-popover-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+}
+
+.word-alt-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    color: var(--color-text-main);
+}
+
+.word-alt-option input[type="radio"] {
+    accent-color: var(--color-gold);
+    flex-shrink: 0;
+}
+
+.word-alt-option-custom {
+    align-items: center;
+}
+
+.word-alt-custom-input {
+    flex: 1;
+    min-width: 0;
+    background: var(--bg-input);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 0.35rem 0.5rem;
+    font-size: 0.82rem;
+    color: var(--color-text-main);
+}
+
+.word-alt-custom-input:focus {
+    outline: none;
+    border-color: var(--color-gold);
+}
+
+.word-alt-confirm-btn {
+    margin-top: 0.3rem;
+    background: var(--color-gold);
+    color: var(--color-primary-navy);
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 0.5rem 0.7rem;
+    font-weight: 600;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: background-color var(--transition-fast);
+}
+
+.word-alt-confirm-btn:hover {
+    background: var(--color-gold-light);
 }
 
 /* Specific styling for Ottoman Noto Naskh Arabic font */

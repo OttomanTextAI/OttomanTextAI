@@ -738,6 +738,7 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
 
     function setOutputTab(tab) {
         closeEntityPopover();
+        closeWordAlternativesPopover();
         document.querySelectorAll('.output-select-btn').forEach(b => {
             b.classList.toggle('active', b.getAttribute('data-output-tab') === tab);
         });
@@ -977,6 +978,7 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     function resetState() {
         hardStopTts();
         closeEntityPopover();
+        closeWordAlternativesPopover();
         state.selectedFile = null;
         state.imageDataUrl = null;
 
@@ -1301,6 +1303,7 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     async function processTranslation(presetData = null) {
         hardStopTts();
         closeEntityPopover();
+        closeWordAlternativesPopover();
         state.isProcessing = true;
         triggerTranslateBtn.disabled = true;
         actionSpinner.classList.remove('hidden');
@@ -1425,6 +1428,13 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         }
 
         // Display Results
+        // Belge kimliği: kelime düzeltmelerini (bkz. saveWordCorrection)
+        // localStorage'da bu belgeye özgü saklayabilmek için, belgenin
+        // OCR/translit/trans metinlerinden türetilen kararlı bir hash.
+        // Aynı belge tekrar açıldığında aynı id üretilir, düzeltmeler
+        // otomatik geri uygulanabilir (bkz. applyStoredWordCorrections).
+        state.documentId = hashText(`${finalOcr}${finalTranslit}${finalTrans}`);
+
         ocrEmptyState.classList.add('hidden');
         ocrTextDisplay.classList.remove('hidden');
         renderWithGuessMarkers(ocrTextDisplay, finalOcr);
@@ -1433,7 +1443,8 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         if (finalTranslit) {
             translitEmptyState.classList.add('hidden');
             translitTextDisplay.classList.remove('hidden');
-            renderWithGuessMarkers(translitTextDisplay, finalTranslit);
+            renderWithGuessMarkers(translitTextDisplay, finalTranslit, { clickableGuesses: true, field: 'translit' });
+            applyStoredWordCorrections(state.documentId, 'translit', translitTextDisplay);
             translitTools.classList.add('tools-ready');
         } else {
             translitEmptyState.classList.remove('hidden');
@@ -1443,7 +1454,8 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
 
         transEmptyState.classList.add('hidden');
         transTextDisplay.classList.remove('hidden');
-        renderTranslationWithEntities(transTextDisplay, finalTrans, finalAnalysis);
+        renderTranslationWithEntities(transTextDisplay, finalTrans, finalAnalysis, { clickableGuesses: true, field: 'trans' });
+        applyStoredWordCorrections(state.documentId, 'trans', transTextDisplay);
         transTools.classList.add('tools-ready');
 
         if (finalTransEn) {
@@ -1578,7 +1590,25 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     // speakText() o an okunan cümleyi aynı N indeksiyle vurgulayabilir
     // (bkz. TTS bölümü). entities verilirse (Türkçe çeviri sekmesi), her
     // cümle içinde ayrıca kişi/yer/tarih vurgulaması da uygulanır.
-    function renderSentenceSpansHtml(rawText, entities) {
+    //
+    // options.clickableGuesses true ise (translit ve Türkçe çeviri
+    // sekmelerinde), her **tahmin** işaretli <strong>, tıklanabilir bir
+    // "belirsiz kelime" olarak data-word-idx (bu render içinde 0'dan
+    // başlayan, belge boyunca artan bir sayaç) ve data-word-field
+    // (options.field: 'translit' | 'trans') ile işaretlenir — bkz.
+    // showWordAlternativesPopover(). options verilmezse (ocr/en
+    // sekmeleri) davranış öncekiyle birebir aynı kalır: sade <strong>.
+    function renderSentenceSpansHtml(rawText, entities, options) {
+        const clickableGuesses = !!(options && options.clickableGuesses);
+        const wordField = (options && options.field) || '';
+        let guessIndex = 0;
+
+        function renderGuess(text) {
+            if (!clickableGuesses) return `<strong>${text}</strong>`;
+            const wordIdx = guessIndex++;
+            return `<strong class="uncertain-word" data-word-idx="${wordIdx}" data-word-field="${wordField}">${text}</strong>`;
+        }
+
         const parts = partitionSentencesRaw(rawText || '');
         return parts.map((raw, idx) => {
             const escaped = escapeHtml(raw);
@@ -1587,18 +1617,18 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
                 const segments = splitGuessSegments(escaped);
                 inner = segments
                     .map(seg => seg.bold
-                        ? `<strong>${seg.text}</strong>`
+                        ? renderGuess(seg.text)
                         : highlightEntitiesInSegment(seg.text, entities))
                     .join('');
             } else {
-                inner = escaped.replace(/\*\*(.+?)\*\*/gs, '<strong>$1</strong>');
+                inner = escaped.replace(/\*\*(.+?)\*\*/gs, (_match, guessed) => renderGuess(guessed));
             }
             return `<span class="tts-sentence" data-tts-idx="${idx}">${inner}</span>`;
         }).join('');
     }
 
-    function renderWithGuessMarkers(el, rawText) {
-        el.innerHTML = renderSentenceSpansHtml(rawText, null);
+    function renderWithGuessMarkers(el, rawText, options) {
+        el.innerHTML = renderSentenceSpansHtml(rawText, null, options);
     }
 
     const ENTITY_TYPE_LABELS = { person: 'Kişi', place: 'Yer', date: 'Tarih' };
@@ -1706,9 +1736,9 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     // metin, İngilizce çeviri) hâlâ sade renderWithGuessMarkers kullanır.
     // Cümle bazlı TTS highlight sarmalaması renderSentenceSpansHtml
     // içinde, entity vurgulamasıyla birlikte uygulanır.
-    function renderTranslationWithEntities(el, rawText, analysis) {
+    function renderTranslationWithEntities(el, rawText, analysis, options) {
         const entities = buildEntityIndex(analysis);
-        el.innerHTML = renderSentenceSpansHtml(rawText, entities);
+        el.innerHTML = renderSentenceSpansHtml(rawText, entities, options);
     }
 
     // Bir entity için "ilgili bilgi" olarak, analizin summary/key_points
@@ -1728,6 +1758,20 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         return haystacks.find(s => s.toLowerCase().includes(lowerEntity)) || '';
     }
 
+    // İki popover türü de (entity kartı ve aşağıdaki kelime-alternatifleri
+    // kartı) aynı "hedef elemanın hemen altına, ekran dışına taşmadan
+    // konumlan" mantığını paylaşır — tek yerde tutulur, ikisi de kullanır.
+    function positionPopoverNear(popover, targetEl) {
+        const rect = targetEl.getBoundingClientRect();
+        const popRect = popover.getBoundingClientRect();
+        const maxLeft = window.scrollX + document.documentElement.clientWidth - popRect.width - 12;
+        const left = Math.max(12, Math.min(rect.left + window.scrollX, maxLeft));
+        const top = rect.bottom + window.scrollY + 8;
+
+        popover.style.left = `${left}px`;
+        popover.style.top = `${top}px`;
+    }
+
     let activeEntityPopover = null;
 
     function closeEntityPopover() {
@@ -1739,6 +1783,7 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
 
     function showEntityPopover(targetEl) {
         closeEntityPopover();
+        closeWordAlternativesPopover();
 
         const type = targetEl.dataset.type;
         const text = targetEl.dataset.entity;
@@ -1766,15 +1811,7 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         }
 
         document.body.appendChild(popover);
-
-        const rect = targetEl.getBoundingClientRect();
-        const popRect = popover.getBoundingClientRect();
-        const maxLeft = window.scrollX + document.documentElement.clientWidth - popRect.width - 12;
-        const left = Math.max(12, Math.min(rect.left + window.scrollX, maxLeft));
-        const top = rect.bottom + window.scrollY + 8;
-
-        popover.style.left = `${left}px`;
-        popover.style.top = `${top}px`;
+        positionPopoverNear(popover, targetEl);
 
         activeEntityPopover = popover;
     }
@@ -1793,7 +1830,268 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     });
 
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') closeEntityPopover();
+        if (e.key === 'Escape') {
+            closeEntityPopover();
+            closeWordAlternativesPopover();
+        }
+    });
+
+    // --- Belirsiz Kelime Alternatifleri (uncertain-word) ---
+    // translit ve Türkçe çeviri sekmelerindeki **tahmin** işaretli
+    // (.uncertain-word) kelimelere tıklanınca, kelimenin yakınında küçük
+    // bir kart açılır: OCR/Osmanlıca hali, kökeni ve en fazla 3 alternatif
+    // okuma — bunlar ANA çeviri isteğinde değil, tıklama anında YENİ ve
+    // küçük bir istekle (/api/word-alternatives) tembel yüklenir (ana
+    // çeviriyi yavaşlatmamak, token limitini zorlamamak için). TTS'e hiç
+    // dokunmaz: speechSynthesis'i durdurmaz/duraklatmaz, okuma sürerken de
+    // açılabilir.
+
+    // Belge içeriğinden kararlı, basit bir kimlik üretir (kriptografik
+    // değil — sadece "bu aynı belge mi" ayrımı için yeterli). localStorage
+    // anahtarlaması için kullanılır (bkz. saveWordCorrection).
+    function hashText(text) {
+        let hash = 0;
+        for (let i = 0; i < text.length; i++) {
+            hash = (hash * 31 + text.charCodeAt(i)) | 0;
+        }
+        return (hash >>> 0).toString(36);
+    }
+
+    const WORD_CORRECTIONS_STORAGE_KEY = 'divane_word_corrections';
+
+    function readWordCorrectionsStore() {
+        try {
+            return JSON.parse(localStorage.getItem(WORD_CORRECTIONS_STORAGE_KEY) || '{}');
+        } catch (err) {
+            return {};
+        }
+    }
+
+    function writeWordCorrectionsStore(store) {
+        localStorage.setItem(WORD_CORRECTIONS_STORAGE_KEY, JSON.stringify(store));
+    }
+
+    // Kullanıcının onayladığı bir kelime düzeltmesini kalıcı hale getirir.
+    // İÇİ şu an localStorage kullanıyor; ÇAĞIRAN KOD (kart/onay butonu) bu
+    // fonksiyonun içinde ne olduğunu bilmiyor/önemsemiyor — ileride
+    // localStorage yerine gerçek bir backend'e geçmek istenirse, sadece bu
+    // fonksiyonun (ve loadWordCorrections'ın) gövdesi değişecek.
+    function saveWordCorrection(documentId, field, wordIdx, chosenReading) {
+        if (!documentId) return;
+        const store = readWordCorrectionsStore();
+        if (!store[documentId]) store[documentId] = {};
+        if (!store[documentId][field]) store[documentId][field] = {};
+        store[documentId][field][wordIdx] = chosenReading;
+        writeWordCorrectionsStore(store);
+    }
+
+    function loadWordCorrections(documentId, field) {
+        if (!documentId) return {};
+        const store = readWordCorrectionsStore();
+        return (store[documentId] && store[documentId][field]) || {};
+    }
+
+    // Bir alan (translit/trans) render edildikten hemen sonra çağrılır:
+    // daha önce bu belge için kaydedilmiş düzeltmeleri ekrana geri uygular
+    // (sayfa yenilense/belge tekrar açılsa bile düzeltmeler kaybolmasın).
+    function applyStoredWordCorrections(documentId, field, containerEl) {
+        const corrections = loadWordCorrections(documentId, field);
+        Object.keys(corrections).forEach(wordIdx => {
+            const span = containerEl.querySelector(`.uncertain-word[data-word-idx="${wordIdx}"]`);
+            if (span) span.textContent = corrections[wordIdx];
+        });
+    }
+
+    let activeWordPopover = null;
+    // Popover her açılışta/kapanışta artar; async /api/word-alternatives
+    // cevabı geldiğinde kart hâlâ AYNI açılışa mı ait diye bunu kontrol
+    // ederiz — kullanıcı kart yanıt gelmeden kapatır ya da başka bir
+    // kelimeye tıklarsa, eski (bayat) cevabın yanlış karta yazılmasını
+    // önler.
+    let wordPopoverToken = 0;
+
+    function closeWordAlternativesPopover() {
+        if (activeWordPopover) {
+            activeWordPopover.remove();
+            activeWordPopover = null;
+        }
+        wordPopoverToken++;
+    }
+
+    async function showWordAlternativesPopover(targetEl) {
+        closeEntityPopover();
+        closeWordAlternativesPopover();
+
+        const myToken = wordPopoverToken;
+        const wordText = targetEl.textContent;
+        const field = targetEl.dataset.wordField;
+        const sentenceEl = targetEl.closest('.tts-sentence');
+        const sentenceText = sentenceEl ? sentenceEl.textContent : wordText;
+
+        const popover = document.createElement('div');
+        popover.className = 'word-alt-popover';
+
+        const wordEl = document.createElement('div');
+        wordEl.className = 'word-alt-popover-word';
+        wordEl.textContent = wordText;
+        popover.appendChild(wordEl);
+
+        const loadingEl = document.createElement('div');
+        loadingEl.className = 'word-alt-popover-loading';
+        loadingEl.textContent = 'Alternatifler yükleniyor...';
+        popover.appendChild(loadingEl);
+
+        document.body.appendChild(popover);
+        positionPopoverNear(popover, targetEl);
+        activeWordPopover = popover;
+
+        let data = null;
+        let errorMessage = '';
+
+        try {
+            const response = await fetchWithTimeout(
+                'https://ottoman-text-ai.onrender.com/api/word-alternatives',
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        word: wordText,
+                        sentence: sentenceText,
+                        ocr_context: state.ocrText || '',
+                        target_lang: field
+                    })
+                },
+                30000
+            );
+            const json = await response.json();
+            if (!response.ok || !json.success) {
+                throw new Error(json.error || 'Alternatifler alınamadı.');
+            }
+            data = json;
+        } catch (err) {
+            errorMessage = err.message || 'Alternatifler alınamadı.';
+        }
+
+        // Bu arada kart kapatıldıysa ya da başka bir kelime için yeniden
+        // açıldıysa, bu cevabı artık hiçbir yere yazma.
+        if (myToken !== wordPopoverToken || activeWordPopover !== popover) return;
+
+        if (!data) {
+            loadingEl.textContent = errorMessage;
+            loadingEl.classList.add('word-alt-popover-error');
+            return;
+        }
+
+        renderWordAlternativesForm(popover, targetEl, data);
+        positionPopoverNear(popover, targetEl);
+    }
+
+    function renderWordAlternativesForm(popover, targetEl, data) {
+        popover.innerHTML = '';
+
+        const wordEl = document.createElement('div');
+        wordEl.className = 'word-alt-popover-word';
+        wordEl.textContent = targetEl.textContent;
+        popover.appendChild(wordEl);
+
+        if (data.ocr_form) {
+            const ocrEl = document.createElement('div');
+            ocrEl.className = 'word-alt-popover-ocr';
+            ocrEl.dir = 'rtl';
+            ocrEl.lang = 'ota';
+            ocrEl.textContent = data.ocr_form;
+            popover.appendChild(ocrEl);
+        }
+
+        if (data.origin) {
+            const originEl = document.createElement('div');
+            originEl.className = 'word-alt-popover-origin';
+            originEl.textContent = data.origin;
+            popover.appendChild(originEl);
+        }
+
+        const alternatives = (Array.isArray(data.alternatives) ? data.alternatives : [])
+            .map(item => (typeof item === 'string' ? item : (item && item.text) || ''))
+            .map(text => text.trim())
+            .filter(Boolean)
+            .slice(0, 3);
+
+        const form = document.createElement('form');
+        form.className = 'word-alt-popover-form';
+
+        const radioName = `word-alt-choice-${Date.now()}`;
+
+        alternatives.forEach((optionText, i) => {
+            const label = document.createElement('label');
+            label.className = 'word-alt-option';
+
+            const radio = document.createElement('input');
+            radio.type = 'radio';
+            radio.name = radioName;
+            radio.value = optionText;
+            if (i === 0) radio.checked = true;
+            label.appendChild(radio);
+
+            const span = document.createElement('span');
+            span.textContent = optionText;
+            label.appendChild(span);
+
+            form.appendChild(label);
+        });
+
+        const customLabel = document.createElement('label');
+        customLabel.className = 'word-alt-option word-alt-option-custom';
+
+        const customRadio = document.createElement('input');
+        customRadio.type = 'radio';
+        customRadio.name = radioName;
+        customRadio.value = '';
+        if (alternatives.length === 0) customRadio.checked = true;
+        customLabel.appendChild(customRadio);
+
+        const customInput = document.createElement('input');
+        customInput.type = 'text';
+        customInput.className = 'word-alt-custom-input';
+        customInput.placeholder = 'Kendi okumanızı yazın...';
+        customInput.addEventListener('focus', () => { customRadio.checked = true; });
+        customLabel.appendChild(customInput);
+
+        form.appendChild(customLabel);
+
+        const confirmBtn = document.createElement('button');
+        confirmBtn.type = 'submit';
+        confirmBtn.className = 'word-alt-confirm-btn';
+        confirmBtn.textContent = 'Bu seçimi onayla';
+        form.appendChild(confirmBtn);
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const checked = form.querySelector(`input[name="${radioName}"]:checked`);
+            const chosen = (checked === customRadio ? customInput.value : (checked ? checked.value : '')).trim();
+            if (!chosen) return;
+
+            targetEl.textContent = chosen;
+            saveWordCorrection(state.documentId, targetEl.dataset.wordField, targetEl.dataset.wordIdx, chosen);
+            closeWordAlternativesPopover();
+        });
+
+        popover.appendChild(form);
+    }
+
+    [translitTextDisplay, transTextDisplay].forEach(displayEl => {
+        displayEl.addEventListener('click', (e) => {
+            const wordEl = e.target.closest('.uncertain-word');
+            if (!wordEl) return;
+            e.stopPropagation();
+            showWordAlternativesPopover(wordEl);
+        });
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!activeWordPopover) return;
+        if (activeWordPopover.contains(e.target) || e.target.closest('.uncertain-word')) return;
+        closeWordAlternativesPopover();
     });
 
     function copyToClipboard(text, msg) {
