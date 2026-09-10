@@ -18,7 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
         lastAnalysis: null,
         apiKey: localStorage.getItem('gemini_api_key') || '',
         engine: localStorage.getItem('translation_engine') || 'gemini-flash',
-        history: JSON.parse(localStorage.getItem('translation_history') || '[]'),
         authToken: localStorage.getItem('auth_token') || null,
         authEmail: localStorage.getItem('auth_email') || null
     };
@@ -106,6 +105,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const modelSelect = document.getElementById('modelSelect');
     const saveSettingsBtn = document.getElementById('saveSettingsBtn');
     const historyList = document.getElementById('historyList');
+    const documentsLoginRequired = document.getElementById('documentsLoginRequired');
+    const documentsLoginBtn = document.getElementById('documentsLoginBtn');
+    const documentsModal = document.getElementById('documentsModal');
 
     // Hesap (Giriş / Kayıt) modalı
     const profileBtn = document.getElementById('profileBtn');
@@ -1593,13 +1595,18 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
 
         state.isProcessing = false;
 
-        // Save to History
-        saveHistoryItem({
-            name: state.selectedFile ? state.selectedFile.name : 'Osmanlıca Belge',
-            date: new Date().toLocaleString('tr-TR'),
-            ocr: finalOcr,
-            trans: finalTrans
-        });
+        // Giriş yapılmışsa çeviriyi arka planda veritabanına kaydet (best
+        // effort, kullanıcıyı bekletmez); giriş yapılmamışsa "Belgelerim"e
+        // kaydedilmediğini bir pop-up ile bildir. Örnek kartlar ve
+        // "Belgelerim"den yeniden açılan kayıtlı çeviriler presetData
+        // üzerinden geldiği için bu blok onlarda hiç çalışmaz.
+        if (!presetData) {
+            if (state.authToken) {
+                saveTranslationToBackend(finalAnalysis, state.enhancedImageBlob);
+            } else {
+                alert('Bu çeviri veritabanına kaydedilmedi. Belgelerinizi kaydedip daha sonra görüntüleyebilmek için giriş yapın.');
+            }
+        }
     }
 
     // --- Interactive Tools & Actions ---
@@ -2634,36 +2641,134 @@ ${transTextDisplay.textContent}
         a.click();
     });
 
-    // --- History Log Management ---
-    function saveHistoryItem(item) {
-        state.history.unshift(item);
-        if (state.history.length > 20) state.history.pop();
-        localStorage.setItem('translation_history', JSON.stringify(state.history));
-        renderHistory();
-    }
+    // --- Belgelerim (backend.py: /api/documents, /api/documents/<id>/analyze,
+    // /api/translations/save) — giriş yapılmadan görüntülenemez/kaydedilmez. ---
 
-    function renderHistory() {
-        if (!historyList) return;
-        if (state.history.length === 0) {
-            historyList.innerHTML = '<p class="empty-history-text">Henüz kaydedilmiş bir belge bulunmuyor.</p>';
-            return;
+    // Bir çeviri tamamlandığında (yalnızca gerçek yüklemeler için — örnek
+    // kartlar ve "Belgelerim"den yeniden açılan kayıtlı çeviriler bu
+    // fonksiyonu hiç çağırmaz), giriş yapmış kullanıcının hesabına best
+    // effort olarak kaydeder. Kullanıcıyı bekletmemek için await edilmez;
+    // başarısız olursa sessizce konsola loglanır.
+    async function saveTranslationToBackend(resultData, imageBlob) {
+        if (!imageBlob || !resultData) return;
+        try {
+            const formData = new FormData();
+            formData.append('image', imageBlob, 'enhanced.png');
+            formData.append('result', JSON.stringify(resultData));
+
+            const res = await fetchWithTimeout(`${API_BASE_URL}/api/translations/save`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${state.authToken}` },
+                body: formData
+            }, 30000);
+
+            if (!res.ok) {
+                const data = await res.json().catch(() => ({}));
+                console.warn('Çeviri veritabanına kaydedilemedi:', data.error || res.status);
+                return;
+            }
+
+            statusMessage.textContent = (statusMessage.textContent || '') + ' (Belgelerime kaydedildi)';
+        } catch (err) {
+            console.warn('Çeviri veritabanına kaydedilemedi:', err);
         }
-
-        historyList.innerHTML = state.history.map((h, i) => `
-            <div class="history-item" style="border-bottom:1px solid var(--color-border); padding:0.8rem 0;">
-                <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:0.9rem;">
-                    <span>📜 ${h.name}</span>
-                    <span style="font-size:0.75rem; color:var(--color-text-muted);">${h.date}</span>
-                </div>
-                <p style="font-size:0.85rem; color:var(--color-text-muted); margin-top:0.3rem; line-clamp:2;">${h.trans}</p>
-            </div>
-        `).join('');
     }
 
-    document.getElementById('clearHistoryBtn')?.addEventListener('click', () => {
-        state.history = [];
-        localStorage.removeItem('translation_history');
-        renderHistory();
+    // Giriş yapılmışsa kullanıcının kayıtlı belgelerini backend'den çeker ve
+    // listeler; yapılmamışsa "giriş yapınız" mesajını gösterir.
+    async function renderDocumentsModal() {
+        if (!historyList) return;
+
+        const loggedIn = !!state.authToken;
+        documentsLoginRequired.classList.toggle('hidden', loggedIn);
+        historyList.classList.toggle('hidden', !loggedIn);
+
+        if (!loggedIn) return;
+
+        historyList.innerHTML = '<p class="empty-history-text">Yükleniyor...</p>';
+
+        try {
+            const res = await fetchWithTimeout(`${API_BASE_URL}/api/documents`, {
+                headers: { 'Authorization': `Bearer ${state.authToken}` }
+            });
+
+            if (res.status === 401) {
+                clearAuthSession();
+                return;
+            }
+
+            if (!res.ok) {
+                throw new Error('Belgeler alınamadı.');
+            }
+
+            const data = await res.json();
+            const docs = data.documents || [];
+
+            if (docs.length === 0) {
+                historyList.innerHTML = '<p class="empty-history-text">Henüz kaydedilmiş bir belge bulunmuyor. Yeni bir çeviri yaptığınızda burada listelenecektir.</p>';
+                return;
+            }
+
+            historyList.innerHTML = docs.map(doc => `
+                <div class="history-item" data-doc-id="${doc.id}" style="border-bottom:1px solid var(--color-border); padding:0.8rem 0; cursor:pointer;">
+                    <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:0.9rem;">
+                        <span>📜 ${doc.filename}</span>
+                        <span style="font-size:0.75rem; color:var(--color-text-muted);">${new Date(doc.uploaded_at).toLocaleString('tr-TR')}</span>
+                    </div>
+                </div>
+            `).join('');
+        } catch (err) {
+            historyList.innerHTML = `<p class="empty-history-text">Belgeler yüklenemedi: ${classifyTranslationError(err)}</p>`;
+        }
+    }
+
+    // Listeden bir belgeye tıklanınca, kayıtlı (önbellekli) çeviri sonucunu
+    // çeker ve örnek kartlarla aynı presetData mekanizmasıyla ana çalışma
+    // alanına yükler — bu tekrar backend'e kaydetmeyi tetiklemez (bkz.
+    // processTranslation'daki "!presetData" kontrolü).
+    historyList.addEventListener('click', async (e) => {
+        const item = e.target.closest('[data-doc-id]');
+        if (!item) return;
+        const docId = item.getAttribute('data-doc-id');
+
+        try {
+            const res = await fetchWithTimeout(`${API_BASE_URL}/api/documents/${docId}/analyze`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${state.authToken}` }
+            }, 45000);
+            const data = await res.json().catch(() => ({}));
+
+            if (res.status === 401) {
+                clearAuthSession();
+                return;
+            }
+
+            if (!res.ok) {
+                alert(data.error || 'Belge yüklenemedi.');
+                return;
+            }
+
+            documentsModal.classList.add('hidden');
+            smoothScrollTo(dropZone);
+            processTranslation({
+                ocr: data.ocr || '',
+                tr: data.trans || '',
+                translit: data.translit || '',
+                analysis: {
+                    document_type: data.document_type,
+                    summary: data.summary,
+                    confidence: data.confidence
+                }
+            });
+        } catch (err) {
+            alert(classifyTranslationError(err));
+        }
+    });
+
+    documentsLoginBtn.addEventListener('click', () => {
+        documentsModal.classList.add('hidden');
+        authModal.classList.remove('hidden');
+        updateAuthUI();
     });
 
     // --- Modal Management ---
@@ -2674,7 +2779,7 @@ ${transTextDisplay.textContent}
             const targetModal = document.getElementById(modalId);
             if (targetModal) {
                 targetModal.classList.remove('hidden');
-                if (modalId === 'documentsModal') renderHistory();
+                if (modalId === 'documentsModal') renderDocumentsModal();
                 if (modalId === 'authModal') updateAuthUI();
             }
         });
@@ -2854,20 +2959,26 @@ ${transTextDisplay.textContent}
         }
     });
 
-    logoutBtn.addEventListener('click', async () => {
-        if (state.authToken) {
-            try {
-                await fetchWithTimeout(`${API_BASE_URL}/api/auth/logout`, {
-                    method: 'POST',
-                    headers: { 'Authorization': `Bearer ${state.authToken}` }
-                });
-            } catch (err) {
-                // Sunucuya ulaşılamasa bile yerel oturumu temizlemeye devam
-                // ediyoruz — kullanıcı için "çıkış yaptım" tek doğru sonuçtur.
-            }
-        }
+    logoutBtn.addEventListener('click', () => {
+        // Önce yerelde ANINDA çıkış yaptırıyoruz — sunucunun (özellikle
+        // Render'ın soğuk başlangıcında 30-60 saniye sürebilen) yanıtını
+        // beklemek butonun "çalışmıyormuş" gibi hissettirmesine sebep
+        // oluyordu. clearAuthSession() zaten updateAuthUI()'yi çağırıp
+        // modalı giriş/kayıt görünümüne döndürüyor — modalı kapatmıyoruz ki
+        // kullanıcı isterse hemen tekrar giriş yapabilsin.
+        const tokenToInvalidate = state.authToken;
         clearAuthSession();
-        authModal.classList.add('hidden');
+
+        if (tokenToInvalidate) {
+            fetchWithTimeout(`${API_BASE_URL}/api/auth/logout`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${tokenToInvalidate}` }
+            }, 10000).catch(() => {
+                // Sunucuya ulaşılamasa da yerel oturum zaten temizlendi;
+                // sunucu tarafındaki token er ya da geç kendiliğinden
+                // (7 günlük süre dolunca) geçersiz olacaktır.
+            });
+        }
     });
 
     // Sayfa her açıldığında, önceden kaydedilmiş bir oturum varsa hâlâ

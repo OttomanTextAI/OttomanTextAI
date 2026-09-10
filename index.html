@@ -454,14 +454,17 @@
     <div class="modal-overlay hidden" id="documentsModal">
         <div class="modal-card modal-lg">
             <button class="modal-close" data-close="documentsModal">&times;</button>
-            <h2 class="modal-title">📂 Geçmiş Belgelerim</h2>
+            <h2 class="modal-title">📂 Belgelerim</h2>
             <div class="modal-body">
-                <div class="history-list" id="historyList">
-                    <p class="empty-history-text">Henüz kaydedilmiş bir belge bulunmuyor. Yeni bir çeviri yaptığınızda burada listelenecektir.</p>
+                <div id="documentsLoginRequired" class="hidden">
+                    <p class="modal-hint" style="margin-bottom: 1.2rem;">
+                        Belgelerinizi kaydetmek ve daha sonra görüntülemek için giriş yapınız.
+                    </p>
+                    <button class="btn btn-primary" id="documentsLoginBtn">Giriş Yap</button>
                 </div>
+                <div class="history-list" id="historyList"></div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-danger-subtle" id="clearHistoryBtn">Geçmişi Temizle</button>
                 <button class="btn btn-primary" data-close="documentsModal">Kapat</button>
             </div>
         </div>
