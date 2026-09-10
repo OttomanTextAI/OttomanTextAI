@@ -2497,7 +2497,102 @@ def analyze_document(current_user, document_id):
         "summary": existing_analysis.summary,
         "confidence": existing_analysis.confidence,
     }), 201
+@app.route("/api/translations/save", methods=["POST"])
+def save_translation():
+    auth_header = request.headers.get("Authorization", "")
+    login_required_message = {"error": "Çeviri geçmişinizi kaydetmek için giriş yapmalısınız."}
 
+    if not auth_header.startswith("Bearer "):
+        return jsonify(login_required_message), 401
+
+    token = auth_header.split(" ", 1)[1]
+
+    try:
+        payload = jwt.decode(token, os.getenv("JWT_SECRET_KEY"), algorithms=["HS256"])
+    except jwt.InvalidTokenError:
+        return jsonify(login_required_message), 401
+
+    if TokenBlocklist.query.filter_by(jti=payload.get("jti")).first():
+        return jsonify(login_required_message), 401
+
+    current_user = User.query.get(payload.get("user_id"))
+
+    if not current_user:
+        return jsonify(login_required_message), 401
+
+    if "image" not in request.files:
+        return jsonify({"error": "image alanı zorunludur."}), 400
+
+    uploaded_file = request.files["image"]
+
+    if uploaded_file.filename == "":
+        return jsonify({"error": "Görsel seçilmedi."}), 400
+
+    result_json = request.form.get("result")
+
+    if not result_json:
+        return jsonify({"error": "Kaydedilecek çeviri sonucu (result) zorunludur."}), 400
+
+    try:
+        parsed = json.loads(result_json)
+    except json.JSONDecodeError:
+        return jsonify({"error": "result geçerli bir JSON değil."}), 400
+
+    if supabase_client is None:
+        return jsonify({"error": "Dosya depolama servisi şu anda yapılandırılmamış."}), 503
+
+    original_filename = secure_filename(uploaded_file.filename) or "translation.png"
+    extension = original_filename.rsplit(".", 1)[-1].lower() if "." in original_filename else "png"
+    file_bytes = uploaded_file.read()
+    storage_path = f"{current_user.id}/{uuid.uuid4()}_{original_filename}"
+
+    try:
+        supabase_client.storage.from_(DOCUMENTS_BUCKET).upload(
+            storage_path,
+            file_bytes,
+            {"content-type": uploaded_file.mimetype},
+        )
+    except Exception as error:
+        return jsonify({"error": f"Dosya depolamaya yüklenemedi: {error}"}), 502
+
+    new_document = Document(
+        user_id=current_user.id,
+        filename=original_filename,
+        storage_path=storage_path,
+        file_type=extension,
+        file_size=len(file_bytes),
+    )
+    db.session.add(new_document)
+    db.session.flush()
+
+    db.session.add(DocumentText(
+        document_id=new_document.id,
+        ocr_text=parsed.get("ocr", ""),
+        translit_text=parsed.get("translit", ""),
+        trans_text=parsed.get("trans", ""),
+        trans_text_en=parsed.get("trans_en", ""),
+    ))
+
+    db.session.add(DocumentAnalysis(
+        document_id=new_document.id,
+        document_type=parsed.get("document_type"),
+        style=parsed.get("style"),
+        summary=parsed.get("summary"),
+        script_type=parsed.get("script_type"),
+        script_purpose=parsed.get("script_purpose"),
+        period_estimate=parsed.get("period_estimate"),
+        date_hijri=parsed.get("date_hijri"),
+        date_gregorian=parsed.get("date_gregorian"),
+        notes=parsed.get("notes"),
+        confidence=parsed.get("confidence"),
+    ))
+
+    db.session.commit()
+
+    return jsonify({
+        "message": "Çeviri geçmişinize kaydedildi.",
+        "document_id": new_document.id,
+    }), 201
 if __name__ == "__main__":
     app.run(
         host="0.0.0.0",
