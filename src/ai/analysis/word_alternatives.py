@@ -17,18 +17,23 @@ metnidir — kelimenin Arap harfli karşılığı orada mutlaka vardır.
 Aşağıdaki üç alanın HİÇBİRİ boş/eksik dönmemeli — kullanıcıya asla boş
 bir kart gösterilmemeli:
 
-1. ocr_form (ZORUNLU, boş bırakma): ocr_context içinde, verilen
-   word/sentence'a karşılık gelen Arap harfli (Osmanlıca) kısmı bul ve
-   birebir aynen yaz. ocr_context'te tam eşleşme bulamazsan bile, en
-   yakın karşılık gelen kısmı yaz — SADECE ocr_context tamamen boşsa
-   veya kelime hiçbir şekilde belgeyle ilişkilendirilemiyorsa boş string
-   döndür.
+1. ocr_form (ZORUNLU, boş bırakma): ocr_context'i DİKKATLİCE oku, verilen
+   word/sentence'ın ocr_context içindeki Arap harfli karşılığını BUL ve
+   onu ocr_form alanına AYNEN (ocr_context'te yazdığı gibi) yaz. Bu bir
+   tahmin değil, ocr_context'in içinde zaten mevcut olan bir arama
+   işlemidir — kelime, translit/trans biçiminde farklı görünse de
+   ocr_context'teki Arap harfli karşılığını mutlaka bulabilirsin.
+   ÖRNEK: word "edip" ise ve ocr_context içinde "ايدوب" geçiyorsa,
+   ocr_form kesinlikle "ايدوب" olmalıdır (boş değil). SADECE ocr_context
+   alanı tamamen boş/verilmemişse ocr_form'u boş string yap; aksi halde
+   MUTLAKA bir değer yaz.
 
 2. origin (ZORUNLU, boş bırakma): kelimenin kökenini kısaca belirt
    (Arapça, Farsça, Türkçe, Osmanlıca bileşik vb.). Kelime sıradan,
-   bilinen bir Türkçe kelimeyse bile "Türkçe" ya da "Standart Türkçe
-   kelime" yaz — belirsizlik yokmuş gibi görünse de bu alanı ASLA boş
-   bırakma.
+   bilinen bir Türkçe kelimeyse bile bu alanı "Türkçe" yaz — ASLA boş
+   string döndürme. ÖRNEK: word "su" ise, origin kesinlikle "Türkçe"
+   olmalıdır (boş değil). Bu alanı boş bırakmak KABUL EDİLEMEZ; emin
+   olamadığın durumda bile en olası kökeni yaz, boş string yazma.
 
 3. alternatives (ZORUNLU, EN AZ 1 ÖĞE): en fazla 3 alternatif okuma/
    yorum öner. Eğer kelimenin tek, net ve doğru bir okuması olduğunu
@@ -128,8 +133,26 @@ class WordAlternativesGenerator:
                 },
             ],
             temperature=0.2,
-            max_tokens=500,
+            # 500 was too low and was the ACTUAL root cause of ocr_form/
+            # origin coming back empty: this model spends a chunk of its
+            # token budget on hidden reasoning before emitting any visible
+            # JSON, so at max_tokens=500 the response was silently cut off
+            # (finish_reason="length") a few characters into the JSON —
+            # confirmed by calling the relay directly and inspecting the
+            # raw (truncated) completion. 2000 leaves enough headroom for
+            # that reasoning plus the full JSON body; the prompt fixes
+            # above are necessary but were never the actual bottleneck.
+            max_tokens=2000,
         )
+
+        finish_reason = completion.choices[0].finish_reason
+
+        if finish_reason == "length":
+            print(
+                "[WORD ALTERNATIVES] Response was truncated "
+                "(finish_reason=length) — model may need more max_tokens.",
+                flush=True,
+            )
 
         response_text = (
             completion.choices[0].message.content
@@ -207,6 +230,15 @@ class WordAlternativesGenerator:
         # "belirlenemedi" görsün.
         if not origin:
             origin = "Belirlenemedi"
+
+        # ocr_form için de boş bırakmıyoruz — ama yalnızca aranacak bir
+        # ocr_context GERÇEKTEN verilmişken. Aksi halde ("ocr_context"
+        # boşsa, örn. context olmadan tek kelime testi) boş ocr_form
+        # zaten beklenen/doğru davranış; uydurma bir Arapça metin
+        # yazmaktansa (yanlış bilgi, boş bırakmaktan kötüdür) bu tek
+        # durumda boş bırakıyoruz.
+        if not ocr_form and trimmed_ocr_context:
+            ocr_form = "Bulunamadı"
 
         return {
             "alternatives": alternatives,

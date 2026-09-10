@@ -1526,7 +1526,12 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         scanLine.classList.remove('scanning');
 
         state.isProcessing = false;
-        triggerTranslateBtn.disabled = false;
+        // Çeviri başarıyla tamamlandıktan sonra buton KASITLI olarak
+        // devre dışı kalır — aynı belge için tekrar tıklanabilir
+        // olmamalı. Sadece yeni bir belge seçildiğinde (handleFileSelect
+        // → runImageEnhancement başarısı) tekrar aktif olur. Hata
+        // durumunda (showProcessingFailure) buton ayrıca tekrar
+        // aktifleştirilir — bu davranış burada değişmedi.
         actionSpinner.classList.add('hidden');
         translateBtnLabel.textContent = 'Çeviriyi Başlat';
 
