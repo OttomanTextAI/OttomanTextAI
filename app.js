@@ -968,7 +968,21 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
 
             triggerTranslateBtn.disabled = true;
 
-            await runImageEnhancement(state.selectedFile, documentProfile.value);
+            const enhanced = await runImageEnhancement(state.selectedFile, documentProfile.value);
+
+            // İlk (otomatik) iyileştirme başarılı olduysa, kullanıcı hiçbir
+            // butona basmadan çeviriyi kendiliğinden başlat. Bu SADECE bu
+            // ilk enhance için geçerli — documentProfile'ın 'change'
+            // dinleyicisi kendi runImageEnhancement çağrısını doğrudan
+            // yapıyor (bu fonksiyonun içinden geçmiyor), bu yüzden profil
+            // sonradan değiştirildiğinde otomatik çeviri tetiklenmez.
+            // Başarısız olursa (enhanced === false) runImageEnhancement
+            // zaten showProcessingFailure'ı kendi içinde çağırmış olur —
+            // burada ekstra bir şey yapmaya gerek yok, sadece devam etmeyiz.
+            if (enhanced) {
+                statusMessage.textContent = 'Görüntü iyileştirme tamamlandı, çeviri hazırlanıyor...';
+                await processTranslation();
+            }
         };
         reader.readAsDataURL(file);
     }
