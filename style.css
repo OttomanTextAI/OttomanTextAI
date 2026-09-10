@@ -5,24 +5,28 @@
 
 /* Design Tokens & CSS Variables */
 :root {
-    --bg-main: #FAF5EC;
-    --bg-header: #0D1627;
-    --bg-header-translucent: rgba(13, 22, 39, 0.94);
+    /* Light theme: "Ivory & Umber" — colors sampled straight from the
+       Divane logo (deep umber ink + antique gold) instead of a navy accent
+       tinted lighter, so light and dark mode read as genuinely different
+       palettes rather than the same scheme at two brightness levels. */
+    --bg-main: #FDFBF6;
+    --bg-header: #FFFFFF;
+    --bg-header-translucent: rgba(255, 255, 255, 0.94);
     --bg-card: #FFFFFF;
-    --bg-card-subtle: #FDFBF7;
-    --bg-input: #F8F4EE;
-    
-    --color-primary-navy: #0D1627;
-    --color-primary-navy-hover: #172338;
-    --color-gold: #C5A059;
-    --color-gold-light: #D4AF37;
-    --color-gold-bg: rgba(197, 160, 89, 0.1);
-    --color-text-main: #1C2434;
-    --color-text-muted: #657185;
-    --color-text-light: #A59B8B;
-    --color-border: #E8DFD1;
-    --color-border-hover: #C5A059;
-    
+    --bg-card-subtle: #FBF6EC;
+    --bg-input: #F6F0E3;
+
+    --color-primary-navy: #5C3A22;
+    --color-primary-navy-hover: #4A2E1A;
+    --color-gold: #B8863D;
+    --color-gold-light: #D4A24C;
+    --color-gold-bg: rgba(184, 134, 61, 0.12);
+    --color-text-main: #2A1B10;
+    --color-text-muted: #7A6754;
+    --color-text-light: #A8927A;
+    --color-border: #E6D9C4;
+    --color-border-hover: #B8863D;
+
     --color-accent-red: #D9534F;
     --color-accent-green: #2B8A3E;
     --color-accent-blue: #3F7CC4;
@@ -51,9 +55,26 @@
 
     --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    --hero-bg-start: #FBF1DC;
+    --hero-bg-mid: #F3E2BC;
+    --hero-bg-end: #FBF1DC;
+    --hero-heading-color: #2A2013;
+    --hero-subtitle-color: #55452C;
+    --hero-outline-color: #2A2013;
+
+    /* Text/icon colors for the navbar, footer and assistant panel header —
+       all three sit on --bg-header, which now switches with the theme too. */
+    --on-header-text: #5C5240;
+    --on-header-text-muted: #8A7B5E;
+    --on-header-text-hover: #1C2434;
+    --on-header-icon-bg: rgba(13, 22, 39, 0.05);
+    --on-header-icon-border: rgba(197, 160, 89, 0.45);
 }
 
-/* Dark Theme Overrides */
+/* Dark Theme Overrides — kept as the original navy + gold palette
+   (unchanged), which is now the deliberate counterpart to light mode's
+   umber + gold palette rather than just a darkened copy of it. */
 body.dark-theme {
     --bg-main: #0A0F1A;
     --bg-header: #060A12;
@@ -61,13 +82,33 @@ body.dark-theme {
     --bg-card: #111A2E;
     --bg-card-subtle: #162138;
     --bg-input: #1B2945;
-    
+
     --color-primary-navy: #1c2a46;
     --color-primary-navy-hover: #1d2c48;
+    --color-gold: #C5A059;
+    --color-gold-light: #D4AF37;
+    --color-gold-bg: rgba(197, 160, 89, 0.1);
     --color-text-main: #EAE6DF;
     --color-text-muted: #9AA6B8;
+    --color-text-light: #A59B8B;
     --color-border: #233452;
+<<<<<<< Updated upstream
     --color-uncertain-underline: rgba(255, 255, 255, 0.55);
+=======
+
+    --hero-bg-start: #0D1627;
+    --hero-bg-mid: #141F36;
+    --hero-bg-end: #0D1627;
+    --hero-heading-color: #F3EBDD;
+    --hero-subtitle-color: #D9CEBC;
+    --hero-outline-color: #F3EBDD;
+
+    --on-header-text: #D1C4B0;
+    --on-header-text-muted: #B9AD98;
+    --on-header-text-hover: #FFFFFF;
+    --on-header-icon-bg: rgba(255, 255, 255, 0.06);
+    --on-header-icon-border: rgba(197, 160, 89, 0.3);
+>>>>>>> Stashed changes
 }
 
 /* Reset & Base Reset */
@@ -130,30 +171,17 @@ body {
     transform: translateY(-1px);
 }
 
-.logo-crest {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    filter: drop-shadow(0 0 8px rgba(212, 175, 55, 0.4));
-}
-
-.brand-text {
-    display: flex;
-    flex-direction: column;
-}
-
-.brand-title {
-    font-family: var(--font-brand);
-    font-size: 1.15rem;
-    letter-spacing: 2px;
-    color: var(--color-gold-light);
-    line-height: 1.1;
+.brand-logo-img {
+    height: 52px;
+    width: auto;
+    display: block;
+    filter: drop-shadow(0 1px 6px rgba(101, 65, 39, 0.25));
 }
 
 .brand-subtitle {
     font-size: 0.65rem;
     letter-spacing: 3px;
-    color: #E2D5C3;
+    color: var(--on-header-text-muted);
     font-weight: 500;
     opacity: 0.85;
 }
@@ -165,7 +193,7 @@ body {
 }
 
 .nav-link {
-    color: #D1C4B0;
+    color: var(--on-header-text);
     text-decoration: none;
     font-size: 0.92rem;
     font-weight: 500;
@@ -175,7 +203,7 @@ body {
 }
 
 .nav-link:hover, .nav-link.active {
-    color: #FFFFFF;
+    color: var(--on-header-text-hover);
 }
 
 .nav-link.active::after, .nav-link:hover::after {
@@ -196,9 +224,9 @@ body {
 }
 
 .icon-btn {
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(197, 160, 89, 0.3);
-    color: #E2D5C3;
+    background: var(--on-header-icon-bg);
+    border: 1px solid var(--on-header-icon-border);
+    color: var(--on-header-text);
     width: 40px;
     height: 40px;
     border-radius: var(--radius-full);
@@ -212,7 +240,7 @@ body {
 .icon-btn:hover {
     background: rgba(197, 160, 89, 0.2);
     border-color: var(--color-gold);
-    color: #FFFFFF;
+    color: var(--on-header-text-hover);
     transform: scale(1.05);
 }
 
@@ -236,7 +264,8 @@ body {
     min-height: 480px;
     background:
         radial-gradient(circle at 85% 25%, rgba(197, 160, 89, 0.14), transparent 55%),
-        linear-gradient(135deg, #0D1627 0%, #141F36 55%, #0D1627 100%);
+        linear-gradient(135deg, var(--hero-bg-start) 0%, var(--hero-bg-mid) 55%, var(--hero-bg-end) 100%);
+    transition: background var(--transition-normal);
 }
 
 /* A faint, tiled Ottoman-star motif (reusing the same diamond/circle shapes
@@ -246,11 +275,19 @@ body {
     content: '';
     position: absolute;
     inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%23C5A059' stroke-width='1'%3E%3Cpolygon points='60,8 112,60 60,112 8,60'/%3E%3Ccircle cx='60' cy='60' r='26'/%3E%3C/g%3E%3C/svg%3E");
+    /* Navy on the light (cream) hero background — gold at this low an
+       opacity is too close to the cream's own hue and nearly disappears. */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%230D1627' stroke-width='1'%3E%3Cpolygon points='60,8 112,60 60,112 8,60'/%3E%3Ccircle cx='60' cy='60' r='26'/%3E%3C/g%3E%3C/svg%3E");
     background-size: 120px 120px;
     opacity: 0.07;
     z-index: 1;
     pointer-events: none;
+}
+
+/* On the dark hero background, swap back to the gold motif — navy would
+   vanish into the navy backdrop the same way gold vanishes into cream. */
+body.dark-theme .hero-section::before {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%23C5A059' stroke-width='1'%3E%3Cpolygon points='60,8 112,60 60,112 8,60'/%3E%3Ccircle cx='60' cy='60' r='26'/%3E%3C/g%3E%3C/svg%3E");
 }
 
 .hero-section::after {
@@ -308,7 +345,7 @@ body.dark-theme .hero-section::after {
     font-family: var(--font-heading);
     font-size: 3.4rem;
     font-weight: 700;
-    color: #F3EBDD;
+    color: var(--hero-heading-color);
     line-height: 1.15;
     letter-spacing: -0.5px;
 }
@@ -323,7 +360,7 @@ body.dark-theme .hero-section::after {
 
 .hero-subtitle {
     font-size: 1.15rem;
-    color: #D9CEBC;
+    color: var(--hero-subtitle-color);
     max-width: 500px;
     margin-bottom: 1.6rem;
     line-height: 1.6;
@@ -337,9 +374,10 @@ body.dark-theme .hero-section::after {
     margin-bottom: 1.6rem;
 }
 
-/* Outline buttons sitting on the dark hero backdrop need light-friendly styling */
+/* Outline button text/border adapts with the hero background so it stays
+   legible on both the light (cream) and dark (navy) hero treatments. */
 .hero-section .btn-outline {
-    color: #F3EBDD;
+    color: var(--hero-outline-color);
     border-color: rgba(212, 175, 55, 0.5);
 }
 
@@ -1665,7 +1703,7 @@ body.dark-theme .hero-section::after {
 /* Footer */
 .main-footer {
     background-color: var(--bg-header);
-    color: #A59B8B;
+    color: var(--on-header-text-muted);
     padding: 2rem 0;
     border-top: 1px solid rgba(197, 160, 89, 0.2);
     font-size: 0.88rem;
@@ -1683,7 +1721,7 @@ body.dark-theme .hero-section::after {
 }
 
 .footer-links a {
-    color: #D1C4B0;
+    color: var(--on-header-text);
     text-decoration: none;
     transition: color var(--transition-fast);
 }
@@ -1801,6 +1839,21 @@ body.dark-theme .hero-section::after {
     font-size: 0.85rem;
     color: var(--color-text-muted);
     margin-bottom: 1.2rem;
+}
+
+.form-error {
+    color: var(--color-accent-red);
+    font-size: 0.85rem;
+    padding: 0.6rem 0.8rem;
+    margin-bottom: 1rem;
+    background: rgba(217, 83, 79, 0.08);
+    border: 1px solid rgba(217, 83, 79, 0.3);
+    border-radius: var(--radius-sm);
+}
+
+.icon-btn.profile-btn.is-authenticated {
+    color: var(--color-gold);
+    border-color: var(--color-gold);
 }
 
 /* Responsive Media Queries */
@@ -2181,7 +2234,7 @@ body.dark-theme .hero-section::after {
     display: flex;
     align-items: center;
     gap: 0.7rem;
-    color: #F3EBDD;
+    color: var(--on-header-text-hover);
 }
 
 .assistant-panel-title strong {
@@ -2192,7 +2245,7 @@ body.dark-theme .hero-section::after {
 .assistant-panel-subtitle {
     display: block;
     font-size: 0.72rem;
-    color: #B9AD98;
+    color: var(--on-header-text-muted);
 }
 
 .assistant-panel-dot {
@@ -2206,14 +2259,14 @@ body.dark-theme .hero-section::after {
 .assistant-panel-close {
     background: transparent;
     border: none;
-    color: #D1C4B0;
+    color: var(--on-header-text);
     font-size: 1.4rem;
     cursor: pointer;
     line-height: 1;
 }
 
 .assistant-panel-close:hover {
-    color: #FFFFFF;
+    color: var(--on-header-text-hover);
 }
 
 .assistant-panel-messages {
