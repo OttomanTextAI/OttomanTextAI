@@ -2526,6 +2526,16 @@ def list_documents(current_user):
         .paginate(page=page, per_page=per_page, error_out=False)
     )
 
+    def _short_summary(doc):
+        # "Belgelerim" listesinde küçük bir önizleme olarak gösterilir —
+        # tam özet ancak /analyze çağrısında (kayıtlıysa önbellekten) gelir.
+        analysis = DocumentAnalysis.query.filter_by(document_id=doc.id).first()
+        summary = (analysis.summary if analysis else "") or ""
+        summary = summary.strip()
+        if len(summary) > 140:
+            summary = summary[:140].rstrip() + "…"
+        return summary
+
     return jsonify({
         "documents": [
             {
@@ -2533,6 +2543,7 @@ def list_documents(current_user):
                 "filename": doc.filename,
                 "file_type": doc.file_type,
                 "file_size": doc.file_size,
+                "summary": _short_summary(doc),
                 "uploaded_at": doc.uploaded_at.isoformat(),
                 "updated_at": doc.updated_at.isoformat(),
             }
@@ -2566,51 +2577,77 @@ def delete_document(current_user, document_id):
 def update_document(current_user, document_id):
     document = Document.query.filter_by(id=document_id, user_id=current_user.id).first()
 
-    if supabase_client is None:
-        return jsonify({"error": "Dosya depolama servisi şu anda yapılandırılmamış."}), 503
-
     if not document:
         return jsonify({"error": "Belge bulunamadı."}), 404
 
-    if "file" not in request.files:
-        return jsonify({"error": "Dosya bulunamadı."}), 400
+    uploaded_file = request.files.get("file")
+    new_display_name = (request.form.get("filename") or "").strip()
 
-    uploaded_file = request.files["file"]
+    if not uploaded_file and not new_display_name:
+        return jsonify({
+            "error": "Değiştirmek için bir dosya veya yeni bir belge adı göndermelisiniz."
+        }), 400
 
-    if uploaded_file.filename == "":
-        return jsonify({"error": "Dosya seçilmedi."}), 400
+    # Sadece isim değişikliği — dosyaya/depolamaya hiç dokunulmaz. Belge
+    # kaydı yeni bir görsel/dosya ile değil, sadece görünen adıyla
+    # güncellenir (bkz. "Belgelerim" içindeki yeniden adlandırma).
+    if new_display_name:
+        document.filename = secure_filename(new_display_name) or new_display_name
 
-    original_filename = secure_filename(uploaded_file.filename)
-    extension = original_filename.rsplit(".", 1)[-1].lower() if "." in original_filename else ""
+    if uploaded_file:
+        if supabase_client is None:
+            return jsonify({"error": "Dosya depolama servisi şu anda yapılandırılmamış."}), 503
 
-    if extension not in ALLOWED_DOCUMENT_EXTENSIONS:
-        return jsonify({"error": "Sadece PDF, DOC, DOCX ve TXT dosyaları yüklenebilir."}), 400
+        if uploaded_file.filename == "":
+            return jsonify({"error": "Dosya seçilmedi."}), 400
 
-    file_bytes = uploaded_file.read()
-    new_storage_path = f"{current_user.id}/{uuid.uuid4()}_{original_filename}"
+        uploaded_name = secure_filename(uploaded_file.filename)
+        extension = uploaded_name.rsplit(".", 1)[-1].lower() if "." in uploaded_name else ""
 
-    try:
-        supabase_client.storage.from_(DOCUMENTS_BUCKET).upload(
-            new_storage_path,
-            file_bytes,
-            {"content-type": uploaded_file.mimetype},
-        )
-    except Exception as error:
-        return jsonify({"error": f"Dosya depolamaya yüklenemedi: {error}"}), 502
+        # Genel belge yükleme (PDF/DOC/DOCX/TXT) ile çeviri geçmişindeki
+        # görsellerin (PNG/JPG/vb.) her ikisi de bu uçtan geçebilsin diye iki
+        # izin listesi birleştiriliyor — orijinal genel-belge davranışı
+        # değişmiyor, sadece görsel uzantılarına da izin ekleniyor.
+        allowed_extensions = ALLOWED_DOCUMENT_EXTENSIONS | {"png", "jpg", "jpeg", "webp"}
 
-    old_storage_path = document.storage_path
+        if extension not in allowed_extensions:
+            return jsonify({
+                "error": "Sadece PDF, DOC, DOCX, TXT, PNG, JPG veya WEBP dosyaları yüklenebilir."
+            }), 400
 
-    document.filename = original_filename
-    document.storage_path = new_storage_path
-    document.file_type = extension
-    document.file_size = len(file_bytes)
+        file_bytes = uploaded_file.read()
+        new_storage_path = f"{current_user.id}/{uuid.uuid4()}_{uploaded_name}"
 
-    db.session.commit()
+        try:
+            supabase_client.storage.from_(DOCUMENTS_BUCKET).upload(
+                new_storage_path,
+                file_bytes,
+                {"content-type": uploaded_file.mimetype},
+            )
+        except Exception as error:
+            return jsonify({"error": f"Dosya depolamaya yüklenemedi: {error}"}), 502
 
-    try:
-        supabase_client.storage.from_(DOCUMENTS_BUCKET).remove([old_storage_path])
-    except Exception:
-        pass
+        old_storage_path = document.storage_path
+
+        # Yalnızca dosya değiştirildiğinde ve kullanıcı ayrıca yeni bir isim
+        # GÖNDERMEDİYSE, görünen adı yeni dosyanın adına güncelle — isim de
+        # ayrıca gönderilmişse (ikisi aynı anda değiştirilmişse) yukarıda
+        # zaten ayarlanmış olan isim korunur.
+        if not new_display_name:
+            document.filename = uploaded_name
+
+        document.storage_path = new_storage_path
+        document.file_type = extension
+        document.file_size = len(file_bytes)
+
+        db.session.commit()
+
+        try:
+            supabase_client.storage.from_(DOCUMENTS_BUCKET).remove([old_storage_path])
+        except Exception:
+            pass
+    else:
+        db.session.commit()
 
     return jsonify({
         "message": "Belge güncellendi.",

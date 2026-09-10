@@ -2711,10 +2711,15 @@ ${transTextDisplay.textContent}
 
             historyList.innerHTML = docs.map(doc => `
                 <div class="history-item" data-doc-id="${doc.id}" style="border-bottom:1px solid var(--color-border); padding:0.8rem 0; cursor:pointer;">
-                    <div style="display:flex; justify-content:space-between; font-weight:bold; font-size:0.9rem;">
-                        <span>📜 ${doc.filename}</span>
-                        <span style="font-size:0.75rem; color:var(--color-text-muted);">${new Date(doc.uploaded_at).toLocaleString('tr-TR')}</span>
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.6rem;">
+                        <span style="font-weight:bold; font-size:0.9rem;">📜 ${escapeHtml(doc.filename)}</span>
+                        <div style="display:flex; align-items:center; gap:0.4rem; flex-shrink:0;">
+                            <span style="font-size:0.75rem; color:var(--color-text-muted); white-space:nowrap;">${new Date(doc.uploaded_at).toLocaleString('tr-TR')}</span>
+                            <button type="button" class="tool-btn doc-rename-btn" data-doc-id="${doc.id}" data-doc-name="${escapeHtml(doc.filename)}" title="Adını değiştir" style="width:26px; height:26px; font-size:0.8rem;">✏️</button>
+                            <button type="button" class="tool-btn doc-replace-btn" data-doc-id="${doc.id}" title="Görseli değiştir" style="width:26px; height:26px; font-size:0.8rem;">🖼️</button>
+                        </div>
                     </div>
+                    ${doc.summary ? `<p style="font-size:0.82rem; color:var(--color-text-muted); margin-top:0.35rem;">${escapeHtml(doc.summary)}</p>` : ''}
                 </div>
             `).join('');
         } catch (err) {
@@ -2722,11 +2727,92 @@ ${transTextDisplay.textContent}
         }
     }
 
+    // "Görseli değiştir" için satır başına ayrı bir dosya seçici oluşturmak
+    // yerine tek, paylaşılan bir gizli input kullanılıyor; hangi belge için
+    // açıldığı documentReplaceTargetId'de tutulur.
+    const documentReplaceFileInput = document.createElement('input');
+    documentReplaceFileInput.type = 'file';
+    documentReplaceFileInput.accept = 'image/*';
+    documentReplaceFileInput.style.display = 'none';
+    document.body.appendChild(documentReplaceFileInput);
+    let documentReplaceTargetId = null;
+
+    documentReplaceFileInput.addEventListener('change', async () => {
+        const file = documentReplaceFileInput.files && documentReplaceFileInput.files[0];
+        const targetId = documentReplaceTargetId;
+        documentReplaceFileInput.value = '';
+        documentReplaceTargetId = null;
+        if (!file || !targetId) return;
+
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+            const res = await fetchWithTimeout(`${API_BASE_URL}/api/documents/${targetId}`, {
+                method: 'PUT',
+                headers: { 'Authorization': `Bearer ${state.authToken}` },
+                body: formData
+            }, 30000);
+            const data = await res.json().catch(() => ({}));
+
+            if (res.status === 401) {
+                clearAuthSession();
+                return;
+            }
+            if (!res.ok) {
+                alert(data.error || 'Görsel değiştirilemedi.');
+                return;
+            }
+            renderDocumentsModal();
+        } catch (err) {
+            alert(classifyTranslationError(err));
+        }
+    });
+
     // Listeden bir belgeye tıklanınca, kayıtlı (önbellekli) çeviri sonucunu
     // çeker ve örnek kartlarla aynı presetData mekanizmasıyla ana çalışma
     // alanına yükler — bu tekrar backend'e kaydetmeyi tetiklemez (bkz.
-    // processTranslation'daki "!presetData" kontrolü).
+    // processTranslation'daki "!presetData" kontrolü). Adı/görseli
+    // değiştirme butonları bu genel satır tıklamasından önce ele alınır.
     historyList.addEventListener('click', async (e) => {
+        const renameBtn = e.target.closest('.doc-rename-btn');
+        if (renameBtn) {
+            const docId = renameBtn.getAttribute('data-doc-id');
+            const currentName = renameBtn.getAttribute('data-doc-name');
+            const newName = prompt('Belgenin yeni adı:', currentName);
+            if (!newName || !newName.trim() || newName.trim() === currentName) return;
+
+            try {
+                const formData = new FormData();
+                formData.append('filename', newName.trim());
+                const res = await fetchWithTimeout(`${API_BASE_URL}/api/documents/${docId}`, {
+                    method: 'PUT',
+                    headers: { 'Authorization': `Bearer ${state.authToken}` },
+                    body: formData
+                }, 15000);
+                const data = await res.json().catch(() => ({}));
+
+                if (res.status === 401) {
+                    clearAuthSession();
+                    return;
+                }
+                if (!res.ok) {
+                    alert(data.error || 'Ad değiştirilemedi.');
+                    return;
+                }
+                renderDocumentsModal();
+            } catch (err) {
+                alert(classifyTranslationError(err));
+            }
+            return;
+        }
+
+        const replaceBtn = e.target.closest('.doc-replace-btn');
+        if (replaceBtn) {
+            documentReplaceTargetId = replaceBtn.getAttribute('data-doc-id');
+            documentReplaceFileInput.click();
+            return;
+        }
+
         const item = e.target.closest('[data-doc-id]');
         if (!item) return;
         const docId = item.getAttribute('data-doc-id');
