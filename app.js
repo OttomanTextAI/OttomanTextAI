@@ -18,8 +18,14 @@ document.addEventListener('DOMContentLoaded', () => {
         lastAnalysis: null,
         apiKey: localStorage.getItem('gemini_api_key') || '',
         engine: localStorage.getItem('translation_engine') || 'gemini-flash',
-        history: JSON.parse(localStorage.getItem('translation_history') || '[]')
+        history: JSON.parse(localStorage.getItem('translation_history') || '[]'),
+        authToken: localStorage.getItem('auth_token') || null,
+        authEmail: localStorage.getItem('auth_email') || null
     };
+
+    // /api/auth/* ve /api/documents/* uç noktaları da diğer her şey gibi bu
+    // backend'de yaşıyor.
+    const API_BASE_URL = 'https://ottoman-text-ai.onrender.com';
 
     // Fetch wrapper with a timeout, so slow/sleeping backends fail with a
     // clear message instead of leaving the UI stuck on "işleniyor..." forever.
@@ -100,6 +106,25 @@ document.addEventListener('DOMContentLoaded', () => {
     const modelSelect = document.getElementById('modelSelect');
     const saveSettingsBtn = document.getElementById('saveSettingsBtn');
     const historyList = document.getElementById('historyList');
+
+    // Hesap (Giriş / Kayıt) modalı
+    const profileBtn = document.getElementById('profileBtn');
+    const authModal = document.getElementById('authModal');
+    const authTabs = document.getElementById('authTabs');
+    const authError = document.getElementById('authError');
+    const authLoggedOutView = document.getElementById('authLoggedOutView');
+    const authLoggedInView = document.getElementById('authLoggedInView');
+    const authUserEmail = document.getElementById('authUserEmail');
+    const loginForm = document.getElementById('loginForm');
+    const loginEmail = document.getElementById('loginEmail');
+    const loginPassword = document.getElementById('loginPassword');
+    const loginSubmitBtn = document.getElementById('loginSubmitBtn');
+    const registerForm = document.getElementById('registerForm');
+    const registerEmail = document.getElementById('registerEmail');
+    const registerPassword = document.getElementById('registerPassword');
+    const registerPasswordConfirm = document.getElementById('registerPasswordConfirm');
+    const registerSubmitBtn = document.getElementById('registerSubmitBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
 
     const documentProfile = document.getElementById('documentProfile');
     const enhancedToggle = document.getElementById('enhancedToggle');
@@ -2650,6 +2675,7 @@ ${transTextDisplay.textContent}
             if (targetModal) {
                 targetModal.classList.remove('hidden');
                 if (modalId === 'documentsModal') renderHistory();
+                if (modalId === 'authModal') updateAuthUI();
             }
         });
     });
@@ -2682,6 +2708,178 @@ ${transTextDisplay.textContent}
             if (e.target === overlay) overlay.classList.add('hidden');
         });
     });
+
+    // --- Hesap: Giriş / Kayıt / Çıkış (backend.py'deki /api/auth/*) ---
+    function setAuthTab(tab) {
+        document.querySelectorAll('#authTabs [data-auth-tab]').forEach(b => {
+            b.classList.toggle('active', b.getAttribute('data-auth-tab') === tab);
+        });
+        loginForm.classList.toggle('hidden', tab !== 'login');
+        registerForm.classList.toggle('hidden', tab !== 'register');
+        clearAuthError();
+    }
+
+    function showAuthError(message) {
+        authError.textContent = message;
+        authError.classList.remove('hidden');
+    }
+
+    function clearAuthError() {
+        authError.textContent = '';
+        authError.classList.add('hidden');
+    }
+
+    // Modal her açıldığında ve oturum durumu her değiştiğinde çağrılır;
+    // giriş yapılmışsa hesap bilgisini, yapılmamışsa giriş/kayıt formlarını
+    // gösterir.
+    function updateAuthUI() {
+        const loggedIn = !!state.authToken;
+        authLoggedOutView.classList.toggle('hidden', loggedIn);
+        authLoggedInView.classList.toggle('hidden', !loggedIn);
+        profileBtn.classList.toggle('is-authenticated', loggedIn);
+
+        if (loggedIn) {
+            authUserEmail.textContent = state.authEmail || '';
+        } else {
+            setAuthTab('login');
+        }
+    }
+
+    function setAuthSession(token, email) {
+        state.authToken = token;
+        state.authEmail = email;
+        localStorage.setItem('auth_token', token);
+        localStorage.setItem('auth_email', email);
+        updateAuthUI();
+    }
+
+    function clearAuthSession() {
+        state.authToken = null;
+        state.authEmail = null;
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('auth_email');
+        updateAuthUI();
+    }
+
+    authTabs.addEventListener('click', (e) => {
+        const btn = e.target.closest('[data-auth-tab]');
+        if (!btn) return;
+        setAuthTab(btn.getAttribute('data-auth-tab'));
+    });
+
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearAuthError();
+        loginSubmitBtn.disabled = true;
+        loginSubmitBtn.textContent = 'Giriş yapılıyor...';
+
+        try {
+            const res = await fetchWithTimeout(`${API_BASE_URL}/api/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: loginEmail.value.trim(),
+                    password: loginPassword.value
+                })
+            });
+            const data = await res.json().catch(() => ({}));
+
+            if (!res.ok) {
+                showAuthError(data.error || 'Giriş yapılamadı. Lütfen tekrar deneyin.');
+                return;
+            }
+
+            setAuthSession(data.token, data.email);
+            loginForm.reset();
+            authModal.classList.add('hidden');
+        } catch (err) {
+            showAuthError(classifyTranslationError(err));
+        } finally {
+            loginSubmitBtn.disabled = false;
+            loginSubmitBtn.textContent = 'Giriş Yap';
+        }
+    });
+
+    registerForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearAuthError();
+
+        const email = registerEmail.value.trim();
+        const password = registerPassword.value;
+
+        if (password !== registerPasswordConfirm.value) {
+            showAuthError('Şifreler eşleşmiyor.');
+            return;
+        }
+
+        registerSubmitBtn.disabled = true;
+        registerSubmitBtn.textContent = 'Kayıt olunuyor...';
+
+        try {
+            const res = await fetchWithTimeout(`${API_BASE_URL}/api/auth/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await res.json().catch(() => ({}));
+
+            if (!res.ok) {
+                showAuthError(data.error || 'Kayıt oluşturulamadı. Lütfen tekrar deneyin.');
+                return;
+            }
+
+            // Kayıt başarılıysa kullanıcıyı ikinci kez bilgi girmeye
+            // zorlamadan doğrudan giriş yaptırıyoruz.
+            const loginRes = await fetchWithTimeout(`${API_BASE_URL}/api/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            const loginData = await loginRes.json().catch(() => ({}));
+
+            if (loginRes.ok) {
+                setAuthSession(loginData.token, loginData.email);
+                registerForm.reset();
+                authModal.classList.add('hidden');
+            } else {
+                setAuthTab('login');
+                loginEmail.value = email;
+                showAuthError('Kaydınız oluşturuldu. Lütfen giriş yapın.');
+            }
+        } catch (err) {
+            showAuthError(classifyTranslationError(err));
+        } finally {
+            registerSubmitBtn.disabled = false;
+            registerSubmitBtn.textContent = 'Kayıt Ol';
+        }
+    });
+
+    logoutBtn.addEventListener('click', async () => {
+        if (state.authToken) {
+            try {
+                await fetchWithTimeout(`${API_BASE_URL}/api/auth/logout`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${state.authToken}` }
+                });
+            } catch (err) {
+                // Sunucuya ulaşılamasa bile yerel oturumu temizlemeye devam
+                // ediyoruz — kullanıcı için "çıkış yaptım" tek doğru sonuçtur.
+            }
+        }
+        clearAuthSession();
+        authModal.classList.add('hidden');
+    });
+
+    // Sayfa her açıldığında, önceden kaydedilmiş bir oturum varsa hâlâ
+    // geçerli mi diye sunucuya sorar; süresi dolmuş/geçersizse sessizce
+    // çıkış yapılmış hale getirir.
+    if (state.authToken) {
+        fetchWithTimeout(`${API_BASE_URL}/api/auth/me`, {
+            headers: { 'Authorization': `Bearer ${state.authToken}` }
+        }).then(res => {
+            if (!res.ok) clearAuthSession();
+        }).catch(() => {});
+    }
 
     // Wake the backend up as soon as the page loads (silent, no UI change)
     // so the assistant's first real reply isn't delayed by Render's cold start.

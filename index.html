@@ -19,18 +19,8 @@
     <header class="navbar">
         <div class="nav-container">
             <a href="#" class="brand-logo">
-                <div class="logo-crest">
-                    <svg viewBox="0 0 40 40" width="34" height="34" fill="none" stroke="#D4AF37" stroke-width="1.8">
-                        <polygon points="20,2 38,20 20,38 2,20" stroke="#D4AF37" fill="rgba(212, 175, 55, 0.08)"/>
-                        <circle cx="20" cy="20" r="10" stroke="#D4AF37"/>
-                        <path d="M20,6 L20,34 M6,20 L34,20" stroke="#C5A059" stroke-opacity="0.6"/>
-                        <circle cx="20" cy="20" r="4" fill="#D4AF37"/>
-                    </svg>
-                </div>
-                <div class="brand-text">
-                    <span class="brand-title">DIVANE</span>
-                    <span class="brand-subtitle">OSMANLICA ÇEVİRİ</span>
-                </div>
+                <img src="assets/logo.png" alt="Divane" class="brand-logo-img">
+                <span class="brand-subtitle">OSMANLICA ÇEVİRİ</span>
             </a>
 
             <nav class="nav-menu">
@@ -50,7 +40,7 @@
                         <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
                     </svg>
                 </button>
-                <button class="icon-btn profile-btn" id="profileBtn" title="Kullanıcı Profili">
+                <button class="icon-btn profile-btn" id="profileBtn" data-modal="authModal" title="Kullanıcı Profili">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                         <circle cx="12" cy="7" r="4"></circle>
@@ -547,6 +537,57 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-primary" id="saveSettingsBtn">Ayarları Kaydet</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Auth Modal (Giriş / Kayıt) -->
+    <div class="modal-overlay hidden" id="authModal">
+        <div class="modal-card">
+            <button class="modal-close" data-close="authModal">&times;</button>
+
+            <div id="authLoggedOutView">
+                <h2 class="modal-title">👤 Hesabım</h2>
+                <div class="results-tabs" id="authTabs" role="tablist" style="margin-bottom: 1.2rem;">
+                    <button class="results-tab-btn active" data-auth-tab="login" role="tab">Giriş Yap</button>
+                    <button class="results-tab-btn" data-auth-tab="register" role="tab">Kayıt Ol</button>
+                </div>
+
+                <p class="form-error hidden" id="authError"></p>
+
+                <form id="loginForm" class="auth-form">
+                    <div class="form-group">
+                        <label for="loginEmail">E-posta</label>
+                        <input type="email" id="loginEmail" class="form-input" placeholder="eposta@ornek.com" required autocomplete="username">
+                    </div>
+                    <div class="form-group">
+                        <label for="loginPassword">Şifre</label>
+                        <input type="password" id="loginPassword" class="form-input" placeholder="••••••" required autocomplete="current-password">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block" id="loginSubmitBtn">Giriş Yap</button>
+                </form>
+
+                <form id="registerForm" class="auth-form hidden">
+                    <div class="form-group">
+                        <label for="registerEmail">E-posta</label>
+                        <input type="email" id="registerEmail" class="form-input" placeholder="eposta@ornek.com" required autocomplete="username">
+                    </div>
+                    <div class="form-group">
+                        <label for="registerPassword">Şifre</label>
+                        <input type="password" id="registerPassword" class="form-input" placeholder="En az 6 karakter" required autocomplete="new-password" minlength="6">
+                    </div>
+                    <div class="form-group">
+                        <label for="registerPasswordConfirm">Şifre (Tekrar)</label>
+                        <input type="password" id="registerPasswordConfirm" class="form-input" placeholder="••••••" required autocomplete="new-password" minlength="6">
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block" id="registerSubmitBtn">Kayıt Ol</button>
+                </form>
+            </div>
+
+            <div class="hidden" id="authLoggedInView">
+                <h2 class="modal-title">👤 Hesabım</h2>
+                <p class="modal-hint">Giriş yapıldı: <strong id="authUserEmail"></strong></p>
+                <button class="btn btn-outline btn-block" id="logoutBtn">Çıkış Yap</button>
             </div>
         </div>
     </div>
