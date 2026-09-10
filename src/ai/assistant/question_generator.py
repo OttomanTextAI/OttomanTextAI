@@ -150,25 +150,74 @@ class DocumentQuestionGenerator:
             result = json.loads(cleaned)
 
         except json.JSONDecodeError:
-            start = cleaned.find("{")
-            end = cleaned.rfind("}")
+            print(
+                "[AI QUESTIONS] Invalid or truncated JSON. Retrying...",
+                flush=True,
+            )
 
-            if start != -1 and end != -1 and end > start:
-                try:
-                    result = json.loads(
-                        cleaned[start:end + 1]
-                    )
-                except json.JSONDecodeError:
-                    result = {}
-            else:
-                result = {}
+            retry_completion = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": QUESTION_GENERATION_SYSTEM_PROMPT,
+                    },
+                    {
+                        "role": "user",
+                        "content": (
+                            f"{optimized_text}\n\n"
+                            "Önceki cevap geçerli JSON olarak tamamlanamadı. "
+                            "Bu kez yalnızca 3 kısa soru döndür. "
+                            "Her soru en fazla 8 kelime olsun. "
+                            "JSON'u mutlaka tamamen kapat."
+                        ),
+                    },
+                ],
+                temperature=0.1,
+                max_tokens=800,
+            )
 
-            if not result:
+            retry_finish_reason = (
+                retry_completion.choices[0].finish_reason
+            )
+
+            print(
+                "[AI QUESTIONS RETRY FINISH REASON]",
+                retry_finish_reason,
+                flush=True,
+            )
+
+            retry_text = (
+                retry_completion.choices[0].message.content
+                or ""
+            ).strip()
+
+            print(
+                "[AI QUESTIONS RETRY RESPONSE]",
+                repr(retry_text),
+                flush=True,
+            )
+
+            if retry_text.startswith("```json"):
+                retry_text = retry_text[7:]
+
+            if retry_text.startswith("```"):
+                retry_text = retry_text[3:]
+
+            if retry_text.endswith("```"):
+                retry_text = retry_text[:-3]
+
+            retry_text = retry_text.strip()
+
+            try:
+                result = json.loads(retry_text)
+
+            except json.JSONDecodeError:
                 print(
-                    "[AI QUESTIONS] Invalid model response:",
-                    repr(response_text),
+                    "[AI QUESTIONS] Retry JSON parsing failed.",
                     flush=True,
                 )
+                result = {}
 
         if not isinstance(result, dict):
             result = {}

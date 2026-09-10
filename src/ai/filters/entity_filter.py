@@ -38,10 +38,13 @@ Kurallar:
 - importance, öğenin belgeyi anlamadaki önemini göstersin.
 - role alanı, öğenin belge içindeki işlevini kısa şekilde açıklasın.
 - context alanı kısa olsun ve öğenin geçtiği bağlamı açıklasın.
-- mentions, öğenin belge içinde kaç kez geçtiğini yaklaşık olarak göstersin.
 - confidence 0 ile 1 arasında sayı olsun.
 - confidence kesin doğruluk olasılığı değildir; AI güven göstergesidir.
-- En fazla 20 öğe döndür.
+- En fazla 12 öğe döndür.
+- subtype en fazla 4 kelime olsun.
+- role en fazla 10 kelime olsun.
+- context en fazla 10 kelime olsun.
+- Önemsiz öğeleri listeyi doldurmak için ekleme.
 - JSON'dan önce veya sonra açıklama yazma.
 - Markdown veya ```json kod bloğu kullanma.
 - SADECE geçerli JSON döndür.
@@ -57,7 +60,6 @@ JSON formatı:
       "importance": "high",
       "role": "Metinde adı geçen tarihî kişi",
       "context": "Belgenin sonunda Avnî mahlasıyla ilişkilendiriliyor",
-      "mentions": 1,
       "confidence": 0.98
     }
   ]
@@ -174,8 +176,11 @@ class EntityFilterClassifier:
                             f"{optimized_text}\n\n"
                             "Önceki cevap geçerli JSON olarak tamamlanamadı. "
                             "Bu kez çok kısa cevap ver. "
-                            "En fazla 10 öğe döndür. "
-                            "context alanları en fazla 8 kelime olsun. "
+                            "En fazla 8 öğe döndür. "
+                            "Yalnızca en önemli öğeleri seç. "
+                            "subtype en fazla 3 kelime olsun. "
+                            "role en fazla 8 kelime olsun. "
+                            "context en fazla 8 kelime olsun. "
                             "JSON nesnesini mutlaka tamamen kapat."
                         ),
                     },
@@ -293,12 +298,9 @@ class EntityFilterClassifier:
                 entity.get("context", "")
             ).strip()
 
-            try:
-                mentions = int(
-                    entity.get("mentions", 1)
-                )
-            except (TypeError, ValueError):
-                mentions = 1
+            mentions = optimized_text.lower().count(
+                text.lower()
+            )
 
             mentions = max(1, mentions)
 
