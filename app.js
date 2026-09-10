@@ -2941,7 +2941,8 @@ ${transTextDisplay.textContent}
                 body: JSON.stringify({
                 message: text,
                 history: assistantHistory.slice(-10),
-                selected_context: assistantSelectedContext
+                selected_context: assistantSelectedContext,
+                document_text: state.transText || ''
                 })
             }, 45000);
 

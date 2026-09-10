@@ -1373,15 +1373,31 @@ def assistant_endpoint():
             ), 400
 
         if document_qa is None:
-            return jsonify(
-                {
-                    "reply": (
-                        "Belge hakkında yardımcı olabilmem için "
-                        "önce bir belgenin işlenmesi gerekiyor."
-                    ),
-                    "sources": [],
-                }
-            )
+            document_text = str(
+                data.get("document_text") or ""
+            ).strip()
+
+            if document_text:
+                print(
+                    "[ASSISTANT RAG] In-memory document missing; "
+                    "rebuilding from request text.",
+                    flush=True,
+                )
+
+                _index_translation_for_rag({
+                    "trans": document_text
+                })
+
+            if document_qa is None:
+                return jsonify(
+                    {
+                        "reply": (
+                            "Belge hakkında yardımcı olabilmem için "
+                            "önce bir belgenin işlenmesi gerekiyor."
+                        ),
+                        "sources": [],
+                    }
+                )
 
         result = document_qa.answer(
             question=user_message,

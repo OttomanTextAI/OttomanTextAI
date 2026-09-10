@@ -394,6 +394,35 @@ class DocumentQA:
                     external_answer = (
                         external_completion.choices[0].message.content or ""
                     ).strip()
+
+                if external_answer and external_answer[-1] not in ".!?…":
+                    print(
+                        "[DOCUMENT QA] External answer appears incomplete. Retrying...",
+                        flush=True,
+                    )
+
+                    retry_completion = self.client.chat.completions.create(
+                        model=self.model,
+                        messages=[
+                            {
+                                "role": "user",
+                                "content": (
+                                    external_prompt
+                                    + "\n\nEn fazla 2 kısa ve TAM cümleyle cevap ver. "
+                                    "Son cümleyi mutlaka noktalama işaretiyle tamamla."
+                                ),
+                            }
+                        ],
+                        temperature=0.1,
+                        max_tokens=700,
+                    )
+
+                    retry_answer = (
+                        retry_completion.choices[0].message.content or ""
+                    ).strip()
+
+                    if retry_answer:
+                        external_answer = retry_answer    
                 if external_answer:
                     document_answer = str(
                         parsed_answer.get("answer", "")
