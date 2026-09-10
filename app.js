@@ -926,6 +926,7 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         ocrTools.classList.remove('tools-ready');
         translitTools.classList.remove('tools-ready');
         transTools.classList.remove('tools-ready');
+        enTools.classList.remove('tools-ready');
 
         clearInfoTab();
         setOutputTab('trans');
@@ -1016,6 +1017,7 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
 
         enEmptyState.classList.remove('hidden');
         enTextDisplay.classList.add('hidden');
+        enTools.classList.remove('tools-ready');
         enTextDisplay.textContent = '';
 
         if (state.enhancedImageUrl) {
@@ -1462,9 +1464,18 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
             enEmptyState.classList.add('hidden');
             enTextDisplay.classList.remove('hidden');
             renderWithGuessMarkers(enTextDisplay, finalTransEn);
+            // Diğer üç grup (ocr/translit/trans) gibi: araç çubuğu
+            // (kopyala + enTtsBtn/enStopTtsBtn) .tools-ready OLMADAN asla
+            // görünmez (bkz. style.css .output-tab-tools kuralı — sadece
+            // .tools-ready VE .tab-active birlikteyken display:flex olur).
+            // Bu satır eksikti; enTools hiçbir zaman .tools-ready almadığı
+            // için İngilizce sekmesindeki tüm araçlar (kopyala dahil)
+            // kalıcı olarak gizli kalıyordu.
+            enTools.classList.add('tools-ready');
         } else {
             enEmptyState.classList.remove('hidden');
             enTextDisplay.classList.add('hidden');
+            enTools.classList.remove('tools-ready');
         }
 
         state.ocrText = finalOcr;

@@ -396,6 +396,13 @@ def _get_relay_result(
                 time.sleep(repetition_retry_delay)
                 continue
 
+            print(
+                f"[translate:{label}] Attempt "
+                f"{repetition_attempt + 1}/{max_repetition_attempts} "
+                f"failed ({failure_reason}), moving to next stage.",
+                flush=True,
+            )
+
             return {"ok": False, "reason": "unusable"}
 
         return {"ok": True, "parsed": parsed}
@@ -697,7 +704,13 @@ def _try_split_image_translation(
             messages,
             temperature,
             max_tokens,
-            max_repetition_attempts=2,
+            # Real usage data shows Gemini's 2nd attempt almost never
+            # produces a different result than the 1st when it loops/fails
+            # — the retry just burns time that the GPT fallback stage
+            # needs, and has caused the whole cascade to time out on
+            # documents GPT could otherwise have translated in time. One
+            # attempt per half, then move straight to the next stage.
+            max_repetition_attempts=1,
             label=label,
         )
 
@@ -1152,7 +1165,11 @@ def translate_endpoint():
             messages,
             temperature,
             max_tokens,
-            max_repetition_attempts=2,
+            # See the matching comment in _try_split_image_translation's
+            # get_half(): a 2nd same-model attempt after a loop/failure
+            # almost never changes the outcome, it just spends time the
+            # GPT fallback stage needs later in the cascade.
+            max_repetition_attempts=1,
             label="main",
         )
 
@@ -1166,9 +1183,9 @@ def translate_endpoint():
                 main_result["message"]
             ), main_result["status_code"]
 
-        # reason == "unusable": both normal attempts either looped,
-        # returned empty/invalid JSON, or were missing ocr/trans, after
-        # already retrying once internally. Instead of failing right
+        # reason == "unusable": the main attempt looped, returned
+        # empty/invalid JSON, or was missing ocr/trans (single shot now —
+        # see max_repetition_attempts=1 above). Instead of failing right
         # away, try splitting the image into top/bottom halves — a
         # difficult full-page image often succeeds once each half is a
         # simpler, smaller request.
@@ -1182,7 +1199,7 @@ def translate_endpoint():
 
         print(
             "[translate] Falling back to split-image strategy after "
-            "2 failed attempts",
+            "main attempt failed",
             flush=True,
         )
 
