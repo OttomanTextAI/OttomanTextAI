@@ -26,6 +26,7 @@
     --color-accent-red: #D9534F;
     --color-accent-green: #2B8A3E;
     --color-accent-blue: #3F7CC4;
+    --color-accent-purple: #8B5FBF;
 
     /* Belirsiz/tıklanabilir kelime alt çizgisi (bkz. .uncertain-word) —
        kart/entity-tag/TTS highlight renkleriyle karışmaması için ayrı bir
@@ -815,15 +816,24 @@ body.dark-theme .hero-section::after {
     white-space: pre-wrap;
 }
 
-/* Entity highlighting (people/places/dates) inside the Turkish translation —
-   see renderTranslationWithEntities() in app.js. Three subtle color variants
-   reusing the palette's existing accent tokens. */
+/* Entity highlighting (people/places/dates/concepts) inside the Turkish
+   translation — see renderTranslationWithEntities() in app.js. Four subtle
+   color variants reusing the palette's existing accent tokens. */
 .entity-tag {
     cursor: pointer;
     border-bottom: 1.5px dashed currentColor;
     border-radius: 2px;
     padding: 0 1px;
-    transition: background-color var(--transition-fast);
+    transition: background-color var(--transition-fast), opacity var(--transition-fast);
+}
+
+/* Eşleşmeyen (entity olmayan) düz metin parçaları — bkz.
+   highlightEntitiesInSegment() app.js'te. Görsel olarak hiçbir etkisi
+   yoktur (sade bir <span>), TEK amacı kategori filtresinin (bkz. aşağıdaki
+   [data-entity-filter] kuralları) opacity'yi entity-tag'lerden bağımsız
+   olarak düz metne de uygulayabilmesini sağlamak. */
+.entity-plain {
+    transition: opacity var(--transition-fast);
 }
 
 /* Currently-spoken sentence highlight for TTS (see speakText() in app.js).
@@ -842,6 +852,7 @@ body.dark-theme .hero-section::after {
 .entity-tag.entity-person { color: var(--color-gold); }
 .entity-tag.entity-place { color: var(--color-accent-blue); }
 .entity-tag.entity-date { color: var(--color-accent-green); }
+.entity-tag.entity-concept { color: var(--color-accent-purple); }
 
 /* Belirsiz/alternatif okuması olabilecek kelimeler (translit ve Türkçe
    çeviri sekmelerinde) — bkz. renderSentenceSpansHtml() ve
@@ -855,7 +866,32 @@ body.dark-theme .hero-section::after {
     border-bottom: 2px solid var(--color-uncertain-underline);
     padding-bottom: 1px;
     border-radius: 1px;
-    transition: border-color var(--transition-fast), color var(--transition-fast);
+    transition: border-color var(--transition-fast), color var(--transition-fast), opacity var(--transition-fast);
+}
+
+/* Kategoriye göre filtrele (bkz. showEntityFilterPanel() app.js'te) —
+   transTextDisplay'e data-entity-filter="person|place|date|concept"
+   eklenince devreye girer. Sadece .entity-tag/.entity-plain/.uncertain-word
+   ÜÇÜ DE kendi opacity'sine sahip olduğu için (opacity üst elemente
+   uygulanıp alt elemente miras bırakılamaz — stacking context çarpımsaldır)
+   her biri ayrı ayrı soluklaştırılıyor; eşleşen kategori ikinci kuralla
+   opacity:1'e geri getiriliyor. DOM'a hiç dokunmuyor, sadece bu tek
+   attribute değişiyor.
+   NOT: Bu kurallar SADECE #transTextDisplay'i hedefliyor — özellik
+   tasarım gereği yalnızca Türkçe Çeviri sekmesinde çalışır (diğer
+   sekmelerde zaten .entity-tag/.entity-plain hiç üretilmiyor). */
+#transTextDisplay[data-entity-filter] .entity-plain,
+#transTextDisplay[data-entity-filter] .uncertain-word,
+#transTextDisplay[data-entity-filter] .entity-tag {
+    opacity: 0.35;
+}
+
+#transTextDisplay[data-entity-filter="person"] .entity-tag[data-type="person"],
+#transTextDisplay[data-entity-filter="place"] .entity-tag[data-type="place"],
+#transTextDisplay[data-entity-filter="date"] .entity-tag[data-type="date"],
+#transTextDisplay[data-entity-filter="concept"] .entity-tag[data-type="concept"] {
+    opacity: 1;
+    background-color: var(--color-gold-bg);
 }
 
 .uncertain-word:hover,
@@ -897,6 +933,7 @@ body.dark-theme .hero-section::after {
 .entity-popover-type-person { background: var(--color-gold-bg); color: var(--color-gold); }
 .entity-popover-type-place { background: rgba(63, 124, 196, 0.14); color: var(--color-accent-blue); }
 .entity-popover-type-date { background: rgba(43, 138, 62, 0.1); color: var(--color-accent-green); }
+.entity-popover-type-concept { background: rgba(139, 95, 191, 0.14); color: var(--color-accent-purple); }
 
 .entity-popover-text {
     font-weight: 700;
@@ -1009,6 +1046,76 @@ body.dark-theme .hero-section::after {
 
 .word-alt-confirm-btn:hover {
     background: var(--color-gold-light);
+}
+
+/* Kategoriye göre filtrele paneli (bkz. showEntityFilterPanel() app.js'te)
+   — entity/word-alt kartlarıyla aynı konumlandırma (positionPopoverNear)
+   ve kart dilini paylaşır. */
+.entity-filter-popover {
+    position: absolute;
+    z-index: 1000;
+    min-width: 190px;
+    background: var(--bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    padding: 0.6rem;
+    font-size: 0.85rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    animation: entity-popover-in 0.15s ease-out;
+}
+
+.entity-filter-empty {
+    color: var(--color-text-muted);
+    padding: 0.3rem 0.5rem;
+}
+
+.entity-filter-option {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 0.45rem 0.6rem;
+    font-size: 0.85rem;
+    font-family: inherit;
+    color: var(--color-text-main);
+    cursor: pointer;
+    transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.entity-filter-option:hover {
+    background: var(--color-gold-bg);
+}
+
+.entity-filter-option.active {
+    background: var(--color-gold-bg);
+    color: var(--color-gold);
+    font-weight: 600;
+}
+
+.entity-filter-clear {
+    display: block;
+    width: 100%;
+    text-align: center;
+    background: none;
+    border: 1px dashed var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 0.4rem 0.6rem;
+    margin-top: 0.15rem;
+    font-size: 0.78rem;
+    font-family: inherit;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.entity-filter-clear:hover {
+    border-color: var(--color-gold);
+    color: var(--color-gold);
 }
 
 /* Specific styling for Ottoman Noto Naskh Arabic font */

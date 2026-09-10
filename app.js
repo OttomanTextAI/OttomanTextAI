@@ -87,6 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const copyTransBtn = document.getElementById('copyTransBtn');
     const ttsBtn = document.getElementById('ttsBtn');
     const transStopTtsBtn = document.getElementById('transStopTtsBtn');
+    const entityFilterBtn = document.getElementById('entityFilterBtn');
     const downloadReportBtn = document.getElementById('downloadReportBtn');
 
     const enOutputBox = document.getElementById('enOutputBox');
@@ -739,6 +740,8 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     function setOutputTab(tab) {
         closeEntityPopover();
         closeWordAlternativesPopover();
+        closeEntityFilterPopover();
+        resetEntityFilter();
         document.querySelectorAll('.output-select-btn').forEach(b => {
             b.classList.toggle('active', b.getAttribute('data-output-tab') === tab);
         });
@@ -980,6 +983,8 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         hardStopTts();
         closeEntityPopover();
         closeWordAlternativesPopover();
+        closeEntityFilterPopover();
+        resetEntityFilter();
         state.selectedFile = null;
         state.imageDataUrl = null;
 
@@ -1306,6 +1311,8 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         hardStopTts();
         closeEntityPopover();
         closeWordAlternativesPopover();
+        closeEntityFilterPopover();
+        resetEntityFilter();
         state.isProcessing = true;
         triggerTranslateBtn.disabled = true;
         actionSpinner.classList.remove('hidden');
@@ -1647,7 +1654,7 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         el.innerHTML = renderSentenceSpansHtml(rawText, null, options);
     }
 
-    const ENTITY_TYPE_LABELS = { person: 'Kişi', place: 'Yer', date: 'Tarih' };
+    const ENTITY_TYPE_LABELS = { person: 'Kişi', place: 'Yer', date: 'Tarih', concept: 'Kavram' };
 
     // "Fatih Sultan Mehmed (Sultan Mehmed Han)" gibi bir analiz girdisinden,
     // çeviri metninde gerçekten geçebilecek adayları çıkarır: parantez
@@ -1667,15 +1674,17 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
 
     // Bir belge analizinden (bkz. backend /api/translate yanıtı ve
     // sampleDatabase'deki "analysis" alanları), çeviri metninde vurgulanacak
-    // kişi/yer/tarih adaylarını çıkarır. En uzun eşleşme önce denenmesi için
-    // (örn. "Sultan Mehmed Han" ifadesi, içindeki tek başına "Mehmed"
-    // kelimesinden önce eşleşsin diye) uzunluğa göre azalan sırada döner.
+    // kişi/yer/tarih/kavram adaylarını çıkarır. En uzun eşleşme önce
+    // denenmesi için (örn. "Sultan Mehmed Han" ifadesi, içindeki tek başına
+    // "Mehmed" kelimesinden önce eşleşsin diye) uzunluğa göre azalan sırada
+    // döner.
     function buildEntityIndex(analysis) {
         if (!analysis) return [];
         const raw = [];
 
         (analysis.people || []).forEach(p => raw.push({ raw: p, type: 'person' }));
         (analysis.places || []).forEach(p => raw.push({ raw: p, type: 'place' }));
+        (analysis.concepts || []).forEach(p => raw.push({ raw: p, type: 'concept' }));
         if (analysis.date_hijri) raw.push({ raw: analysis.date_hijri, type: 'date' });
         if (analysis.date_gregorian) raw.push({ raw: analysis.date_gregorian, type: 'date' });
 
@@ -1721,29 +1730,57 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         return segments;
     }
 
+    function wrapPlainText(text) {
+        return text ? `<span class="entity-plain">${text}</span>` : '';
+    }
+
     // escapedText zaten HTML-escape edilmiş düz metin olmalı. entities,
     // buildEntityIndex()'ten gelen {text, type} listesidir (text'ler de
     // escape edilmemiş orijinal hâlleriyle karşılaştırılabilmesi için burada
     // ayrıca escape edilir).
+    //
+    // Eşleşmeyen (entity olmayan) parçalar da artık .entity-plain içine
+    // sarılıyor — bunun tek amacı, kategori filtresinin (bkz.
+    // showEntityFilterPanel) CSS opacity'yi entity-tag'lerden bağımsız
+    // olarak düz metne de uygulayabilmesi: opacity, üst elemente
+    // uygulandığında alt elemente "kendi opacity'sini" geri kazandıramaz
+    // (stacking context çarpımsaldır), bu yüzden soluklaştırılacak her
+    // parçanın KENDİ elementi olması gerekiyor.
     function highlightEntitiesInSegment(escapedText, entities) {
-        if (!entities.length) return escapedText;
+        if (!entities.length) return wrapPlainText(escapedText);
 
         const pattern = entities
             .map(e => escapeRegExp(escapeHtml(e.text)))
             .join('|');
 
-        if (!pattern) return escapedText;
+        if (!pattern) return wrapPlainText(escapedText);
 
         const re = new RegExp(`(${pattern})`, 'gi');
+        const parts = [];
+        let lastIndex = 0;
+        let match;
 
-        return escapedText.replace(re, (matched) => {
+        while ((match = re.exec(escapedText)) !== null) {
+            if (match.index > lastIndex) {
+                parts.push(wrapPlainText(escapedText.slice(lastIndex, match.index)));
+            }
+
+            const matched = match[0];
             const entity = entities.find(
                 e => escapeHtml(e.text).toLowerCase() === matched.toLowerCase()
             );
             const type = entity ? entity.type : 'concept';
             const safeAttr = matched.replace(/"/g, '&quot;');
-            return `<span class="entity-tag entity-${type}" data-entity="${safeAttr}" data-type="${type}">${matched}</span>`;
-        });
+            parts.push(`<span class="entity-tag entity-${type}" data-entity="${safeAttr}" data-type="${type}">${matched}</span>`);
+
+            lastIndex = re.lastIndex;
+        }
+
+        if (lastIndex < escapedText.length) {
+            parts.push(wrapPlainText(escapedText.slice(lastIndex)));
+        }
+
+        return parts.join('');
     }
 
     // transTextDisplay için: **tahmin** kalınlaştırmasını korurken, ayrıca
@@ -1800,6 +1837,7 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     function showEntityPopover(targetEl) {
         closeEntityPopover();
         closeWordAlternativesPopover();
+        closeEntityFilterPopover();
 
         const type = targetEl.dataset.type;
         const text = targetEl.dataset.entity;
@@ -1849,7 +1887,135 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         if (e.key === 'Escape') {
             closeEntityPopover();
             closeWordAlternativesPopover();
+            closeEntityFilterPopover();
         }
+    });
+
+    // --- Kategoriye Göre Filtrele (entity filter) ---
+    // Türkçe Çeviri sekmesine ÖZEL: entityFilterBtn'e basılınca, belgede
+    // gerçekten bulunan kategorileri (Kişiler/Yerler/Tarihler/Kavramlar —
+    // hangisinden en az 1 entity-tag varsa) sayılarıyla listeleyen küçük
+    // bir kart açılır (bkz. positionPopoverNear — entity/kelime kartlarıyla
+    // aynı konumlandırma mantığı). Bir kategoriye tıklanınca DOM yeniden
+    // render EDİLMEZ — sadece transTextDisplay'e data-entity-filter
+    // attribute'u eklenir/kaldırılır, geri kalanı tamamen CSS'te
+    // (style.css'teki [data-entity-filter] kuralları) halledilir.
+    let activeEntityFilterPopover = null;
+    // null: filtre yok. 'person' | 'place' | 'date' | 'concept': aktif
+    // kategori. Sekme değişince/yeni belge işlenince sıfırlanır (bkz.
+    // resetEntityFilter, setOutputTab/resetState/processTranslation'daki
+    // çağrılar).
+    let activeEntityFilterType = null;
+
+    function closeEntityFilterPopover() {
+        if (activeEntityFilterPopover) {
+            activeEntityFilterPopover.remove();
+            activeEntityFilterPopover = null;
+        }
+    }
+
+    // Aktif filtreyi tamamen kaldırır (metni normale döndürür) — TTS'e,
+    // kelime alternatifi kartına, entity popover'a dokunmaz, onlar filtre
+    // aktifken de tamamen normal çalışmaya devam eder (opacity dışında
+    // hiçbir davranışları değişmiyor zaten).
+    function resetEntityFilter() {
+        activeEntityFilterType = null;
+        transTextDisplay.removeAttribute('data-entity-filter');
+    }
+
+    // type: 'person' | 'place' | 'date' | 'concept'. Aynı kategoriye
+    // tekrar basılırsa filtre kapanır (spec: "aynı kategoriye tekrar
+    // tıklarsa filtre kaldırılsın").
+    function applyEntityFilter(type) {
+        activeEntityFilterType = (activeEntityFilterType === type) ? null : type;
+
+        if (activeEntityFilterType) {
+            transTextDisplay.setAttribute('data-entity-filter', activeEntityFilterType);
+        } else {
+            transTextDisplay.removeAttribute('data-entity-filter');
+        }
+
+        if (activeEntityFilterPopover) {
+            activeEntityFilterPopover.querySelectorAll('.entity-filter-option').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.filterType === activeEntityFilterType);
+            });
+            const clearBtn = activeEntityFilterPopover.querySelector('.entity-filter-clear');
+            if (clearBtn) clearBtn.classList.toggle('hidden', !activeEntityFilterType);
+        }
+    }
+
+    const ENTITY_FILTER_CATEGORIES = [
+        { type: 'person', label: 'Kişiler' },
+        { type: 'place', label: 'Yerler' },
+        { type: 'date', label: 'Tarihler' },
+        { type: 'concept', label: 'Kavramlar' },
+    ];
+
+    function showEntityFilterPanel() {
+        closeEntityPopover();
+        closeWordAlternativesPopover();
+
+        // Aynı butona tekrar basılırsa paneli kapat (basit aç/kapa toggle).
+        if (activeEntityFilterPopover) {
+            closeEntityFilterPopover();
+            return;
+        }
+
+        // Kategori listesini, backend'in söylediği people/places/concepts
+        // listesinden değil, ekranda GERÇEKTEN render edilmiş .entity-tag
+        // sayısından çıkarıyoruz — bir isim analizde geçse bile çeviri
+        // metninde birebir eşleşmemiş olabilir; kullanıcıya sadece
+        // gerçekten tıklayıp göreceği kategoriler gösterilmeli.
+        const categories = ENTITY_FILTER_CATEGORIES
+            .map(cat => ({
+                ...cat,
+                count: transTextDisplay.querySelectorAll(`.entity-tag[data-type="${cat.type}"]`).length
+            }))
+            .filter(cat => cat.count > 0);
+
+        const popover = document.createElement('div');
+        popover.className = 'entity-filter-popover';
+
+        if (categories.length === 0) {
+            const emptyEl = document.createElement('div');
+            emptyEl.className = 'entity-filter-empty';
+            emptyEl.textContent = 'Bu belgede filtrelenecek bir kategori bulunamadı.';
+            popover.appendChild(emptyEl);
+        } else {
+            categories.forEach(cat => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'entity-filter-option';
+                btn.dataset.filterType = cat.type;
+                btn.classList.toggle('active', activeEntityFilterType === cat.type);
+                btn.textContent = `${cat.label} (${cat.count})`;
+                btn.addEventListener('click', () => applyEntityFilter(cat.type));
+                popover.appendChild(btn);
+            });
+
+            const clearBtn = document.createElement('button');
+            clearBtn.type = 'button';
+            clearBtn.className = 'entity-filter-clear';
+            clearBtn.classList.toggle('hidden', !activeEntityFilterType);
+            clearBtn.textContent = 'Tümünü Göster';
+            clearBtn.addEventListener('click', () => applyEntityFilter(null));
+            popover.appendChild(clearBtn);
+        }
+
+        document.body.appendChild(popover);
+        positionPopoverNear(popover, entityFilterBtn);
+        activeEntityFilterPopover = popover;
+    }
+
+    entityFilterBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        showEntityFilterPanel();
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!activeEntityFilterPopover) return;
+        if (activeEntityFilterPopover.contains(e.target) || e.target.closest('#entityFilterBtn')) return;
+        closeEntityFilterPopover();
     });
 
     // --- Belirsiz Kelime Alternatifleri (uncertain-word) ---
@@ -1937,6 +2103,7 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     async function showWordAlternativesPopover(targetEl) {
         closeEntityPopover();
         closeWordAlternativesPopover();
+        closeEntityFilterPopover();
 
         const myToken = wordPopoverToken;
         const wordText = targetEl.textContent;
