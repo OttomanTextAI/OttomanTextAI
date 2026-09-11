@@ -133,17 +133,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const enhanceStatusIcon = document.getElementById('enhanceStatusIcon');
     const heroStartBtn = document.getElementById('heroStartBtn');
 
-    // Output tab dropdowns ("Osmanlıca Metin" script dropdown, translation
-    // language dropdown) and the "Bilgi" tab.
-    const ocrTabBtn = document.getElementById('ocrTabBtn');
-    const translitTabBtn = document.getElementById('translitTabBtn');
-    const scriptDropdown = document.getElementById('scriptDropdown');
-    const scriptDropdownTrigger = document.getElementById('scriptDropdownTrigger');
-    const scriptDropdownMenu = document.getElementById('scriptDropdownMenu');
-    const langDropdown = document.getElementById('langDropdown');
-    const langDropdownTrigger = document.getElementById('langDropdownTrigger');
-    const langDropdownMenu = document.getElementById('langDropdownMenu');
-    const langDropdownLabel = document.getElementById('langDropdownLabel');
+    // Osmanlıca (Arapça Harfler) ve Türkçe Harfler (Okunuş) artık her zaman
+    // görünen ayrı sütunlar; Günümüz Türkçesi sütunu içindeki küçük
+    // Türkçe/İngilizce geçişi ve "Bilgi" (belge analizi) aç/kapa bölümü.
+    const transLangToggle = document.getElementById('transLangToggle');
     const entityFilterDropdown = document.getElementById('entityFilterDropdown');
     const entityFilterTrigger = document.getElementById('entityFilterTrigger');
     const entityFilterMenu = document.getElementById('entityFilterMenu');
@@ -750,95 +743,65 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
 
     enhancedToggle.addEventListener('change', updatePreviewImage);
 
-    
-    // --- Output Selector: three tab groups side by side, like sheet tabs —
-    // "Transkript" dropdown (Osmanlıca Arapça harfler / Türkçe harfler), a
-    // translation language dropdown (Türkçe / İngilizce), and a plain
-    // "Bilgi" tab for the document analysis (see renderResultsPanel /
-    // clearInfoTab). Unlike the language dropdown, the Transkript trigger
-    // keeps its static "Transkript" label regardless of which script is
-    // selected — it names the category, not the current choice.
-    const TRANSLATION_TAB_LABELS = {
-        trans: 'Türkçe Çeviri',
-        en: 'İngilizce Çeviri',
-    };
 
+    // --- Output columns: Osmanlıca (Arapça Harfler) ve Türkçe Harfler
+    // (Okunuş) daima yan yana görünür; Günümüz Türkçesi sütunu içinde küçük
+    // bir Türkçe/İngilizce geçişi var; "Bilgi" (belge analizi) ise 4 sütunun
+    // altında aç/kapa bir bölüm (bkz. renderResultsPanel / clearInfoTab).
+
+    // ocr/translit sütunları artık daima görünür; setOutputTab() sadece
+    // Günümüz Türkçesi sütunu içindeki Türkçe/İngilizce geçişini ('trans'/
+    // 'en') yönetiyor. 'info' değeri artık ayrı bir sekme değil — Bilgi
+    // bölümünü açmak için setInfoExpanded(true) kullanılıyor.
     function setOutputTab(tab) {
         closeEntityPopover();
         closeWordAlternativesPopover();
         closeEntityFilterDropdown();
         resetEntityFilter();
-        document.querySelectorAll('.output-select-btn').forEach(b => {
+
+        if (tab === 'info') {
+            setInfoExpanded(true);
+            return;
+        }
+        if (tab !== 'trans' && tab !== 'en') return;
+
+        document.querySelectorAll('.trans-lang-btn').forEach(b => {
             b.classList.toggle('active', b.getAttribute('data-output-tab') === tab);
         });
-        document.querySelectorAll('.output-tab-tools').forEach(t => {
+        document.querySelectorAll('.output-tab-tools[data-tools-for="trans"], .output-tab-tools[data-tools-for="en"]').forEach(t => {
             t.classList.toggle('tab-active', t.getAttribute('data-tools-for') === tab);
         });
-        ocrOutputBox.classList.toggle('hidden', tab !== 'ocr');
-        translitOutputBox.classList.toggle('hidden', tab !== 'translit');
         transOutputBox.classList.toggle('hidden', tab !== 'trans');
         enOutputBox.classList.toggle('hidden', tab !== 'en');
-        infoOutputBox.classList.toggle('hidden', tab !== 'info');
-
-        // The Transkript trigger's label stays static ("Transkript"); it
-        // only highlights "active" while one of its own options (not a
-        // sibling group's) is the selected tab.
-        scriptDropdownTrigger.classList.toggle('active', tab === 'ocr' || tab === 'translit');
-
-        if (TRANSLATION_TAB_LABELS[tab]) {
-            langDropdownLabel.textContent = TRANSLATION_TAB_LABELS[tab];
-        }
-        langDropdownTrigger.classList.toggle('active', tab === 'trans' || tab === 'en');
     }
 
-    function closeScriptDropdown() {
-        scriptDropdownMenu.classList.add('hidden');
-        scriptDropdownTrigger.setAttribute('aria-expanded', 'false');
+    // "Bilgi" (belge analizi), 4 sütunun altında tek tıkla açılıp kapanan
+    // bir bölüm — expanded=true iken infoOutputBox görünür, header'ın
+    // caret'i döner; infoTabBtn kendisi (bkz. clearInfoTab/renderResultsPanel)
+    // gösterecek bir şey olmadığında zaten tamamen gizleniyor.
+    function setInfoExpanded(expanded) {
+        infoOutputBox.classList.toggle('hidden', !expanded);
+        infoTabBtn.classList.toggle('expanded', expanded);
+        infoTabBtn.setAttribute('aria-expanded', String(expanded));
     }
 
-    function closeLangDropdown() {
-        langDropdownMenu.classList.add('hidden');
-        langDropdownTrigger.setAttribute('aria-expanded', 'false');
-    }
-
-    scriptDropdownTrigger.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const isOpen = !scriptDropdownMenu.classList.contains('hidden');
-        scriptDropdownMenu.classList.toggle('hidden', isOpen);
-        scriptDropdownTrigger.setAttribute('aria-expanded', String(!isOpen));
+    infoTabBtn.addEventListener('click', () => {
+        setInfoExpanded(infoOutputBox.classList.contains('hidden'));
     });
 
-    scriptDropdownMenu.addEventListener('click', (e) => {
-        const item = e.target.closest('.lang-dropdown-item');
-        if (!item) return;
-        setOutputTab(item.getAttribute('data-output-tab'));
-        closeScriptDropdown();
+    transLangToggle.addEventListener('click', (e) => {
+        const btn = e.target.closest('.trans-lang-btn');
+        if (!btn) return;
+        setOutputTab(btn.getAttribute('data-output-tab'));
     });
 
-    langDropdownTrigger.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const isOpen = !langDropdownMenu.classList.contains('hidden');
-        langDropdownMenu.classList.toggle('hidden', isOpen);
-        langDropdownTrigger.setAttribute('aria-expanded', String(!isOpen));
-    });
-
-    langDropdownMenu.addEventListener('click', (e) => {
-        const item = e.target.closest('.lang-dropdown-item');
-        if (!item) return;
-        setOutputTab(item.getAttribute('data-output-tab'));
-        closeLangDropdown();
-    });
-
-    infoTabBtn.addEventListener('click', () => setOutputTab('info'));
-
-    // entityFilterTrigger/entityFilterMenu ("Filtrele ▾") diğer sekme
-    // dropdown'larıyla (scriptDropdown/langDropdown) AYNI aç/kapa ve
-    // dış-tıklama mantığını kullanır — tek fark, menü içeriğinin sabit
-    // olmayıp her açılışta renderEntityFilterMenu() ile yeniden kurulması
-    // (bkz. aşağıdaki "Kategoriye Göre Filtrele" bölümü), çünkü kategori
-    // listesi belgeye göre değişiyor. setOutputTab() ÇAĞIRMAZ — panel
-    // içindeki bir kategoriye tıklamak sekme değiştirmez, sadece
-    // transTextDisplay'e bir filtre attribute'u uygular.
+    // entityFilterTrigger/entityFilterMenu ("Filtrele ▾") kendi aç/kapa ve
+    // dış-tıklama mantığını kullanır — menü içeriği sabit olmayıp her
+    // açılışta renderEntityFilterMenu() ile yeniden kurulur (bkz. aşağıdaki
+    // "Kategoriye Göre Filtrele" bölümü), çünkü kategori listesi belgeye
+    // göre değişiyor. setOutputTab() ÇAĞIRMAZ — panel içindeki bir
+    // kategoriye tıklamak sekme değiştirmez, sadece transTextDisplay'e bir
+    // filtre attribute'u uygular.
     entityFilterTrigger.addEventListener('click', (e) => {
         e.stopPropagation();
         closeEntityPopover();
@@ -850,8 +813,6 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     });
 
     document.addEventListener('click', (e) => {
-        if (!scriptDropdown.contains(e.target)) closeScriptDropdown();
-        if (!langDropdown.contains(e.target)) closeLangDropdown();
         if (!entityFilterDropdown.contains(e.target)) closeEntityFilterDropdown();
     });
 
@@ -1984,11 +1945,11 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     });
 
     // --- Kategoriye Göre Filtrele (entity filter) ---
-    // "Filtrele ▾" (entityFilterTrigger/entityFilterMenu), scriptDropdown/
-    // langDropdown ile AYNI HTML/CSS kalıbını (.lang-dropdown,
-    // .lang-dropdown-trigger, .lang-dropdown-menu) kullanan, sekme
-    // çubuğuna entegre bir dropdown'dur (bkz. yukarıdaki aç/kapa/dış-
-    // tıklama kablolaması). Menü içeriği SABİT değil — her açılışta
+    // "Filtrele ▾" (entityFilterTrigger/entityFilterMenu), ortak
+    // .lang-dropdown/.lang-dropdown-trigger/.lang-dropdown-menu HTML/CSS
+    // kalıbını kullanan, Günümüz Türkçesi sütununun başlığına entegre bir
+    // dropdown'dur (bkz. yukarıdaki aç/kapa/dış-tıklama kablolaması). Menü
+    // içeriği SABİT değil — her açılışta
     // renderEntityFilterMenu() ile, belgede GERÇEKTEN bulunan kategoriler
     // (Kişiler/Yerler/Tarihler/Kavramlar — hangisinden en az 1 entity-tag
     // varsa) sayılarıyla yeniden kurulur. Bir kategoriye tıklanınca DOM
