@@ -2564,34 +2564,52 @@ def list_documents(current_user):
         .order_by(Document.uploaded_at.desc())
         .paginate(page=page, per_page=per_page, error_out=False)
     )
+    doc_ids = [doc.id for doc in pagination.items]
+
+    # Sayfadaki belgelerin analizini belge başına ayrı sorgu yerine tek
+    # sorguda çekip id'ye göre eşliyoruz (N+1 sorgu sorununu önler).
+    analyses_by_doc_id = {
+        analysis.document_id: analysis
+        for analysis in DocumentAnalysis.query.filter(DocumentAnalysis.document_id.in_(doc_ids)).all()
+    } if doc_ids else {}
+
     def _display_title(doc):
-        analysis = DocumentAnalysis.query.filter_by(document_id=doc.id).first()
+        analysis = analyses_by_doc_id.get(doc.id)
         return (analysis.title if analysis else None) or doc.filename
 
     def _short_summary(doc):
         # "Belgelerim" listesinde küçük bir önizleme olarak gösterilir —
         # tam özet ancak /analyze çağrısında (kayıtlıysa önbellekten) gelir.
-        analysis = DocumentAnalysis.query.filter_by(document_id=doc.id).first()
+        analysis = analyses_by_doc_id.get(doc.id)
         summary = (analysis.summary if analysis else "") or ""
         summary = summary.strip()
         if len(summary) > 140:
             summary = summary[:140].rstrip() + "…"
         return summary
 
-    def _thumbnail_url(doc):
-        # Bucket private olduğu için doğrudan public URL çalışmıyor —
-        # kısa ömürlü (5 dk) imzalı bir indirme linki üretiyoruz. Sadece
-        # gerçek görsel dosyaları için (PDF/DOC/TXT önizlenemez).
-        if doc.file_type not in {"png", "jpg", "jpeg", "webp"} or supabase_client is None:
-            return None
+    # Bucket private olduğu için doğrudan public URL çalışmıyor — kısa
+    # ömürlü (5 dk) imzalı indirme linkleri üretiyoruz. Görsel dosyalar
+    # için TÜM belgeleri tek istekte imzalıyoruz; belge başına ayrı bir
+    # Supabase isteği atmak listede gözle görülür bir yavaşlığa yol
+    # açıyordu (birkaç belgede bile saniyeler sürüyordu).
+    thumbnail_urls_by_path = {}
+    image_paths = [
+        doc.storage_path for doc in pagination.items
+        if doc.file_type in {"png", "jpg", "jpeg", "webp"}
+    ]
 
+    if image_paths and supabase_client is not None:
         try:
-            signed = supabase_client.storage.from_(DOCUMENTS_BUCKET).create_signed_url(
-                doc.storage_path, 300
-            )
-            return signed.get("signedURL") or signed.get("signedUrl")
+            signed_results = supabase_client.storage.from_(DOCUMENTS_BUCKET).create_signed_urls(image_paths, 300)
+            for result in signed_results:
+                url = result.get("signedURL") or result.get("signedUrl")
+                if result.get("path") and url:
+                    thumbnail_urls_by_path[result["path"]] = url
         except Exception:
-            return None
+            pass
+
+    def _thumbnail_url(doc):
+        return thumbnail_urls_by_path.get(doc.storage_path)
 
     return jsonify({
         "documents": [
