@@ -69,7 +69,7 @@ async function loadDocuments() {
                         ? `<img src="${doc.thumbnail_url}" alt="${escapeHtml(doc.filename)}" style="width:100%; height:100%; object-fit:cover;">`
                         : `<span style="font-size:2.6rem;">📄</span>`}
                 </div>
-                <div style="font-size:0.82rem; font-weight:600; margin-top:0.5rem; text-align:center; word-break:break-word;">${escapeHtml(doc.filename)}</div>
+                <div style="font-size:0.82rem; font-weight:600; margin-top:0.5rem; text-align:center; word-break:break-word;">${escapeHtml(doc.title || doc.filename)}</div>
                 <div style="font-size:0.7rem; color:var(--color-text-muted); text-align:center; margin-top:0.15rem;">${new Date(doc.uploaded_at).toLocaleDateString('tr-TR')}</div>
                 <div style="display:flex; justify-content:center; gap:0.3rem; margin-top:0.4rem;">
                     <button type="button" class="tool-btn doc-rename-btn" data-doc-id="${doc.id}" data-doc-name="${escapeHtml(doc.filename)}" title="Adını değiştir" style="width:24px; height:24px; font-size:0.72rem;">✏️</button>

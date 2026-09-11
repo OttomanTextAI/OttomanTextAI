@@ -466,6 +466,9 @@ def _parse_and_clean_relay_response(raw_text):
         "date_hijri",
         "date_gregorian",
         "notes",
+        "title",
+        "translit",
+        "trans_en",
     ]
 
     for field in optional_string_fields:
@@ -911,7 +914,9 @@ ANALYSIS_PROMPT = (
     "trans_en: OCR metninin İngilizce çevirisini yaz. trans alanındaki "
     "aynı çeviri olsun, sadece dili İngilizce olsun. Burada da tahmin "
     "edilmiş kısımları aynı şekilde **çift yıldız** içine alarak işaretle. "
-
+    "title: Belgenin içeriğini yansıtan 3-6 kelimelik kısa ve açıklayıcı "
+    "bir başlık yaz (örn. 'Hacet Namazı Kılavuzu', 'Tavaf Duaları'). "
+    "Dosya adını DEĞİL, belgenin gerçek konusunu yansıtsın."
     "document_type: Belgenin türünü kısa yaz. "
     "Örnek: Ferman, Mektup, Gazete, Şiir / Manzume, Resmî Yazı. "
 
@@ -2525,6 +2530,9 @@ def list_documents(current_user):
         .order_by(Document.uploaded_at.desc())
         .paginate(page=page, per_page=per_page, error_out=False)
     )
+    def _display_title(doc):
+        analysis = DocumentAnalysis.query.filter_by(document_id=doc.id).first()
+        return (analysis.title if analysis else None) or doc.filename
 
     def _short_summary(doc):
         # "Belgelerim" listesinde küçük bir önizleme olarak gösterilir —
@@ -2556,6 +2564,7 @@ def list_documents(current_user):
             {
                 "id": doc.id,
                 "filename": doc.filename,
+                "title": _display_title(doc),
                 "file_type": doc.file_type,
                 "file_size": doc.file_size,
                 "summary": _short_summary(doc),
@@ -2694,6 +2703,7 @@ def analyze_document(current_user, document_id):
             "translit": existing_text.translit_text,
             "trans": existing_text.trans_text,
             "trans_en": existing_text.trans_text_en,
+            "title": existing_analysis.title,
             "document_type": existing_analysis.document_type,
             "summary": existing_analysis.summary,
             "confidence": existing_analysis.confidence,
@@ -2746,7 +2756,7 @@ def analyze_document(current_user, document_id):
     if not existing_analysis:
         existing_analysis = DocumentAnalysis(document_id=document.id)
         db.session.add(existing_analysis)
-
+    existing_analysis.title = parsed.get("title")
     existing_analysis.document_type = parsed.get("document_type")
     existing_analysis.style = parsed.get("style")
     existing_analysis.summary = parsed.get("summary")
@@ -2766,6 +2776,7 @@ def analyze_document(current_user, document_id):
         "translit": existing_text.translit_text,
         "trans": existing_text.trans_text,
         "trans_en": existing_text.trans_text_en,
+        "title": existing_analysis.title,
         "document_type": existing_analysis.document_type,
         "summary": existing_analysis.summary,
         "confidence": existing_analysis.confidence,
@@ -2848,6 +2859,7 @@ def save_translation():
 
     db.session.add(DocumentAnalysis(
         document_id=new_document.id,
+        title=parsed.get("title"),
         document_type=parsed.get("document_type"),
         style=parsed.get("style"),
         summary=parsed.get("summary"),

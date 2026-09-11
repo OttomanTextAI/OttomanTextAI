@@ -58,6 +58,7 @@ class DocumentAnalysis(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     document_id = db.Column(db.Integer, db.ForeignKey("documents.id"), nullable=False, unique=True)
     document_type = db.Column(db.String(100))
+    title = db.Column(db.String(150))
     style = db.Column(db.String(255))
     summary = db.Column(db.Text)
     script_type = db.Column(db.String(100))
