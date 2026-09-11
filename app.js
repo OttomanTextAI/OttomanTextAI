@@ -98,6 +98,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const enTtsBtn = document.getElementById('enTtsBtn');
     const enStopTtsBtn = document.getElementById('enStopTtsBtn');
 
+    // Sol üstteki hamburger butonuyla açılan menü çekmecesi (Belgelerim/
+    // Harita) — bkz. aşağıdaki "Sol Menü Çekmecesi" bölümü.
+    const sideMenuToggle = document.getElementById('sideMenuToggle');
+    const sideDrawer = document.getElementById('sideDrawer');
+    const sideDrawerOverlay = document.getElementById('sideDrawerOverlay');
+    const sideDrawerClose = document.getElementById('sideDrawerClose');
+
     const themeToggleBtn = document.getElementById('themeToggleBtn');
     const settingsBtn = document.getElementById('settingsBtn');
     const settingsModal = document.getElementById('settingsModal');
@@ -1538,11 +1545,12 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         }
     }
 
-        // "Bilgi" tab — only populate/reveal it when we actually have
-        // analysis data; otherwise leave it hidden rather than showing an
-        // empty/misleading tab.
+        // "Bilgi" bölümü — sadece gerçekten analiz verisi varsa doldurulup
+        // gösterilir; çeviri tamamlanır tamamlanmaz kullanıcı ayrıca tıklamak
+        // zorunda kalmadan AÇIK gelir (bkz. setInfoExpanded).
         if (finalAnalysis) {
             renderResultsPanel(finalAnalysis);
+            setInfoExpanded(true);
         } else {
             clearInfoTab();
         }
@@ -2816,6 +2824,44 @@ ${transTextDisplay.textContent}
         documentsModal.classList.add('hidden');
         authModal.classList.remove('hidden');
         updateAuthUI();
+    });
+
+    // --- Sol Menü Çekmecesi ---
+    // Sol üstteki hamburger butonuna tıklayınca soldan kayarak açılır ve
+    // arkasındaki sayfa #sideDrawerOverlay ile karartılır (ekip
+    // arkadaşlarının istediği tıkla-aç/kapa modeli). İçindeki
+    // .side-drawer-item butonları zaten data-modal taşıdığı için aşağıdaki
+    // genel [data-modal] kablolaması onları da açar — burada sadece
+    // çekmeceyi açma/kapama ve bir öğeye tıklanınca kendini kapatma
+    // davranışı ekleniyor.
+    function openSideDrawer() {
+        sideDrawer.classList.add('open');
+        sideDrawerOverlay.classList.remove('hidden');
+        sideDrawer.setAttribute('aria-hidden', 'false');
+        sideMenuToggle.setAttribute('aria-expanded', 'true');
+    }
+
+    function closeSideDrawer() {
+        sideDrawer.classList.remove('open');
+        sideDrawerOverlay.classList.add('hidden');
+        sideDrawer.setAttribute('aria-hidden', 'true');
+        sideMenuToggle.setAttribute('aria-expanded', 'false');
+    }
+
+    sideMenuToggle.addEventListener('click', () => {
+        if (sideDrawer.classList.contains('open')) closeSideDrawer();
+        else openSideDrawer();
+    });
+
+    sideDrawerClose.addEventListener('click', closeSideDrawer);
+    sideDrawerOverlay.addEventListener('click', closeSideDrawer);
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && sideDrawer.classList.contains('open')) closeSideDrawer();
+    });
+
+    document.querySelectorAll('.side-drawer-item').forEach(item => {
+        item.addEventListener('click', closeSideDrawer);
     });
 
     // --- Modal Management ---

@@ -18,6 +18,14 @@
     <!-- Header Navigation Bar -->
     <header class="navbar">
         <div class="nav-container">
+            <button type="button" class="icon-btn side-menu-toggle" id="sideMenuToggle" title="Menü" aria-expanded="false" aria-controls="sideDrawer">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="3" y1="6" x2="21" y2="6"></line>
+                    <line x1="3" y1="12" x2="21" y2="12"></line>
+                    <line x1="3" y1="18" x2="21" y2="18"></line>
+                </svg>
+            </button>
+
             <a href="#" class="brand-logo">
                 <img src="assets/logo.png" alt="Divane" class="brand-logo-img">
                 <span class="brand-subtitle">OSMANLICA ÇEVİRİ</span>
@@ -25,7 +33,10 @@
 
             <nav class="nav-menu">
                 <a href="#home" class="nav-link active" data-modal="home">Ana Sayfa</a>
+<<<<<<< Updated upstream
                 <a href="documents.html" target="_blank" rel="noopener" class="nav-link">Belgelerim</a>
+=======
+>>>>>>> Stashed changes
                 <a href="#about" class="nav-link" data-modal="aboutModal">Hakkında</a>
                 <a href="#contact" class="nav-link" data-modal="contactModal">İletişim</a>
             </nav>
@@ -49,6 +60,30 @@
             </div>
         </div>
     </header>
+
+    <!-- Sol menü çekmecesi: sol üstteki hamburger butonuna tıklayınca
+         soldan kayarak açılır, arkasındaki sayfa karartma katmanıyla
+         (#sideDrawerOverlay) gölgede kalır — TarihNet'teki gibi kalıcı bir
+         şerit yerine, ekip arkadaşlarının istediği tıkla-aç/kapa modeli.
+         Belgelerim üst menüden buraya taşındı; Harita şimdilik bir yer
+         tutucu (bkz. #mapModal) — ileride interaktif hale getirilecek. -->
+    <div class="side-drawer-overlay hidden" id="sideDrawerOverlay"></div>
+    <aside class="side-drawer" id="sideDrawer" aria-hidden="true">
+        <div class="side-drawer-header">
+            <span class="side-drawer-title">Menü</span>
+            <button type="button" class="modal-close" id="sideDrawerClose" title="Kapat">&times;</button>
+        </div>
+        <div class="side-drawer-body">
+            <button type="button" class="side-drawer-item" data-modal="documentsModal">
+                <span class="side-drawer-icon">📂</span>
+                <span>Belgelerim</span>
+            </button>
+            <button type="button" class="side-drawer-item" data-modal="mapModal">
+                <span class="side-drawer-icon">🗺️</span>
+                <span>Harita</span>
+            </button>
+        </div>
+    </aside>
 
     <!-- Main App Container -->
     <main class="page-wrapper" id="home">
@@ -491,6 +526,19 @@
     </div>
 
     <!-- Contact Modal -->
+    <div class="modal-overlay hidden" id="mapModal">
+        <div class="modal-card">
+            <button class="modal-close" data-close="mapModal">&times;</button>
+            <h2 class="modal-title">🗺️ Harita</h2>
+            <div class="modal-body">
+                <p class="modal-hint">
+                    Belgelerdeki yer adlarını bir harita üzerinde görüntüleme özelliği üzerinde çalışıyoruz.
+                    Bu bölüm yakında etkileşimli hale gelecek.
+                </p>
+            </div>
+        </div>
+    </div>
+
     <div class="modal-overlay hidden" id="contactModal">
         <div class="modal-card">
             <button class="modal-close" data-close="contactModal">&times;</button>

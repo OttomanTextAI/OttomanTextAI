@@ -214,6 +214,107 @@ body {
     border-radius: var(--radius-full);
 }
 
+/* Sol üstteki hamburger butonuna tıklayınca soldan kayarak açılan menü
+   çekmecesi + arkasındaki sayfayı karartan katman (ekip arkadaşlarının
+   istediği "tıkla-aç, arka plan gölgede kalsın" modeli — kalıcı/hover'la
+   açılan bir şerit değil). */
+.side-menu-toggle {
+    flex-shrink: 0;
+}
+
+.side-drawer-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(13, 22, 39, 0.65);
+    backdrop-filter: blur(2px);
+    z-index: 1400;
+    animation: fadeIn 0.2s ease-out;
+}
+
+.side-drawer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 280px;
+    max-width: 82vw;
+    background-color: var(--bg-header);
+    border-right: 1px solid var(--color-border);
+    box-shadow: var(--shadow-lg);
+    z-index: 1500;
+    display: flex;
+    flex-direction: column;
+    transform: translateX(-100%);
+    transition: transform var(--transition-normal);
+}
+
+.side-drawer.open {
+    transform: translateX(0);
+}
+
+.side-drawer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.2rem 1.4rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.side-drawer-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--on-header-text-hover);
+}
+
+/* .modal-close normalde .modal-card içinde absolute konumlanır — burada
+   bir flex header'ın normal akışındaki bir öğe olması gerekiyor. */
+.side-drawer-header .modal-close {
+    position: static;
+    color: var(--on-header-text);
+}
+
+.side-drawer-header .modal-close:hover {
+    color: var(--on-header-text-hover);
+}
+
+.side-drawer-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    padding: 0.8rem;
+}
+
+.side-drawer-item {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 0.8rem 0.9rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--on-header-text);
+    transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.side-drawer-item:hover {
+    background: var(--color-gold-bg);
+    color: var(--on-header-text-hover);
+}
+
+.side-drawer-icon {
+    flex-shrink: 0;
+    width: 24px;
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
 .nav-actions {
     display: flex;
     align-items: center;
@@ -2018,6 +2119,22 @@ body.dark-theme .hero-section::after {
     }
 
     .nav-menu {
+        display: none;
+    }
+
+    /* Hamburger butonu eklenince dar telefon ekranlarında navbar
+       taşıyordu (profil butonu kırpılıyordu) — ikonları ve aralarındaki
+       boşluğu daraltıp markanın alt yazısını gizleyerek yer açılıyor. */
+    .nav-actions {
+        gap: 0.35rem;
+    }
+
+    .icon-btn {
+        width: 34px;
+        height: 34px;
+    }
+
+    .brand-subtitle {
         display: none;
     }
 
