@@ -105,14 +105,14 @@ function _renderDocDetailImageCol(doc, extraHtml) {
 
 function _renderDocDetailInfoCard(data) {
     const rows = [
-        ['📋', 'Belge Türü', data.document_type],
-        ['🧭', 'Belgenin Amacı', data.script_purpose],
-        ['✍️', 'Yazı Türü', data.script_type],
-        ['🕰️', 'Tahmini Dönem', data.period_estimate],
-        ['🌐', 'Dil / Üslup', data.style],
-        ['🗓️', 'Tarih (Hicrî)', data.date_hijri],
-        ['☀️', 'Tarih (Miladi)', data.date_gregorian],
-    ].filter(([, , value]) => value);
+        ['Belge Türü', data.document_type],
+        ['Belgenin Amacı', data.script_purpose],
+        ['Yazı Türü', data.script_type],
+        ['Tahmini Dönem', data.period_estimate],
+        ['Dil / Üslup', data.style],
+        ['Tarih (Hicrî)', data.date_hijri],
+        ['Tarih (Miladi)', data.date_gregorian],
+    ].filter(([, value]) => value);
 
     const hasConfidence = data.confidence !== undefined && data.confidence !== null;
 
@@ -121,16 +121,16 @@ function _renderDocDetailInfoCard(data) {
     return `
         <div class="doc-detail-info-card">
             <div class="doc-detail-info-title">Belge Bilgileri</div>
-            ${rows.map(([icon, label, value]) => `
+            ${rows.map(([label, value]) => `
                 <div class="doc-detail-info-row">
-                    <span class="doc-detail-info-label">${icon} ${escapeHtml(label)}</span>
+                    <span class="doc-detail-info-label">${escapeHtml(label)}</span>
                     <span class="doc-detail-info-value">${escapeHtml(value)}</span>
                 </div>
             `).join('')}
             ${hasConfidence ? `
                 <div style="margin-top:0.5rem;">
                     <div class="doc-detail-info-row" style="border-bottom:none; padding-bottom:0.15rem;">
-                        <span class="doc-detail-info-label">🎯 Güven Skoru</span>
+                        <span class="doc-detail-info-label">Güven Skoru</span>
                         <span class="doc-detail-info-value">%${escapeHtml(String(data.confidence))}</span>
                     </div>
                     <div class="doc-detail-confidence-bar">

@@ -298,6 +298,7 @@ body {
     font-size: 0.9rem;
     font-weight: 600;
     color: var(--on-header-text);
+    text-decoration: none;
     transition: background var(--transition-fast), color var(--transition-fast);
 }
 
