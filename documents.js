@@ -77,7 +77,6 @@ async function loadDocuments() {
                 <div style="font-size:0.7rem; color:var(--color-text-muted); text-align:center; margin-top:0.15rem;">${new Date(doc.uploaded_at).toLocaleDateString('tr-TR')}</div>
                 <div style="display:flex; justify-content:center; gap:0.3rem; margin-top:0.4rem;">
                     <button type="button" class="tool-btn doc-rename-btn" data-doc-id="${doc.id}" data-doc-name="${escapeHtml(doc.filename)}" title="Adını değiştir" style="width:24px; height:24px; font-size:0.72rem;">✏️</button>
-                    <button type="button" class="tool-btn doc-replace-btn" data-doc-id="${doc.id}" title="Görseli değiştir" style="width:24px; height:24px; font-size:0.72rem;">🖼️</button>
                 </div>
             </div>
         `).join('');
