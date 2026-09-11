@@ -9,7 +9,7 @@ from pathlib import Path
 from flask_bcrypt import Bcrypt
 import time
 import random
-from models import db, User, TokenBlocklist, Document, DocumentText, DocumentAnalysis
+from models import db, User, TokenBlocklist, Document, DocumentText, DocumentAnalysis, DocumentEntity
 import cv2
 import numpy as np
 import requests
@@ -548,6 +548,40 @@ def _parse_and_clean_relay_response(raw_text):
             0,
             min(100, round(confidence)),
         )
+
+    return result
+
+
+_ENTITY_CATEGORY_MAP = {
+    "people": "person",
+    "places": "place",
+    "concepts": "concept",
+}
+
+
+def _replace_document_entities(document_id, parsed):
+    # Belgelerim'deki Kişiler/Yerler/Kavramlar sekmeleri için — yeniden
+    # analiz edildiğinde eski satırlar tekrarlanmasın diye önce silinir.
+    DocumentEntity.query.filter_by(document_id=document_id).delete()
+
+    for field, category in _ENTITY_CATEGORY_MAP.items():
+        for item in parsed.get(field) or []:
+            db.session.add(DocumentEntity(
+                document_id=document_id,
+                text=item,
+                category=category,
+            ))
+
+
+def _document_entities_by_category(document_id):
+    entities = DocumentEntity.query.filter_by(document_id=document_id).all()
+    result = {"people": [], "places": [], "concepts": []}
+    reverse_map = {v: k for k, v in _ENTITY_CATEGORY_MAP.items()}
+
+    for entity in entities:
+        field = reverse_map.get(entity.category)
+        if field:
+            result[field].append(entity.text)
 
     return result
 
@@ -2697,6 +2731,7 @@ def analyze_document(current_user, document_id):
     existing_analysis = DocumentAnalysis.query.filter_by(document_id=document.id).first()
 
     if existing_text and existing_analysis and not force_refresh:
+        entities = _document_entities_by_category(document.id)
         return jsonify({
             "cached": True,
             "ocr": existing_text.ocr_text,
@@ -2705,8 +2740,18 @@ def analyze_document(current_user, document_id):
             "trans_en": existing_text.trans_text_en,
             "title": existing_analysis.title,
             "document_type": existing_analysis.document_type,
+            "style": existing_analysis.style,
             "summary": existing_analysis.summary,
+            "script_type": existing_analysis.script_type,
+            "script_purpose": existing_analysis.script_purpose,
+            "period_estimate": existing_analysis.period_estimate,
+            "date_hijri": existing_analysis.date_hijri,
+            "date_gregorian": existing_analysis.date_gregorian,
+            "notes": existing_analysis.notes,
             "confidence": existing_analysis.confidence,
+            "people": entities["people"],
+            "places": entities["places"],
+            "concepts": entities["concepts"],
         })
 
     if supabase_client is None:
@@ -2768,7 +2813,11 @@ def analyze_document(current_user, document_id):
     existing_analysis.notes = parsed.get("notes")
     existing_analysis.confidence = parsed.get("confidence")
 
+    _replace_document_entities(document.id, parsed)
+
     db.session.commit()
+
+    entities = _document_entities_by_category(document.id)
 
     return jsonify({
         "cached": False,
@@ -2778,8 +2827,18 @@ def analyze_document(current_user, document_id):
         "trans_en": existing_text.trans_text_en,
         "title": existing_analysis.title,
         "document_type": existing_analysis.document_type,
+        "style": existing_analysis.style,
         "summary": existing_analysis.summary,
+        "script_type": existing_analysis.script_type,
+        "script_purpose": existing_analysis.script_purpose,
+        "period_estimate": existing_analysis.period_estimate,
+        "date_hijri": existing_analysis.date_hijri,
+        "date_gregorian": existing_analysis.date_gregorian,
+        "notes": existing_analysis.notes,
         "confidence": existing_analysis.confidence,
+        "people": entities["people"],
+        "places": entities["places"],
+        "concepts": entities["concepts"],
     }), 201
 @app.route("/api/translations/save", methods=["POST"])
 def save_translation():
@@ -2871,6 +2930,8 @@ def save_translation():
         notes=parsed.get("notes"),
         confidence=parsed.get("confidence"),
     ))
+
+    _replace_document_entities(new_document.id, parsed)
 
     db.session.commit()
 

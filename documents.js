@@ -7,6 +7,7 @@
 const API_BASE_URL = 'https://ottoman-text-ai.onrender.com';
 
 let authToken = localStorage.getItem('auth_token');
+let docsCache = {};
 
 const loginRequired = document.getElementById('loginRequired');
 const listView = document.getElementById('listView');
@@ -58,6 +59,9 @@ async function loadDocuments() {
             return;
         }
 
+        docsCache = {};
+        docs.forEach(doc => { docsCache[doc.id] = doc; });
+
         documentsList.style.display = 'grid';
         documentsList.style.gridTemplateColumns = 'repeat(auto-fill, minmax(150px, 1fr))';
         documentsList.style.gap = '1.4rem';
@@ -82,10 +86,132 @@ async function loadDocuments() {
     }
 }
 
+function _renderDocDetailImageCol(doc, extraHtml) {
+    return `
+        <div class="doc-detail-image-col">
+            <div class="doc-detail-image-frame">
+                ${doc && doc.thumbnail_url
+                    ? `<img src="${doc.thumbnail_url}" alt="${escapeHtml(doc.filename)}">`
+                    : `<span style="font-size:4rem;">📄</span>`}
+            </div>
+            ${doc ? `
+                <div style="margin-top:0.7rem; font-weight:600; text-align:center; word-break:break-word;">${escapeHtml(doc.title || doc.filename)}</div>
+                <div style="font-size:0.78rem; color:var(--color-text-muted); text-align:center; margin-top:0.2rem;">${new Date(doc.uploaded_at).toLocaleString('tr-TR')}</div>
+            ` : ''}
+            ${extraHtml || ''}
+        </div>
+    `;
+}
+
+function _renderDocDetailInfoCard(data) {
+    const rows = [
+        ['📋', 'Belge Türü', data.document_type],
+        ['🧭', 'Belgenin Amacı', data.script_purpose],
+        ['✍️', 'Yazı Türü', data.script_type],
+        ['🕰️', 'Tahmini Dönem', data.period_estimate],
+        ['🌐', 'Dil / Üslup', data.style],
+        ['🗓️', 'Tarih (Hicrî)', data.date_hijri],
+        ['☀️', 'Tarih (Miladi)', data.date_gregorian],
+    ].filter(([, , value]) => value);
+
+    const hasConfidence = data.confidence !== undefined && data.confidence !== null;
+
+    if (rows.length === 0 && !hasConfidence) return '';
+
+    return `
+        <div class="doc-detail-info-card">
+            <div class="doc-detail-info-title">Belge Bilgileri</div>
+            ${rows.map(([icon, label, value]) => `
+                <div class="doc-detail-info-row">
+                    <span class="doc-detail-info-label">${icon} ${escapeHtml(label)}</span>
+                    <span class="doc-detail-info-value">${escapeHtml(value)}</span>
+                </div>
+            `).join('')}
+            ${hasConfidence ? `
+                <div style="margin-top:0.5rem;">
+                    <div class="doc-detail-info-row" style="border-bottom:none; padding-bottom:0.15rem;">
+                        <span class="doc-detail-info-label">🎯 Güven Skoru</span>
+                        <span class="doc-detail-info-value">%${escapeHtml(String(data.confidence))}</span>
+                    </div>
+                    <div class="doc-detail-confidence-bar">
+                        <div class="doc-detail-confidence-fill" style="width:${Math.max(0, Math.min(100, data.confidence))}%;"></div>
+                    </div>
+                </div>
+            ` : ''}
+        </div>
+    `;
+}
+
+function _renderDocDetailTagList(items) {
+    if (!items || items.length === 0) {
+        return `<p class="doc-detail-empty">Bu belge için bilgi bulunamadı.</p>`;
+    }
+    return `<div class="doc-detail-tag-list">${items.map(item => `<span class="doc-detail-tag">${escapeHtml(item)}</span>`).join('')}</div>`;
+}
+
+function _renderDocDetailTabs(data) {
+    const tabs = [
+        { id: 'ceviri', label: 'Çeviri' },
+        { id: 'ozet', label: 'Özet' },
+        { id: 'kisiler', label: 'Kişiler' },
+        { id: 'yerler', label: 'Yerler' },
+        { id: 'kavramlar', label: 'Kavramlar' },
+        { id: 'notlar', label: 'Notlar' },
+    ];
+
+    const panes = {
+        ceviri: `
+            <div class="doc-detail-card">
+                <h3>Osmanlıca Metin</h3>
+                <div class="text-display" dir="rtl" lang="ota">${escapeHtml(data.ocr)}</div>
+            </div>
+            <div class="doc-detail-card">
+                <h3>Türkçe Çeviri</h3>
+                <div class="text-display">${escapeHtml(data.trans)}</div>
+            </div>
+            ${data.trans_en ? `
+                <div class="doc-detail-card">
+                    <h3>İngilizce Çeviri</h3>
+                    <div class="text-display">${escapeHtml(data.trans_en)}</div>
+                </div>
+            ` : ''}
+        `,
+        ozet: data.summary
+            ? `<div class="doc-detail-card"><div class="text-display">${escapeHtml(data.summary)}</div></div>`
+            : `<p class="doc-detail-empty">Bu belge için özet bulunamadı.</p>`,
+        kisiler: _renderDocDetailTagList(data.people),
+        yerler: _renderDocDetailTagList(data.places),
+        kavramlar: _renderDocDetailTagList(data.concepts),
+        notlar: data.notes
+            ? `<div class="doc-detail-card"><div class="text-display">${escapeHtml(data.notes)}</div></div>`
+            : `<p class="doc-detail-empty">Bu belge için not bulunamadı.</p>`,
+    };
+
+    const hasConfidence = data.confidence !== undefined && data.confidence !== null;
+
+    return `
+        <div class="doc-detail-tabs">
+            <div class="doc-detail-tab-list">
+                ${tabs.map((tab, i) => `<button type="button" class="doc-detail-tab-btn${i === 0 ? ' active' : ''}" data-tab="${tab.id}">${escapeHtml(tab.label)}</button>`).join('')}
+            </div>
+            ${hasConfidence ? `<span class="doc-detail-confidence-badge">Güven Skoru %${escapeHtml(String(data.confidence))}</span>` : ''}
+        </div>
+        ${tabs.map((tab, i) => `<div class="doc-detail-tab-pane${i === 0 ? '' : ' hidden'}" data-tab-pane="${tab.id}">${panes[tab.id]}</div>`).join('')}
+    `;
+}
+
 async function showDocumentDetail(docId) {
     listView.classList.add('hidden');
     detailView.classList.remove('hidden');
-    detailContent.innerHTML = '<p>Yükleniyor...</p>';
+
+    const doc = docsCache[docId];
+
+    detailContent.innerHTML = `
+        <div class="doc-detail-grid">
+            ${_renderDocDetailImageCol(doc)}
+            <div><p>Yükleniyor...</p></div>
+        </div>
+    `;
 
     try {
         const res = await fetch(`${API_BASE_URL}/api/documents/${docId}/analyze`, {
@@ -101,21 +227,28 @@ async function showDocumentDetail(docId) {
         }
 
         if (!res.ok) {
-            detailContent.innerHTML = `<p>${escapeHtml(data.error || 'Belge yüklenemedi.')}</p>`;
+            detailContent.innerHTML = `
+                <div class="doc-detail-grid">
+                    ${_renderDocDetailImageCol(doc)}
+                    <div><p>${escapeHtml(data.error || 'Belge yüklenemedi.')}</p></div>
+                </div>
+            `;
             return;
         }
 
         detailContent.innerHTML = `
-            ${data.document_type ? `<p><strong>Belge Türü:</strong> ${escapeHtml(data.document_type)}</p>` : ''}
-            ${data.summary ? `<p><strong>Özet:</strong> ${escapeHtml(data.summary)}</p>` : ''}
-            <h3 style="margin-top: 1.2rem;">Osmanlıca Metin</h3>
-            <div class="text-display" dir="rtl" lang="ota" style="margin-top: 0.4rem;">${escapeHtml(data.ocr)}</div>
-            <h3 style="margin-top: 1.2rem;">Türkçe Çeviri</h3>
-            <div class="text-display" style="margin-top: 0.4rem;">${escapeHtml(data.trans)}</div>
-            ${data.trans_en ? `<h3 style="margin-top: 1.2rem;">İngilizce Çeviri</h3><div class="text-display" style="margin-top: 0.4rem;">${escapeHtml(data.trans_en)}</div>` : ''}
+            <div class="doc-detail-grid">
+                ${_renderDocDetailImageCol(doc, _renderDocDetailInfoCard(data))}
+                <div>${_renderDocDetailTabs(data)}</div>
+            </div>
         `;
     } catch (err) {
-        detailContent.innerHTML = `<p>Belge yüklenemedi: ${escapeHtml(err.message)}</p>`;
+        detailContent.innerHTML = `
+            <div class="doc-detail-grid">
+                ${_renderDocDetailImageCol(doc)}
+                <div><p>Belge yüklenemedi: ${escapeHtml(err.message)}</p></div>
+            </div>
+        `;
     }
 }
 
@@ -201,6 +334,23 @@ documentsList.addEventListener('click', async (e) => {
     if (item) {
         showDocumentDetail(item.getAttribute('data-doc-id'));
     }
+});
+
+detailContent.addEventListener('click', (e) => {
+    const tabBtn = e.target.closest('.doc-detail-tab-btn');
+    if (!tabBtn) return;
+
+    const tabId = tabBtn.getAttribute('data-tab');
+    const tabsContainer = tabBtn.closest('.doc-detail-tabs');
+    if (tabsContainer) {
+        tabsContainer.querySelectorAll('.doc-detail-tab-btn').forEach(btn => {
+            btn.classList.toggle('active', btn === tabBtn);
+        });
+    }
+
+    detailContent.querySelectorAll('[data-tab-pane]').forEach(pane => {
+        pane.classList.toggle('hidden', pane.getAttribute('data-tab-pane') !== tabId);
+    });
 });
 
 backToListBtn.addEventListener('click', () => {
