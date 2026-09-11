@@ -2645,8 +2645,141 @@ ${transTextDisplay.textContent}
 
     // Giriş yapılmışsa kullanıcının kayıtlı belgelerini backend'den çeker ve
     // listeler; yapılmamışsa "giriş yapınız" mesajını gösterir.
+    let modalDocsCache = {};
+    let currentSelectedDocData = null;
+
+    const documentsListView = document.getElementById('documentsListView');
+    const documentsDetailView = document.getElementById('documentsDetailView');
+    const docBackToListBtn = document.getElementById('docBackToListBtn');
+    const docLoadToWorkbenchBtn = document.getElementById('docLoadToWorkbenchBtn');
+    const docDetailContent = document.getElementById('docDetailContent');
+
+    function _renderDocDetailImageCol(doc) {
+        return `
+            <div class="doc-detail-image-col">
+                <div class="doc-detail-image-frame">
+                    ${doc && doc.thumbnail_url
+                        ? `<img src="${doc.thumbnail_url}" alt="${escapeHtml(doc.filename)}">`
+                        : `<span style="font-size:3.5rem;">📄</span>`}
+                </div>
+                ${doc ? `
+                    <div style="margin-top:0.6rem; font-weight:600; text-align:center; word-break:break-word;">${escapeHtml(doc.title || doc.filename)}</div>
+                    <div style="font-size:0.75rem; color:var(--color-text-muted); text-align:center; margin-top:0.15rem;">${new Date(doc.uploaded_at).toLocaleString('tr-TR')}</div>
+                ` : ''}
+            </div>
+        `;
+    }
+
+    async function showDocumentDetailInModal(docId) {
+        if (!documentsListView || !documentsDetailView || !docDetailContent) return;
+
+        documentsListView.classList.add('hidden');
+        documentsDetailView.classList.remove('hidden');
+
+        const doc = modalDocsCache[docId];
+        currentSelectedDocData = null;
+
+        docDetailContent.innerHTML = `
+            <div class="doc-detail-grid">
+                ${_renderDocDetailImageCol(doc)}
+                <div><p style="color:var(--color-text-muted);">Yükleniyor...</p></div>
+            </div>
+        `;
+
+        try {
+            const res = await fetchWithTimeout(`${API_BASE_URL}/api/documents/${docId}/analyze`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${state.authToken}` }
+            }, 45000);
+            const data = await res.json().catch(() => ({}));
+
+            if (res.status === 401) {
+                clearAuthSession();
+                return;
+            }
+
+            if (!res.ok) {
+                docDetailContent.innerHTML = `
+                    <div class="doc-detail-grid">
+                        ${_renderDocDetailImageCol(doc)}
+                        <div><p>${escapeHtml(data.error || 'Belge yüklenemedi.')}</p></div>
+                    </div>
+                `;
+                return;
+            }
+
+            currentSelectedDocData = data;
+
+            docDetailContent.innerHTML = `
+                <div class="doc-detail-grid">
+                    ${_renderDocDetailImageCol(doc)}
+                    <div>
+                        ${(data.document_type || data.summary) ? `
+                            <div class="doc-detail-card">
+                                ${data.document_type ? `<p><strong>Belge Türü:</strong> ${escapeHtml(data.document_type)}</p>` : ''}
+                                ${data.summary ? `<p style="${data.document_type ? 'margin-top:0.5rem;' : ''}"><strong>Özet:</strong> ${escapeHtml(data.summary)}</p>` : ''}
+                            </div>
+                        ` : ''}
+                        <div class="doc-detail-card">
+                            <h3>Osmanlıca Metin</h3>
+                            <div class="text-display" dir="rtl" lang="ota">${escapeHtml(data.ocr)}</div>
+                        </div>
+                        <div class="doc-detail-card">
+                            <h3>Türkçe Çeviri</h3>
+                            <div class="text-display">${escapeHtml(data.trans)}</div>
+                        </div>
+                        ${data.trans_en ? `
+                            <div class="doc-detail-card">
+                                <h3>İngilizce Çeviri</h3>
+                                <div class="text-display">${escapeHtml(data.trans_en)}</div>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+        } catch (err) {
+            docDetailContent.innerHTML = `
+                <div class="doc-detail-grid">
+                    ${_renderDocDetailImageCol(doc)}
+                    <div><p>Belge yüklenemedi: ${classifyTranslationError(err)}</p></div>
+                </div>
+            `;
+        }
+    }
+
+    if (docBackToListBtn) {
+        docBackToListBtn.addEventListener('click', () => {
+            if (documentsDetailView) documentsDetailView.classList.add('hidden');
+            if (documentsListView) documentsListView.classList.remove('hidden');
+            renderDocumentsModal();
+        });
+    }
+
+    if (docLoadToWorkbenchBtn) {
+        docLoadToWorkbenchBtn.addEventListener('click', () => {
+            if (!currentSelectedDocData) return;
+            documentsModal.classList.add('hidden');
+            smoothScrollTo(dropZone);
+            processTranslation({
+                ocr: currentSelectedDocData.ocr || '',
+                tr: currentSelectedDocData.trans || '',
+                translit: currentSelectedDocData.translit || '',
+                analysis: {
+                    document_type: currentSelectedDocData.document_type,
+                    summary: currentSelectedDocData.summary,
+                    confidence: currentSelectedDocData.confidence
+                }
+            });
+        });
+    }
+
+    // Giriş yapılmışsa kullanıcının kayıtlı belgelerini backend'den çeker ve
+    // listeler; yapılmamışsa "giriş yapınız" mesajını gösterir.
     async function renderDocumentsModal() {
         if (!historyList) return;
+
+        if (documentsDetailView) documentsDetailView.classList.add('hidden');
+        if (documentsListView) documentsListView.classList.remove('hidden');
 
         const loggedIn = !!state.authToken;
         documentsLoginRequired.classList.toggle('hidden', loggedIn);
@@ -2678,20 +2811,27 @@ ${transTextDisplay.textContent}
                 return;
             }
 
+            modalDocsCache = {};
+            docs.forEach(doc => { modalDocsCache[doc.id] = doc; });
+
+            historyList.className = 'documents-grid';
             historyList.innerHTML = docs.map(doc => `
-                <div class="history-item" data-doc-id="${doc.id}" style="border-bottom:1px solid var(--color-border); padding:0.8rem 0; cursor:pointer;">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.6rem;">
-                        <span style="font-weight:bold; font-size:0.9rem;">📜 ${escapeHtml(doc.filename)}</span>
-                        <div style="display:flex; align-items:center; gap:0.4rem; flex-shrink:0;">
-                            <span style="font-size:0.75rem; color:var(--color-text-muted); white-space:nowrap;">${new Date(doc.uploaded_at).toLocaleString('tr-TR')}</span>
-                            <button type="button" class="tool-btn doc-rename-btn" data-doc-id="${doc.id}" data-doc-name="${escapeHtml(doc.filename)}" title="Adını değiştir" style="width:26px; height:26px; font-size:0.8rem;">✏️</button>
-                            <button type="button" class="tool-btn doc-replace-btn" data-doc-id="${doc.id}" title="Görseli değiştir" style="width:26px; height:26px; font-size:0.8rem;">🖼️</button>
-                        </div>
+                <div class="doc-card" data-doc-id="${doc.id}" title="${escapeHtml(doc.summary || doc.filename)}">
+                    <div class="doc-card-thumb">
+                        ${doc.thumbnail_url
+                            ? `<img src="${doc.thumbnail_url}" alt="${escapeHtml(doc.filename)}">`
+                            : `<span style="font-size:2.2rem;">📄</span>`}
                     </div>
-                    ${doc.summary ? `<p style="font-size:0.82rem; color:var(--color-text-muted); margin-top:0.35rem;">${escapeHtml(doc.summary)}</p>` : ''}
+                    <div class="doc-card-title">${escapeHtml(doc.title || doc.filename)}</div>
+                    <div class="doc-card-date">${new Date(doc.uploaded_at).toLocaleDateString('tr-TR')}</div>
+                    <div class="doc-card-actions">
+                        <button type="button" class="tool-btn doc-rename-btn" data-doc-id="${doc.id}" data-doc-name="${escapeHtml(doc.filename)}" title="Adını değiştir" style="width:24px; height:24px; font-size:0.72rem;">✏️</button>
+                        <button type="button" class="tool-btn doc-replace-btn" data-doc-id="${doc.id}" title="Görseli değiştir" style="width:24px; height:24px; font-size:0.72rem;">🖼️</button>
+                    </div>
                 </div>
             `).join('');
         } catch (err) {
+            historyList.className = 'history-list';
             historyList.innerHTML = `<p class="empty-history-text">Belgeler yüklenemedi: ${classifyTranslationError(err)}</p>`;
         }
     }
@@ -2737,11 +2877,6 @@ ${transTextDisplay.textContent}
         }
     });
 
-    // Listeden bir belgeye tıklanınca, kayıtlı (önbellekli) çeviri sonucunu
-    // çeker ve örnek kartlarla aynı presetData mekanizmasıyla ana çalışma
-    // alanına yükler — bu tekrar backend'e kaydetmeyi tetiklemez (bkz.
-    // processTranslation'daki "!presetData" kontrolü). Adı/görseli
-    // değiştirme butonları bu genel satır tıklamasından önce ele alınır.
     historyList.addEventListener('click', async (e) => {
         const renameBtn = e.target.closest('.doc-rename-btn');
         if (renameBtn) {
@@ -2785,39 +2920,7 @@ ${transTextDisplay.textContent}
         const item = e.target.closest('[data-doc-id]');
         if (!item) return;
         const docId = item.getAttribute('data-doc-id');
-
-        try {
-            const res = await fetchWithTimeout(`${API_BASE_URL}/api/documents/${docId}/analyze`, {
-                method: 'POST',
-                headers: { 'Authorization': `Bearer ${state.authToken}` }
-            }, 45000);
-            const data = await res.json().catch(() => ({}));
-
-            if (res.status === 401) {
-                clearAuthSession();
-                return;
-            }
-
-            if (!res.ok) {
-                alert(data.error || 'Belge yüklenemedi.');
-                return;
-            }
-
-            documentsModal.classList.add('hidden');
-            smoothScrollTo(dropZone);
-            processTranslation({
-                ocr: data.ocr || '',
-                tr: data.trans || '',
-                translit: data.translit || '',
-                analysis: {
-                    document_type: data.document_type,
-                    summary: data.summary,
-                    confidence: data.confidence
-                }
-            });
-        } catch (err) {
-            alert(classifyTranslationError(err));
-        }
+        showDocumentDetailInModal(docId);
     });
 
     documentsLoginBtn.addEventListener('click', () => {
