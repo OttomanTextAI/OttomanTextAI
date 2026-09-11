@@ -58,17 +58,23 @@ async function loadDocuments() {
             return;
         }
 
+        documentsList.style.display = 'grid';
+        documentsList.style.gridTemplateColumns = 'repeat(auto-fill, minmax(150px, 1fr))';
+        documentsList.style.gap = '1.4rem';
+
         documentsList.innerHTML = docs.map(doc => `
-            <div class="history-item" data-doc-id="${doc.id}" style="border-bottom:1px solid var(--color-border); padding:0.8rem 0; cursor:pointer;">
-                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:0.6rem;">
-                    <span style="font-weight:bold; font-size:0.9rem;">📜 ${escapeHtml(doc.filename)}</span>
-                    <div style="display:flex; align-items:center; gap:0.4rem; flex-shrink:0;">
-                        <span style="font-size:0.75rem; color:var(--color-text-muted); white-space:nowrap;">${new Date(doc.uploaded_at).toLocaleString('tr-TR')}</span>
-                        <button type="button" class="tool-btn doc-rename-btn" data-doc-id="${doc.id}" data-doc-name="${escapeHtml(doc.filename)}" title="Adını değiştir" style="width:26px; height:26px; font-size:0.8rem;">✏️</button>
-                        <button type="button" class="tool-btn doc-replace-btn" data-doc-id="${doc.id}" title="Görseli değiştir" style="width:26px; height:26px; font-size:0.8rem;">🖼️</button>
-                    </div>
+            <div class="doc-card" data-doc-id="${doc.id}" style="cursor:pointer;" title="${escapeHtml(doc.summary || doc.filename)}">
+                <div style="width:100%; aspect-ratio:3/4; border-radius:var(--radius-sm); overflow:hidden; background:var(--bg-input); border:1px solid var(--color-border); display:flex; align-items:center; justify-content:center;">
+                    ${doc.thumbnail_url
+                        ? `<img src="${doc.thumbnail_url}" alt="${escapeHtml(doc.filename)}" style="width:100%; height:100%; object-fit:cover;">`
+                        : `<span style="font-size:2.6rem;">📄</span>`}
                 </div>
-                ${doc.summary ? `<p style="font-size:0.82rem; color:var(--color-text-muted); margin-top:0.35rem;">${escapeHtml(doc.summary)}</p>` : ''}
+                <div style="font-size:0.82rem; font-weight:600; margin-top:0.5rem; text-align:center; word-break:break-word;">${escapeHtml(doc.filename)}</div>
+                <div style="font-size:0.7rem; color:var(--color-text-muted); text-align:center; margin-top:0.15rem;">${new Date(doc.uploaded_at).toLocaleDateString('tr-TR')}</div>
+                <div style="display:flex; justify-content:center; gap:0.3rem; margin-top:0.4rem;">
+                    <button type="button" class="tool-btn doc-rename-btn" data-doc-id="${doc.id}" data-doc-name="${escapeHtml(doc.filename)}" title="Adını değiştir" style="width:24px; height:24px; font-size:0.72rem;">✏️</button>
+                    <button type="button" class="tool-btn doc-replace-btn" data-doc-id="${doc.id}" title="Görseli değiştir" style="width:24px; height:24px; font-size:0.72rem;">🖼️</button>
+                </div>
             </div>
         `).join('');
     } catch (err) {

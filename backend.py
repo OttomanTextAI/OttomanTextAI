@@ -2536,6 +2536,21 @@ def list_documents(current_user):
             summary = summary[:140].rstrip() + "…"
         return summary
 
+    def _thumbnail_url(doc):
+        # Bucket private olduğu için doğrudan public URL çalışmıyor —
+        # kısa ömürlü (5 dk) imzalı bir indirme linki üretiyoruz. Sadece
+        # gerçek görsel dosyaları için (PDF/DOC/TXT önizlenemez).
+        if doc.file_type not in {"png", "jpg", "jpeg", "webp"} or supabase_client is None:
+            return None
+
+        try:
+            signed = supabase_client.storage.from_(DOCUMENTS_BUCKET).create_signed_url(
+                doc.storage_path, 300
+            )
+            return signed.get("signedURL") or signed.get("signedUrl")
+        except Exception:
+            return None
+
     return jsonify({
         "documents": [
             {
@@ -2544,6 +2559,7 @@ def list_documents(current_user):
                 "file_type": doc.file_type,
                 "file_size": doc.file_size,
                 "summary": _short_summary(doc),
+                "thumbnail_url": _thumbnail_url(doc),
                 "uploaded_at": doc.uploaded_at.isoformat(),
                 "updated_at": doc.updated_at.isoformat(),
             }
