@@ -1,7 +1,8 @@
-import json
 import os
 
 from openai import OpenAI
+
+from src.ai.json_utils import parse_model_json
 
 
 ENTITY_INFO_SYSTEM_PROMPT = """
@@ -126,43 +127,16 @@ class EntityInfoGenerator:
             or ""
         ).strip()
 
-        cleaned = response_text
+        result = parse_model_json(
+            response_text
+        )
 
-        if cleaned.startswith("```json"):
-            cleaned = cleaned[7:]
-
-        if cleaned.startswith("```"):
-            cleaned = cleaned[3:]
-
-        if cleaned.endswith("```"):
-            cleaned = cleaned[:-3]
-
-        cleaned = cleaned.strip()
-
-        try:
-            result = json.loads(cleaned)
-        except json.JSONDecodeError:
-            start = cleaned.find("{")
-            end = cleaned.rfind("}")
-
-            if start != -1 and end != -1 and end > start:
-                try:
-                    result = json.loads(
-                        cleaned[start:end + 1]
-                    )
-                except json.JSONDecodeError:
-                    result = {}
-            else:
-                result = {}
-
-            if not result:
-                print(
-                    "[ENTITY INFO] Invalid model response:",
-                    repr(response_text),
-                    flush=True,
-                )
-
-        if not isinstance(result, dict):
+        if not result:
+            print(
+                "[ENTITY INFO] Invalid model response:",
+                repr(response_text),
+                flush=True,
+            )
             result = {}
 
         info = str(result.get("info", "")).strip()

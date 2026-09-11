@@ -1,10 +1,9 @@
-import json
 import os
 
 from openai import OpenAI
 
 from src.ai.rag.retriever import DocumentRetriever
-
+from src.ai.json_utils import parse_model_json
 
 DOCUMENT_QA_SYSTEM_PROMPT = """
 Sen Akıllı Osmanlıca Asistanı'nın belge analiz asistanısın.
@@ -263,7 +262,7 @@ class DocumentQA:
                 },
             ],
             temperature=0.1,
-            max_tokens=1600,
+            max_tokens=700,
         )
 
         finish_reason = completion.choices[0].finish_reason
@@ -278,23 +277,11 @@ class DocumentQA:
             completion.choices[0].message.content or ""
         ).strip()
 
-        try:
-            cleaned_answer = answer_text
+        parsed_answer = parse_model_json(
+            answer_text
+        )
 
-            if cleaned_answer.startswith("```json"):
-                cleaned_answer = cleaned_answer[7:]
-
-            if cleaned_answer.startswith("```"):
-                cleaned_answer = cleaned_answer[3:]
-
-            if cleaned_answer.endswith("```"):
-                cleaned_answer = cleaned_answer[:-3]
-
-            parsed_answer = json.loads(
-                cleaned_answer.strip()
-            )
-
-        except json.JSONDecodeError:
+        if not parsed_answer:
             print(
                 "[DOCUMENT QA] Invalid JSON response:",
                 repr(answer_text),
@@ -308,7 +295,7 @@ class DocumentQA:
                     "hatası oluştu. Lütfen sorunuzu tekrar deneyin."
                 ),
                 "related_information": [],
-                "external_answer_available": True,
+                "external_answer_available": False,
             }
 
         if not isinstance(parsed_answer, dict):
@@ -319,7 +306,7 @@ class DocumentQA:
                     "hatası oluştu. Lütfen sorunuzu tekrar deneyin."
                 ),
                 "related_information": [],
-                "external_answer_available": True,
+                "external_answer_available": False,
             }
             
         answer_type = parsed_answer.get(
@@ -388,7 +375,7 @@ class DocumentQA:
                             }
                         ],
                         temperature=0.1,
-                        max_tokens=700,
+                        max_tokens=400,
                     )
 
                     external_answer = (
@@ -414,7 +401,7 @@ class DocumentQA:
                             }
                         ],
                         temperature=0.1,
-                        max_tokens=700,
+                        max_tokens=400,
                     )
 
                     retry_answer = (

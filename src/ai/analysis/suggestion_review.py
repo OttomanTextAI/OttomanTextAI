@@ -1,8 +1,8 @@
-import json
 import os
 
 from openai import OpenAI
 
+from src.ai.json_utils import parse_model_json
 
 SUGGESTION_REVIEW_SYSTEM_PROMPT = """
 Sen Osmanlıca belge analizi, çeviri ve kullanıcı düzeltmesi
@@ -122,49 +122,33 @@ class SuggestionReviewer:
                 },
             ],
             temperature=0.1,
-            max_tokens=900,
+            max_tokens=350,
         )
 
         answer_text = (
             response.choices[0].message.content or ""
         ).strip()
 
-        if answer_text.startswith("```"):
-            answer_text = answer_text.strip("`").strip()
-
-            if answer_text.startswith("json"):
-                answer_text = answer_text[4:].strip()
-
-        try:
-            result = json.loads(answer_text)
-
-        except json.JSONDecodeError:
-            start = answer_text.find("{")
-            end = answer_text.rfind("}")
-
-            if start != -1 and end != -1 and end > start:
-                try:
-                    result = json.loads(
-                        answer_text[start:end + 1]
-                    )
-                except json.JSONDecodeError:
-                    result = {}
-            else:
-                result = {}
-
-        if not isinstance(result, dict):
-            result = {}
+        result = parse_model_json(
+            answer_text
+        )
             
         if not result:
+            fallback_text = (
+                ai_suggestion
+                if ai_suggestion
+                else original_text
+            )
+
             return {
                 "accepted": False,
                 "confidence": 0.0,
                 "reason": (
                     "AI değerlendirmesi oluşturulamadı."
                 ),
-                "recommended_text": user_edit,
+                "recommended_text": fallback_text,
                 "changed_from_ai": (
-                    user_edit != ai_suggestion
+                    fallback_text != ai_suggestion
                 ),
             }
 
@@ -183,10 +167,29 @@ class SuggestionReviewer:
             min(confidence, 1.0),
         )
 
+        accepted = bool(
+            result.get("accepted", False)
+        )
+
+        recommended_text = str(
+            result.get(
+                "recommended_text",
+                "",
+            )
+        ).strip()
+
+        if not recommended_text:
+            if accepted:
+                recommended_text = user_edit
+            else:
+                recommended_text = (
+                    ai_suggestion
+                    if ai_suggestion
+                    else original_text
+                )
+
         return {
-            "accepted": bool(
-                result.get("accepted", False)
-            ),
+            "accepted": accepted,
             "confidence": confidence,
             "reason": str(
                 result.get(
@@ -194,13 +197,8 @@ class SuggestionReviewer:
                     "",
                 )
             ).strip(),
-            "recommended_text": str(
-                result.get(
-                    "recommended_text",
-                    user_edit,
-                )
-            ).strip(),
+            "recommended_text": recommended_text,
             "changed_from_ai": (
-                user_edit != ai_suggestion
+                recommended_text != ai_suggestion
             ),
         }

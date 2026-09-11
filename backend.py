@@ -38,6 +38,8 @@ from src.ai.analysis.research import ResearchSuggestionGenerator
 from src.ai.filters.entity_filter import EntityFilterClassifier
 from src.ai.analysis.suggestion_review import SuggestionReviewer
 from src.ai.analysis.predictions import DocumentPredictionGenerator
+from src.ai.analysis.five_w_one_h import FiveWOneHAnalyzer
+
 from werkzeug.utils import secure_filename
 from supabase import create_client
 # Loads RELAY_API_KEY / RELAY_BASE_URL / GEMINI_API_KEY from a local .env for
@@ -456,6 +458,7 @@ def _parse_and_clean_relay_response(raw_text):
 
     optional_string_fields = [
         "translit",
+        "trans_modern",
         "trans_en",
         "document_type",
         "style",
@@ -467,8 +470,6 @@ def _parse_and_clean_relay_response(raw_text):
         "date_gregorian",
         "notes",
         "title",
-        "translit",
-        "trans_en",
     ]
 
     for field in optional_string_fields:
@@ -940,10 +941,21 @@ ANALYSIS_PROMPT = (
     "da aynı şekilde **çift yıldız** içine alarak yaz, işaretlemeyi ocr "
     "ile birebir tutarlı tut. "
 
-    "trans: OCR metninin günümüz Türkçesi karşılığını yaz. translit/ocr "
-    "alanlarında **çift yıldızla** işaretlenmiş (tahmin edilmiş) "
-    "kısımların buradaki karşılığını da aynı şekilde **çift yıldız** "
-    "içine alarak işaretle. "
+    "trans: OCR metninin Türkçe karşılığını, belgeye ve özgün anlatıma "
+    "mümkün olduğunca sadık kalarak yaz. Osmanlıca cümle yapısını tamamen "
+    "bozmadan, anlamı doğru biçimde Türkçeye aktar. Gereksiz sadeleştirme "
+    "ve yorum yapma. translit/ocr alanlarında **çift yıldızla** "
+    "işaretlenmiş (tahmin edilmiş) kısımların buradaki karşılığını da "
+    "aynı şekilde **çift yıldız** içine alarak işaretle. "
+
+    "trans_modern: trans alanındaki Türkçe çeviriyi günümüz Türkçesinde "
+    "daha açık, sade ve kolay anlaşılır biçimde yeniden yaz. Eski veya "
+    "günümüzde az kullanılan kelimeleri mümkün olduğunca yaygın modern "
+    "Türkçe karşılıklarıyla değiştir. Uzun ve karmaşık cümleleri anlamı "
+    "bozmadan sadeleştir. Belgede bulunmayan hiçbir bilgi, yorum veya "
+    "açıklama ekleme. Özel isimleri, tarihleri, yerleri ve önemli tarihî "
+    "kavramları koru. trans alanındaki anlamdan sapma. Tahmin edilmiş "
+    "kısımların karşılıklarını burada da **çift yıldız** içinde göster. "
 
     "trans_en: OCR metninin İngilizce çevirisini yaz. trans alanındaki "
     "aynı çeviri olsun, sadece dili İngilizce olsun. Burada da tahmin "
@@ -1761,6 +1773,7 @@ def word_alternatives():
             {
                 "success": True,
                 "alternatives": result["alternatives"],
+                "alternative_details": result["alternative_details"],
                 "origin": result["origin"],
                 "ocr_form": result["ocr_form"],
             }
@@ -2275,7 +2288,63 @@ def ai_predictions():
             "details": str(error),
         }), 500
 
-    
+@app.route("/api/ai/five-w-one-h", methods=["POST"])
+def ai_five_w_one_h():
+        try:
+            data = request.get_json(silent=True) or {}
+
+            document_text = str(
+                data.get("document_text") or ""
+            ).strip()
+
+            if not document_text:
+                return jsonify(
+                    {
+                        "success": False,
+                        "error": "Document text is required.",
+                    }
+                ), 400
+
+            llm_config = get_llm_config()
+            model = llm_config.get("model")
+
+            if not model:
+                return jsonify(
+                    {
+                        "success": False,
+                        "error": "LLM model is not configured.",
+                    }
+                ), 500
+
+            analyzer = FiveWOneHAnalyzer(
+                model=model,
+            )
+
+            analysis = analyzer.analyze(
+                document_text=document_text,
+            )
+
+            return jsonify(
+                {
+                    "success": True,
+                    "analysis": analysis,
+                }
+            )
+
+        except Exception as error:
+            print(
+                f"[5N1K] {type(error).__name__}: {error}",
+                flush=True,
+            )
+
+            return jsonify(
+                {
+                    "success": False,
+                    "error": "5N1K analysis failed.",
+                    "details": str(error),
+                }
+            ), 500
+        
 @app.route("/api/ai/ask", methods=["POST"])
 def ai_ask_document():
     """

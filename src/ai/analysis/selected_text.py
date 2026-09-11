@@ -1,8 +1,8 @@
-import json
 import os
 
 from openai import OpenAI
 
+from src.ai.json_utils import parse_model_json
 
 SELECTED_TEXT_SYSTEM_PROMPT = """
 Sen Divane adlı Osmanlıca belge analiz uygulamasının
@@ -159,23 +159,11 @@ class SelectedTextAnalyzer:
             flush=True,
         )
         
-        cleaned = response_text
+        result = parse_model_json(
+            response_text
+        )
 
-        if cleaned.startswith("```json"):
-            cleaned = cleaned[7:]
-
-        if cleaned.startswith("```"):
-            cleaned = cleaned[3:]
-
-        if cleaned.endswith("```"):
-            cleaned = cleaned[:-3]
-
-        cleaned = cleaned.strip()
-
-        try:
-            result = json.loads(cleaned)
-
-        except json.JSONDecodeError:
+        if not result:
             print(
                 "[SELECTED TEXT] Invalid or truncated JSON. Retrying...",
                 flush=True,
@@ -221,30 +209,17 @@ class SelectedTextAnalyzer:
                 flush=True,
             )
 
-            if retry_text.startswith("```json"):
-                retry_text = retry_text[7:]
+            result = parse_model_json(
+                retry_text
+            )
 
-            if retry_text.startswith("```"):
-                retry_text = retry_text[3:]
-
-            if retry_text.endswith("```"):
-                retry_text = retry_text[:-3]
-
-            retry_text = retry_text.strip()
-
-            try:
-                result = json.loads(retry_text)
-
-            except json.JSONDecodeError:
+            if not result:
                 print(
                     "[SELECTED TEXT] Retry JSON parsing failed.",
                     flush=True,
                 )
                 result = {}
                 
-        if not isinstance(result, dict):
-            result = {}
-
         list_fields = [
             "people",
             "places",

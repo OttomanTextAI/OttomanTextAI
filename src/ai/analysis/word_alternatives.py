@@ -1,8 +1,8 @@
-import json
 import os
 
 from openai import OpenAI
 
+from src.ai.json_utils import parse_model_json
 
 WORD_ALTERNATIVES_SYSTEM_PROMPT = """
 Sen Divane adlı Osmanlıca belge analiz uygulamasının kelime düzeyinde
@@ -159,44 +159,25 @@ class WordAlternativesGenerator:
             or ""
         ).strip()
 
-        cleaned = response_text
+        result = parse_model_json(
+            response_text
+        )
 
-        if cleaned.startswith("```json"):
-            cleaned = cleaned[7:]
-
-        if cleaned.startswith("```"):
-            cleaned = cleaned[3:]
-
-        if cleaned.endswith("```"):
-            cleaned = cleaned[:-3]
-
-        cleaned = cleaned.strip()
-
-        try:
-            result = json.loads(cleaned)
-        except json.JSONDecodeError:
-            start = cleaned.find("{")
-            end = cleaned.rfind("}")
-
-            if start != -1 and end != -1 and end > start:
-                try:
-                    result = json.loads(
-                        cleaned[start:end + 1]
-                    )
-                except json.JSONDecodeError:
-                    result = {}
-            else:
-                result = {}
-
-            if not result:
-                print(
-                    "[WORD ALTERNATIVES] Invalid model response:",
-                    repr(response_text),
-                    flush=True,
-                )
-
-        if not isinstance(result, dict):
+        if not result:
+            print(
+                "[WORD ALTERNATIVES] Invalid model response:",
+                repr(response_text),
+                flush=True,
+            )
             result = {}
+
+        origin = str(
+            result.get("origin", "")
+        ).strip()
+
+        ocr_form = str(
+            result.get("ocr_form", "")
+        ).strip()
 
         raw_alternatives = result.get("alternatives", [])
 
@@ -204,14 +185,43 @@ class WordAlternativesGenerator:
             raw_alternatives = []
 
         alternatives = []
+        alternative_details = []
 
         for item in raw_alternatives[:3]:
-            text = str(item).strip() if not isinstance(item, dict) else str(
-                item.get("text", "")
-            ).strip()
+            if isinstance(item, dict):
+                text = str(
+                    item.get("text", "")
+                ).strip()
+
+                confidence = item.get(
+                    "confidence",
+                    0.0,
+                )
+
+                try:
+                    confidence = float(confidence)
+                except (TypeError, ValueError):
+                    confidence = 0.0
+
+                confidence = max(
+                    0.0,
+                    min(1.0, confidence),
+                )
+
+            else:
+                text = str(item).strip()
+                confidence = 0.0
 
             if text:
                 alternatives.append(text)
+
+                alternative_details.append({
+                    "text": text,
+                    "confidence": confidence,
+                    "confidence_percent": round(
+                        confidence * 100
+                    ),
+                })
 
         # Prompt modeli en az 1 öğe döndürmeye (belirsizse birkaç
         # alternatif, netse tek/yüksek-confidence'lı mevcut okuma)
@@ -220,10 +230,19 @@ class WordAlternativesGenerator:
         # liste döndürürse tıklanan kelimenin kendisini tek seçenek olarak
         # kullan — bu, "model başka alternatif görmüyor" durumuna eşdeğer.
         if not alternatives:
-            alternatives = [word.strip()]
+            fallback_text = word.strip()
 
-        origin = str(result.get("origin", "")).strip()
-        ocr_form = str(result.get("ocr_form", "")).strip()
+            alternatives = [
+                fallback_text
+            ]
+
+            alternative_details = [
+                {
+                    "text": fallback_text,
+                    "confidence": 0.95,
+                    "confidence_percent": 95,
+                }
+            ]
 
         # origin de aynı şekilde ASLA boş dönmemeli (bkz. prompt kural 2);
         # model buna uymazsa bile kullanıcı boş bir alan yerine en azından
@@ -242,6 +261,7 @@ class WordAlternativesGenerator:
 
         return {
             "alternatives": alternatives,
+            "alternative_details": alternative_details,
             "origin": origin,
             "ocr_form": ocr_form,
         }

@@ -1,10 +1,9 @@
-import json
 import os
 
 from openai import OpenAI
 
 from src.ai.context_optimizer import optimize_document_context
-
+from src.ai.json_utils import parse_model_json
 
 QUESTION_GENERATION_SYSTEM_PROMPT = """
 Sen Divane adlı Osmanlıca belge analiz uygulamasının
@@ -87,7 +86,8 @@ class DocumentQuestionGenerator:
             )
 
         optimized_text = optimize_document_context(
-            document_text
+            document_text,
+            max_chars=8000,
         )
 
         print(
@@ -109,10 +109,8 @@ class DocumentQuestionGenerator:
                 },
             ],
             temperature=0.2,
-            max_tokens=1200,
+            max_tokens=400,
         )
-
-        
 
         finish_reason = completion.choices[0].finish_reason
 
@@ -133,23 +131,11 @@ class DocumentQuestionGenerator:
             flush=True,
         )
 
-        cleaned = response_text
+        result = parse_model_json(
+            response_text
+        )
 
-        if cleaned.startswith("```json"):
-            cleaned = cleaned[7:]
-
-        if cleaned.startswith("```"):
-            cleaned = cleaned[3:]
-
-        if cleaned.endswith("```"):
-            cleaned = cleaned[:-3]
-
-        cleaned = cleaned.strip()
-
-        try:
-            result = json.loads(cleaned)
-
-        except json.JSONDecodeError:
+        if not result:
             print(
                 "[AI QUESTIONS] Invalid or truncated JSON. Retrying...",
                 flush=True,
@@ -174,7 +160,7 @@ class DocumentQuestionGenerator:
                     },
                 ],
                 temperature=0.1,
-                max_tokens=800,
+                max_tokens=300,
             )
 
             retry_finish_reason = (
@@ -198,21 +184,11 @@ class DocumentQuestionGenerator:
                 flush=True,
             )
 
-            if retry_text.startswith("```json"):
-                retry_text = retry_text[7:]
+            result = parse_model_json(
+                retry_text
+            )
 
-            if retry_text.startswith("```"):
-                retry_text = retry_text[3:]
-
-            if retry_text.endswith("```"):
-                retry_text = retry_text[:-3]
-
-            retry_text = retry_text.strip()
-
-            try:
-                result = json.loads(retry_text)
-
-            except json.JSONDecodeError:
+            if not result:
                 print(
                     "[AI QUESTIONS] Retry JSON parsing failed.",
                     flush=True,
