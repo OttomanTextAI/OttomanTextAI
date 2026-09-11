@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Belgelerim — Divane</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=Noto+Naskh+Arabic:wght@400;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-theme">
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="brand-logo">
+                <img src="assets/logo.png" alt="Divane" class="brand-logo-img">
+                <span class="brand-subtitle">OSMANLICA ÇEVİRİ</span>
+            </a>
+        </div>
+    </header>
+
+    <main class="page-wrapper" style="padding-top: 2.5rem;">
+        <h1 style="font-family: var(--font-heading); font-size: 1.8rem; margin-bottom: 1.5rem;">📂 Belgelerim</h1>
+
+        <div id="loginRequired" class="hidden" style="background: var(--bg-card); border-radius: var(--radius-md); padding: 2rem; text-align: center;">
+            <p style="margin-bottom: 1.2rem;">Belgelerinizi görüntülemek için giriş yapmalısınız.</p>
+            <a href="index.html" class="btn btn-primary">Ana Sayfaya Dön ve Giriş Yap</a>
+        </div>
+
+        <div id="listView">
+            <div id="documentsList"></div>
+        </div>
+
+        <div id="detailView" class="hidden">
+            <button type="button" id="backToListBtn" class="btn btn-outline" style="margin-bottom: 1.2rem;">← Listeye Dön</button>
+            <div id="detailContent" style="background: var(--bg-card); border-radius: var(--radius-md); padding: 1.5rem;"></div>
+        </div>
+    </main>
+
+    <script src="documents.js"></script>
+</body>
+</html>
