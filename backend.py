@@ -647,6 +647,16 @@ def _merge_split_results(top, bottom):
             if part
         )
 
+    if top.get("trans_modern") or bottom.get("trans_modern"):
+        merged["trans_modern"] = "\n".join(
+            part
+            for part in (
+                top.get("trans_modern", ""),
+                bottom.get("trans_modern", ""),
+            )
+            if part
+        )
+
     if top.get("trans_en") or bottom.get("trans_en"):
         merged["trans_en"] = "\n".join(
             part
@@ -657,13 +667,27 @@ def _merge_split_results(top, bottom):
             if part
         )
 
+    summary_parts = []
+
+    for summary in (
+        top.get("summary", ""),
+        bottom.get("summary", ""),
+    ):
+        summary = str(summary or "").strip()
+
+        if summary and summary not in summary_parts:
+            summary_parts.append(summary)
+
+    if summary_parts:
+        merged["summary"] = " ".join(summary_parts)
+
     # Document-level fields aren't per-half, so prefer whichever half
     # produced a value (top first, since it usually carries the
     # document's opening/header information).
     singular_fields = [
+        "title",
         "document_type",
         "style",
-        "summary",
         "script_type",
         "script_purpose",
         "period_estimate",
@@ -1045,7 +1069,11 @@ def _index_translation_for_rag(result):
         if not isinstance(result, dict):
             return
 
-        modern_text = (result.get("trans") or "").strip()
+        modern_text = (
+            result.get("trans_modern")
+            or result.get("trans")
+            or ""
+        ).strip()
 
         if not modern_text:
             print(
@@ -2824,6 +2852,7 @@ def analyze_document(current_user, document_id):
             "ocr": existing_text.ocr_text,
             "translit": existing_text.translit_text,
             "trans": existing_text.trans_text,
+            "trans_modern": existing_text.trans_modern_text,
             "trans_en": existing_text.trans_text_en,
             "title": existing_analysis.title,
             "document_type": existing_analysis.document_type,
@@ -2883,6 +2912,7 @@ def analyze_document(current_user, document_id):
     existing_text.ocr_text = parsed.get("ocr", "")
     existing_text.translit_text = parsed.get("translit", "")
     existing_text.trans_text = parsed.get("trans", "")
+    existing_text.trans_modern_text = parsed.get("trans_modern", "")
     existing_text.trans_text_en = parsed.get("trans_en", "")
 
     if not existing_analysis:
@@ -2911,6 +2941,7 @@ def analyze_document(current_user, document_id):
         "ocr": existing_text.ocr_text,
         "translit": existing_text.translit_text,
         "trans": existing_text.trans_text,
+        "trans_modern": existing_text.trans_modern_text,
         "trans_en": existing_text.trans_text_en,
         "title": existing_analysis.title,
         "document_type": existing_analysis.document_type,
@@ -3000,6 +3031,7 @@ def save_translation():
         ocr_text=parsed.get("ocr", ""),
         translit_text=parsed.get("translit", ""),
         trans_text=parsed.get("trans", ""),
+        trans_modern_text=parsed.get("trans_modern", ""),
         trans_text_en=parsed.get("trans_en", ""),
     ))
 

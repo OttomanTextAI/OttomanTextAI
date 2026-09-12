@@ -51,21 +51,30 @@ class RelayEmbeddingClient:
         self,
         texts: list[str],
     ) -> list[list[float]]:
-        cleaned_texts = [
-            text.strip()
-            for text in texts
-            if text and text.strip()
-        ]
-
-        if not cleaned_texts:
+        if not texts:
             return []
+
+        cleaned_texts = []
+
+        for text in texts:
+            if not text or not text.strip():
+                raise ValueError(
+                    "Embedding texts cannot contain empty values."
+                )
+
+            cleaned_texts.append(text.strip())
 
         response = self.client.embeddings.create(
             model=self.model,
             input=cleaned_texts,
         )
 
+        ordered_data = sorted(
+            response.data,
+            key=lambda item: item.index,
+        )
+
         return [
             item.embedding
-            for item in response.data
+            for item in ordered_data
         ]
