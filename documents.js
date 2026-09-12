@@ -16,6 +16,56 @@ const detailView = document.getElementById('detailView');
 const detailContent = document.getElementById('detailContent');
 const backToListBtn = document.getElementById('backToListBtn');
 
+// Üst navbar'daki tema anahtarı ve sol menü çekmecesi — index.html/app.js
+// ile birebir aynı davranış (aynı 'theme' localStorage anahtarı paylaşılır,
+// bkz. app.js), sayfalar arasında tutarlı bir deneyim için.
+const themeToggleBtn = document.getElementById('themeToggleBtn');
+const sideMenuToggle = document.getElementById('sideMenuToggle');
+const sideDrawer = document.getElementById('sideDrawer');
+const sideDrawerOverlay = document.getElementById('sideDrawerOverlay');
+const sideDrawerClose = document.getElementById('sideDrawerClose');
+
+if (localStorage.getItem('theme') === 'light') {
+    document.body.classList.remove('dark-theme');
+    themeToggleBtn.querySelector('.theme-icon').textContent = '🌙';
+} else {
+    document.body.classList.add('dark-theme');
+    themeToggleBtn.querySelector('.theme-icon').textContent = '☀️';
+}
+
+themeToggleBtn.addEventListener('click', () => {
+    document.body.classList.toggle('dark-theme');
+    const isDark = document.body.classList.contains('dark-theme');
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    themeToggleBtn.querySelector('.theme-icon').textContent = isDark ? '☀️' : '🌙';
+});
+
+function openSideDrawer() {
+    sideDrawer.classList.add('open');
+    sideDrawerOverlay.classList.remove('hidden');
+    sideDrawer.setAttribute('aria-hidden', 'false');
+    sideMenuToggle.setAttribute('aria-expanded', 'true');
+}
+
+function closeSideDrawer() {
+    sideDrawer.classList.remove('open');
+    sideDrawerOverlay.classList.add('hidden');
+    sideDrawer.setAttribute('aria-hidden', 'true');
+    sideMenuToggle.setAttribute('aria-expanded', 'false');
+}
+
+sideMenuToggle.addEventListener('click', () => {
+    if (sideDrawer.classList.contains('open')) closeSideDrawer();
+    else openSideDrawer();
+});
+
+sideDrawerClose.addEventListener('click', closeSideDrawer);
+sideDrawerOverlay.addEventListener('click', closeSideDrawer);
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && sideDrawer.classList.contains('open')) closeSideDrawer();
+});
+
 function escapeHtml(text) {
     return (text || '')
         .replace(/&/g, '&amp;')

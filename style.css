@@ -147,13 +147,26 @@ body {
     padding: 0.8rem 0;
 }
 
+/* .page-wrapper (aşağıdaki sayfa içeriği) ile AYNI max-width — aksi halde
+   header'daki logo/hamburger, geniş ekranlarda sayfanın gerçek sol
+   kenarından daha içeride/sağda kalıyordu. */
 .nav-container {
-    max-width: 1280px;
+    max-width: 1500px;
     margin: 0 auto;
     padding: 0 2rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
+}
+
+/* Hamburger + logo aynı grupta, sola yaslı — nav-container'ın
+   justify-content:space-between'i sadece bu grubu, nav-menu'yü ve
+   nav-actions'ı üç blok olarak dağıtır, hamburger ile logo artık her zaman
+   bitişik durur. */
+.nav-left {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
 }
 
 .brand-logo {
@@ -220,6 +233,7 @@ body {
    açılan bir şerit değil). */
 .side-menu-toggle {
     flex-shrink: 0;
+    margin-left: -0.65rem;
 }
 
 .side-drawer-overlay {
