@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=Noto+Naskh+Arabic:wght@400;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=20260913-2">
     <style>
         .doc-detail-grid {
             display: grid;
@@ -159,12 +159,54 @@
 <body class="dark-theme">
     <header class="navbar">
         <div class="nav-container">
-            <a href="index.html" class="brand-logo">
-                <img src="assets/logo.png" alt="Divane" class="brand-logo-img">
-                <span class="brand-subtitle">OSMANLICA ÇEVİRİ</span>
-            </a>
+            <div class="nav-left">
+                <button type="button" class="icon-btn side-menu-toggle" id="sideMenuToggle" title="Menü" aria-expanded="false" aria-controls="sideDrawer">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+
+                <a href="index.html" class="brand-logo">
+                    <img src="assets/logo.png" alt="Divane" class="brand-logo-img">
+                    <span class="brand-subtitle">OSMANLICA ÇEVİRİ</span>
+                </a>
+            </div>
+
+            <nav class="nav-menu">
+                <a href="index.html" class="nav-link">Ana Sayfa</a>
+                <a href="index.html#about" class="nav-link">Hakkında</a>
+                <a href="index.html#contact" class="nav-link">İletişim</a>
+            </nav>
+
+            <div class="nav-actions">
+                <button class="icon-btn theme-toggle-btn" id="themeToggleBtn" title="Karanlık/Aydınlık Tema">
+                    <span class="theme-icon">🌙</span>
+                </button>
+            </div>
         </div>
     </header>
+
+    <!-- Ana sayfadaki (index.html) ile aynı sol menü çekmecesi — tutarlılık
+         için buraya da eklendi (bkz. documents.js'teki aç/kapa kablolaması). -->
+    <div class="side-drawer-overlay hidden" id="sideDrawerOverlay"></div>
+    <aside class="side-drawer" id="sideDrawer" aria-hidden="true">
+        <div class="side-drawer-header">
+            <span class="side-drawer-title">Menü</span>
+            <button type="button" class="modal-close" id="sideDrawerClose" title="Kapat">&times;</button>
+        </div>
+        <div class="side-drawer-body">
+            <a href="documents.html" class="side-drawer-item">
+                <span class="side-drawer-icon">📂</span>
+                <span>Belgelerim</span>
+            </a>
+            <a href="index.html" class="side-drawer-item">
+                <span class="side-drawer-icon">🏠</span>
+                <span>Ana Sayfa</span>
+            </a>
+        </div>
+    </aside>
 
     <main class="page-wrapper" style="padding-top: 2.5rem;">
         <h1 style="font-family: var(--font-heading); font-size: 1.8rem; margin-bottom: 1.5rem;">📂 Belgelerim</h1>
@@ -184,6 +226,6 @@
         </div>
     </main>
 
-    <script src="documents.js?v=20260911-10"></script>
+    <script src="documents.js?v=20260912-1"></script>
 </body>
 </html>
