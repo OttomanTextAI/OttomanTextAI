@@ -1452,13 +1452,13 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         state.documentId = hashText(`${finalOcr}${finalTranslit}${finalTrans}`);
 
         // Entity işaretleme (kişi/yer/kavram/olay renklendirmesi +
-        // tıklanabilirlik + filtre) SADECE Modern Türkçe Çeviri (trans)
-        // kolonunda uygulanır — üç kolonda tutarlılığı garanti etmeye
-        // çalışmak hem kırılgan hem maliyetli çıktı, model zaten en doğru
-        // entity tespitini bu kolonun metninde yapabiliyor. Osmanlıca ve
-        // translit kolonları artık sade renderWithGuessMarkers kullanıyor
-        // (sadece **tahmin** kalınlaştırması + translit'te .uncertain-word,
-        // entity vurgusu/tıklanabilirliği yok).
+        // tıklanabilirlik + filtre) VE kelime alternatifi (.uncertain-word)
+        // SADECE Modern Türkçe Çeviri (trans) kolonunda uygulanır — üç
+        // kolonda tutarlılığı garanti etmeye çalışmak hem kırılgan hem
+        // maliyetli çıktı, model zaten en doğru entity tespitini bu
+        // kolonun metninde yapabiliyor. Osmanlıca ve translit kolonları
+        // artık TAMAMEN DÜZ METİN (TTS cümle span'leri hariç) — hiçbir
+        // renkli/altı çizili/tıklanabilir kelime yok.
         const transEntities = buildEntityIndex(finalAnalysis);
 
         ocrEmptyState.classList.add('hidden');
@@ -1469,8 +1469,11 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         if (finalTranslit) {
             translitEmptyState.classList.add('hidden');
             translitTextDisplay.classList.remove('hidden');
-            renderWithGuessMarkers(translitTextDisplay, finalTranslit, { clickableGuesses: true, field: 'translit' });
-            applyStoredWordCorrections(state.documentId, 'translit', translitTextDisplay);
+            // clickableGuesses/field YOK: translit artık tamamen düz metin
+            // (TTS cümle span'leri hariç) — .uncertain-word işaretlemesi/
+            // tıklanabilirliği bu kolonda kaldırıldı, sadece transTextDisplay'de
+            // kalıyor (bkz. aşağıdaki showWordAlternativesPopover kablolaması).
+            renderWithGuessMarkers(translitTextDisplay, finalTranslit);
             translitTools.classList.add('tools-ready');
         } else {
             translitEmptyState.classList.remove('hidden');
@@ -1636,13 +1639,12 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     // (bkz. TTS bölümü). entities verilirse (Türkçe çeviri sekmesi), her
     // cümle içinde ayrıca kişi/yer/tarih vurgulaması da uygulanır.
     //
-    // options.clickableGuesses true ise (translit ve Türkçe çeviri
-    // sekmelerinde), her **tahmin** işaretli <strong>, tıklanabilir bir
-    // "belirsiz kelime" olarak data-word-idx (bu render içinde 0'dan
-    // başlayan, belge boyunca artan bir sayaç) ve data-word-field
-    // (options.field: 'translit' | 'trans') ile işaretlenir — bkz.
-    // showWordAlternativesPopover(). options verilmezse (ocr/en
-    // sekmeleri) davranış öncekiyle birebir aynı kalır: sade <strong>.
+    // options.clickableGuesses true ise (SADECE Türkçe çeviri sekmesinde),
+    // her **tahmin** işaretli <strong>, tıklanabilir bir "belirsiz kelime"
+    // olarak data-word-idx (bu render içinde 0'dan başlayan, belge boyunca
+    // artan bir sayaç) ve data-word-field ('trans') ile işaretlenir — bkz.
+    // showWordAlternativesPopover(). options verilmezse (ocr/translit/en
+    // sekmeleri) davranış sade <strong> kalır — tıklanabilirlik yok.
     function renderSentenceSpansHtml(rawText, entities, options) {
         const clickableGuesses = !!(options && options.clickableGuesses);
         const wordField = (options && options.field) || '';
@@ -2112,8 +2114,8 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     }
 
     // --- Belirsiz Kelime Alternatifleri (uncertain-word) ---
-    // translit ve Türkçe çeviri sekmelerindeki **tahmin** işaretli
-    // (.uncertain-word) kelimelere tıklanınca, kelimenin yakınında küçük
+    // SADECE Türkçe çeviri sekmesindeki **tahmin** işaretli (.uncertain-word)
+    // kelimelere tıklanınca, kelimenin yakınında küçük
     // bir kart açılır: OCR/Osmanlıca hali, kökeni ve en fazla 3 alternatif
     // okuma — bunlar ANA çeviri isteğinde değil, tıklama anında YENİ ve
     // küçük bir istekle (/api/word-alternatives) tembel yüklenir (ana
@@ -2166,9 +2168,10 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         return (store[documentId] && store[documentId][field]) || {};
     }
 
-    // Bir alan (translit/trans) render edildikten hemen sonra çağrılır:
-    // daha önce bu belge için kaydedilmiş düzeltmeleri ekrana geri uygular
-    // (sayfa yenilense/belge tekrar açılsa bile düzeltmeler kaybolmasın).
+    // trans alanı render edildikten hemen sonra çağrılır (kelime alternatifi
+    // artık sadece bu alanda çalıştığı için): daha önce bu belge için
+    // kaydedilmiş düzeltmeleri ekrana geri uygular (sayfa yenilense/belge
+    // tekrar açılsa bile düzeltmeler kaybolmasın).
     function applyStoredWordCorrections(documentId, field, containerEl) {
         const corrections = loadWordCorrections(documentId, field);
         Object.keys(corrections).forEach(wordIdx => {
@@ -2380,13 +2383,13 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         popover.appendChild(form);
     }
 
-    [translitTextDisplay, transTextDisplay].forEach(displayEl => {
-        displayEl.addEventListener('click', (e) => {
-            const wordEl = e.target.closest('.uncertain-word');
-            if (!wordEl) return;
-            e.stopPropagation();
-            showWordAlternativesPopover(wordEl);
-        });
+    // Kelime alternatifi kartı (.uncertain-word) SADECE transTextDisplay'de
+    // tetiklenir — ocr/translit kolonları artık tamamen düz metin.
+    transTextDisplay.addEventListener('click', (e) => {
+        const wordEl = e.target.closest('.uncertain-word');
+        if (!wordEl) return;
+        e.stopPropagation();
+        showWordAlternativesPopover(wordEl);
     });
 
     document.addEventListener('click', (e) => {
