@@ -1451,23 +1451,25 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         // otomatik geri uygulanabilir (bkz. applyStoredWordCorrections).
         state.documentId = hashText(`${finalOcr}${finalTranslit}${finalTrans}`);
 
-        // Latin harfli iki kolon (translit/trans) aynı Latin entity
-        // index'ini paylaşır; Osmanlıca (Arap harfli) kolon ayrı bir index
-        // kullanır (bkz. buildOcrEntityIndex). Her renderColumnWithEntities()
-        // çağrısı kendi "ilk geçiş" Set'ini kurduğu için üçü birbirinden
-        // bağımsız işaretlenir, ama data-type/filtre kimliği ortaktır.
-        const latinEntities = buildEntityIndex(finalAnalysis);
-        const ocrEntities = buildOcrEntityIndex(finalAnalysis);
+        // Entity işaretleme (kişi/yer/kavram/olay renklendirmesi +
+        // tıklanabilirlik + filtre) SADECE Modern Türkçe Çeviri (trans)
+        // kolonunda uygulanır — üç kolonda tutarlılığı garanti etmeye
+        // çalışmak hem kırılgan hem maliyetli çıktı, model zaten en doğru
+        // entity tespitini bu kolonun metninde yapabiliyor. Osmanlıca ve
+        // translit kolonları artık sade renderWithGuessMarkers kullanıyor
+        // (sadece **tahmin** kalınlaştırması + translit'te .uncertain-word,
+        // entity vurgusu/tıklanabilirliği yok).
+        const transEntities = buildEntityIndex(finalAnalysis);
 
         ocrEmptyState.classList.add('hidden');
         ocrTextDisplay.classList.remove('hidden');
-        renderColumnWithEntities(ocrTextDisplay, finalOcr, ocrEntities, {});
+        renderWithGuessMarkers(ocrTextDisplay, finalOcr);
         ocrTools.classList.add('tools-ready');
 
         if (finalTranslit) {
             translitEmptyState.classList.add('hidden');
             translitTextDisplay.classList.remove('hidden');
-            renderColumnWithEntities(translitTextDisplay, finalTranslit, latinEntities, { clickableGuesses: true, field: 'translit', diacriticTolerant: true });
+            renderWithGuessMarkers(translitTextDisplay, finalTranslit, { clickableGuesses: true, field: 'translit' });
             applyStoredWordCorrections(state.documentId, 'translit', translitTextDisplay);
             translitTools.classList.add('tools-ready');
         } else {
@@ -1478,16 +1480,15 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
 
         transEmptyState.classList.add('hidden');
         transTextDisplay.classList.remove('hidden');
-        renderColumnWithEntities(transTextDisplay, finalTrans, latinEntities, { clickableGuesses: true, field: 'trans' });
+        renderColumnWithEntities(transTextDisplay, finalTrans, transEntities, { clickableGuesses: true, field: 'trans' });
         applyStoredWordCorrections(state.documentId, 'trans', transTextDisplay);
         transTools.classList.add('tools-ready');
 
         // "Filtrele ▾" sekme çubuğunda sadece gerçekten filtrelenecek bir
         // şey varsa görünsün — backend'in people/places/concepts dediğine
-        // değil, ekranda (üç kolonun HERHANGİ BİRİNDE) fiilen render edilmiş
+        // değil, ekranda (SADECE trans kolonunda) fiilen render edilmiş
         // .entity-tag sayısına bak.
-        const hasFilterableEntities = [ocrTextDisplay, translitTextDisplay, transTextDisplay]
-            .some(el => el.querySelector('.entity-tag') !== null);
+        const hasFilterableEntities = transTextDisplay.querySelector('.entity-tag') !== null;
         entityFilterDropdown.classList.toggle('hidden', !hasFilterableEntities);
 
         if (finalTransEn) {
@@ -1645,7 +1646,6 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     function renderSentenceSpansHtml(rawText, entities, options) {
         const clickableGuesses = !!(options && options.clickableGuesses);
         const wordField = (options && options.field) || '';
-        const diacriticTolerant = !!(options && options.diacriticTolerant);
         let guessIndex = 0;
 
         function renderGuess(text) {
@@ -1658,9 +1658,9 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         // geçse bile SADECE İLK geçtiği yerde işaretlensin diye — bu Set,
         // tüm cümleler boyunca (aşağıdaki .map döngüsü sırasında) paylaşılan
         // tek bir "bu render çağrısında zaten kullanıldı" kaydıdır. Her
-        // renderSentenceSpansHtml() çağrısı (yani her kolonun kendi render
-        // işlemi) kendi taze Set'ini oluşturduğu için, kolonlar arasında bu
-        // sayaç birbirini ETKİLEMEZ — bkz. renderColumnWithEntities().
+        // renderSentenceSpansHtml() çağrısı kendi taze Set'ini oluşturduğu
+        // için bu sayaç sadece TEK bir render çağrısı (yani transTextDisplay
+        // için tek bir işlem) boyunca geçerlidir.
         const usedEntityKeys = new Set();
 
         const parts = partitionSentencesRaw(rawText || '');
@@ -1672,7 +1672,7 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
                 inner = segments
                     .map(seg => seg.bold
                         ? renderGuess(seg.text)
-                        : highlightEntitiesInSegment(seg.text, entities, usedEntityKeys, diacriticTolerant))
+                        : highlightEntitiesInSegment(seg.text, entities, usedEntityKeys))
                     .join('');
             } else {
                 inner = escaped.replace(/\*\*(.+?)\*\*/gs, (_match, guessed) => renderGuess(guessed));
@@ -1685,11 +1685,11 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         el.innerHTML = renderSentenceSpansHtml(rawText, null, options);
     }
 
-    // Bir metin kolonuna (ocr/translit/trans), o kolonun kendi script'ine
-    // uygun entity index'iyle (bkz. buildEntityIndex/buildOcrEntityIndex)
-    // vurgulama uygular. entities boşsa (örn. bir belgede hiç Osmanlıca
-    // yazılışı üretilememiş olabilir) davranış renderWithGuessMarkers ile
-    // birebir aynı kalır — sade <strong> tahmin işaretleri.
+    // transTextDisplay'e (bkz. buildEntityIndex), entity vurgulamasıyla
+    // birlikte render eder. Entity işaretleme/tıklanabilirlik SADECE bu
+    // kolonda kullanılıyor — ocr/translit kolonları sade renderWithGuessMarkers
+    // kullanır. entities boşsa davranış renderWithGuessMarkers ile birebir
+    // aynı kalır — sade <strong> tahmin işaretleri.
     function renderColumnWithEntities(el, rawText, entities, options) {
         el.innerHTML = renderSentenceSpansHtml(rawText, entities && entities.length ? entities : null, options);
     }
@@ -1746,59 +1746,6 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         return entries.sort((a, b) => b.text.length - a.text.length);
     }
 
-    // buildEntityIndex()'in Arap harfli (Osmanlıca) karşılığı: Latin
-    // harfli people/places/concepts/events/date_hijri/date_gregorian
-    // alanlarını DEĞİL, backend'in bunlarla eşleştirerek ürettiği
-    // people_ocr/places_ocr/concepts_ocr/events_ocr/date_hijri_ocr/
-    // date_gregorian_ocr alanlarını kullanır (bkz. backend.py
-    // _parse_and_clean_relay_response) — çünkü ocrTextDisplay Arap
-    // harfleriyle yazılı olduğundan, ör. Latin "İstanbul" adayı orada asla
-    // eşleşmez, "استانبول" gibi Arap harfli yazılışı gerekir. Bir öğenin
-    // *_ocr karşılığı boşsa (model üretmediyse) o öğe için Osmanlıca
-    // kolonunda hiç vurgulama yapılmaz — bu beklenen bir durumdur.
-    function buildOcrEntityIndex(analysis) {
-        if (!analysis) return [];
-        const pairs = [
-            ['people', 'people_ocr', 'person'],
-            ['places', 'places_ocr', 'place'],
-            ['concepts', 'concepts_ocr', 'concept'],
-            ['events', 'events_ocr', 'event'],
-        ];
-        const raw = [];
-
-        pairs.forEach(([baseField, ocrField, type]) => {
-            const baseList = analysis[baseField] || [];
-            const ocrList = analysis[ocrField] || [];
-            baseList.forEach((_, i) => {
-                const ocrText = ocrList[i];
-                if (typeof ocrText === 'string' && ocrText.trim()) {
-                    raw.push({ raw: ocrText.trim(), type });
-                }
-            });
-        });
-
-        // date_hijri/date_gregorian tekil string alanlar olduğu için
-        // yukarıdaki liste-hizalı pairs mantığına girmiyor, ayrıca ele
-        // alınıyor.
-        if (analysis.date_hijri_ocr) raw.push({ raw: analysis.date_hijri_ocr, type: 'date' });
-        if (analysis.date_gregorian_ocr) raw.push({ raw: analysis.date_gregorian_ocr, type: 'date' });
-
-        const seen = new Set();
-        const entries = [];
-
-        raw.forEach(({ raw: rawEntry, type }) => {
-            extractEntityCandidates(rawEntry).forEach(text => {
-                if (text.length < 2) return;
-                const key = text.toLowerCase();
-                if (seen.has(key)) return;
-                seen.add(key);
-                entries.push({ text, type });
-            });
-        });
-
-        return entries.sort((a, b) => b.text.length - a.text.length);
-    }
-
     // "**tahmin**" işaretlerini <strong>'e çeviren bölünme mantığını
     // renderWithGuessMarkers ile aynı tutar, ama parçaları birleştirmeden
     // önce her düz-metin parçasına ayrıca entity vurgulaması uygulayabilmek
@@ -1828,55 +1775,14 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         return text ? `<span class="entity-plain">${text}</span>` : '';
     }
 
-    // Translit kolonu, adayların (people/places/concepts/events — bkz.
-    // buildEntityIndex) modern Türkçe yazımından FARKLI bir yazım kullanır:
-    // Osmanlıca transliterasyon kuralları uzun ünlüleri ve bazı ünsüzleri
-    // diyakritikli harflerle gösterir (ā, ī, ū, ḳ, ġ, ḥ, ḫ, ṣ, ṭ, ñ, ż, ḍ —
-    // bkz. cleanTranslitForTts() TTS için aynı harfleri düzleştiriyor). Bu
-    // yüzden bir adayın DÜZ yazımı translit metninde çoğu zaman birebir
-    // geçmez ("Mehmed" ~ "Mehemmed", "Boğdan" ~ "Boġdan" gibi). Bu harita,
-    // ekrandaki metni DEĞİŞTİRMEDEN (cleanTranslitForTts'in tersine),
-    // adayın regex'ini bu varyantları da kapsayacak şekilde gevşetmek için
-    // kullanılır — sadece ARAMA toleranslı olur, görüntü aynı kalır.
-    const TRANSLIT_LETTER_VARIANTS = {
-        a: 'aāâ', e: 'eē', i: 'iīî', ı: 'ıi', o: 'oō', ö: 'öo',
-        u: 'uūû', ü: 'üu', k: 'kḳ', g: 'gġ', ğ: 'ğġg', h: 'hḥḫ',
-        s: 'sṣ', ş: 'şṣs', t: 'tṭ', n: 'nñ', z: 'zż', d: 'dḍ',
-        c: 'cç', ç: 'çc',
-    };
-
-    // rawText, buildEntityIndex()'ten gelen bir adayın DÜZ (escape
-    // edilmemiş) metnidir. Her harfi, yukarıdaki tabloda karşılığı varsa
-    // (küçük/büyük harf ikisi de dahil) bir karakter sınıfına, yoksa
-    // (boşluk, kesme işareti vb.) normal şekilde regex-escape edilmiş
-    // hâline çevirir.
-    function buildTranslitTolerantSource(rawText) {
-        return Array.from(rawText).map(ch => {
-            const variants = TRANSLIT_LETTER_VARIANTS[ch.toLowerCase()];
-            if (variants) {
-                return `[${variants}${variants.toUpperCase()}]`;
-            }
-            return escapeRegExp(escapeHtml(ch));
-        }).join('');
-    }
-
     // entities'teki her aday için AYRI bir named capture group ("e0",
     // "e1", ...) üretir. Amaç: eşleşme bulunduğunda tipi (person/place/...)
     // eşleşen METNİ aday listesiyle KARŞILAŞTIRARAK değil, regex'te HANGİ
-    // GRUBUN eşleştiğine bakarak belirlemek — diyakritik-toleranslı modda
-    // eşleşen metin (örn. "Boġdan") adayın kendi yazımıyla ("Boğdan")
-    // birebir aynı olmayabileceği için, metin eşitliğine dayalı bir arama
-    // güvenilmez olurdu. Bu yöntem üç kolonda da (tam eşleşme veya
-    // toleranslı) AYNI TEK type kaynağını (buildEntityIndex/
-    // buildOcrEntityIndex) kullanmayı garanti eder.
-    function buildEntityAlternationSource(entities, diacriticTolerant) {
+    // GRUBUN eşleştiğine bakarak belirlemek — bu, buildEntityIndex()'ten
+    // gelen TEK type kaynağının doğru şekilde kullanılmasını garanti eder.
+    function buildEntityAlternationSource(entities) {
         return entities
-            .map((e, i) => {
-                const source = diacriticTolerant
-                    ? buildTranslitTolerantSource(e.text)
-                    : escapeRegExp(escapeHtml(e.text));
-                return `(?<e${i}>${source})`;
-            })
+            .map((e, i) => `(?<e${i}>${escapeRegExp(escapeHtml(e.text))})`)
             .join('|');
     }
 
@@ -1897,21 +1803,17 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     // hâliyle) bu Set'te zaten varsa, bu geçiş .entity-tag OLARAK DEĞİL,
     // düz metin (.entity-plain) olarak render edilir (bkz. "aynı kelime
     // sadece ilk geçişte işaretlensin" kuralı). İlk eşleşmede Set'e eklenir.
-    // diacriticTolerant: true ise (translit kolonu) yukarıdaki varyant
-    // toleranslı desen, false ise (ocr/trans kolonları) tam eşleşme
-    // kullanılır.
-    function highlightEntitiesInSegment(escapedText, entities, usedEntityKeys, diacriticTolerant) {
+    function highlightEntitiesInSegment(escapedText, entities, usedEntityKeys) {
         if (!entities.length) return wrapPlainText(escapedText);
 
-        const alternation = buildEntityAlternationSource(entities, diacriticTolerant);
+        const alternation = buildEntityAlternationSource(entities);
 
         if (!alternation) return wrapPlainText(escapedText);
 
         // Kelime sınırı: eşleşmenin hemen öncesinde/sonrasında başka bir
         // harf/rakam OLMAMALI — yoksa kısa bir aday (örn. "Karaman") daha
         // uzun, alakasız bir kelimenin (örn. "Karamanoğlu") içinde
-        // yanlışlıkla eşleşebilir. \p{L}/\p{N}, Latin VE Arap harflerini
-        // birlikte kapsar, bu yüzden üç kolonda da (ocr dahil) çalışır.
+        // yanlışlıkla eşleşebilir.
         const re = new RegExp(
             `(?<![\\p{L}\\p{N}])(?:${alternation})(?![\\p{L}\\p{N}])`,
             'giu'
@@ -2077,15 +1979,13 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         }
     }
 
-    // Entity popover'ı artık sadece Türkçe çeviri değil, .entity-tag
-    // üretebilen her üç kolon (ocr/translit/trans) için de aç.
-    [ocrTextDisplay, translitTextDisplay, transTextDisplay].forEach(displayEl => {
-        displayEl.addEventListener('click', (e) => {
-            const tag = e.target.closest('.entity-tag');
-            if (!tag) return;
-            e.stopPropagation();
-            showEntityPopover(tag);
-        });
+    // Entity popover SADECE Modern Türkçe Çeviri (trans) kolonunda açılır —
+    // .entity-tag zaten sadece bu kolonda üretiliyor.
+    transTextDisplay.addEventListener('click', (e) => {
+        const tag = e.target.closest('.entity-tag');
+        if (!tag) return;
+        e.stopPropagation();
+        showEntityPopover(tag);
     });
 
     document.addEventListener('click', (e) => {
@@ -2111,21 +2011,17 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     // renderEntityFilterMenu() ile, belgede GERÇEKTEN bulunan kategoriler
     // (Kişiler/Yerler/Tarihler/Kavramlar/Olaylar — hangisinden en az 1
     // entity-tag varsa) sayılarıyla yeniden kurulur. Bir kategoriye
-    // tıklanınca DOM yeniden render EDİLMEZ — sadece ÜÇ metin kolonuna da
-    // (ocr/translit/trans) data-entity-filter attribute'u eklenir/
-    // kaldırılır, geri kalanı tamamen CSS'te (style.css'teki
-    // [data-entity-filter] kuralları, .text-display üzerinden üçüne birden
-    // uygulanır) halledilir.
+    // tıklanınca DOM yeniden render EDİLMEZ — sadece transTextDisplay'e
+    // data-entity-filter attribute'u eklenir/kaldırılır, geri kalanı
+    // tamamen CSS'te (style.css'teki [data-entity-filter] kuralları)
+    // halledilir. Entity işaretleme/filtreleme SADECE Modern Türkçe Çeviri
+    // (trans) kolonunda çalışır — ocr/translit kolonlarında hiç entity-tag
+    // üretilmediği için bu özellik onları etkilemez.
     // null: filtre yok. 'person' | 'place' | 'date' | 'concept' | 'event':
     // aktif kategori. Sekme değişince/yeni belge işlenince sıfırlanır (bkz.
     // resetEntityFilter, setOutputTab/resetState/processTranslation'daki
     // çağrılar).
     let activeEntityFilterType = null;
-
-    // Filtrenin uygulandığı/sıfırlandığı üç metin kolonu — entity-tag
-    // üretebilen tüm kolonlar (İngilizce kolonu hariç, orada entity-tag hiç
-    // üretilmiyor).
-    const ENTITY_FILTERABLE_DISPLAYS = [ocrTextDisplay, translitTextDisplay, transTextDisplay];
 
     function closeEntityFilterDropdown() {
         entityFilterMenu.classList.add('hidden');
@@ -2138,7 +2034,7 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     // dışında hiçbir davranışları değişmiyor zaten).
     function resetEntityFilter() {
         activeEntityFilterType = null;
-        ENTITY_FILTERABLE_DISPLAYS.forEach(el => el.removeAttribute('data-entity-filter'));
+        transTextDisplay.removeAttribute('data-entity-filter');
     }
 
     // Filtre uygulanabilecek kategorileri, ekranda GERÇEKTEN render edilmiş
@@ -2146,10 +2042,7 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     // içindeki gerçek dağılımı yansıtır — backend'in people/places/concepts/
     // events listesinden değil (bir isim analizde geçse bile çeviri
     // metninde birebir eşleşmemiş olabilir; kullanıcıya sadece gerçekten
-    // tıklayıp göreceği kategoriler gösterilmeli). Sayaç, ÜÇ kolondaki
-    // toplam işaretli geçiş sayısını yansıtır (her kolonda "ilk geçiş"
-    // kuralı ayrı ayrı işlediği için aynı entity üç kolonda toplam en fazla
-    // üç kez sayılabilir).
+    // tıklayıp göreceği kategoriler gösterilmeli).
     function getEntityFilterCategories() {
         return [
             { type: 'person', label: 'Kişiler' },
@@ -2160,10 +2053,7 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         ]
             .map(cat => ({
                 ...cat,
-                count: ENTITY_FILTERABLE_DISPLAYS.reduce(
-                    (sum, el) => sum + el.querySelectorAll(`.entity-tag[data-type="${cat.type}"]`).length,
-                    0
-                )
+                count: transTextDisplay.querySelectorAll(`.entity-tag[data-type="${cat.type}"]`).length
             }))
             .filter(cat => cat.count > 0);
     }
@@ -2211,9 +2101,9 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         activeEntityFilterType = (activeEntityFilterType === type) ? null : type;
 
         if (activeEntityFilterType) {
-            ENTITY_FILTERABLE_DISPLAYS.forEach(el => el.setAttribute('data-entity-filter', activeEntityFilterType));
+            transTextDisplay.setAttribute('data-entity-filter', activeEntityFilterType);
         } else {
-            ENTITY_FILTERABLE_DISPLAYS.forEach(el => el.removeAttribute('data-entity-filter'));
+            transTextDisplay.removeAttribute('data-entity-filter');
         }
 
         if (!entityFilterMenu.classList.contains('hidden')) {

@@ -1091,59 +1091,56 @@ body.dark-theme .hero-section::after {
 }
 
 /* Kategoriye göre filtrele (bkz. renderEntityFilterMenu()/applyEntityFilter()
-   app.js'te) — üç metin kolonunun HER BİRİNE (ocr/translit/trans, hepsi
-   .text-display sınıfını taşır) ayrı ayrı
+   app.js'te) — transTextDisplay'e (Modern Türkçe Çeviri kolonu)
    data-entity-filter="person|place|date|concept|event" eklenince devreye
-   girer, üçünde de EŞ ZAMANLI olarak aynı kategori öne çıkar. Sadece
-   .entity-tag/.entity-plain/.uncertain-word ÜÇÜ DE kendi opacity'sine
-   sahip olduğu için (opacity üst elemente uygulanıp alt elemente miras
-   bırakılamaz — stacking context çarpımsaldır) her biri ayrı ayrı
-   soluklaştırılıyor; eşleşen kategori ikinci/üçüncü kurallarla hem
-   opacity:1'e getiriliyor hem de kendi tipinin rengiyle (person=gold,
-   place=blue, date=green, concept=purple, event=teal) parlatılıyor —
-   kontrast bariz olsun diye soluk taraf normalden de biraz daha düşük
-   (0.3) tutuldu. DOM'a hiç dokunmuyor, sadece bu tek attribute değişiyor.
-   NOT: .text-display class'ı enTextDisplay'de de var, ama İngilizce
-   kolonunda hiç .entity-tag üretilmediği ve ona hiçbir zaman
-   data-entity-filter attribute'u eklenmediği için bu kurallardan
-   etkilenmez. */
-.text-display[data-entity-filter] .entity-plain,
-.text-display[data-entity-filter] .uncertain-word,
-.text-display[data-entity-filter] .entity-tag {
+   girer. Entity işaretleme/filtreleme SADECE bu kolonda çalışır — ocr/
+   translit kolonlarında hiç .entity-tag üretilmediği için bu kurallardan
+   etkilenmezler. Sadece .entity-tag/.entity-plain/.uncertain-word ÜÇÜ DE
+   kendi opacity'sine sahip olduğu için (opacity üst elemente uygulanıp
+   alt elemente miras bırakılamaz — stacking context çarpımsaldır) her
+   biri ayrı ayrı soluklaştırılıyor; eşleşen kategori ikinci/üçüncü
+   kurallarla hem opacity:1'e getiriliyor hem de kendi tipinin rengiyle
+   (person=gold, place=blue, date=green, concept=purple, event=teal)
+   parlatılıyor — kontrast bariz olsun diye soluk taraf normalden de biraz
+   daha düşük (0.3) tutuldu. DOM'a hiç dokunmuyor, sadece bu tek attribute
+   değişiyor. */
+#transTextDisplay[data-entity-filter] .entity-plain,
+#transTextDisplay[data-entity-filter] .uncertain-word,
+#transTextDisplay[data-entity-filter] .entity-tag {
     opacity: 0.3;
 }
 
-.text-display[data-entity-filter="person"] .entity-tag[data-type="person"],
-.text-display[data-entity-filter="place"] .entity-tag[data-type="place"],
-.text-display[data-entity-filter="date"] .entity-tag[data-type="date"],
-.text-display[data-entity-filter="concept"] .entity-tag[data-type="concept"],
-.text-display[data-entity-filter="event"] .entity-tag[data-type="event"] {
+#transTextDisplay[data-entity-filter="person"] .entity-tag[data-type="person"],
+#transTextDisplay[data-entity-filter="place"] .entity-tag[data-type="place"],
+#transTextDisplay[data-entity-filter="date"] .entity-tag[data-type="date"],
+#transTextDisplay[data-entity-filter="concept"] .entity-tag[data-type="concept"],
+#transTextDisplay[data-entity-filter="event"] .entity-tag[data-type="event"] {
     opacity: 1;
     font-weight: 700;
     filter: brightness(1.2) saturate(1.2);
 }
 
-.text-display[data-entity-filter="person"] .entity-tag[data-type="person"] {
+#transTextDisplay[data-entity-filter="person"] .entity-tag[data-type="person"] {
     background-color: rgba(197, 160, 89, 0.32);
     box-shadow: 0 0 0 1px rgba(197, 160, 89, 0.75), 0 0 10px rgba(197, 160, 89, 0.55);
 }
 
-.text-display[data-entity-filter="place"] .entity-tag[data-type="place"] {
+#transTextDisplay[data-entity-filter="place"] .entity-tag[data-type="place"] {
     background-color: rgba(63, 124, 196, 0.28);
     box-shadow: 0 0 0 1px rgba(63, 124, 196, 0.75), 0 0 10px rgba(63, 124, 196, 0.5);
 }
 
-.text-display[data-entity-filter="date"] .entity-tag[data-type="date"] {
+#transTextDisplay[data-entity-filter="date"] .entity-tag[data-type="date"] {
     background-color: rgba(43, 138, 62, 0.28);
     box-shadow: 0 0 0 1px rgba(43, 138, 62, 0.75), 0 0 10px rgba(43, 138, 62, 0.5);
 }
 
-.text-display[data-entity-filter="concept"] .entity-tag[data-type="concept"] {
+#transTextDisplay[data-entity-filter="concept"] .entity-tag[data-type="concept"] {
     background-color: rgba(139, 95, 191, 0.28);
     box-shadow: 0 0 0 1px rgba(139, 95, 191, 0.75), 0 0 10px rgba(139, 95, 191, 0.5);
 }
 
-.text-display[data-entity-filter="event"] .entity-tag[data-type="event"] {
+#transTextDisplay[data-entity-filter="event"] .entity-tag[data-type="event"] {
     background-color: rgba(30, 140, 134, 0.28);
     box-shadow: 0 0 0 1px rgba(30, 140, 134, 0.75), 0 0 10px rgba(30, 140, 134, 0.5);
 }
