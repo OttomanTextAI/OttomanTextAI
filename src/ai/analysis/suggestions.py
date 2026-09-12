@@ -1,7 +1,8 @@
-import json
 import os
 
 from openai import OpenAI
+
+from src.ai.json_utils import parse_model_json
 
 
 AI_SUGGESTION_SYSTEM_PROMPT = """
@@ -24,7 +25,7 @@ Görevin:
 - JSON'dan önce veya sonra hiçbir açıklama yazma.
 - Markdown veya ```json kod bloğu kullanma.
 - Tüm alanları mutlaka JSON içinde döndür.
-- En fazla 1 recommended ve 1 alternative üret.
+- En fazla 1 recommended ve 3 alternative üret.
 - reason alanı en fazla 12 kelime olsun.
 - Açıklamaları kısa tut.
 - Aynı bilgiyi tekrar etme.
@@ -120,46 +121,18 @@ class AISuggestionGenerator:
             or ""
         ).strip()
 
-        cleaned = response_text
+        result = parse_model_json(
+            response_text
+        )
 
-        if cleaned.startswith("```json"):
-            cleaned = cleaned[7:]
-
-        if cleaned.startswith("```"):
-            cleaned = cleaned[3:]
-
-        if cleaned.endswith("```"):
-            cleaned = cleaned[:-3]
-
-        cleaned = cleaned.strip()
-
-        try:
-            result = json.loads(cleaned)
-
-        except json.JSONDecodeError:
-            start = cleaned.find("{")
-            end = cleaned.rfind("}")
-
-            if start != -1 and end != -1 and end > start:
-                try:
-                    result = json.loads(
-                        cleaned[start:end + 1]
-                    )
-                except json.JSONDecodeError:
-                    result = {}
-            else:
-                result = {}
-
-            if not result:
-                print(
-                    "[AI SUGGESTIONS] Invalid model response:",
-                    repr(response_text),
-                    flush=True,
-                )
-
-        if not isinstance(result, dict):
-             result = {}
-        
+        if not result:
+            print(
+                "[AI SUGGESTIONS] Invalid model response:",
+                repr(response_text),
+                flush=True,
+            )
+            result = {}
+       
         recommended = result.get(
             "recommended",
             {},
@@ -198,7 +171,7 @@ class AISuggestionGenerator:
 
         normalized_alternatives = []
 
-        for alternative in alternatives[:1]:
+        for alternative in alternatives[:3]:
             if not isinstance(alternative, dict):
                 continue
 

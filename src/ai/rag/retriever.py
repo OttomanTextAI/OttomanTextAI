@@ -94,7 +94,29 @@ class DocumentRetriever:
             query
         )
 
-        return self.vector_store.search(
+        results = self.vector_store.search(
             query_embedding=query_embedding,
             top_k=top_k,
         )
+
+        for result in results:
+            print(
+                f"[RAG RETRIEVAL] "
+                f"chunk={result.chunk.chunk_id} "
+                f"score={result.score:.4f} "
+                f"text={result.chunk.text[:150]!r}",
+                flush=True,
+            )
+
+        return results
+
+        for result in results:
+            print(
+                f"[RAG RETRIEVAL] "
+                f"chunk={result.chunk.chunk_id} "
+                f"score={result.score:.4f} "
+                f"text={result.chunk.text[:150]!r}",
+                flush=True,
+            )
+
+        return results

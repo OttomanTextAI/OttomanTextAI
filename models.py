@@ -45,6 +45,7 @@ class DocumentText(db.Model):
     ocr_text = db.Column(db.Text)
     translit_text = db.Column(db.Text)
     trans_text = db.Column(db.Text)
+    trans_modern_text = db.Column(db.Text)
     trans_text_en = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

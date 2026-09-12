@@ -29,13 +29,13 @@ def optimize_document_context(
     if not paragraphs:
         return cleaned[:max_chars]
 
-    # Keep approximately:
-    # 40% beginning
-    # 30% middle
-    # 30% end
     beginning_budget = int(max_chars * 0.40)
     middle_budget = int(max_chars * 0.30)
-    end_budget = max_chars - beginning_budget - middle_budget
+    end_budget = (
+        max_chars
+        - beginning_budget
+        - middle_budget
+    )
 
     beginning_parts = []
     current_length = 0
@@ -43,7 +43,11 @@ def optimize_document_context(
     for paragraph in paragraphs:
         paragraph_length = len(paragraph) + 1
 
-        if current_length + paragraph_length > beginning_budget:
+        if (
+            current_length
+            + paragraph_length
+            > beginning_budget
+        ):
             break
 
         beginning_parts.append(paragraph)
@@ -55,7 +59,11 @@ def optimize_document_context(
     for paragraph in reversed(paragraphs):
         paragraph_length = len(paragraph) + 1
 
-        if current_length + paragraph_length > end_budget:
+        if (
+            current_length
+            + paragraph_length
+            > end_budget
+        ):
             break
 
         end_parts.append(paragraph)
@@ -67,7 +75,10 @@ def optimize_document_context(
     used_end = len(end_parts)
 
     middle_start = used_beginning
-    middle_end = len(paragraphs) - used_end
+    middle_end = (
+        len(paragraphs)
+        - used_end
+    )
 
     remaining_middle = paragraphs[
         middle_start:middle_end
@@ -76,8 +87,6 @@ def optimize_document_context(
     middle_parts = []
 
     if remaining_middle:
-        # Evenly sample middle paragraphs instead of
-        # keeping only one consecutive section.
         sample_count = min(
             len(remaining_middle),
             8,
@@ -89,41 +98,78 @@ def optimize_document_context(
             indexes = [
                 round(
                     index
-                    * (len(remaining_middle) - 1)
-                    / (sample_count - 1)
+                    * (
+                        len(remaining_middle)
+                        - 1
+                    )
+                    / (
+                        sample_count
+                        - 1
+                    )
                 )
-                for index in range(sample_count)
+                for index
+                in range(sample_count)
             ]
+
+        # round() sonucu bazı durumlarda
+        # aynı index'i iki kez üretebilir.
+        indexes = list(
+            dict.fromkeys(indexes)
+        )
 
         current_length = 0
 
         for index in indexes:
-            paragraph = remaining_middle[index]
-            paragraph_length = len(paragraph) + 1
+            paragraph = (
+                remaining_middle[index]
+            )
 
-            if current_length + paragraph_length > middle_budget:
-                break
+            paragraph_length = (
+                len(paragraph) + 1
+            )
 
-            middle_parts.append(paragraph)
-            current_length += paragraph_length
+            if (
+                current_length
+                + paragraph_length
+                > middle_budget
+            ):
+                continue
+
+            middle_parts.append(
+                paragraph
+            )
+
+            current_length += (
+                paragraph_length
+            )
 
     optimized_parts = []
 
-    optimized_parts.extend(beginning_parts)
+    optimized_parts.extend(
+        beginning_parts
+    )
 
     if middle_parts:
         optimized_parts.append(
-            "[BELGENİN ORTA BÖLÜMÜNDEN SEÇİLMİŞ PARÇALAR]"
+            "[BELGENİN ORTA BÖLÜMÜNDEN "
+            "SEÇİLMİŞ PARÇALAR]"
         )
-        optimized_parts.extend(middle_parts)
+
+        optimized_parts.extend(
+            middle_parts
+        )
 
     if end_parts:
         optimized_parts.append(
             "[BELGENİN SON BÖLÜMÜ]"
         )
-        optimized_parts.extend(end_parts)
 
-    optimized = "\n".join(optimized_parts)
+        optimized_parts.extend(
+            end_parts
+        )
 
-    # Absolute safety limit.
+    optimized = "\n".join(
+        optimized_parts
+    )
+
     return optimized[:max_chars]

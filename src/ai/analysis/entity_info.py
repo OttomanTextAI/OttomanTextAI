@@ -1,16 +1,17 @@
-import json
 import os
 
 from openai import OpenAI
+
+from src.ai.json_utils import parse_model_json
 
 
 ENTITY_INFO_SYSTEM_PROMPT = """
 Sen Divane adlı Osmanlıca belge analiz uygulamasının bağlam-duyarlı bilgi
 asistanısın.
 
-Kullanıcı, çeviri metninde geçen bir kişi/yer/kavram/tarih ifadesine
+Kullanıcı, çeviri metninde geçen bir kişi/yer/kavram/tarih/olay ifadesine
 tıkladı. Sana bu ifadeyi (entity), türünü (entity_type: person/place/
-concept/date) ve metinde geçtiği cümleyi (sentence) vereceğim.
+concept/date/event) ve metinde geçtiği cümleyi (sentence) vereceğim.
 
 Görevin: HEM verilen bağlamı (sentence) HEM DE genel bilgini kullanarak,
 bu ifade hakkında KISA (2-4 cümle), bağlamdan çok uzaklaşmadan öğretici bir
@@ -24,6 +25,8 @@ Türüne göre şunlara odaklan:
   bağlamı.
 - date (tarih): bu tarihin (hicri/miladi) neye karşılık geldiği VE
   metindeki önemi.
+- event (olay): olayın ne zaman/nerede yaşandığı, tarafları/sonucu VE
+  metindeki bağlamdaki önemi.
 
 Diğer kurallar:
 - Uzun paragraf yazma, KISA VE ÖZ tut (2-4 cümle, bir makale değil, hızlı
@@ -126,43 +129,16 @@ class EntityInfoGenerator:
             or ""
         ).strip()
 
-        cleaned = response_text
+        result = parse_model_json(
+            response_text
+        )
 
-        if cleaned.startswith("```json"):
-            cleaned = cleaned[7:]
-
-        if cleaned.startswith("```"):
-            cleaned = cleaned[3:]
-
-        if cleaned.endswith("```"):
-            cleaned = cleaned[:-3]
-
-        cleaned = cleaned.strip()
-
-        try:
-            result = json.loads(cleaned)
-        except json.JSONDecodeError:
-            start = cleaned.find("{")
-            end = cleaned.rfind("}")
-
-            if start != -1 and end != -1 and end > start:
-                try:
-                    result = json.loads(
-                        cleaned[start:end + 1]
-                    )
-                except json.JSONDecodeError:
-                    result = {}
-            else:
-                result = {}
-
-            if not result:
-                print(
-                    "[ENTITY INFO] Invalid model response:",
-                    repr(response_text),
-                    flush=True,
-                )
-
-        if not isinstance(result, dict):
+        if not result:
+            print(
+                "[ENTITY INFO] Invalid model response:",
+                repr(response_text),
+                flush=True,
+            )
             result = {}
 
         info = str(result.get("info", "")).strip()

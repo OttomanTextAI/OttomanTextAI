@@ -1,10 +1,9 @@
-import json
 import os
 
 from openai import OpenAI
 
 from src.ai.context_optimizer import optimize_document_context
-
+from src.ai.json_utils import parse_model_json
 
 PREDICTION_SYSTEM_PROMPT = """
 Sen Osmanlıca belge analizi yapan akademik bir AI asistansın.
@@ -73,7 +72,7 @@ class DocumentPredictionGenerator:
 
         context = optimize_document_context(
             document_text,
-            max_chars=14000,
+            max_chars=10000,
         )
 
         response = self.client.chat.completions.create(
@@ -92,7 +91,7 @@ class DocumentPredictionGenerator:
                 },
             ],
             temperature=0.1,
-            max_tokens=2200,
+            max_tokens=900,
         )
 
         answer_text = (
@@ -105,16 +104,11 @@ class DocumentPredictionGenerator:
             flush=True,
         )
 
-        if answer_text.startswith("```"):
-            answer_text = answer_text.strip("`").strip()
+        result = parse_model_json(
+            answer_text
+        )
 
-            if answer_text.startswith("json"):
-                answer_text = answer_text[4:].strip()
-
-        try:
-            result = json.loads(answer_text)
-
-        except json.JSONDecodeError:
+        if not result:
             print(
                 "[AI PREDICTIONS] Invalid or truncated JSON. Retrying...",
                 flush=True,
@@ -141,7 +135,7 @@ class DocumentPredictionGenerator:
                     },
                 ],
                 temperature=0.1,
-                max_tokens=1200,
+                max_tokens=650,
             )
 
             retry_text = (
@@ -154,15 +148,11 @@ class DocumentPredictionGenerator:
                 flush=True,
             )
 
-            if retry_text.startswith("```"):
-                retry_text = retry_text.strip("`").strip()
+            result = parse_model_json(
+                retry_text
+            )
 
-                if retry_text.startswith("json"):
-                    retry_text = retry_text[4:].strip()
-
-            try:
-                result = json.loads(retry_text)
-            except json.JSONDecodeError:
+            if not result:
                 print(
                     "[AI PREDICTIONS] Retry JSON parsing failed.",
                     flush=True,

@@ -1,9 +1,9 @@
-import json
 import os
 
 from openai import OpenAI
-from src.ai.context_optimizer import optimize_document_context
 
+from src.ai.context_optimizer import optimize_document_context
+from src.ai.json_utils import parse_model_json
 
 RESEARCH_SUGGESTION_SYSTEM_PROMPT = """
 Sen Akıllı Osmanlıca Asistanı'nın araştırma önerisi üreten AI modülüsün.
@@ -85,7 +85,8 @@ class ResearchSuggestionGenerator:
             )
 
         optimized_text = optimize_document_context(
-            document_text
+            document_text,
+            max_chars=9000,
         )
 
         print(
@@ -110,7 +111,7 @@ class ResearchSuggestionGenerator:
                 },
             ],
             temperature=0.2,
-            max_tokens=1800,
+            max_tokens=650,
         )
 
         finish_reason = completion.choices[0].finish_reason
@@ -125,43 +126,54 @@ class ResearchSuggestionGenerator:
             completion.choices[0].message.content or ""
         ).strip()
 
-        cleaned = response_text
+        result = parse_model_json(
+            response_text
+        )
 
-        if cleaned.startswith("```json"):
-            cleaned = cleaned[7:]
+        if not result:
+            print(
+                "[RESEARCH SUGGESTIONS] Invalid JSON. Retrying...",
+                flush=True,
+            )
 
-        if cleaned.startswith("```"):
-            cleaned = cleaned[3:]
+            retry_completion = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": RESEARCH_SUGGESTION_SYSTEM_PROMPT,
+                    },
+                    {
+                        "role": "user",
+                        "content": (
+                            "BELGE METNİ:\n"
+                            f"{optimized_text}\n\n"
+                            "Önceki cevap geçerli JSON değildi. "
+                            "En fazla 2 kısa araştırma önerisi üret. "
+                            "Sadece geçerli JSON döndür."
+                        ),
+                    },
+                ],
+                temperature=0.1,
+                max_tokens=400,
+            )
 
-        if cleaned.endswith("```"):
-            cleaned = cleaned[:-3]
+            retry_text = (
+                retry_completion.choices[0].message.content
+                or ""
+            ).strip()
 
-        cleaned = cleaned.strip()
-
-        try:
-            result = json.loads(cleaned)
-
-        except json.JSONDecodeError:
-            start = cleaned.find("{")
-            end = cleaned.rfind("}")
-
-            if start != -1 and end != -1 and end > start:
-                try:
-                    result = json.loads(
-                        cleaned[start:end + 1]
-                    )
-                except json.JSONDecodeError:
-                    result = {}
-            else:
-                result = {}
+            result = parse_model_json(
+                retry_text
+            )
 
             if not result:
                 print(
-                    "[RESEARCH SUGGESTIONS] Invalid model response:",
-                    repr(response_text),
+                    "[RESEARCH SUGGESTIONS] Retry JSON parsing failed.",
                     flush=True,
                 )
-                
+                result = {}
+                                
         if not isinstance(result, dict):
             result = {}
 
