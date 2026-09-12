@@ -1281,6 +1281,18 @@ body.dark-theme .hero-section::after {
     align-items: center;
 }
 
+/* Her alternatifin yanındaki güven yüzdesi (bkz. word_alternatives.py'nin
+   ürettiği confidence_percent, renderWordAlternativesForm() app.js'te) —
+   sade, sağa yaslı, düşük kontrastlı bir etiket; radyo seçimini veya metni
+   görsel olarak bastırmaması için küçük ve soluk tutuldu. */
+.word-alt-confidence {
+    margin-left: auto;
+    padding-left: 0.5rem;
+    font-size: 0.72rem;
+    color: var(--color-text-muted);
+    flex-shrink: 0;
+}
+
 .word-alt-custom-input {
     flex: 1;
     min-width: 0;

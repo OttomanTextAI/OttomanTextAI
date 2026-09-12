@@ -1467,7 +1467,7 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         if (finalTranslit) {
             translitEmptyState.classList.add('hidden');
             translitTextDisplay.classList.remove('hidden');
-            renderColumnWithEntities(translitTextDisplay, finalTranslit, latinEntities, { clickableGuesses: true, field: 'translit' });
+            renderColumnWithEntities(translitTextDisplay, finalTranslit, latinEntities, { clickableGuesses: true, field: 'translit', diacriticTolerant: true });
             applyStoredWordCorrections(state.documentId, 'translit', translitTextDisplay);
             translitTools.classList.add('tools-ready');
         } else {
@@ -1645,6 +1645,7 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     function renderSentenceSpansHtml(rawText, entities, options) {
         const clickableGuesses = !!(options && options.clickableGuesses);
         const wordField = (options && options.field) || '';
+        const diacriticTolerant = !!(options && options.diacriticTolerant);
         let guessIndex = 0;
 
         function renderGuess(text) {
@@ -1671,7 +1672,7 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
                 inner = segments
                     .map(seg => seg.bold
                         ? renderGuess(seg.text)
-                        : highlightEntitiesInSegment(seg.text, entities, usedEntityKeys))
+                        : highlightEntitiesInSegment(seg.text, entities, usedEntityKeys, diacriticTolerant))
                     .join('');
             } else {
                 inner = escaped.replace(/\*\*(.+?)\*\*/gs, (_match, guessed) => renderGuess(guessed));
@@ -1827,6 +1828,58 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         return text ? `<span class="entity-plain">${text}</span>` : '';
     }
 
+    // Translit kolonu, adayların (people/places/concepts/events — bkz.
+    // buildEntityIndex) modern Türkçe yazımından FARKLI bir yazım kullanır:
+    // Osmanlıca transliterasyon kuralları uzun ünlüleri ve bazı ünsüzleri
+    // diyakritikli harflerle gösterir (ā, ī, ū, ḳ, ġ, ḥ, ḫ, ṣ, ṭ, ñ, ż, ḍ —
+    // bkz. cleanTranslitForTts() TTS için aynı harfleri düzleştiriyor). Bu
+    // yüzden bir adayın DÜZ yazımı translit metninde çoğu zaman birebir
+    // geçmez ("Mehmed" ~ "Mehemmed", "Boğdan" ~ "Boġdan" gibi). Bu harita,
+    // ekrandaki metni DEĞİŞTİRMEDEN (cleanTranslitForTts'in tersine),
+    // adayın regex'ini bu varyantları da kapsayacak şekilde gevşetmek için
+    // kullanılır — sadece ARAMA toleranslı olur, görüntü aynı kalır.
+    const TRANSLIT_LETTER_VARIANTS = {
+        a: 'aāâ', e: 'eē', i: 'iīî', ı: 'ıi', o: 'oō', ö: 'öo',
+        u: 'uūû', ü: 'üu', k: 'kḳ', g: 'gġ', ğ: 'ğġg', h: 'hḥḫ',
+        s: 'sṣ', ş: 'şṣs', t: 'tṭ', n: 'nñ', z: 'zż', d: 'dḍ',
+        c: 'cç', ç: 'çc',
+    };
+
+    // rawText, buildEntityIndex()'ten gelen bir adayın DÜZ (escape
+    // edilmemiş) metnidir. Her harfi, yukarıdaki tabloda karşılığı varsa
+    // (küçük/büyük harf ikisi de dahil) bir karakter sınıfına, yoksa
+    // (boşluk, kesme işareti vb.) normal şekilde regex-escape edilmiş
+    // hâline çevirir.
+    function buildTranslitTolerantSource(rawText) {
+        return Array.from(rawText).map(ch => {
+            const variants = TRANSLIT_LETTER_VARIANTS[ch.toLowerCase()];
+            if (variants) {
+                return `[${variants}${variants.toUpperCase()}]`;
+            }
+            return escapeRegExp(escapeHtml(ch));
+        }).join('');
+    }
+
+    // entities'teki her aday için AYRI bir named capture group ("e0",
+    // "e1", ...) üretir. Amaç: eşleşme bulunduğunda tipi (person/place/...)
+    // eşleşen METNİ aday listesiyle KARŞILAŞTIRARAK değil, regex'te HANGİ
+    // GRUBUN eşleştiğine bakarak belirlemek — diyakritik-toleranslı modda
+    // eşleşen metin (örn. "Boġdan") adayın kendi yazımıyla ("Boğdan")
+    // birebir aynı olmayabileceği için, metin eşitliğine dayalı bir arama
+    // güvenilmez olurdu. Bu yöntem üç kolonda da (tam eşleşme veya
+    // toleranslı) AYNI TEK type kaynağını (buildEntityIndex/
+    // buildOcrEntityIndex) kullanmayı garanti eder.
+    function buildEntityAlternationSource(entities, diacriticTolerant) {
+        return entities
+            .map((e, i) => {
+                const source = diacriticTolerant
+                    ? buildTranslitTolerantSource(e.text)
+                    : escapeRegExp(escapeHtml(e.text));
+                return `(?<e${i}>${source})`;
+            })
+            .join('|');
+    }
+
     // escapedText zaten HTML-escape edilmiş düz metin olmalı. entities,
     // buildEntityIndex()'ten gelen {text, type} listesidir (text'ler de
     // escape edilmemiş orijinal hâlleriyle karşılaştırılabilmesi için burada
@@ -1844,16 +1897,25 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     // hâliyle) bu Set'te zaten varsa, bu geçiş .entity-tag OLARAK DEĞİL,
     // düz metin (.entity-plain) olarak render edilir (bkz. "aynı kelime
     // sadece ilk geçişte işaretlensin" kuralı). İlk eşleşmede Set'e eklenir.
-    function highlightEntitiesInSegment(escapedText, entities, usedEntityKeys) {
+    // diacriticTolerant: true ise (translit kolonu) yukarıdaki varyant
+    // toleranslı desen, false ise (ocr/trans kolonları) tam eşleşme
+    // kullanılır.
+    function highlightEntitiesInSegment(escapedText, entities, usedEntityKeys, diacriticTolerant) {
         if (!entities.length) return wrapPlainText(escapedText);
 
-        const pattern = entities
-            .map(e => escapeRegExp(escapeHtml(e.text)))
-            .join('|');
+        const alternation = buildEntityAlternationSource(entities, diacriticTolerant);
 
-        if (!pattern) return wrapPlainText(escapedText);
+        if (!alternation) return wrapPlainText(escapedText);
 
-        const re = new RegExp(`(${pattern})`, 'gi');
+        // Kelime sınırı: eşleşmenin hemen öncesinde/sonrasında başka bir
+        // harf/rakam OLMAMALI — yoksa kısa bir aday (örn. "Karaman") daha
+        // uzun, alakasız bir kelimenin (örn. "Karamanoğlu") içinde
+        // yanlışlıkla eşleşebilir. \p{L}/\p{N}, Latin VE Arap harflerini
+        // birlikte kapsar, bu yüzden üç kolonda da (ocr dahil) çalışır.
+        const re = new RegExp(
+            `(?<![\\p{L}\\p{N}])(?:${alternation})(?![\\p{L}\\p{N}])`,
+            'giu'
+        );
         const parts = [];
         let lastIndex = 0;
         let match;
@@ -1870,10 +1932,16 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
                 parts.push(wrapPlainText(matched));
             } else {
                 usedEntityKeys.add(key);
-                const entity = entities.find(
-                    e => escapeHtml(e.text).toLowerCase() === key
-                );
-                const type = entity ? entity.type : 'concept';
+
+                let matchedEntity = null;
+                for (let i = 0; i < entities.length; i++) {
+                    if (match.groups[`e${i}`] !== undefined) {
+                        matchedEntity = entities[i];
+                        break;
+                    }
+                }
+
+                const type = matchedEntity ? matchedEntity.type : 'concept';
                 const safeAttr = matched.replace(/"/g, '&quot;');
                 parts.push(`<span class="entity-tag entity-${type}" data-entity="${safeAttr}" data-type="${type}">${matched}</span>`);
             }
@@ -2328,31 +2396,56 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
             popover.appendChild(originEl);
         }
 
-        const alternatives = (Array.isArray(data.alternatives) ? data.alternatives : [])
-            .map(item => (typeof item === 'string' ? item : (item && item.text) || ''))
-            .map(text => text.trim())
-            .filter(Boolean)
+        // Backend (word_alternatives.py) her alternatif için zaten bir
+        // confidence_percent (0-100) üretiyor — alternative_details bunu
+        // taşır. Eski/beklenmedik bir yanıt şekli gelirse (alternative_details
+        // yoksa) düz data.alternatives'e (confidence'sız) geri düşülür,
+        // kart yine de boş kalmaz.
+        const alternativeDetails = (Array.isArray(data.alternative_details) ? data.alternative_details : [])
+            .map(item => ({
+                text: (item && typeof item.text === 'string' ? item.text : '').trim(),
+                confidencePercent: item && Number.isFinite(item.confidence_percent)
+                    ? item.confidence_percent
+                    : null,
+            }))
+            .filter(item => item.text)
             .slice(0, 3);
+
+        const alternatives = alternativeDetails.length
+            ? alternativeDetails
+            : (Array.isArray(data.alternatives) ? data.alternatives : [])
+                .map(item => (typeof item === 'string' ? item : (item && item.text) || ''))
+                .map(text => text.trim())
+                .filter(Boolean)
+                .slice(0, 3)
+                .map(text => ({ text, confidencePercent: null }));
 
         const form = document.createElement('form');
         form.className = 'word-alt-popover-form';
 
         const radioName = `word-alt-choice-${Date.now()}`;
 
-        alternatives.forEach((optionText, i) => {
+        alternatives.forEach((option, i) => {
             const label = document.createElement('label');
             label.className = 'word-alt-option';
 
             const radio = document.createElement('input');
             radio.type = 'radio';
             radio.name = radioName;
-            radio.value = optionText;
+            radio.value = option.text;
             if (i === 0) radio.checked = true;
             label.appendChild(radio);
 
             const span = document.createElement('span');
-            span.textContent = optionText;
+            span.textContent = option.text;
             label.appendChild(span);
+
+            if (option.confidencePercent !== null) {
+                const confEl = document.createElement('span');
+                confEl.className = 'word-alt-confidence';
+                confEl.textContent = `%${option.confidencePercent}`;
+                label.appendChild(confEl);
+            }
 
             form.appendChild(label);
         });
