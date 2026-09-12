@@ -468,6 +468,8 @@ def _parse_and_clean_relay_response(raw_text):
         "period_estimate",
         "date_hijri",
         "date_gregorian",
+        "date_hijri_ocr",
+        "date_gregorian_ocr",
         "notes",
         "title",
     ]
@@ -480,12 +482,8 @@ def _parse_and_clean_relay_response(raw_text):
 
     optional_list_fields = [
         "key_points",
-        "people",
-        "places",
-        "concepts",
         "keywords",
         "dates",
-        "events",
     ]
 
     for field in optional_list_fields:
@@ -500,6 +498,43 @@ def _parse_and_clean_relay_response(raw_text):
 
             if cleaned_list:
                 result[field] = cleaned_list
+
+    # people/places/concepts/events each have an index-aligned "*_ocr"
+    # counterpart (e.g. people_ocr[i] is the Arabic-script spelling of
+    # people[i]) that the frontend uses to highlight named entities inside
+    # the Ottoman-script (ocr) column, where the Latin-script name itself
+    # never appears in the text. Both lists are filtered together (instead
+    # of via optional_list_fields above) so a dropped/empty base entry
+    # can't desync the two lists' indices.
+    paired_entity_fields = [
+        ("people", "people_ocr"),
+        ("places", "places_ocr"),
+        ("concepts", "concepts_ocr"),
+        ("events", "events_ocr"),
+    ]
+
+    for base_field, ocr_field in paired_entity_fields:
+        base_value = parsed.get(base_field)
+        ocr_value = parsed.get(ocr_field)
+        ocr_value = ocr_value if isinstance(ocr_value, list) else []
+
+        if not isinstance(base_value, list):
+            continue
+
+        cleaned_base = []
+        cleaned_ocr = []
+
+        for i, item in enumerate(base_value):
+            if isinstance(item, str) and item.strip():
+                cleaned_base.append(item.strip())
+                ocr_item = ocr_value[i] if i < len(ocr_value) else None
+                cleaned_ocr.append(ocr_item.strip() if isinstance(ocr_item, str) else "")
+
+        if cleaned_base:
+            result[base_field] = cleaned_base
+
+            if any(cleaned_ocr):
+                result[ocr_field] = cleaned_ocr
 
     # uncertain_lines is a list of {reference, guess} objects rather
     # than plain strings, so it needs its own cleanup pass instead of
@@ -691,8 +726,6 @@ def _merge_split_results(top, bottom):
         "script_type",
         "script_purpose",
         "period_estimate",
-        "date_hijri",
-        "date_gregorian",
         "notes",
     ]
 
@@ -702,14 +735,27 @@ def _merge_split_results(top, bottom):
         if value:
             merged[field] = value
 
+    # date_hijri/date_gregorian carry an index-less "*_ocr" counterpart
+    # (see _parse_and_clean_relay_response) that must come from the SAME
+    # half as the date itself, not whichever half happens to have a
+    # non-empty *_ocr — so these two aren't handled via singular_fields
+    # above.
+    for base_field, ocr_field in (
+        ("date_hijri", "date_hijri_ocr"),
+        ("date_gregorian", "date_gregorian_ocr"),
+    ):
+        source = top if top.get(base_field) else bottom if bottom.get(base_field) else None
+
+        if source:
+            merged[base_field] = source[base_field]
+
+            if source.get(ocr_field):
+                merged[ocr_field] = source[ocr_field]
+
     list_fields = [
         "key_points",
-        "people",
-        "places",
-        "concepts",
         "keywords",
         "dates",
-        "events",
     ]
 
     for field in list_fields:
@@ -718,6 +764,45 @@ def _merge_split_results(top, bottom):
 
         if deduped:
             merged[field] = deduped
+
+    # people/places/concepts/events carry an index-aligned "*_ocr"
+    # counterpart (see _parse_and_clean_relay_response) that must stay
+    # paired with its base entry through this merge+dedup, unlike the
+    # plain list_fields above.
+    paired_entity_fields = [
+        ("people", "people_ocr"),
+        ("places", "places_ocr"),
+        ("concepts", "concepts_ocr"),
+        ("events", "events_ocr"),
+    ]
+
+    for base_field, ocr_field in paired_entity_fields:
+        combined_pairs = []
+
+        for half in (top, bottom):
+            base_list = half.get(base_field) or []
+            ocr_list = half.get(ocr_field) or []
+
+            for i, text in enumerate(base_list):
+                ocr_text = ocr_list[i] if i < len(ocr_list) else ""
+                combined_pairs.append((text, ocr_text))
+
+        deduped_base = []
+        deduped_ocr = []
+        seen = set()
+
+        for text, ocr_text in combined_pairs:
+            if text in seen:
+                continue
+            seen.add(text)
+            deduped_base.append(text)
+            deduped_ocr.append(ocr_text)
+
+        if deduped_base:
+            merged[base_field] = deduped_base
+
+            if any(deduped_ocr):
+                merged[ocr_field] = deduped_ocr
 
     uncertain_lines = (
         list(top.get("uncertain_lines", []))
@@ -1022,6 +1107,15 @@ ANALYSIS_PROMPT = (
     "atama, fetih, toplantı, karar veya benzeri tarihî olaylar buna "
     "dahildir. Belgeye dayanmayan olay ekleme. Yoksa boş liste döndür. "
 
+    "people_ocr, places_ocr, concepts_ocr, events_ocr: SIRASIYLA people, "
+    "places, concepts ve events listelerindeki HER ÖĞENİN, ocr alanında "
+    "(Arap harfleriyle) geçtiği hâliyle yazılışı. Her liste, karşılık "
+    "geldiği listeyle (people_ocr[0] -> people[0] gibi) AYNI SIRADA ve "
+    "AYNI SAYIDA öğe içermeli; bir öğenin Arap harfli karşılığından emin "
+    "değilsen o sıradaki yerine boş string (\"\") yaz, listeyi kısaltma "
+    "veya sırasını bozma. Bu alanlar Latin harfli DEĞİL, Arap harfli "
+    "olmalı. Karşılık geldiği liste boşsa bunlar da boş liste olsun. "
+
     "script_type: Görüntüden güvenle anlaşılabiliyorsa yazı türünü belirt. "
     "Örnek: Nesih, Rik'a, Divanî, Ta'lik, Siyakat. "
     "Emin değilsen boş string döndür. "
@@ -1037,6 +1131,11 @@ ANALYSIS_PROMPT = (
 
     "date_gregorian: Belgede açıkça bulunan veya güvenle dönüştürülebilen "
     "Miladî tarihi yaz. Yoksa boş string döndür. "
+
+    "date_hijri_ocr, date_gregorian_ocr: date_hijri ve date_gregorian "
+    "alanlarındaki tarihin, ocr alanında (Arap harfleriyle/rakamlarıyla) "
+    "geçtiği hâliyle yazılışı. Karşılık geldiği alan boşsa bunlar da boş "
+    "string olsun. "
 
     "notes: Okunamayan, belirsiz veya dikkat edilmesi gereken bir kısım "
     "varsa kısa genel bir not yaz. Yoksa boş string döndür. "
@@ -1133,12 +1232,17 @@ def translate_endpoint():
     Returns:
         JSON with at minimum "ocr" and "trans". May also include optional
         analysis fields (translit, document_type, confidence, summary,
-        key_points, people, places, concepts, script_type, script_purpose,
-        period_estimate, date_hijri, date_gregorian, notes, uncertain_lines)
-        when the model was able to determine them. uncertain_lines is a
-        list of {"reference": ..., "guess": ...} objects, one per line/word
-        the model could not read with confidence. Fields it couldn't
-        determine are omitted or empty rather than guessed.
+        key_points, people, places, concepts, events, script_type,
+        script_purpose, period_estimate, date_hijri, date_gregorian, notes,
+        uncertain_lines) when the model was able to determine them.
+        uncertain_lines is a list of {"reference": ..., "guess": ...}
+        objects, one per line/word the model could not read with
+        confidence. people/places/concepts/events may each also come with
+        an index-aligned "*_ocr" counterpart (e.g. people_ocr[i] is the
+        Arabic-script spelling of people[i]) used by the frontend to
+        highlight named entities inside the Ottoman-script (ocr) column.
+        Fields it couldn't determine are omitted or empty rather than
+        guessed.
 
     LLM provider/model come from configs/llm.yaml, credentials come from
     the RELAY_API_KEY / RELAY_BASE_URL environment variables (.env locally,
@@ -1836,7 +1940,7 @@ def entity_info():
     Expected JSON:
         {
             "entity": "...",       (required)
-            "entity_type": "person" | "place" | "concept" | "date",  (optional)
+            "entity_type": "person" | "place" | "concept" | "date" | "event",  (optional)
             "sentence": "..."      (optional, the sentence it appears in)
         }
     """
