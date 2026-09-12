@@ -413,67 +413,6 @@ def _get_relay_result(
     return {"ok": False, "reason": "unusable"}
 
 
-def _parse_grouped_entity_list(value):
-    """
-    Parse a people/places/concepts/events entry list into a cleaned list of
-    {"trans": ..., "translit": ..., "ocr": ...} dicts (see ANALYSIS_PROMPT).
-    Each dict represents ONE real-world entity given in all three forms at
-    once, so the frontend never has to guess whether a Latin-script name
-    and an Arabic-script spelling refer to the same entity. A missing form
-    is "" rather than dropping the whole entity; an entity with all three
-    forms empty is dropped. Also accepts a plain string item (treated as
-    trans-only) in case the model doesn't fully follow the object schema.
-    """
-    if not isinstance(value, list):
-        return []
-
-    cleaned = []
-
-    for item in value:
-        if isinstance(item, dict):
-            entry = {
-                "trans": str(item.get("trans") or "").strip(),
-                "translit": str(item.get("translit") or "").strip(),
-                "ocr": str(item.get("ocr") or "").strip(),
-            }
-        elif isinstance(item, str):
-            entry = {"trans": item.strip(), "translit": "", "ocr": ""}
-        else:
-            continue
-
-        if entry["trans"] or entry["translit"] or entry["ocr"]:
-            cleaned.append(entry)
-
-    return cleaned
-
-
-def _merge_grouped_entity_lists(top_list, bottom_list):
-    """
-    Merge two grouped entity lists (see _parse_grouped_entity_list) from a
-    split-image top/bottom pair, deduping by whichever form is present
-    (trans, falling back to translit then ocr) so the same entity
-    mentioned in both halves isn't listed twice.
-    """
-    combined = list(top_list or []) + list(bottom_list or [])
-    seen = set()
-    deduped = []
-
-    for entry in combined:
-        key = (
-            entry.get("trans", "").strip().lower()
-            or entry.get("translit", "").strip().lower()
-            or entry.get("ocr", "").strip().lower()
-        )
-
-        if not key or key in seen:
-            continue
-
-        seen.add(key)
-        deduped.append(entry)
-
-    return deduped
-
-
 def _parse_and_clean_relay_response(raw_text):
     """
     Parse a raw model response into the cleaned result dict returned by
@@ -560,18 +499,42 @@ def _parse_and_clean_relay_response(raw_text):
             if cleaned_list:
                 result[field] = cleaned_list
 
-    # people/places/concepts/events are lists of {"trans", "translit",
-    # "ocr"} objects (see ANALYSIS_PROMPT) — each object is ONE real-world
-    # entity given in all three scripts/forms at once, so the frontend can
-    # highlight it correctly in all three text columns without relying on
-    # separate lists staying index-aligned with each other.
-    grouped_entity_fields = ["people", "places", "concepts", "events"]
+    # people/places/concepts/events each have an index-aligned "*_ocr"
+    # counterpart (e.g. people_ocr[i] is the Arabic-script spelling of
+    # people[i]) that the frontend uses to highlight named entities inside
+    # the Ottoman-script (ocr) column, where the Latin-script name itself
+    # never appears in the text. Both lists are filtered together (instead
+    # of via optional_list_fields above) so a dropped/empty base entry
+    # can't desync the two lists' indices.
+    paired_entity_fields = [
+        ("people", "people_ocr"),
+        ("places", "places_ocr"),
+        ("concepts", "concepts_ocr"),
+        ("events", "events_ocr"),
+    ]
 
-    for field in grouped_entity_fields:
-        cleaned = _parse_grouped_entity_list(parsed.get(field))
+    for base_field, ocr_field in paired_entity_fields:
+        base_value = parsed.get(base_field)
+        ocr_value = parsed.get(ocr_field)
+        ocr_value = ocr_value if isinstance(ocr_value, list) else []
 
-        if cleaned:
-            result[field] = cleaned
+        if not isinstance(base_value, list):
+            continue
+
+        cleaned_base = []
+        cleaned_ocr = []
+
+        for i, item in enumerate(base_value):
+            if isinstance(item, str) and item.strip():
+                cleaned_base.append(item.strip())
+                ocr_item = ocr_value[i] if i < len(ocr_value) else None
+                cleaned_ocr.append(ocr_item.strip() if isinstance(ocr_item, str) else "")
+
+        if cleaned_base:
+            result[base_field] = cleaned_base
+
+            if any(cleaned_ocr):
+                result[ocr_field] = cleaned_ocr
 
     # uncertain_lines is a list of {reference, guess} objects rather
     # than plain strings, so it needs its own cleanup pass instead of
@@ -639,17 +602,9 @@ def _replace_document_entities(document_id, parsed):
 
     for field, category in _ENTITY_CATEGORY_MAP.items():
         for item in parsed.get(field) or []:
-            # parsed[field] artık {"trans", "translit", "ocr"} nesnelerinden
-            # oluşuyor (bkz. _parse_grouped_entity_list) — bu tablo sadece
-            # düz bir metin gösterdiği için trans formunu kullanıyoruz.
-            text = item.get("trans", "") if isinstance(item, dict) else str(item)
-
-            if not text:
-                continue
-
             db.session.add(DocumentEntity(
                 document_id=document_id,
-                text=text,
+                text=item,
                 category=category,
             ))
 
@@ -810,16 +765,44 @@ def _merge_split_results(top, bottom):
         if deduped:
             merged[field] = deduped
 
-    # people/places/concepts/events are lists of {"trans", "translit",
-    # "ocr"} objects (see _parse_grouped_entity_list) — merge+dedupe each
-    # half's list as whole objects, not as separate index-aligned lists.
-    grouped_entity_fields = ["people", "places", "concepts", "events"]
+    # people/places/concepts/events carry an index-aligned "*_ocr"
+    # counterpart (see _parse_and_clean_relay_response) that must stay
+    # paired with its base entry through this merge+dedup, unlike the
+    # plain list_fields above.
+    paired_entity_fields = [
+        ("people", "people_ocr"),
+        ("places", "places_ocr"),
+        ("concepts", "concepts_ocr"),
+        ("events", "events_ocr"),
+    ]
 
-    for field in grouped_entity_fields:
-        deduped = _merge_grouped_entity_lists(top.get(field), bottom.get(field))
+    for base_field, ocr_field in paired_entity_fields:
+        combined_pairs = []
 
-        if deduped:
-            merged[field] = deduped
+        for half in (top, bottom):
+            base_list = half.get(base_field) or []
+            ocr_list = half.get(ocr_field) or []
+
+            for i, text in enumerate(base_list):
+                ocr_text = ocr_list[i] if i < len(ocr_list) else ""
+                combined_pairs.append((text, ocr_text))
+
+        deduped_base = []
+        deduped_ocr = []
+        seen = set()
+
+        for text, ocr_text in combined_pairs:
+            if text in seen:
+                continue
+            seen.add(text)
+            deduped_base.append(text)
+            deduped_ocr.append(ocr_text)
+
+        if deduped_base:
+            merged[base_field] = deduped_base
+
+            if any(deduped_ocr):
+                merged[ocr_field] = deduped_ocr
 
     uncertain_lines = (
         list(top.get("uncertain_lines", []))
@@ -1102,27 +1085,14 @@ ANALYSIS_PROMPT = (
 
     "key_points: Belgeden çıkarılabilen en önemli 2-5 bilgiyi yaz. "
 
-    "people, places, concepts, events: Belgede geçen kişileri, yerleri, "
-    "önemli tarihî/idarî/dinî/kültürel kavramları ve önemli olayları "
-    "(savaş, antlaşma, ferman, atama, fetih, toplantı, karar veya benzeri) "
-    "listele. HER BİRİ İÇİN AYRI BİR NESNE üret, düz string DEĞİL: "
-    "{\"trans\": \"...\", \"translit\": \"...\", \"ocr\": \"...\"}. "
-    "trans: bu varlığın trans alanındaki (günümüz Türkçesi) yazımı. "
-    "translit: AYNI varlığın translit alanında GEÇTİĞİ HÂLİYLE Latin "
-    "harfli transliterasyonu (translit alanındaki yazımla birebir "
-    "tutarlı olmalı, kendi başına yeni bir yazım uydurma). "
-    "ocr: AYNI varlığın ocr alanında GEÇTİĞİ HÂLİYLE Arap harfli "
-    "yazılışı. HER ÜÇ FORM DA AYNI TEK VARLIĞI temsil etmeli — biri "
-    "diğerinin çevirisi/yazılışı olmalı, asla farklı varlıklara ait "
-    "olmamalı. Bir formundan emin değilsen SADECE o alanı boş string "
-    "(\"\") yap; emin olmadığın diye nesnenin TAMAMINI listeden çıkarma. "
-    "Belgeye dayanmayan bir kişi/yer/kavram/olay uydurma. Hiçbiri yoksa "
-    "ilgili alan için boş liste döndür. "
-    "ÖRNEK — people: "
-    "[{\"trans\": \"Sultan Gıyaseddin\", \"translit\": \"Sulṭān "
-    "Ġıyāsü'd-dīn\", \"ocr\": \"سلطان غیاث الدین\"}]. "
-    "ÖRNEK — events: [{\"trans\": \"tahta geçip\", \"translit\": "
-    "\"taḫta geçüb\", \"ocr\": \"تخته کچوب\"}]. "
+    "people: Belgede açıkça geçen kişi isimlerini yaz. "
+    "Yoksa boş liste döndür. "
+
+    "places: Belgede açıkça geçen yer isimlerini yaz. "
+    "Yoksa boş liste döndür. "
+
+    "concepts: Belgede geçen önemli tarihî, idarî, dinî veya "
+    "kültürel kavramları yaz. Yoksa boş liste döndür. "
 
     "keywords: Belgenin içeriğini temsil eden en önemli 3-8 anahtar "
     "kelime veya kısa ifadeyi yaz. Yalnızca belge içeriğinden çıkar. "
@@ -1131,6 +1101,20 @@ ANALYSIS_PROMPT = (
     "dates: Belgede açıkça geçen tüm önemli tarihleri listele. "
     "Hicrî, Rûmî veya Miladî tarihleri metinde geçtiği biçimiyle koru. "
     "Metinde bulunmayan tarihleri tahmin etme. Yoksa boş liste döndür. "
+
+    "events: Belgede açıkça geçen veya belgenin içeriğinden doğrudan "
+    "çıkarılabilen önemli olayları listele. Savaş, antlaşma, ferman, "
+    "atama, fetih, toplantı, karar veya benzeri tarihî olaylar buna "
+    "dahildir. Belgeye dayanmayan olay ekleme. Yoksa boş liste döndür. "
+
+    "people_ocr, places_ocr, concepts_ocr, events_ocr: SIRASIYLA people, "
+    "places, concepts ve events listelerindeki HER ÖĞENİN, ocr alanında "
+    "(Arap harfleriyle) geçtiği hâliyle yazılışı. Her liste, karşılık "
+    "geldiği listeyle (people_ocr[0] -> people[0] gibi) AYNI SIRADA ve "
+    "AYNI SAYIDA öğe içermeli; bir öğenin Arap harfli karşılığından emin "
+    "değilsen o sıradaki yerine boş string (\"\") yaz, listeyi kısaltma "
+    "veya sırasını bozma. Bu alanlar Latin harfli DEĞİL, Arap harfli "
+    "olmalı. Karşılık geldiği liste boşsa bunlar da boş liste olsun. "
 
     "script_type: Görüntüden güvenle anlaşılabiliyorsa yazı türünü belirt. "
     "Örnek: Nesih, Rik'a, Divanî, Ta'lik, Siyakat. "
@@ -1253,14 +1237,12 @@ def translate_endpoint():
         uncertain_lines) when the model was able to determine them.
         uncertain_lines is a list of {"reference": ..., "guess": ...}
         objects, one per line/word the model could not read with
-        confidence. people/places/concepts/events are each a list of
-        {"trans": ..., "translit": ..., "ocr": ...} objects — one object
-        per real-world entity, given in all three scripts/forms at once
-        (see _parse_grouped_entity_list) — so the frontend can highlight
-        the same entity consistently in all three text columns. A form the
-        model couldn't determine is "" rather than the entity being
-        omitted. Fields it couldn't determine at all are omitted or empty
-        rather than guessed.
+        confidence. people/places/concepts/events may each also come with
+        an index-aligned "*_ocr" counterpart (e.g. people_ocr[i] is the
+        Arabic-script spelling of people[i]) used by the frontend to
+        highlight named entities inside the Ottoman-script (ocr) column.
+        Fields it couldn't determine are omitted or empty rather than
+        guessed.
 
     LLM provider/model come from configs/llm.yaml, credentials come from
     the RELAY_API_KEY / RELAY_BASE_URL environment variables (.env locally,

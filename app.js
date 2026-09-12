@@ -162,17 +162,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const resultDateDetails = document.getElementById('resultDateDetails');
     const resultNotes = document.getElementById('resultNotes');
 
-    // sampleDatabase'deki people/places/concepts girdileri, backend'in
-    // /api/translate'te ürettiği {trans, translit, ocr} gruplu formatla
-    // (bkz. buildEntityIndex) uyumlu olsun diye bu yardımcıyla sarmalanır.
-    // Bu küratörlü demo verisi için gerçek translit/ocr formları elle
-    // yazılmadığından, translit alanı trans'la aynı tutulur (diyakritik-
-    // toleranslı arama yine de bir miktar eşleşme yakalayabilsin diye) ve
-    // ocr boş bırakılır (gerçek belgelerde bu alanı model dolduracak).
-    function demoEntity(text) {
-        return { trans: text, translit: text, ocr: '' };
-    }
-
     // Pre-set Sample Manuscript Database for Demo/Testing
     const sampleDatabase = {
         '2': {
@@ -234,9 +223,9 @@ Mâdâm ki bunlar benim emrime mutî' ü munkâd olalar.
                     'Padişah, hükümlere uyulacağına yemin etmektedir.',
                     '28 Mayıs 1463 tarihinde, Milodraž\'da verilmiştir.'
                 ],
-                people: ['Fatih Sultan Mehmed (Sultan Mehmed Han)', 'Bosna ruhbanları / Fransiskenler', 'Fra Anđeo Zvizdović (tarihsel bağlamda ilişkilendirilir)'].map(demoEntity),
-                places: ['Bosna', 'Milodraž', 'Fojnica (nüshanın muhafaza edildiği yer)'].map(demoEntity),
-                concepts: ['Ahidnâme', 'Ferman', 'Dinî özgürlük', 'Güvenlik', 'Kilise', 'Ruhban', 'Padişah buyruğu', 'Koruma / himaye'].map(demoEntity),
+                people: ['Fatih Sultan Mehmed (Sultan Mehmed Han)', 'Bosna ruhbanları / Fransiskenler', 'Fra Anđeo Zvizdović (tarihsel bağlamda ilişkilendirilir)'],
+                places: ['Bosna', 'Milodraž', 'Fojnica (nüshanın muhafaza edildiği yer)'],
+                concepts: ['Ahidnâme', 'Ferman', 'Dinî özgürlük', 'Güvenlik', 'Kilise', 'Ruhban', 'Padişah buyruğu', 'Koruma / himaye'],
                 script_type: 'Rık\'a karakterli el yazısı',
                 script_purpose: 'Padişah buyruğu / hukukî güvence belgesi',
                 period_estimate: '15. yüzyıl — Fatih Sultan Mehmed dönemi',
@@ -414,9 +403,9 @@ Hakkıdır, Hakk'a tapan milletimin istiklâl!`,
                     'Yazıldığı dönem: Millî Mücadele',
                     'İlk olarak 17 Şubat 1921\'de yayımlanmıştır.'
                 ],
-                people: ['Mehmet Âkif Ersoy (şair)', 'Hamdullah Suphi Tanrıöver (Mecliste okuyan Maarif Vekili)', 'Mustafa Kemal Atatürk (dönemin TBMM Başkanı)'].map(demoEntity),
-                places: ['Ankara', 'Taceddin Dergâhı (şiirin kaleme alındığı yer)'].map(demoEntity),
-                concepts: ['İstiklâl', 'Hürriyet', 'Vatan', 'Bayrak', 'Millet', 'Şehitlik', 'İman', 'Ezan', 'Fedakârlık', 'Millî Mücadele'].map(demoEntity),
+                people: ['Mehmet Âkif Ersoy (şair)', 'Hamdullah Suphi Tanrıöver (Mecliste okuyan Maarif Vekili)', 'Mustafa Kemal Atatürk (dönemin TBMM Başkanı)'],
+                places: ['Ankara', 'Taceddin Dergâhı (şiirin kaleme alındığı yer)'],
+                concepts: ['İstiklâl', 'Hürriyet', 'Vatan', 'Bayrak', 'Millet', 'Şehitlik', 'İman', 'Ezan', 'Fedakârlık', 'Millî Mücadele'],
                 script_type: 'Nesih karakterli Osmanlıca yazı',
                 script_purpose: 'Edebî eser / Millî marş metni',
                 period_estimate: '20. yüzyılın ilk çeyreği — Millî Mücadele dönemi (1921)',
@@ -694,9 +683,9 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
                     'Aruz kalıbı: Fâilâtün / Fâilâtün / Fâilâtün / Fâilün',
                     'Su, şiirin tamamında önemli bir sembol olarak kullanılır.'
                 ],
-                people: ['Fuzûlî (şair)', 'Hz. Muhammed / Ahmed-i Muhtâr (kasidede övülen kişi)', 'Ensâr', 'Zühhâd (zahitler)'].map(demoEntity),
-                places: ['Ravza', 'Kûy', 'Sahrâ', 'Kevser', 'Mi\'rac'].map(demoEntity),
-                concepts: ['Su', 'Aşk', 'Gözyaşı', 'Na\'t', 'Mucize', 'Kerâmet', 'Rahmet', 'Kevser', 'Gül', 'Vuslat', 'Şefaat'].map(demoEntity),
+                people: ['Fuzûlî (şair)', 'Hz. Muhammed / Ahmed-i Muhtâr (kasidede övülen kişi)', 'Ensâr', 'Zühhâd (zahitler)'],
+                places: ['Ravza', 'Kûy', 'Sahrâ', 'Kevser', 'Mi\'rac'],
+                concepts: ['Su', 'Aşk', 'Gözyaşı', 'Na\'t', 'Mucize', 'Kerâmet', 'Rahmet', 'Kevser', 'Gül', 'Vuslat', 'Şefaat'],
                 script_type: 'Osmanlıca matbu yazı',
                 script_purpose: 'Dinî-edebî şiir (na\'t)',
                 period_estimate: '16. yüzyıl — Osmanlı Klasik Dönemi (Fuzûlî dönemi)',
@@ -1155,10 +1144,7 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         }
 
         entities.forEach(entity => {
-            // entities artık backend'den {trans, translit, ocr} gruplu
-            // nesneler olarak geliyor (bkz. buildEntityIndex) — bu çip
-            // listesi sade metin gösterdiği için trans formunu kullanır.
-            const label = typeof entity === 'string' ? entity : (entity.trans || entity.name || '');
+            const label = typeof entity === 'string' ? entity : (entity.name || '');
             if (!label.trim()) return;
             const chip = document.createElement('span');
             chip.className = 'entity-chip';
@@ -1465,17 +1451,13 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         // otomatik geri uygulanabilir (bkz. applyStoredWordCorrections).
         state.documentId = hashText(`${finalOcr}${finalTranslit}${finalTrans}`);
 
-        // Üç kolon da AYNI TEK entity index'inden (bkz. buildEntityIndex)
-        // beslenir, sadece kendi formuna (trans/translit/ocr) göre süzülmüş
-        // hâlini kullanır (bkz. buildColumnEntities) — type her zaman aynı
-        // gruplu nesneden geldiği için üç kolon arasında farklılaşamaz. Her
-        // renderColumnWithEntities() çağrısı kendi "ilk geçiş" Set'ini
-        // kurduğu için işaretleme üç kolonda birbirinden bağımsızdır, ama
-        // data-type/filtre kimliği ortaktır.
-        const entityIndex = buildEntityIndex(finalAnalysis);
-        const ocrEntities = buildColumnEntities(entityIndex, 'ocr', 2);
-        const translitEntities = buildColumnEntities(entityIndex, 'translit', 3);
-        const transEntities = buildColumnEntities(entityIndex, 'trans', 3);
+        // Latin harfli iki kolon (translit/trans) aynı Latin entity
+        // index'ini paylaşır; Osmanlıca (Arap harfli) kolon ayrı bir index
+        // kullanır (bkz. buildOcrEntityIndex). Her renderColumnWithEntities()
+        // çağrısı kendi "ilk geçiş" Set'ini kurduğu için üçü birbirinden
+        // bağımsız işaretlenir, ama data-type/filtre kimliği ortaktır.
+        const latinEntities = buildEntityIndex(finalAnalysis);
+        const ocrEntities = buildOcrEntityIndex(finalAnalysis);
 
         ocrEmptyState.classList.add('hidden');
         ocrTextDisplay.classList.remove('hidden');
@@ -1485,7 +1467,7 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         if (finalTranslit) {
             translitEmptyState.classList.add('hidden');
             translitTextDisplay.classList.remove('hidden');
-            renderColumnWithEntities(translitTextDisplay, finalTranslit, translitEntities, { clickableGuesses: true, field: 'translit', diacriticTolerant: true });
+            renderColumnWithEntities(translitTextDisplay, finalTranslit, latinEntities, { clickableGuesses: true, field: 'translit', diacriticTolerant: true });
             applyStoredWordCorrections(state.documentId, 'translit', translitTextDisplay);
             translitTools.classList.add('tools-ready');
         } else {
@@ -1496,7 +1478,7 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
 
         transEmptyState.classList.add('hidden');
         transTextDisplay.classList.remove('hidden');
-        renderColumnWithEntities(transTextDisplay, finalTrans, transEntities, { clickableGuesses: true, field: 'trans' });
+        renderColumnWithEntities(transTextDisplay, finalTrans, latinEntities, { clickableGuesses: true, field: 'trans' });
         applyStoredWordCorrections(state.documentId, 'trans', transTextDisplay);
         transTools.classList.add('tools-ready');
 
@@ -1704,7 +1686,7 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     }
 
     // Bir metin kolonuna (ocr/translit/trans), o kolonun kendi script'ine
-    // uygun entity aday listesiyle (bkz. buildEntityIndex/buildColumnEntities)
+    // uygun entity index'iyle (bkz. buildEntityIndex/buildOcrEntityIndex)
     // vurgulama uygular. entities boşsa (örn. bir belgede hiç Osmanlıca
     // yazılışı üretilememiş olabilir) davranış renderWithGuessMarkers ile
     // birebir aynı kalır — sade <strong> tahmin işaretleri.
@@ -1731,73 +1713,90 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     }
 
     // Bir belge analizinden (bkz. backend /api/translate yanıtı ve
-    // sampleDatabase'deki "analysis" alanları) TEK BİR entity index'i
-    // kurar. people/places/concepts/events artık backend'de her biri
-    // {trans, translit, ocr} formlarını BİRLİKTE taşıyan tek bir nesne
-    // olarak geliyor (bkz. backend.py _parse_grouped_entity_list) — yani
-    // aynı gerçek varlığın üç kolondaki karşılığı zaten burada, aynı
-    // nesnede. date_hijri/date_gregorian hâlâ ayrı tekil string alanlar
-    // (gruplu değil); translit alanları yok, tarihler genelde rakam/kısa
-    // ifade olduğundan trans formuyla aynı kabul edilir. Dönen liste,
-    // buildColumnEntities() tarafından her kolon için ayrı ayrı süzülür —
-    // type HER ZAMAN bu tek nesneden geldiği için üç kolon arasında asla
-    // farklılaşamaz.
+    // sampleDatabase'deki "analysis" alanları), çeviri metninde vurgulanacak
+    // kişi/yer/tarih/kavram adaylarını çıkarır. En uzun eşleşme önce
+    // denenmesi için (örn. "Sultan Mehmed Han" ifadesi, içindeki tek başına
+    // "Mehmed" kelimesinden önce eşleşsin diye) uzunluğa göre azalan sırada
+    // döner.
     function buildEntityIndex(analysis) {
         if (!analysis) return [];
-        const entities = [];
+        const raw = [];
 
-        (analysis.people || []).forEach(e => entities.push({ ...e, type: 'person' }));
-        (analysis.places || []).forEach(e => entities.push({ ...e, type: 'place' }));
-        (analysis.concepts || []).forEach(e => entities.push({ ...e, type: 'concept' }));
-        (analysis.events || []).forEach(e => entities.push({ ...e, type: 'event' }));
+        (analysis.people || []).forEach(p => raw.push({ raw: p, type: 'person' }));
+        (analysis.places || []).forEach(p => raw.push({ raw: p, type: 'place' }));
+        (analysis.concepts || []).forEach(p => raw.push({ raw: p, type: 'concept' }));
+        (analysis.events || []).forEach(p => raw.push({ raw: p, type: 'event' }));
+        if (analysis.date_hijri) raw.push({ raw: analysis.date_hijri, type: 'date' });
+        if (analysis.date_gregorian) raw.push({ raw: analysis.date_gregorian, type: 'date' });
 
-        if (analysis.date_hijri) {
-            entities.push({
-                trans: analysis.date_hijri,
-                translit: analysis.date_hijri,
-                ocr: analysis.date_hijri_ocr || '',
-                type: 'date',
-            });
-        }
-        if (analysis.date_gregorian) {
-            entities.push({
-                trans: analysis.date_gregorian,
-                translit: analysis.date_gregorian,
-                ocr: analysis.date_gregorian_ocr || '',
-                type: 'date',
-            });
-        }
-
-        return entities;
-    }
-
-    // buildEntityIndex()'ten gelen gruplu entity listesini, TEK BİR
-    // kolonun (field: 'trans' | 'translit' | 'ocr') arayacağı düz
-    // {text, type} aday listesine çevirir — highlightEntitiesInSegment'in
-    // beklediği format budur. En uzun eşleşme önce denenmesi için (örn.
-    // "Sultan Mehmed Han" ifadesi, içindeki tek başına "Mehmed"
-    // kelimesinden önce eşleşsin diye) uzunluğa göre azalan sırada döner.
-    // minLength: çok kısa (yanlış-pozitif riski yüksek) adayları eler —
-    // Arapça kelimeler vokalsiz yazıldığından ocr kolonunda daha kısa
-    // olabilir, bu yüzden orada eşik daha düşük tutulur.
-    function buildColumnEntities(entities, field, minLength) {
         const seen = new Set();
-        const result = [];
+        const entries = [];
 
-        entities.forEach(entity => {
-            const rawField = entity[field];
-            if (typeof rawField !== 'string' || !rawField) return;
-
-            extractEntityCandidates(rawField).forEach(text => {
-                if (text.length < minLength) return;
+        raw.forEach(({ raw: rawEntry, type }) => {
+            if (typeof rawEntry !== 'string') return;
+            extractEntityCandidates(rawEntry).forEach(text => {
+                if (text.length < 3) return;
                 const key = text.toLowerCase();
                 if (seen.has(key)) return;
                 seen.add(key);
-                result.push({ text, type: entity.type });
+                entries.push({ text, type });
             });
         });
 
-        return result.sort((a, b) => b.text.length - a.text.length);
+        return entries.sort((a, b) => b.text.length - a.text.length);
+    }
+
+    // buildEntityIndex()'in Arap harfli (Osmanlıca) karşılığı: Latin
+    // harfli people/places/concepts/events/date_hijri/date_gregorian
+    // alanlarını DEĞİL, backend'in bunlarla eşleştirerek ürettiği
+    // people_ocr/places_ocr/concepts_ocr/events_ocr/date_hijri_ocr/
+    // date_gregorian_ocr alanlarını kullanır (bkz. backend.py
+    // _parse_and_clean_relay_response) — çünkü ocrTextDisplay Arap
+    // harfleriyle yazılı olduğundan, ör. Latin "İstanbul" adayı orada asla
+    // eşleşmez, "استانبول" gibi Arap harfli yazılışı gerekir. Bir öğenin
+    // *_ocr karşılığı boşsa (model üretmediyse) o öğe için Osmanlıca
+    // kolonunda hiç vurgulama yapılmaz — bu beklenen bir durumdur.
+    function buildOcrEntityIndex(analysis) {
+        if (!analysis) return [];
+        const pairs = [
+            ['people', 'people_ocr', 'person'],
+            ['places', 'places_ocr', 'place'],
+            ['concepts', 'concepts_ocr', 'concept'],
+            ['events', 'events_ocr', 'event'],
+        ];
+        const raw = [];
+
+        pairs.forEach(([baseField, ocrField, type]) => {
+            const baseList = analysis[baseField] || [];
+            const ocrList = analysis[ocrField] || [];
+            baseList.forEach((_, i) => {
+                const ocrText = ocrList[i];
+                if (typeof ocrText === 'string' && ocrText.trim()) {
+                    raw.push({ raw: ocrText.trim(), type });
+                }
+            });
+        });
+
+        // date_hijri/date_gregorian tekil string alanlar olduğu için
+        // yukarıdaki liste-hizalı pairs mantığına girmiyor, ayrıca ele
+        // alınıyor.
+        if (analysis.date_hijri_ocr) raw.push({ raw: analysis.date_hijri_ocr, type: 'date' });
+        if (analysis.date_gregorian_ocr) raw.push({ raw: analysis.date_gregorian_ocr, type: 'date' });
+
+        const seen = new Set();
+        const entries = [];
+
+        raw.forEach(({ raw: rawEntry, type }) => {
+            extractEntityCandidates(rawEntry).forEach(text => {
+                if (text.length < 2) return;
+                const key = text.toLowerCase();
+                if (seen.has(key)) return;
+                seen.add(key);
+                entries.push({ text, type });
+            });
+        });
+
+        return entries.sort((a, b) => b.text.length - a.text.length);
     }
 
     // "**tahmin**" işaretlerini <strong>'e çeviren bölünme mantığını
@@ -1868,8 +1867,8 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     // eşleşen metin (örn. "Boġdan") adayın kendi yazımıyla ("Boğdan")
     // birebir aynı olmayabileceği için, metin eşitliğine dayalı bir arama
     // güvenilmez olurdu. Bu yöntem üç kolonda da (tam eşleşme veya
-    // toleranslı) AYNI TEK type kaynağını (buildEntityIndex'ten gelen
-    // gruplu nesne, bkz. buildColumnEntities) kullanmayı garanti eder.
+    // toleranslı) AYNI TEK type kaynağını (buildEntityIndex/
+    // buildOcrEntityIndex) kullanmayı garanti eder.
     function buildEntityAlternationSource(entities, diacriticTolerant) {
         return entities
             .map((e, i) => {
