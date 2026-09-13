@@ -2541,36 +2541,48 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     // yapılır — span içinde entity/tahmin (**...**) gibi iç içe HTML olsa
     // bile, o HTML'in İÇİNDEKİ metin düğümü de walker tarafından normal
     // şekilde gezilir, yani kelime en yakın metin düğümünde vurgulanır.
+    // Tüm DOM işlemleri (özellikle Range.surroundContents) try/catch ile
+    // sarılı: bir DOMException (ör. beklenmedik bir iç içe HTML yapısı
+    // yüzünden) burada fırlarsa, hatayı yutup sadece loglarız — kelime
+    // vurgusunun başarısız olması, çağıran kodun (speakNext/highlightSentence
+    // zinciri, genel TTS akışı) geri kalanını ASLA engellememeli.
     function highlightWordInDisplay(displayEl, sentenceIdx, wordIndex) {
-        clearWordHighlight();
-        if (!displayEl || wordIndex < 0) return;
+        try {
+            clearWordHighlight();
+            if (!displayEl || wordIndex < 0) return;
 
-        const sentenceSpan = displayEl.querySelector(`.tts-sentence[data-tts-idx="${sentenceIdx}"]`);
-        if (!sentenceSpan) return;
+            const sentenceSpan = displayEl.querySelector(`.tts-sentence[data-tts-idx="${sentenceIdx}"]`);
+            if (!sentenceSpan) return;
 
-        const walker = document.createTreeWalker(sentenceSpan, NodeFilter.SHOW_TEXT);
-        const wordRe = /\S+/g;
-        let seenWords = 0;
-        let node;
+            const walker = document.createTreeWalker(sentenceSpan, NodeFilter.SHOW_TEXT);
+            const wordRe = /\S+/g;
+            let seenWords = 0;
+            let node;
 
-        while ((node = walker.nextNode())) {
-            wordRe.lastIndex = 0;
-            const text = node.textContent;
-            let match;
-            while ((match = wordRe.exec(text))) {
-                if (seenWords === wordIndex) {
-                    const range = document.createRange();
-                    range.setStart(node, match.index);
-                    range.setEnd(node, match.index + match[0].length);
-                    const mark = document.createElement('mark');
-                    mark.className = 'tts-word-active';
-                    range.surroundContents(mark);
-                    currentWordMark = mark;
-                    mark.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                    return;
+            while ((node = walker.nextNode())) {
+                wordRe.lastIndex = 0;
+                const text = node.textContent;
+                let match;
+                while ((match = wordRe.exec(text))) {
+                    if (seenWords === wordIndex) {
+                        const range = document.createRange();
+                        range.setStart(node, match.index);
+                        range.setEnd(node, match.index + match[0].length);
+                        const mark = document.createElement('mark');
+                        mark.className = 'tts-word-active';
+                        range.surroundContents(mark);
+                        currentWordMark = mark;
+                        mark.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        return;
+                    }
+                    seenWords++;
                 }
-                seenWords++;
             }
+        } catch (error) {
+            console.warn(
+                `[TTS] word highlight failed: sentenceIdx=${sentenceIdx} wordIndex=${wordIndex}`,
+                error
+            );
         }
     }
 
@@ -2633,6 +2645,19 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
             utterance.onboundary = (event) => {
                 if (myPlaybackId !== ttsPlaybackId) return;
                 if (event.name && event.name !== 'word') return;
+                // Stale/geç gelen event koruması: bazı seslerde bir
+                // utterance biterken fazladan/geç bir word-boundary event'i
+                // ateşlenebiliyor. Bu ESKİ event, artık aktif olmayan bir
+                // cümle için currentIdx/currentSentenceText'e (closure'dan)
+                // hâlâ erişebildiğinden, kontrolsüz bırakılırsa YENİ
+                // (o an gerçekten aktif) cümlenin kelime vurgusunu silip
+                // yerine ESKİ cümlede yanlış bir vurgu koyabilir. Bunu
+                // önlemek için, bu utterance'ın cümlesi hâlâ ekranda
+                // .tts-sentence-active olarak işaretli DEĞİLSE (yani
+                // highlightSentence() çoktan bir sonraki cümleye geçmişse)
+                // sessizce çık.
+                const activeSpan = wordDisplay && wordDisplay.querySelector('.tts-sentence-active');
+                if (!activeSpan || activeSpan.getAttribute('data-tts-idx') !== String(currentIdx)) return;
                 const wIdx = wordIndexAtCharIndex(currentSentenceText, event.charIndex);
                 highlightWordInDisplay(wordDisplay, currentIdx, wIdx);
             };
