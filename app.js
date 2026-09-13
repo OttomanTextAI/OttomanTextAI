@@ -2770,7 +2770,11 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
             'ḍ': 'd', 'Ḍ': 'D',
             'ʿ': '', 'ʾ': '', 'ʻ': '', 'ʼ': ''
         };
-        return text.replace(/[āĀḳḲġĠḥḤḫḪṣṢṭṬñÑūŪīĪżŻḍḌʿʾʻʼ]/g, (ch) => diacriticMap[ch] ?? ch);
+        text = text.replace(/[āĀḳḲġĠḥḤḫḪṣṢṭṬñÑūŪīĪżŻḍḌʿʾʻʼ]/g, (ch) => diacriticMap[ch] ?? ch);
+        // GEÇİCİ TEŞHİS LOGU — â/û/î sessizliği sorununu teşhis etmek için,
+        // kalıcı değil, sorun bulunduktan sonra kaldırılacak.
+        console.log('[TTS DEBUG] cleaned text:', JSON.stringify(text), [...text].map(c => c.codePointAt(0).toString(16)));
+        return text;
     }
 
     // Osmanlıca (Arap harfli) metin doğrudan seslendirilemediği için, hem
