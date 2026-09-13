@@ -2468,18 +2468,37 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         buttons.forEach(btn => { if (btn) btn.textContent = icon; });
     }
 
+    // O an vurgulanan tek kelimeyi saran <mark class="tts-word-active">
+    // elemanı (bkz. highlightWordInDisplay). Cümle vurgusunun (CSS class,
+    // hep var olan span üzerine eklenip çıkarılıyor) aksine kelime vurgusu
+    // DOM'a dinamik olarak eklenen bir eleman olduğu için, bir önceki
+    // kelimeyi "unwrap" edip orijinal metin düğümüne geri döndürmemiz
+    // gerekiyor — clearWordHighlight bunu yapar.
+    let currentWordMark = null;
+
+    function clearWordHighlight() {
+        if (currentWordMark && currentWordMark.parentNode) {
+            const parent = currentWordMark.parentNode;
+            parent.replaceChild(document.createTextNode(currentWordMark.textContent), currentWordMark);
+            parent.normalize();
+        }
+        currentWordMark = null;
+    }
+
     // Tüm ana ses butonlarını 🔊'e sıfırlar ve ekrandaki cümle vurgularını
     // temizler. "Sesi Durdur" butonlarına VE bir okuma zinciri sonuna
     // gelindiğinde çağrılır.
     function resetAllTtsUi() {
         setTtsIcon([ocrTtsBtn, translitTtsBtn, ttsBtn, enTtsBtn], '🔊');
         document.querySelectorAll('.tts-sentence-active').forEach(el => el.classList.remove('tts-sentence-active'));
+        clearWordHighlight();
         ttsActiveChannel = null;
         ttsState = 'idle';
     }
 
     function highlightSentence(displays, idx) {
         document.querySelectorAll('.tts-sentence-active').forEach(el => el.classList.remove('tts-sentence-active'));
+        clearWordHighlight();
         displays.forEach(displayEl => {
             if (!displayEl) return;
             const span = displayEl.querySelector(`.tts-sentence[data-tts-idx="${idx}"]`);
@@ -2490,11 +2509,78 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         });
     }
 
+    // utterance'a giden düz metindeki charIndex'in (speechSynthesis'in
+    // word-boundary event'iyle verdiği, o an başlayan kelimenin metin
+    // içindeki karakter konumu) hangi kelimeye denk geldiğini bulur.
+    // Kelimeler \S+ ile ayrılır (Latin ve Arap harfli metinde de kelimeler
+    // boşlukla ayrılır). match.index <= charIndex olan SON kelime, o an
+    // seslendirilen kelimedir. Eşleşen kelime yoksa -1 döner.
+    function wordIndexAtCharIndex(text, charIndex) {
+        const wordRe = /\S+/g;
+        let match;
+        let result = -1;
+        let idx = 0;
+        while ((match = wordRe.exec(text))) {
+            if (match.index <= charIndex) {
+                result = idx;
+            } else {
+                break;
+            }
+            idx++;
+        }
+        return result;
+    }
+
+    // Belirtilen displayEl içindeki idx'inci .tts-sentence span'ının metin
+    // düğümlerini (TreeWalker ile) sırayla gezip, wordIndex'inci \S+
+    // eşleşmesini bulur ve bir <mark class="tts-word-active"> ile sarar.
+    // "Basit yaklaşım": eşleştirme SADECE düz metin/kelime sayımına göre
+    // yapılır — span içinde entity/tahmin (**...**) gibi iç içe HTML olsa
+    // bile, o HTML'in İÇİNDEKİ metin düğümü de walker tarafından normal
+    // şekilde gezilir, yani kelime en yakın metin düğümünde vurgulanır.
+    function highlightWordInDisplay(displayEl, sentenceIdx, wordIndex) {
+        clearWordHighlight();
+        if (!displayEl || wordIndex < 0) return;
+
+        const sentenceSpan = displayEl.querySelector(`.tts-sentence[data-tts-idx="${sentenceIdx}"]`);
+        if (!sentenceSpan) return;
+
+        const walker = document.createTreeWalker(sentenceSpan, NodeFilter.SHOW_TEXT);
+        const wordRe = /\S+/g;
+        let seenWords = 0;
+        let node;
+
+        while ((node = walker.nextNode())) {
+            wordRe.lastIndex = 0;
+            const text = node.textContent;
+            let match;
+            while ((match = wordRe.exec(text))) {
+                if (seenWords === wordIndex) {
+                    const range = document.createRange();
+                    range.setStart(node, match.index);
+                    range.setEnd(node, match.index + match[0].length);
+                    const mark = document.createElement('mark');
+                    mark.className = 'tts-word-active';
+                    range.surroundContents(mark);
+                    currentWordMark = mark;
+                    mark.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    return;
+                }
+                seenWords++;
+            }
+        }
+    }
+
     // text: okunacak düz metin (\n içerebilir, splitIntoSentences içinde
     // normalize edilir). channelKey/buttons: bu okumanın ait olduğu ana ses
     // butonu/butonları (ikon burada güncellenir — osmanlı grubunda ikisi
-    // birden). displays: highlight uygulanacak eleman(lar).
-    function speakText(text, { lang = 'tr-TR', displays = [], buttons = [], channelKey = null } = {}) {
+    // birden). displays: cümle vurgusunun uygulandığı eleman(lar) (osmanlı
+    // kanalında ocr + translit birlikte). wordHighlightDisplay: kelime
+    // vurgusunun uygulandığı TEK eleman — verilmezse displays[0] kullanılır.
+    // Osmanlı kanalında bilerek translitTextDisplay'e sabitlenir (bkz. çağrı
+    // noktası), çünkü charIndex, TTS'e giden translit metnine göre hesaplanır
+    // ve ocr (Arap harfli) metinle kelime sayısı/sırası birebir örtüşmez.
+    function speakText(text, { lang = 'tr-TR', displays = [], buttons = [], channelKey = null, wordHighlightDisplay = null } = {}) {
         if (!text) return;
         if (!('speechSynthesis' in window)) {
             alert('Tarayıcınız sesli okuma özelliğini desteklemiyor.');
@@ -2510,6 +2596,7 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         resetAllTtsUi();
 
         const sentences = splitIntoSentences(text);
+        const wordDisplay = wordHighlightDisplay || displays[0] || null;
         let index = 0;
 
         ttsState = 'speaking';
@@ -2526,12 +2613,26 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
             }
 
             const currentIdx = index;
+            const currentSentenceText = sentences[currentIdx];
             highlightSentence(displays, currentIdx);
 
-            const utterance = new SpeechSynthesisUtterance(sentences[currentIdx]);
+            const utterance = new SpeechSynthesisUtterance(currentSentenceText);
             utterance.lang = lang;
             utterance.rate = 0.9;
             index++;
+
+            // Kelime seviyesi vurgu: SADECE ses/tarayıcı word-boundary
+            // event'i verirse çalışır (ek bir katman). event.name
+            // 'sentence' gelirse veya onboundary hiç ateşlenmezse hiçbir
+            // şey yapılmaz — mevcut cümle-bazlı highlight (yukarıdaki
+            // highlightSentence çağrısı) zaten devrede olduğu için otomatik
+            // olarak ona geri düşülmüş olur.
+            utterance.onboundary = (event) => {
+                if (myPlaybackId !== ttsPlaybackId) return;
+                if (event.name && event.name !== 'word') return;
+                const wIdx = wordIndexAtCharIndex(currentSentenceText, event.charIndex);
+                highlightWordInDisplay(wordDisplay, currentIdx, wIdx);
+            };
 
             // Bazı tarayıcılarda tek bir utterance için hem onend hem
             // onerror ateşlenebiliyor; bu koruma speakNext()'in aynı
@@ -2579,7 +2680,7 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     // devam ettirir; başka bir kanal aktifse (ya da hiç okuma yoksa) eski
     // okumayı tamamen durdurup yenisini baştan başlatır — asla iki ses
     // üst üste binmez.
-    function handleTtsToggle({ getText, lang, displays, buttons, channelKey, emptyMessage }) {
+    function handleTtsToggle({ getText, lang, displays, buttons, channelKey, emptyMessage, wordHighlightDisplay }) {
         if (ttsActiveChannel === channelKey && ttsState === 'speaking') {
             window.speechSynthesis.pause();
             ttsState = 'paused';
@@ -2598,11 +2699,11 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
             alert(emptyMessage);
             return;
         }
-        speakText(text, { lang, displays, buttons, channelKey });
+        speakText(text, { lang, displays, buttons, channelKey, wordHighlightDisplay });
     }
 
     ttsBtn.addEventListener('click', () => handleTtsToggle({
-        getText: () => transTextDisplay.textContent.normalize('NFC'),
+        getText: () => transTextDisplay.textContent.normalize('NFC').replace(/[\u0300-\u036f]/g, ''),
         lang: 'tr-TR',
         displays: [transTextDisplay],
         buttons: [ttsBtn],
@@ -2619,8 +2720,13 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         if (!text) return text;
         // â/û/î gibi harflerin NFD (ayrışık: harf + birleştirici işaret)
         // biçiminde gelip TTS motoru tarafından sessizce atlanma
-        // ihtimaline karşı önce NFC'ye normalize edilir.
-        text = text.normalize('NFC');
+        // ihtimaline karşı önce NFC'ye normalize edilir. Ardından, modelin
+        // bazen ürettiği anormal/fazladan kombinleyici işaretleri (normal
+        // bir NFD ayrışması değil, örn. zaten precomposed bir harfin
+        // üzerine binen fazladan işaret) tamamen kaldırır — precomposed
+        // karakterlere (ā, ī vb.) dokunmaz, çünkü onlar kombinleyici işaret
+        // İÇERMEZ.
+        text = text.normalize('NFC').replace(/[\u0300-\u036f]/g, '');
         const diacriticMap = {
             'ā': 'a', 'Ā': 'A',
             'ḳ': 'k', 'Ḳ': 'K',
@@ -2653,7 +2759,12 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
             displays: [ocrTextDisplay, translitTextDisplay],
             buttons: [ocrTtsBtn, translitTtsBtn],
             channelKey: 'osmanli',
-            emptyMessage: 'Bu belge için sesli okuma verisi bulunamadı.'
+            emptyMessage: 'Bu belge için sesli okuma verisi bulunamadı.',
+            // charIndex, TTS'e giden translit metnine göre hesaplanıyor;
+            // ocr (Arap harfli) metinle kelime sayısı/sırası birebir
+            // örtüşmediği için kelime vurgusu SADECE translit panelinde
+            // uygulanır (ocr panelinde mevcut cümle-bazlı vurgu kalır).
+            wordHighlightDisplay: translitTextDisplay
         });
     }
 
@@ -2666,7 +2777,7 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     // boşsa) diğer iki dilden bağımsız, ayrı bir uyarı gösterir (bkz.
     // handleTtsToggle'daki emptyMessage kontrolü).
     enTtsBtn.addEventListener('click', () => handleTtsToggle({
-        getText: () => enTextDisplay.textContent.normalize('NFC'),
+        getText: () => enTextDisplay.textContent.normalize('NFC').replace(/[\u0300-\u036f]/g, ''),
         lang: 'en-US',
         displays: [enTextDisplay],
         buttons: [enTtsBtn],
