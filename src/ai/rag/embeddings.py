@@ -40,6 +40,11 @@ class RelayEmbeddingClient:
         if not text or not text.strip():
             raise ValueError("Text cannot be empty.")
 
+        print(
+            "[EMBEDDINGS] Query chars:",
+            len(text.strip()),
+            flush=True,
+        )
         response = self.client.embeddings.create(
             model=self.model,
             input=text.strip(),
@@ -63,7 +68,11 @@ class RelayEmbeddingClient:
                 )
 
             cleaned_texts.append(text.strip())
-
+        print(
+            "[EMBEDDINGS] Batch size:",
+            len(cleaned_texts),
+            flush=True,
+        )
         response = self.client.embeddings.create(
             model=self.model,
             input=cleaned_texts,

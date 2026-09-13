@@ -126,13 +126,42 @@ class ResearchSuggestionGenerator:
             completion.choices[0].message.content or ""
         ).strip()
 
+        print(
+            "[RESEARCH SUGGESTIONS RAW RESPONSE]",
+            repr(response_text),
+            flush=True,
+        )
+
         result = parse_model_json(
             response_text
         )
 
-        if not result:
+        def has_usable_result(data: dict) -> bool:
+            if not isinstance(data, dict):
+                return False
+
+            suggestions = data.get("suggestions")
+
+            if not isinstance(suggestions, list) or not suggestions:
+                return False
+
+            for suggestion in suggestions:
+                if not isinstance(suggestion, dict):
+                    continue
+
+                title = str(
+                    suggestion.get("title", "")
+                ).strip()
+
+                if title:
+                    return True
+
+            return False
+
+
+        if not has_usable_result(result):
             print(
-                "[RESEARCH SUGGESTIONS] Invalid JSON. Retrying...",
+                "[RESEARCH SUGGESTIONS] Invalid or empty result. Retrying...",
                 flush=True,
             )
 
@@ -148,9 +177,16 @@ class ResearchSuggestionGenerator:
                         "content": (
                             "BELGE METNİ:\n"
                             f"{optimized_text}\n\n"
-                            "Önceki cevap geçerli JSON değildi. "
-                            "En fazla 2 kısa araştırma önerisi üret. "
-                            "Sadece geçerli JSON döndür."
+                            "Önceki cevap gerekli suggestions yapısını üretmedi "
+                            "veya geçerli JSON değildi. "
+                            "Belge anlamlı olduğu için suggestions listesi boş OLMAMALI. "
+                            "En az 1, en fazla 2 kısa araştırma önerisi üret. "
+                            "Her öneride type, title, query ve reason alanları olsun. "
+                            "type yalnızca topic, person, period, event, place "
+                            "veya concept değerlerinden biri olsun. "
+                            "Reason en fazla 12 kelime olsun. "
+                            "SADECE geçerli JSON döndür. "
+                            "JSON dışında hiçbir açıklama yazma."
                         ),
                     },
                 ],
@@ -158,18 +194,31 @@ class ResearchSuggestionGenerator:
                 max_tokens=400,
             )
 
+            print(
+                "[RESEARCH SUGGESTIONS RETRY FINISH REASON]",
+                retry_completion.choices[0].finish_reason,
+                flush=True,
+            )
+
             retry_text = (
                 retry_completion.choices[0].message.content
                 or ""
             ).strip()
 
+            print(
+                "[RESEARCH SUGGESTIONS RETRY RESPONSE]",
+                repr(retry_text),
+                flush=True,
+            )
+
             result = parse_model_json(
                 retry_text
             )
 
-            if not result:
+            if not has_usable_result(result):
                 print(
-                    "[RESEARCH SUGGESTIONS] Retry JSON parsing failed.",
+                    "[RESEARCH SUGGESTIONS] Retry returned unusable result:",
+                    result,
                     flush=True,
                 )
                 result = {}
@@ -200,10 +249,12 @@ class ResearchSuggestionGenerator:
             if not isinstance(suggestion, dict):
                 continue
 
-            suggestion_type = suggestion.get(
-                "type",
-                "topic",
-            )
+            suggestion_type = str(
+                suggestion.get(
+                    "type",
+                    "topic",
+                )
+            ).strip().lower()
 
             if suggestion_type not in allowed_types:
                 suggestion_type = "topic"

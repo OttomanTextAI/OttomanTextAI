@@ -141,11 +141,40 @@ class EntityFilterClassifier:
             completion.choices[0].message.content or ""
         ).strip()
 
+        print(
+            "[ENTITY FILTER RAW RESPONSE]",
+            repr(response_text),
+            flush=True,
+        )
+
         result = parse_model_json(
             response_text
         )
 
-        if not result:
+        def has_usable_result(data: dict) -> bool:
+            if not isinstance(data, dict):
+                return False
+
+            entities = data.get("entities")
+
+            if not isinstance(entities, list) or not entities:
+                return False
+
+            for entity in entities:
+                if not isinstance(entity, dict):
+                    continue
+
+                text = str(
+                    entity.get("text", "")
+                ).strip()
+
+                if text:
+                    return True
+
+            return False
+
+
+        if not has_usable_result(result):
             print(
                 "[ENTITY FILTER] Invalid or truncated JSON. Retrying...",
                 flush=True,
@@ -163,7 +192,9 @@ class EntityFilterClassifier:
                         "content": (
                             "BELGE METNİ:\n"
                             f"{optimized_text}\n\n"
-                            "Önceki cevap geçerli JSON olarak tamamlanamadı. "
+                            "Önceki cevap gerekli entities yapısını üretmedi "
+                            "veya geçerli JSON değildi. "
+                            "Belge anlamlı olduğu için entities listesi boş OLMAMALI. "
                             "Bu kez çok kısa cevap ver. "
                             "En fazla 8 öğe döndür. "
                             "Yalnızca en önemli öğeleri seç. "
@@ -202,9 +233,10 @@ class EntityFilterClassifier:
                 retry_text
             )
 
-            if not result:
+            if not has_usable_result(result):
                 print(
-                    "[ENTITY FILTER] Retry JSON parsing failed.",
+                    "[ENTITY FILTER] Retry returned unusable result:",
+                    result,
                     flush=True,
                 )
                 result = {}
@@ -278,8 +310,9 @@ class EntityFilterClassifier:
                 text.lower()
             )
 
-            mentions = max(1, mentions)
-
+            if mentions == 0:
+                continue
+            
             try:
                 confidence = float(
                     entity.get("confidence", 0.5)

@@ -94,6 +94,12 @@ class DocumentPredictionGenerator:
             max_tokens=900,
         )
 
+        print(
+            "[AI PREDICTIONS] Finish reason:",
+            response.choices[0].finish_reason,
+            flush=True,
+        )
+
         answer_text = (
             response.choices[0].message.content or ""
         ).strip()
@@ -108,7 +114,29 @@ class DocumentPredictionGenerator:
             answer_text
         )
 
-        if not result:
+        def has_usable_result(data: dict) -> bool:
+            if not isinstance(data, dict):
+                return False
+
+            predictions = data.get("predictions")
+            recommendations = data.get("recommendations")
+
+            if not isinstance(predictions, list):
+                return False
+
+            if not isinstance(recommendations, list):
+                return False
+
+            if len(predictions) == 0:
+                return False
+
+            if len(recommendations) == 0:
+                return False
+
+            return True
+
+
+        if not has_usable_result(result):
             print(
                 "[AI PREDICTIONS] Invalid or truncated JSON. Retrying...",
                 flush=True,
@@ -126,11 +154,17 @@ class DocumentPredictionGenerator:
                         "content": (
                             "BELGE METNİ:\n"
                             f"{context}\n\n"
-                            "Önceki cevap geçerli JSON olarak tamamlanamadı. "
-                            "Bu kez çok kısa cevap ver. "
-                            "En fazla 2 prediction ve 2 recommendation üret. "
+                           "Önceki cevap gerekli prediction/recommendation "
+                            "yapısını üretmedi veya geçerli JSON değildi. "
+                            "Bu kez SADECE geçerli JSON döndür. "
+                            "Belge anlamlı olduğu için predictions ve recommendations "
+                            "listelerinin ikisi de boş OLMAMALI. "
+                            "En az 1, en fazla 2 prediction üret. "
+                            "En az 1, en fazla 2 recommendation üret. "
+                            "Her prediction nesnesinde prediction, confidence ve reason olsun. "
+                            "Her recommendation nesnesinde recommendation ve reason olsun. "
                             "Reason alanları en fazla 12 kelime olsun. "
-                            "JSON nesnesini mutlaka tamamen kapat."
+                            "JSON dışında hiçbir açıklama yazma."
                         ),
                     },
                 ],
@@ -138,6 +172,11 @@ class DocumentPredictionGenerator:
                 max_tokens=650,
             )
 
+            print(
+                "[AI PREDICTIONS] Retry finish reason:",
+                retry_response.choices[0].finish_reason,
+                flush=True,
+            )
             retry_text = (
                 retry_response.choices[0].message.content or ""
             ).strip()
@@ -148,16 +187,17 @@ class DocumentPredictionGenerator:
                 flush=True,
             )
 
-            result = parse_model_json(
-                retry_text
-            )
+        result = parse_model_json(
+            retry_text
+        )
 
-            if not result:
-                print(
-                    "[AI PREDICTIONS] Retry JSON parsing failed.",
-                    flush=True,
-                )
-                result = {}
+        if not has_usable_result(result):
+            print(
+                "[AI PREDICTIONS] Retry returned unusable result:",
+                result,
+                flush=True,
+            )
+            result = {}
 
         if not isinstance(result, dict):
             result = {}
