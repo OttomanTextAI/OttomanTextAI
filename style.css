@@ -1169,6 +1169,31 @@ body.dark-theme .hero-section::after {
     box-shadow: 0 0 0 1px rgba(30, 140, 134, 0.75), 0 0 10px rgba(30, 140, 134, 0.5);
 }
 
+/* "AI Belirsizliği" (guess) filtresi — bkz. applyEntityFilter() app.js'te.
+   Diğer kategorilerin (person/place/...) aksine SADECE transTextDisplay'i
+   değil, ocrTextDisplay ve translitTextDisplay'i de kapsar. Bu iki kolonda
+   .entity-tag/.uncertain-word hiç üretilmez, bu yüzden sadece .entity-plain
+   (düz metin, artık ocr/translit'te de üretiliyor — bkz.
+   renderSentenceSpansHtml()) ve .guess-marker (tahmin edilen **...**
+   span'ları, tıklanabilirlikten bağımsız — bkz. renderGuess()) hedeflenir.
+   transTextDisplay için genel soluklaştırma kuralı zaten yukarıda var
+   ([data-entity-filter] .entity-plain/.uncertain-word/.entity-tag); burada
+   sadece .guess-marker'ı geri parlatan kural ekleniyor. */
+#ocrTextDisplay[data-entity-filter="guess"] .entity-plain,
+#translitTextDisplay[data-entity-filter="guess"] .entity-plain {
+    opacity: 0.3;
+}
+
+#ocrTextDisplay[data-entity-filter="guess"] .guess-marker,
+#translitTextDisplay[data-entity-filter="guess"] .guess-marker,
+#transTextDisplay[data-entity-filter="guess"] .guess-marker {
+    opacity: 1;
+    filter: brightness(1.2) saturate(1.2);
+    background-color: rgba(197, 160, 89, 0.32);
+    box-shadow: 0 0 0 1px rgba(197, 160, 89, 0.75), 0 0 10px rgba(197, 160, 89, 0.55);
+    border-radius: 2px;
+}
+
 .uncertain-word:hover,
 .uncertain-word:focus-visible {
     color: var(--color-gold-light);

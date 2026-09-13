@@ -1656,10 +1656,16 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         const wordField = (options && options.field) || '';
         let guessIndex = 0;
 
+        // "guess-marker" class'ı, tıklanabilirlikten (clickableGuesses)
+        // BAĞIMSIZ olarak HER kolonda ekleniyor — "AI Belirsizliği" filtresinin
+        // (bkz. getEntityFilterCategories/applyEntityFilter) hedef alacağı
+        // ortak class budur. "uncertain-word" ise SADECE clickableGuesses
+        // true iken (yani sadece trans_modern'de) eklenir ve tıklanabilir
+        // alt çizgi stilini (bkz. style.css) tetikler — bu davranış değişmedi.
         function renderGuess(text) {
-            if (!clickableGuesses) return `<strong>${text}</strong>`;
+            if (!clickableGuesses) return `<strong class="guess-marker">${text}</strong>`;
             const wordIdx = guessIndex++;
-            return `<strong class="uncertain-word" data-word-idx="${wordIdx}" data-word-field="${wordField}">${text}</strong>`;
+            return `<strong class="guess-marker uncertain-word" data-word-idx="${wordIdx}" data-word-field="${wordField}">${text}</strong>`;
         }
 
         // Aynı entity (örn. "İstanbul") bu metin içinde birden fazla kez
@@ -1683,7 +1689,15 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
                         : highlightEntitiesInSegment(seg.text, entities, usedEntityKeys))
                     .join('');
             } else {
-                inner = escaped.replace(/\*\*(.+?)\*\*/gs, (_match, guessed) => renderGuess(guessed));
+                // entities yok (ocr/translit/en) — ama "AI Belirsizliği"
+                // filtresinin bu kolonlarda da çalışabilmesi için düz metin
+                // parçaları da (trans_modern'daki .entity-plain deseniyle
+                // aynı şekilde) sarmalanır; splitGuessSegments zaten
+                // entities'ten bağımsız, genel bir bölme yardımcısı.
+                const segments = splitGuessSegments(escaped);
+                inner = segments
+                    .map(seg => seg.bold ? renderGuess(seg.text) : wrapPlainText(seg.text))
+                    .join('');
             }
             return `<span class="tts-sentence" data-tts-idx="${idx}">${inner}</span>`;
         }).join('');
@@ -2043,6 +2057,8 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     function resetEntityFilter() {
         activeEntityFilterType = null;
         transTextDisplay.removeAttribute('data-entity-filter');
+        ocrTextDisplay.removeAttribute('data-entity-filter');
+        translitTextDisplay.removeAttribute('data-entity-filter');
     }
 
     // Filtre uygulanabilecek kategorileri, ekranda GERÇEKTEN render edilmiş
@@ -2052,18 +2068,31 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     // metninde birebir eşleşmemiş olabilir; kullanıcıya sadece gerçekten
     // tıklayıp göreceği kategoriler gösterilmeli).
     function getEntityFilterCategories() {
-        return [
+        const entityCategories = [
             { type: 'person', label: 'Kişiler' },
             { type: 'place', label: 'Yerler' },
             { type: 'date', label: 'Tarihler' },
             { type: 'concept', label: 'Kavramlar' },
             { type: 'event', label: 'Olaylar' },
-        ]
-            .map(cat => ({
-                ...cat,
-                count: transTextDisplay.querySelectorAll(`.entity-tag[data-type="${cat.type}"]`).length
-            }))
-            .filter(cat => cat.count > 0);
+        ].map(cat => ({
+            ...cat,
+            count: transTextDisplay.querySelectorAll(`.entity-tag[data-type="${cat.type}"]`).length
+        }));
+
+        // "AI Belirsizliği": diğer kategorilerin aksine tek bir .entity-tag
+        // tipine değil, HER ÜÇ kolondaki (ocr/translit/trans_modern)
+        // .guess-marker span'larına bakar — bkz. applyEntityFilter().
+        const guessCategory = {
+            type: 'guess',
+            label: 'AI Belirsizliği',
+            count: (
+                ocrTextDisplay.querySelectorAll('.guess-marker').length +
+                translitTextDisplay.querySelectorAll('.guess-marker').length +
+                transTextDisplay.querySelectorAll('.guess-marker').length
+            )
+        };
+
+        return [...entityCategories, guessCategory].filter(cat => cat.count > 0);
     }
 
     // entityFilterMenu'yü (dropdown içeriğini) sıfırdan kurar — hem menü
@@ -2112,6 +2141,18 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
             transTextDisplay.setAttribute('data-entity-filter', activeEntityFilterType);
         } else {
             transTextDisplay.removeAttribute('data-entity-filter');
+        }
+
+        // "AI Belirsizliği" (guess) filtresi TEK BAŞINA ocr/translit
+        // kolonlarını da kapsar — diğer kategoriler (person/place/...) her
+        // zaman SADECE trans_modern'de çalışmaya devam eder, buradaki
+        // davranışları değişmedi.
+        if (activeEntityFilterType === 'guess') {
+            ocrTextDisplay.setAttribute('data-entity-filter', 'guess');
+            translitTextDisplay.setAttribute('data-entity-filter', 'guess');
+        } else {
+            ocrTextDisplay.removeAttribute('data-entity-filter');
+            translitTextDisplay.removeAttribute('data-entity-filter');
         }
 
         if (!entityFilterMenu.classList.contains('hidden')) {
@@ -2633,7 +2674,10 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
 
             const utterance = new SpeechSynthesisUtterance(currentSentenceText);
             utterance.lang = lang;
-            utterance.rate = 0.9;
+            // Osmanlıca (ocr+translit, channelKey 'osmanli') kanalı Arap
+            // harfli/eski yazım kökenli kelimeler içerdiği için diğer
+            // kanallardan (trans/en, 0.9'da kalır) biraz daha yavaş okunur.
+            utterance.rate = (channelKey === 'osmanli') ? 0.8 : 0.9;
             index++;
 
             // Kelime seviyesi vurgu: SADECE ses/tarayıcı word-boundary
