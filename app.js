@@ -2602,7 +2602,7 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     }
 
     ttsBtn.addEventListener('click', () => handleTtsToggle({
-        getText: () => transTextDisplay.textContent,
+        getText: () => transTextDisplay.textContent.normalize('NFC'),
         lang: 'tr-TR',
         displays: [transTextDisplay],
         buttons: [ttsBtn],
@@ -2617,6 +2617,10 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     // sadece TTS'e giden metni etkiler, ekranda hiçbir şey değişmez.
     function cleanTranslitForTts(text) {
         if (!text) return text;
+        // â/û/î gibi harflerin NFD (ayrışık: harf + birleştirici işaret)
+        // biçiminde gelip TTS motoru tarafından sessizce atlanma
+        // ihtimaline karşı önce NFC'ye normalize edilir.
+        text = text.normalize('NFC');
         const diacriticMap = {
             'ā': 'a', 'Ā': 'A',
             'ḳ': 'k', 'Ḳ': 'K',
@@ -2662,7 +2666,7 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     // boşsa) diğer iki dilden bağımsız, ayrı bir uyarı gösterir (bkz.
     // handleTtsToggle'daki emptyMessage kontrolü).
     enTtsBtn.addEventListener('click', () => handleTtsToggle({
-        getText: () => enTextDisplay.textContent,
+        getText: () => enTextDisplay.textContent.normalize('NFC'),
         lang: 'en-US',
         displays: [enTextDisplay],
         buttons: [enTtsBtn],
