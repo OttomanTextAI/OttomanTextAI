@@ -216,7 +216,7 @@ function _renderDocDetailTabs(data) {
             </div>
             <div class="doc-detail-card">
                 <h3>Türkçe Çeviri</h3>
-                <div class="text-display">${escapeHtml(data.trans)}</div>
+                <div class="text-display">${escapeHtml(data.trans_modern || data.trans)}</div>
             </div>
             ${data.trans_en ? `
                 <div class="doc-detail-card">
