@@ -97,6 +97,58 @@ class AISuggestion(db.Model):
     payload = db.Column(db.JSON, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+class Note(db.Model):
+    __tablename__ = "notes"
+
+    id = db.Column(
+        db.Integer,
+        primary_key=True,
+    )
+
+    document_id = db.Column(
+        db.Integer,
+        db.ForeignKey("documents.id"),
+        nullable=False,
+        index=True,
+    )
+
+    content = db.Column(
+        db.Text,
+        nullable=False,
+    )
+
+    source_type = db.Column(
+        db.String(50),
+        nullable=False,
+        default="manual",
+    )
+
+    is_completed = db.Column(
+        db.Boolean,
+        nullable=False,
+        default=False,
+    )
+
+    created_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow,
+    )
+
+    updated_at = db.Column(
+        db.DateTime,
+        default=datetime.utcnow,
+        onupdate=datetime.utcnow,
+    )
+
+    document = db.relationship(
+        "Document",
+        backref=db.backref(
+            "user_notes",
+            lazy=True,
+            cascade="all, delete-orphan",
+        ),
+    )
+    
 class ReadingProgress(db.Model):
     __tablename__ = "reading_progress"
 

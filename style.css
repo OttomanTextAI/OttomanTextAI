@@ -3126,3 +3126,49 @@ body.dark-theme .hero-section::after {
         position: static;
     }
 }
+
+.ai-note-enabled {
+    position: relative;
+    padding-bottom: 38px !important;
+}
+
+.ai-note-action {
+    position: absolute;
+    right: 12px;
+    bottom: 9px;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    opacity: 0;
+    transform: translateY(4px);
+    transition:
+        opacity 0.18s ease,
+        transform 0.18s ease;
+
+    cursor: pointer;
+    user-select: none;
+
+    padding: 5px 9px;
+    border-radius: 7px;
+
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+}
+
+.ai-note-enabled:hover .ai-note-action {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.ai-note-action:hover {
+    border-color: currentColor;
+}
+
+.ai-note-action.saved {
+    opacity: 1;
+}
+
+.ai-note-action.go-to-notes {
+    opacity: 1;
+}

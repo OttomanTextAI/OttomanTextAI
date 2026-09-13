@@ -9,7 +9,16 @@ from pathlib import Path
 from flask_bcrypt import Bcrypt
 import time
 import random
-from models import db, User, TokenBlocklist, Document, DocumentText, DocumentAnalysis, DocumentEntity
+from models import (
+    db,
+    User,
+    TokenBlocklist,
+    Document,
+    DocumentText,
+    DocumentAnalysis,
+    DocumentEntity,
+    Note,
+)
 import cv2
 import numpy as np
 import requests
@@ -3063,6 +3072,150 @@ def analyze_document(current_user, document_id):
         "places": entities["places"],
         "concepts": entities["concepts"],
     }), 201
+
+@app.route("/api/documents/<int:document_id>/notes", methods=["POST"])
+@token_required
+def create_note(current_user, document_id):
+    document = Document.query.filter_by(
+        id=document_id,
+        user_id=current_user.id,
+    ).first()
+
+    if not document:
+        return jsonify({"error": "Belge bulunamadı."}), 404
+
+    data = request.get_json(silent=True) or {}
+
+    content = str(data.get("content", "")).strip()
+    source_type = str(data.get("source_type", "manual")).strip() or "manual"
+
+    if not content:
+        return jsonify({"error": "Not içeriği boş olamaz."}), 400
+
+    note = Note(
+        document_id=document.id,
+        content=content,
+        source_type=source_type,
+    )
+
+    db.session.add(note)
+    db.session.commit()
+
+    return jsonify({
+        "message": "Not eklendi.",
+        "note": {
+            "id": note.id,
+            "document_id": note.document_id,
+            "content": note.content,
+            "source_type": note.source_type,
+            "is_completed": note.is_completed,
+            "created_at": note.created_at.isoformat(),
+            "updated_at": note.updated_at.isoformat(),
+        },
+    }), 201
+
+
+@app.route("/api/documents/<int:document_id>/notes", methods=["GET"])
+@token_required
+def get_notes(current_user, document_id):
+    document = Document.query.filter_by(
+        id=document_id,
+        user_id=current_user.id,
+    ).first()
+
+    if not document:
+        return jsonify({"error": "Belge bulunamadı."}), 404
+
+    notes = (
+        Note.query
+        .filter_by(document_id=document.id)
+        .order_by(Note.created_at.desc())
+        .all()
+    )
+
+    return jsonify([
+        {
+            "id": note.id,
+            "document_id": note.document_id,
+            "content": note.content,
+            "source_type": note.source_type,
+            "is_completed": note.is_completed,
+            "created_at": note.created_at.isoformat(),
+            "updated_at": note.updated_at.isoformat(),
+        }
+        for note in notes
+    ])
+
+
+@app.route("/api/notes/<int:note_id>", methods=["PATCH"])
+@token_required
+def update_note(current_user, note_id):
+    note = (
+        Note.query
+        .join(Document, Note.document_id == Document.id)
+        .filter(
+            Note.id == note_id,
+            Document.user_id == current_user.id,
+        )
+        .first()
+    )
+
+    if not note:
+        return jsonify({"error": "Not bulunamadı."}), 404
+
+    data = request.get_json(silent=True) or {}
+
+    if "content" in data:
+        content = str(data["content"]).strip()
+
+        if not content:
+            return jsonify({"error": "Not içeriği boş olamaz."}), 400
+
+        note.content = content
+
+    if "is_completed" in data:
+        note.is_completed = bool(data["is_completed"])
+
+    note.updated_at = datetime.utcnow()
+
+    db.session.commit()
+
+    return jsonify({
+        "message": "Not güncellendi.",
+        "note": {
+            "id": note.id,
+            "document_id": note.document_id,
+            "content": note.content,
+            "source_type": note.source_type,
+            "is_completed": note.is_completed,
+            "created_at": note.created_at.isoformat(),
+            "updated_at": note.updated_at.isoformat(),
+        },
+    })
+
+@app.route("/api/notes/<int:note_id>", methods=["DELETE"])
+@token_required
+def delete_note(current_user, note_id):
+    note = (
+        Note.query
+        .join(Document, Note.document_id == Document.id)
+        .filter(
+            Note.id == note_id,
+            Document.user_id == current_user.id,
+        )
+        .first()
+    )
+
+    if not note:
+        return jsonify({"error": "Not bulunamadı."}), 404
+
+    db.session.delete(note)
+    db.session.commit()
+
+    return jsonify({
+        "message": "Not silindi."
+    })
+
 @app.route("/api/translations/save", methods=["POST"])
 def save_translation():
     auth_header = request.headers.get("Authorization", "")

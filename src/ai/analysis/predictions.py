@@ -248,11 +248,16 @@ class DocumentPredictionGenerator:
             )
 
             if prediction:
-                cleaned_predictions.append({
-                    "prediction": prediction,
-                    "confidence": confidence,
-                    "reason": reason,
-                })
+               {
+                "prediction": prediction,
+                "confidence": confidence,
+                "reason": reason,
+                "note_suitable": True,
+                "note_text": (
+                    f"Tahmin: {prediction}"
+                    + (f"\nGerekçe: {reason}" if reason else "")
+                ),
+            }
 
         cleaned_recommendations = []
 
@@ -269,10 +274,15 @@ class DocumentPredictionGenerator:
             ).strip()
 
             if recommendation:
-                cleaned_recommendations.append({
+                {
                     "recommendation": recommendation,
                     "reason": reason,
-             })
+                    "note_suitable": True,
+                    "note_text": (
+                        f"Öneri: {recommendation}"
+                        + (f"\nGerekçe: {reason}" if reason else "")
+                    ),
+                }
         print(
             "[AI PREDICTIONS] Parsed result:",
             {
