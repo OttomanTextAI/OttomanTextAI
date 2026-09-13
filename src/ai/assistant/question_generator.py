@@ -32,15 +32,18 @@ Kurallar:
 - Sadece soru metinlerini üret, açıklama ekleme.
 - JSON'u kısa ve kompakt tut.
 
-JSON formatı:
+Çıktın TAM OLARAK şu yapıda olmalı:
 
 {
   "questions": [
-    "...",
-    "...",
-    "..."
+    "Birinci soru?",
+    "İkinci soru?",
+    "Üçüncü soru?"
   ]
 }
+
+"questions" alanı mutlaka bir JSON listesi olmalıdır.
+Liste dışında hiçbir alan veya açıklama ekleme.
 """.strip()
 
 
@@ -135,6 +138,13 @@ class DocumentQuestionGenerator:
             response_text
         )
 
+        if not result or "questions" not in result:
+            print(
+                "[AI QUESTIONS] JSON parsing/format validation failed.",
+                flush=True,
+            )
+            result = {}
+
         if not result:
             print(
                 "[AI QUESTIONS] Invalid or truncated JSON. Retrying...",
@@ -152,10 +162,12 @@ class DocumentQuestionGenerator:
                         "role": "user",
                         "content": (
                             f"{optimized_text}\n\n"
-                            "Önceki cevap geçerli JSON olarak tamamlanamadı. "
-                            "Bu kez yalnızca 3 kısa soru döndür. "
+                            "Önceki cevap istenen JSON formatına uymadı. "
+                            'SADECE {"questions":["Soru 1?","Soru 2?","Soru 3?"]} '
+                            "yapısında geçerli JSON döndür. "
+                            "questions mutlaka bir liste olsun. "
                             "Her soru en fazla 8 kelime olsun. "
-                            "JSON'u mutlaka tamamen kapat."
+                            "Başka hiçbir alan veya açıklama ekleme."
                         ),
                     },
                 ],
@@ -188,12 +200,12 @@ class DocumentQuestionGenerator:
                 retry_text
             )
 
-            if not result:
-                print(
-                    "[AI QUESTIONS] Retry JSON parsing failed.",
-                    flush=True,
-                )
-                result = {}
+        if not result or "questions" not in result:
+            print(
+                "[AI QUESTIONS] Retry JSON parsing/format failed.",
+                flush=True,
+            )
+            result = {}
 
         if not isinstance(result, dict):
             result = {}
@@ -206,8 +218,27 @@ class DocumentQuestionGenerator:
         if not isinstance(questions, list):
             questions = []
 
-        return [
-            str(question).strip()
-            for question in questions[:3]
-            if str(question).strip()
-        ]
+        cleaned_questions = []
+
+        for question in questions:
+            if not isinstance(question, str):
+                continue
+
+            question = question.strip()
+
+            if not question:
+                continue
+
+            if question not in cleaned_questions:
+                cleaned_questions.append(question)
+
+            if len(cleaned_questions) == 3:
+                break
+
+        print(
+            "[AI QUESTIONS FINAL]",
+            cleaned_questions,
+            flush=True,
+        )
+
+        return cleaned_questions

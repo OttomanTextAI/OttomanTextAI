@@ -71,11 +71,30 @@ Genel kurallar:
 SADECE geçerli JSON döndür.
 JSON formatı:
 
+SADECE geçerli JSON döndür.
+
+Örnek DIRECT:
 {
-  "answer_type": "direct | related | unavailable",
-  "answer": "Kullanıcıya gösterilecek cevap",
-  "related_information": ["ilgili bilgi 1", "ilgili bilgi 2"],
+  "answer_type": "direct",
+  "answer": "Belgeye dayalı cevap",
+  "related_information": [],
+  "external_answer_available": false
+}
+
+Örnek RELATED:
+{
+  "answer_type": "related",
+  "answer": "Bu bilgi belgede doğrudan bulunmuyor.",
+  "related_information": ["Belgedeki ilgili bilgi"],
   "external_answer_available": true
+}
+
+Örnek UNAVAILABLE:
+{
+  "answer_type": "unavailable",
+  "answer": "Bu soru yüklenen belgeyle ilgili değil.",
+  "related_information": [],
+  "external_answer_available": false
 }
 
 external_answer_available:
@@ -277,38 +296,140 @@ class DocumentQA:
             completion.choices[0].message.content or ""
         ).strip()
 
+        print(
+            "[DOCUMENT QA] Raw response:",
+            repr(answer_text),
+            flush=True,
+        )
+
         parsed_answer = parse_model_json(
             answer_text
         )
 
-        if not parsed_answer:
+        def has_usable_answer(data: dict) -> bool:
+            if not isinstance(data, dict):
+                return False
+
+            answer_type = str(
+                data.get("answer_type", "")
+            ).strip().lower()
+
+            if answer_type not in {
+                "direct",
+                "related",
+                "unavailable",
+            }:
+                return False
+
+            answer = str(
+                data.get("answer", "")
+            ).strip()
+
+            if not answer:
+                return False
+
+            related_information = data.get(
+                "related_information",
+                [],
+            )
+
+            if not isinstance(related_information, list):
+                return False
+
+            return True
+
+        if not has_usable_answer(parsed_answer):
             print(
-                "[DOCUMENT QA] Invalid JSON response:",
+                "[DOCUMENT QA] Invalid JSON response. Retrying:",
                 repr(answer_text),
                 flush=True,
             )
 
-            parsed_answer = {
-                "answer_type": "unavailable",
-                "answer": (
-                    "Belge yanıtı oluşturulurken bir biçimlendirme "
-                    "hatası oluştu. Lütfen sorunuzu tekrar deneyin."
-                ),
-                "related_information": [],
-                "external_answer_available": False,
-            }
+            retry_prompt = (
+                user_prompt
+                + "\n\nÖNEMLİ: Önceki yanıt geçerli veya kullanılabilir JSON değildi. "
+                    "Bu kez SADECE geçerli bir JSON nesnesi döndür. "
+                    "answer_type alanı tam olarak şu üç değerden BİRİ olmalı: "
+                    "\"direct\", \"related\" veya \"unavailable\". "
+                    "JSON dışında hiçbir açıklama veya Markdown yazma.\n"
+                    "{\n"
+                    '  "answer_type": "direct",\n'
+                    '  "answer": "cevap",\n'
+                    '  "related_information": [],\n'
+                    '  "external_answer_available": false\n'
+                    "}"
+            )
+
+            retry_completion = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": DOCUMENT_QA_SYSTEM_PROMPT,
+                    },
+                    {
+                        "role": "user",
+                        "content": retry_prompt,
+                    },
+                ],
+                temperature=0.0,
+                max_tokens=700,
+            )
+
+            print(
+                "[DOCUMENT QA] Retry finish reason:",
+                retry_completion.choices[0].finish_reason,
+                flush=True,
+            )
+
+            retry_text = (
+                retry_completion.choices[0].message.content
+                or ""
+            ).strip()
+
+            print(
+                "[DOCUMENT QA] Retry response:",
+                repr(retry_text),
+                flush=True,
+            )
+
+            parsed_answer = parse_model_json(
+                retry_text
+            )
+            parsed_answer = parse_model_json(
+                retry_text
+            )
+
+            if not has_usable_answer(parsed_answer):
+                print(
+                    "[DOCUMENT QA] Retry also returned invalid JSON:",
+                    repr(retry_text),
+                    flush=True,
+                )
+
+                parsed_answer = {
+                    "answer_type": "unavailable",
+                    "answer": (
+                        "Bu soru için belgeye dayalı güvenilir "
+                        "bir yanıt oluşturulamadı."
+                    ),
+                    "related_information": [],
+                    "external_answer_available": False,
+                }
           
-        answer_type = parsed_answer.get(
-            "answer_type",
-            "related",
-        )
+        answer_type = str(
+            parsed_answer.get(
+                "answer_type",
+                "unavailable",
+            )
+        ).strip().lower()
 
         if answer_type not in {
             "direct",
             "related",
             "unavailable",
         }:
-            answer_type = "related"
+            answer_type = "unavailable"
 
         if answer_type == "related":
             try:

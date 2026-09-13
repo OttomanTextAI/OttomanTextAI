@@ -80,7 +80,18 @@ class InMemoryVectorStore:
             reverse=True,
         )
 
-        return scored_results[:top_k]
+        top_results = scored_results[:top_k]
+
+        print(
+            "[VECTOR STORE] Top scores:",
+            [
+                round(result.score, 4)
+                for result in top_results
+            ],
+            flush=True,
+        )
+
+        return top_results
 
     @staticmethod
     def _cosine_similarity(

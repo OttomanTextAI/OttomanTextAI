@@ -90,6 +90,12 @@ class DocumentRetriever:
         if not query or not query.strip():
             raise ValueError("Query cannot be empty.")
 
+        print(
+            "[RAG QUERY]",
+            repr(query.strip()),
+            flush=True,
+        )
+
         query_embedding = self.embedding_client.embed_text(
             query
         )
@@ -98,17 +104,6 @@ class DocumentRetriever:
             query_embedding=query_embedding,
             top_k=top_k,
         )
-
-        for result in results:
-            print(
-                f"[RAG RETRIEVAL] "
-                f"chunk={result.chunk.chunk_id} "
-                f"score={result.score:.4f} "
-                f"text={result.chunk.text[:150]!r}",
-                flush=True,
-            )
-
-        return results
 
         for result in results:
             print(

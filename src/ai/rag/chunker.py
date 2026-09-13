@@ -90,4 +90,21 @@ def chunk_text(
 
         start = next_start
 
+    print(
+        "[RAG CHUNKS]",
+        f"count={len(chunks)}",
+        f"sizes={[len(chunk.text) for chunk in chunks]}",
+        flush=True,
+    )
+
+    for chunk in chunks[:5]:
+        print(
+            f"[RAG CHUNK] "
+            f"id={chunk.chunk_id} "
+            f"start={chunk.start} "
+            f"end={chunk.end} "
+            f"text={chunk.text[:120]!r}",
+            flush=True,
+        )
+
     return chunks
