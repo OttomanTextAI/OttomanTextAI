@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
         transTextEn: '',
         translitText: '',
         lastAnalysis: null,
+        dbDocumentId: null,
         apiKey: localStorage.getItem('gemini_api_key') || '',
         engine: localStorage.getItem('translation_engine') || 'gemini-flash',
         authToken: localStorage.getItem('auth_token') || null,
@@ -916,6 +917,7 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         state.transText = '';
         state.transTextEn = '';
         state.translitText = '';
+        state.dbDocumentId = null;
 
         clearProcessingFailure();
 
@@ -1006,6 +1008,7 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         resetEntityFilter();
         state.selectedFile = null;
         state.imageDataUrl = null;
+        state.dbDocumentId = null;
 
         state.ocrText = '';
         state.transText = '';
@@ -2720,18 +2723,166 @@ ${transTextDisplay.textContent}
                 body: formData
             }, 30000);
 
+            const data = await res.json().catch(() => ({}));
+
             if (!res.ok) {
-                const data = await res.json().catch(() => ({}));
-                console.warn('Çeviri veritabanına kaydedilemedi:', data.error || res.status);
+                console.warn(
+                    'Çeviri veritabanına kaydedilemedi:',
+                    data.error || res.status
+                );
                 return;
             }
 
-            statusMessage.textContent = (statusMessage.textContent || '') + ' (Belgelerime kaydedildi)';
+            state.dbDocumentId = data.document_id || null;
+
+            if (state.dbDocumentId) {
+                localStorage.setItem(
+                    'active_document_id',
+                    String(state.dbDocumentId)
+                );
+            }
+            console.log(
+                '[DOCUMENT SAVE] DB document id:',
+                state.dbDocumentId
+            );
+
+            statusMessage.textContent =
+                (statusMessage.textContent || '') +
+                ' (Belgelerime kaydedildi)';
         } catch (err) {
             console.warn('Çeviri veritabanına kaydedilemedi:', err);
         }
     }
 
+        async function addAiResultToNotes(
+        noteText,
+        sourceType = 'manual'
+    ) {
+        if (!state.authToken) {
+            alert('Not eklemek için giriş yapmanız gerekiyor.');
+            return false;
+        }
+
+        if (!state.dbDocumentId) {
+            alert(
+                'Belge henüz hesabınıza kaydedilmedi. ' +
+                'Lütfen birkaç saniye sonra tekrar deneyin.'
+            );
+            return false;
+        }
+
+        const content = String(noteText || '').trim();
+
+        if (!content) {
+            alert('Eklenecek not içeriği bulunamadı.');
+            return false;
+        }
+
+        try {
+            const response = await fetchWithTimeout(
+                `${API_BASE_URL}/api/documents/${state.dbDocumentId}/notes`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization':
+                            `Bearer ${state.authToken}`
+                    },
+                    body: JSON.stringify({
+                        content: content,
+                        source_type: sourceType
+                    })
+                },
+                30000
+            );
+
+            const data = await response
+                .json()
+                .catch(() => ({}));
+
+            if (!response.ok) {
+                throw new Error(
+                    data.error || 'Not kaydedilemedi.'
+                );
+            }
+
+            return true;
+
+        } catch (error) {
+            console.error(
+                '[NOTES]',
+                error
+            );
+
+            alert(
+                'Not kaydedilemedi: ' +
+                error.message
+            );
+
+            return false;
+        }
+    }
+
+    function attachNoteAction(
+    card,
+    item,
+    sourceType
+) {
+    if (
+        !item ||
+        item.note_suitable !== true ||
+        !String(item.note_text || '').trim()
+    ) {
+        return;
+    }
+
+    card.classList.add('ai-note-enabled');
+
+    const noteAction = document.createElement('span');
+    noteAction.className = 'ai-note-action';
+    noteAction.textContent = '＋ Notlarıma Ekle';
+
+    noteAction.addEventListener('click', async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
+        if (noteAction.dataset.saving === 'true') {
+            return;
+        }
+
+        noteAction.dataset.saving = 'true';
+
+        const oldText = noteAction.textContent;
+        noteAction.textContent = 'Ekleniyor...';
+
+        const success = await addAiResultToNotes(
+            item.note_text,
+            sourceType
+        );
+
+        if (success) {
+            noteAction.textContent = '✓ Notlarıma Eklendi';
+            noteAction.classList.add('saved');
+
+            setTimeout(() => {
+                noteAction.textContent = 'Notlarıma Git →';
+                noteAction.classList.add('go-to-notes');
+            }, 1000);
+
+            noteAction.onclick = (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                window.location.href = 'notes.html';
+            };
+
+        } else {
+            noteAction.textContent = oldText;
+            noteAction.dataset.saving = 'false';
+        }
+    });
+
+    card.appendChild(noteAction);
+}
     // --- Sol Menü Çekmecesi ---
     // Sol üstteki hamburger butonuna tıklayınca soldan kayarak açılır ve
     // arkasındaki sayfa #sideDrawerOverlay ile karartılır (ekip
@@ -3211,6 +3362,12 @@ ${transTextDisplay.textContent}
                     card.appendChild(meta);
                     card.appendChild(reason);
 
+                    attachNoteAction(
+                        card,
+                        item,
+                        'prediction'
+                    );
+
                     card.addEventListener('click', () => {
                         assistantSelectedContext = {
                             type: 'prediction',
@@ -3286,6 +3443,12 @@ ${transTextDisplay.textContent}
 
                     card.appendChild(top);
                     card.appendChild(reason);
+
+                    attachNoteAction(
+                        card,
+                        item,
+                        'recommendation'
+                    );
 
                     card.addEventListener('click', () => {
                         assistantSelectedContext = {
@@ -3530,6 +3693,11 @@ if (Array.isArray(suggestions)) {
 
         button.textContent = text;
 
+        attachNoteAction(
+            button,
+            suggestion,
+            'research_suggestion'
+        );
         button.addEventListener('click', () => {
             assistantSelectedContext = {
                 type: suggestion.type || 'research',

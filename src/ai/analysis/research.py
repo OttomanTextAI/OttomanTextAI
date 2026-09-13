@@ -275,12 +275,18 @@ class ResearchSuggestionGenerator:
                 continue
 
             normalized.append(
-                {
-                    "type": suggestion_type,
-                    "title": title,
-                    "query": query,
-                    "reason": reason,
-                }
+               {
+                "type": suggestion_type,
+                "title": title,
+                "query": query,
+                "reason": reason,
+                "note_suitable": True,
+                "note_text": (
+                    f"Araştırma Önerisi: {title}"
+                    + (f"\nAraştırma: {query}" if query else "")
+                    + (f"\nNeden: {reason}" if reason else "")
+            ),
+        }
             )
 
         return normalized

@@ -248,4 +248,55 @@ class FiveWOneHAnalyzer:
                 )
                 result = {}
 
-        return self._normalize_result(result)
+        note_lines = ["5N1K Analizi:"]
+
+        for key, label in [
+            ("kim", "Kim"),
+            ("ne", "Ne"),
+            ("nerede", "Nerede"),
+            ("ne_zaman", "Ne Zaman"),
+            ("neden", "Neden"),
+            ("nasil", "Nasıl"),
+        ]:
+            item = result.get(key)
+
+            if not isinstance(item, dict):
+                continue
+
+            answer = str(
+                item.get("cevap", "")
+            ).strip()
+
+            evidence = str(
+                item.get("dayanak", "")
+            ).strip()
+
+            if not answer:
+                continue
+
+            note_lines.append(
+                f"{label}: {answer}"
+            )
+
+            if evidence:
+                note_lines.append(
+                    f"Dayanak: {evidence}"
+                )
+
+        note_text = "\n".join(note_lines)
+
+        normalized_result = self._normalize_result(
+            result
+        )
+
+        normalized_result["note_suitable"] = (
+            len(note_lines) > 1
+        )
+
+        normalized_result["note_text"] = (
+            note_text
+            if len(note_lines) > 1
+            else ""
+        )
+
+        return normalized_result
