@@ -2699,7 +2699,7 @@ def get_current_user(current_user):
     return jsonify({
         "user_id": current_user.id,
         "email": current_user.email,
-        "created_at": current_user.created_at.isoformat(),
+        "created_at": current_user.created_at.isoformat() + "Z",
     })
 @app.route("/api/documents/upload", methods=["POST"])
 @token_required
@@ -2822,8 +2822,8 @@ def list_documents(current_user):
                 "file_size": doc.file_size,
                 "summary": _short_summary(doc),
                 "thumbnail_url": _thumbnail_url(doc),
-                "uploaded_at": doc.uploaded_at.isoformat(),
-                "updated_at": doc.updated_at.isoformat(),
+                "uploaded_at": doc.uploaded_at.isoformat() + "Z",
+                "updated_at": doc.updated_at.isoformat() + "Z",
             }
             for doc in pagination.items
         ],
@@ -2933,7 +2933,7 @@ def update_document(current_user, document_id):
         "filename": document.filename,
         "file_type": document.file_type,
         "file_size": document.file_size,
-        "updated_at": document.updated_at.isoformat(),
+        "updated_at": document.updated_at.isoformat() + "Z",
     })
 
 @app.route("/api/documents/<int:document_id>/analyze", methods=["POST"])
