@@ -1079,6 +1079,16 @@ body.dark-theme .hero-section::after {
     transition: background-color var(--transition-fast);
 }
 
+/* Currently-spoken WORD highlight for TTS (see utterance.onboundary in
+   app.js). Nests inside .tts-sentence-active; solid gold so it stays
+   visually distinct from the lighter sentence-level background. */
+.tts-word-active {
+    background-color: var(--color-gold);
+    color: var(--bg-main);
+    border-radius: 2px;
+    padding: 0 1px;
+}
+
 .entity-tag:hover {
     background-color: var(--color-gold-bg);
 }
