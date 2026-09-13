@@ -2624,7 +2624,7 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         const diacriticMap = {
             'ā': 'a', 'Ā': 'A',
             'ḳ': 'k', 'Ḳ': 'K',
-            'ġ': 'g', 'Ġ': 'G',
+            'ġ': 'ğ', 'Ġ': 'Ğ',
             'ḥ': 'h', 'Ḥ': 'H',
             'ḫ': 'h', 'Ḫ': 'H',
             'ṣ': 's', 'Ṣ': 'S',
