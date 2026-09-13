@@ -1420,7 +1420,10 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
 
                 if (data.ocr && data.trans) {
                     finalOcr = data.ocr;
-                    finalTrans = data.trans;
+                    // "Türkçe Çeviri" kolonunda sade/modern çeviriyi
+                    // (trans_modern) göster; model bu alanı döndürmezse
+                    // sadık/edebi çeviriye (trans) geri düş.
+                    finalTrans = data.trans_modern || data.trans;
                     finalTransEn = data.trans_en || '';
                     finalTranslit = data.translit || '';
                     // DEBUG: backend response'daki translit alanının ham hali.
