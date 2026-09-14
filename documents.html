@@ -37,20 +37,15 @@
             object-fit: contain;
         }
         .doc-detail-card {
-            background: #F6EFDD;
-            border: 1px solid #D9C79E;
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--color-border);
             border-radius: var(--radius-md);
             padding: 1.1rem 1.3rem;
-            color: #3A2E1D;
-        }
-        .doc-detail-card .text-display {
-            color: #3A2E1D;
         }
         .doc-detail-card h3 {
             font-family: var(--font-heading);
             font-size: 1.05rem;
             margin: 0 0 0.6rem 0;
-            color: #3A2E1D;
         }
         @media (max-width: 720px) {
             .doc-detail-grid { grid-template-columns: 1fr; }
@@ -91,11 +86,10 @@
             .doc-trans-row { grid-template-columns: 1fr; }
         }
         .doc-analysis-card {
-            background: #F6EFDD;
-            border: 1px solid #D9C79E;
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--color-border);
             border-radius: var(--radius-md);
             padding: 1.3rem 1.4rem;
-            color: #3A2E1D;
         }
         .doc-analysis-header {
             display: flex;
@@ -109,12 +103,6 @@
             font-family: var(--font-heading);
             font-size: 1.15rem;
             font-weight: 700;
-            color: #3A2E1D;
-        }
-        .doc-analysis-card .doc-detail-tag {
-            background: #EDE0C0;
-            border: 1px solid #D9C79E;
-            color: #6B5638;
         }
         .doc-analysis-grid {
             display: grid;
@@ -128,61 +116,58 @@
             font-size: 0.8rem;
             text-transform: uppercase;
             letter-spacing: 0.03em;
-            color: #8A7148;
+            color: var(--color-text-muted);
             margin: 1.1rem 0 0.5rem 0;
         }
         .doc-analysis-col h4:first-child { margin-top: 0; }
         .doc-analysis-col p {
             font-size: 0.88rem;
             line-height: 1.6;
-            color: #3A2E1D;
         }
-        .doc-analysis-card .doc-detail-empty { color: #8A7148; }
         .doc-analysis-mini-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 0.6rem;
         }
         .doc-analysis-mini-box {
-            background: #EDE0C0;
-            border: 1px solid #D9C79E;
+            background: var(--bg-input);
+            border: 1px solid var(--color-border);
             border-radius: var(--radius-sm);
             padding: 0.6rem 0.8rem;
         }
         .doc-analysis-mini-box.full { grid-column: 1 / -1; }
         .doc-analysis-mini-label {
             font-size: 0.72rem;
-            color: #8A7148;
+            color: var(--color-text-muted);
             margin-bottom: 0.2rem;
         }
-        .doc-analysis-mini-value { font-size: 0.85rem; font-weight: 600; color: #3A2E1D; }
+        .doc-analysis-mini-value { font-size: 0.85rem; font-weight: 600; }
         .doc-analysis-col ul {
             margin: 0;
             padding-left: 1.1rem;
             font-size: 0.85rem;
             line-height: 1.7;
-            color: #3A2E1D;
         }
         .doc-analysis-notes {
             display: flex;
             align-items: flex-start;
             gap: 0.6rem;
-            background: #EDE0C0;
-            border: 1px solid #D9C79E;
+            background: var(--bg-input);
+            border: 1px solid var(--color-border);
             border-radius: var(--radius-sm);
             padding: 0.8rem 1rem;
             margin-top: 1.3rem;
             font-size: 0.85rem;
-            color: #6B5638;
+            color: var(--color-text-muted);
         }
         .doc-count-badge {
-            background: #F3E7CC;
-            border: 1px solid #D9C79E;
+            background: var(--bg-input);
+            border: 1px solid var(--color-border);
             border-radius: 999px;
             padding: 0.25rem 0.75rem;
             font-size: 0.8rem;
             font-weight: 700;
-            color: #6B5638;
+            color: var(--color-text-muted);
         }
         .doc-list-toolbar {
             display: flex;
@@ -192,8 +177,8 @@
             margin-bottom: 1.4rem;
         }
         .doc-card {
-            background: #F6EFDD;
-            border: 1px solid #D9C79E;
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--color-border);
             border-radius: var(--radius-md);
             padding: 0.8rem;
             cursor: pointer;
@@ -321,6 +306,6 @@
         </div>
     </main>
 
-    <script src="documents.js?v=20260914-4"></script>
+    <script src="documents.js?v=20260914-5"></script>
 </body>
 </html>
