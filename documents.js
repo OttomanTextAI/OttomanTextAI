@@ -40,11 +40,20 @@ themeToggleBtn.addEventListener('click', () => {
     themeToggleBtn.querySelector('.theme-icon').textContent = isDark ? '☀️' : '🌙';
 });
 
+// İlk ziyarette hamburger'ın üzerinde küçük bir nabız noktası gösterip
+// menüyü fark ettiriyor; çekmece bir kere açılınca kalıcı olarak kayboluyor
+// (localStorage'da işaretlenir, index.html ile de paylaşılır).
+if (!localStorage.getItem('menuDiscovered')) {
+    sideMenuToggle.classList.add('needs-attention');
+}
+
 function openSideDrawer() {
     sideDrawer.classList.add('open');
     sideDrawerOverlay.classList.remove('hidden');
     sideDrawer.setAttribute('aria-hidden', 'false');
     sideMenuToggle.setAttribute('aria-expanded', 'true');
+    sideMenuToggle.classList.remove('needs-attention');
+    localStorage.setItem('menuDiscovered', '1');
 }
 
 function closeSideDrawer() {

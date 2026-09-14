@@ -1090,6 +1090,10 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         // ayrıca veriliyor (bkz. aşağısı).
         entityFilterDropdown.classList.add('hidden');
         closeEntityFilterDropdown();
+        // AI Belge Araçları da Bilgi ile aynı anlarda gizlenir — araçların
+        // dayandığı state.transText artık geçersiz.
+        aiToolsTabBtn.classList.add('hidden');
+        setAiToolsExpanded(false);
     }
 
     // Builds a row of label/value cards for an info-grid section.
@@ -1560,10 +1564,14 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
 
         // "Bilgi" bölümü — sadece gerçekten analiz verisi varsa doldurulup
         // gösterilir; çeviri tamamlanır tamamlanmaz kullanıcı ayrıca tıklamak
-        // zorunda kalmadan AÇIK gelir (bkz. setInfoExpanded).
+        // zorunda kalmadan AÇIK gelir (bkz. setInfoExpanded). AI Belge
+        // Araçları da aynı anda, aynı şekilde açılır — eskiden sohbet
+        // asistanının içinde ayrıca tıklanması gereken bir modaldı.
         if (finalAnalysis) {
             renderResultsPanel(finalAnalysis);
             setInfoExpanded(true);
+            aiToolsTabBtn.classList.remove('hidden');
+            setAiToolsExpanded(true);
         } else {
             clearInfoTab();
         }
@@ -3081,11 +3089,20 @@ ${transTextDisplay.textContent}
     // genel [data-modal] kablolaması onları da açar — burada sadece
     // çekmeceyi açma/kapama ve bir öğeye tıklanınca kendini kapatma
     // davranışı ekleniyor.
+    // İlk ziyarette hamburger'ın üzerinde küçük bir nabız noktası gösterip
+    // menüyü fark ettiriyor; çekmece bir kere açılınca kalıcı olarak
+    // kayboluyor (localStorage'da işaretlenir, tekrar gösterilmez).
+    if (!localStorage.getItem('menuDiscovered')) {
+        sideMenuToggle.classList.add('needs-attention');
+    }
+
     function openSideDrawer() {
         sideDrawer.classList.add('open');
         sideDrawerOverlay.classList.remove('hidden');
         sideDrawer.setAttribute('aria-hidden', 'false');
         sideMenuToggle.setAttribute('aria-expanded', 'true');
+        sideMenuToggle.classList.remove('needs-attention');
+        localStorage.setItem('menuDiscovered', '1');
     }
 
     function closeSideDrawer() {
@@ -3424,21 +3441,25 @@ ${transTextDisplay.textContent}
 
     const aiPredictionsBtn = document.getElementById('aiPredictionsBtn');
     const aiFeatureResult = document.getElementById('aiFeatureResult');
-    const aiFeatureModal =
-        document.getElementById('aiFeatureModal');
-    const assistantToolsBtn =
-        document.getElementById('assistantToolsBtn');
 
-    const aiFeatureModalClose =
-        document.getElementById('aiFeatureModalClose');
+    // AI Belge Araçları artık sohbet asistanının içinde açılan bir modal
+    // değil — Bilgi'nin altında, çeviri tamamlanınca otomatik açılan aynı
+    // tarz bir bölüm (bkz. setInfoExpanded / index.html'deki
+    // #aiToolsCollapsibleSection). Araçların kendisi zaten state.transText
+    // üzerinden çalıştığı için ayrıca bir "aç" tetikleyicisine gerek yok —
+    // aiToolsTabBtn sadece bu bölümü aç/kapa ediyor.
+    const aiToolsTabBtn = document.getElementById('aiToolsTabBtn');
+    const aiToolsContent = document.getElementById('aiToolsContent');
 
-        function openAiFeatureModal() {
-        aiFeatureModal.classList.remove('hidden');
+    function setAiToolsExpanded(expanded) {
+        aiToolsContent.classList.toggle('hidden', !expanded);
+        aiToolsTabBtn.classList.toggle('expanded', expanded);
+        aiToolsTabBtn.setAttribute('aria-expanded', String(expanded));
     }
 
-    function closeAiFeatureModal() {
-        aiFeatureModal.classList.add('hidden');
-    }
+    aiToolsTabBtn.addEventListener('click', () => {
+        setAiToolsExpanded(aiToolsContent.classList.contains('hidden'));
+    });
 
     async function runAiPredictions() {
         if (!state.transText || !state.transText.trim()) {
@@ -3681,25 +3702,6 @@ ${transTextDisplay.textContent}
             runAiPredictions
         );
     }
-    if (assistantToolsBtn) {
-        assistantToolsBtn.addEventListener('click', () => {
-            aiFeatureResult.textContent =
-                'Bir AI belge aracı seçin.';
-
-            openAiFeatureModal();
-        });
-    }
-
-    aiFeatureModalClose.addEventListener(
-        'click',
-        closeAiFeatureModal
-    );
-
-    aiFeatureModal.addEventListener('click', (e) => {
-        if (e.target === aiFeatureModal) {
-            closeAiFeatureModal();
-        }
-    });
     const aiQuestionsBtn = document.getElementById('aiQuestionsBtn');
 
     async function runAiSuggestedQuestions() {

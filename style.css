@@ -233,8 +233,30 @@ body {
    istediği "tıkla-aç, arka plan gölgede kalsın" modeli — kalıcı/hover'la
    açılan bir şerit değil). */
 .side-menu-toggle {
+    position: relative;
     flex-shrink: 0;
     margin-left: -0.65rem;
+}
+
+/* İlk ziyarette hamburger menüsünü fark ettirmek için küçük bir nabız
+   noktası — çekmece bir kere açılınca (app.js/documents.js) kalıcı olarak
+   kaldırılır (localStorage'da işaretlenir), her ziyarette tekrar etmez. */
+.side-menu-toggle.needs-attention::after {
+    content: '';
+    position: absolute;
+    top: 1px;
+    right: 1px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--color-gold);
+    animation: sideMenuPulse 1.8s ease-out infinite;
+}
+
+@keyframes sideMenuPulse {
+    0% { box-shadow: 0 0 0 0 rgba(197, 160, 89, 0.55); }
+    70% { box-shadow: 0 0 0 8px rgba(197, 160, 89, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(197, 160, 89, 0); }
 }
 
 .side-drawer-overlay {
@@ -659,14 +681,16 @@ body.dark-theme .hero-section::after {
     outline-offset: 2px;
 }
 
-/* Fixed (not min-) height so the image column and the output column are
+/* Fixed (not min-) height so the image column and the output columns are
    always exactly the same size regardless of which is naturally taller —
    long translations scroll inside .box-content instead of growing the
-   whole card. */
+   whole card. Lowered from 620px: with 3 text columns always visible now
+   (not just one active tab), the old height left a lot of dead space
+   before any text was loaded. */
 .workbench-col {
     display: flex;
     flex-direction: column;
-    height: 620px;
+    height: 480px;
 }
 
 /* Col 1: Upload Area */
@@ -1008,6 +1032,10 @@ body.dark-theme .hero-section::after {
     color: #FFFFFF;
 }
 
+/* Boş sütunlar (görsel yüklenmeden önce) çok "cansız" duruyordu — hero'daki
+   aynı ince Osmanlı motifini, çok daha düşük opasitede, arka planda
+   tekrarlayarak hafif bir doku katıyor; ikon/metnin okunabilirliğini
+   etkilemeyecek kadar soluk. */
 .empty-state {
     display: flex;
     flex-direction: column;
@@ -1015,9 +1043,17 @@ body.dark-theme .hero-section::after {
     justify-content: center;
     text-align: center;
     height: 100%;
+    width: 100%;
     margin: auto;
     color: var(--color-text-light);
     gap: 0.8rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill='none' stroke='%230D1627' stroke-opacity='0.04' stroke-width='1'%3E%3Cpolygon points='40,6 74,40 40,74 6,40'/%3E%3Ccircle cx='40' cy='40' r='17'/%3E%3C/g%3E%3C/svg%3E");
+    background-size: 80px 80px;
+    background-position: center;
+}
+
+body.dark-theme .empty-state {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80' viewBox='0 0 80 80'%3E%3Cg fill='none' stroke='%23C5A059' stroke-opacity='0.09' stroke-width='1'%3E%3Cpolygon points='40,6 74,40 40,74 6,40'/%3E%3Ccircle cx='40' cy='40' r='17'/%3E%3C/g%3E%3C/svg%3E");
 }
 
 .empty-state p {
@@ -1913,7 +1949,8 @@ body.dark-theme .hero-section::after {
 }
 
 .sample-img-container {
-    height: 110px;
+    position: relative;
+    height: 170px;
     overflow: hidden;
 }
 
@@ -1926,6 +1963,29 @@ body.dark-theme .hero-section::after {
 
 .sample-card:hover .sample-img-container img {
     transform: scale(1.05);
+}
+
+/* Hover'da beliren "Bu belgeyi dene" çağrısı — örnek kartlar genellikle
+   yeni kullanıcıların ilk tıkladığı yer, bu yüzden tıklanabilir olduklarını
+   daha açık göstermek işe yarar. */
+.sample-try-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(180deg, rgba(13, 22, 39, 0) 40%, rgba(13, 22, 39, 0.78) 100%);
+    color: #FFFFFF;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    opacity: 0;
+    transition: opacity var(--transition-fast);
+    pointer-events: none;
+}
+
+.sample-card:hover .sample-try-overlay {
+    opacity: 1;
 }
 
 .sample-details {
@@ -2387,9 +2447,26 @@ body.dark-theme .hero-section::after {
 }
 
 /* "Bilgi" (belge analizi): 4 sütunun altında, tek tıkla açılıp kapanan bir
-   bölüm — artık ayrı bir sekme/sütun değil. */
+   bölüm — artık ayrı bir sekme/sütun değil. .workbench-card ile AYNI dış
+   kart görünümü (arka plan/kenarlık/gölge) veriliyor ki sayfayla bütünleşik
+   dursun; içindeki .info-content-area zaten .box-content'in kendi iç
+   kenarlığını taşıyor — workbench sütunlarındaki "kart içinde kart"
+   düzeniyle birebir tutarlı. */
 .info-collapsible-section {
+    display: none;
     margin-top: 1rem;
+    background-color: var(--bg-main);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: 1.1rem 1.25rem;
+    transition: background-color var(--transition-normal), border-color var(--transition-normal);
+}
+
+/* Henüz analiz verisi yokken (header'ın kendisi .hidden iken) dış kartı da
+   tamamen gizler — aksi halde boş bir kart çerçevesi görünürdü. */
+.info-collapsible-section:has(> .info-collapsible-header:not(.hidden)) {
+    display: block;
 }
 
 .info-collapsible-header {
@@ -2397,20 +2474,19 @@ body.dark-theme .hero-section::after {
     align-items: center;
     gap: 0.5rem;
     width: 100%;
-    background: var(--bg-card);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-md);
-    padding: 0.7rem 1rem;
+    background: transparent;
+    border: none;
+    padding: 0;
     font-size: 0.85rem;
     font-weight: 700;
     letter-spacing: 0.3px;
     color: var(--color-text-main);
     cursor: pointer;
-    transition: border-color var(--transition-fast), background var(--transition-fast);
+    transition: color var(--transition-fast);
 }
 
 .info-collapsible-header:hover {
-    border-color: var(--color-gold);
+    color: var(--color-gold);
 }
 
 .info-collapsible-caret {
