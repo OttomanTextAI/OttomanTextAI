@@ -601,26 +601,28 @@ _ENTITY_CATEGORY_MAP = {
     "people": "person",
     "places": "place",
     "concepts": "concept",
+    "key_points": "key_point",
 }
 
 
 def _replace_document_entities(document_id, parsed):
-    # Belgelerim'deki Kişiler/Yerler/Kavramlar sekmeleri için — yeniden
-    # analiz edildiğinde eski satırlar tekrarlanmasın diye önce silinir.
+    # Belgelerim'deki Kişiler/Yerler/Kavramlar/Önemli Bilgiler bölümleri
+    # için — yeniden analiz edildiğinde eski satırlar tekrarlanmasın diye
+    # önce silinir.
     DocumentEntity.query.filter_by(document_id=document_id).delete()
 
     for field, category in _ENTITY_CATEGORY_MAP.items():
         for item in parsed.get(field) or []:
             db.session.add(DocumentEntity(
                 document_id=document_id,
-                text=item,
+                text=item[:255],
                 category=category,
             ))
 
 
 def _document_entities_by_category(document_id):
     entities = DocumentEntity.query.filter_by(document_id=document_id).all()
-    result = {"people": [], "places": [], "concepts": []}
+    result = {"people": [], "places": [], "concepts": [], "key_points": []}
     reverse_map = {v: k for k, v in _ENTITY_CATEGORY_MAP.items()}
 
     for entity in entities:
@@ -2798,29 +2800,35 @@ def list_documents(current_user):
             summary = summary[:140].rstrip() + "…"
         return summary
 
-    # Bucket private olduğu için doğrudan public URL çalışmıyor — kısa
-    # ömürlü (5 dk) imzalı indirme linkleri üretiyoruz. Görsel dosyalar
-    # için TÜM belgeleri tek istekte imzalıyoruz; belge başına ayrı bir
-    # Supabase isteği atmak listede gözle görülür bir yavaşlığa yol
-    # açıyordu (birkaç belgede bile saniyeler sürüyordu).
-    thumbnail_urls_by_path = {}
-    image_paths = [
-        doc.storage_path for doc in pagination.items
-        if doc.file_type in {"png", "jpg", "jpeg", "webp"}
-    ]
+    def _document_type(doc):
+        analysis = analyses_by_doc_id.get(doc.id)
+        return analysis.document_type if analysis else None
 
-    if image_paths and supabase_client is not None:
+    # Bucket private olduğu için doğrudan public URL çalışmıyor — kısa
+    # ömürlü (5 dk) imzalı indirme linkleri üretiyoruz. Sayfadaki TÜM
+    # belgeleri (görsel olsun olmasın, indirme butonu için) tek istekte
+    # imzalıyoruz; belge başına ayrı bir Supabase isteği atmak listede
+    # gözle görülür bir yavaşlığa yol açıyordu.
+    signed_urls_by_path = {}
+    all_paths = [doc.storage_path for doc in pagination.items]
+
+    if all_paths and supabase_client is not None:
         try:
-            signed_results = supabase_client.storage.from_(DOCUMENTS_BUCKET).create_signed_urls(image_paths, 300)
+            signed_results = supabase_client.storage.from_(DOCUMENTS_BUCKET).create_signed_urls(all_paths, 300)
             for result in signed_results:
                 url = result.get("signedURL") or result.get("signedUrl")
                 if result.get("path") and url:
-                    thumbnail_urls_by_path[result["path"]] = url
+                    signed_urls_by_path[result["path"]] = url
         except Exception:
             pass
 
     def _thumbnail_url(doc):
-        return thumbnail_urls_by_path.get(doc.storage_path)
+        if doc.file_type not in {"png", "jpg", "jpeg", "webp"}:
+            return None
+        return signed_urls_by_path.get(doc.storage_path)
+
+    def _download_url(doc):
+        return signed_urls_by_path.get(doc.storage_path)
 
     return jsonify({
         "documents": [
@@ -2828,10 +2836,12 @@ def list_documents(current_user):
                 "id": doc.id,
                 "filename": doc.filename,
                 "title": _display_title(doc),
+                "document_type": _document_type(doc),
                 "file_type": doc.file_type,
                 "file_size": doc.file_size,
                 "summary": _short_summary(doc),
                 "thumbnail_url": _thumbnail_url(doc),
+                "download_url": _download_url(doc),
                 "uploaded_at": doc.uploaded_at.isoformat() + "Z",
                 "updated_at": doc.updated_at.isoformat() + "Z",
             }
@@ -2982,6 +2992,7 @@ def analyze_document(current_user, document_id):
             "people": entities["people"],
             "places": entities["places"],
             "concepts": entities["concepts"],
+            "key_points": entities["key_points"],
         })
 
     if supabase_client is None:
@@ -3071,6 +3082,7 @@ def analyze_document(current_user, document_id):
         "people": entities["people"],
         "places": entities["places"],
         "concepts": entities["concepts"],
+        "key_points": entities["key_points"],
     }), 201
 
 @app.route("/api/documents/<int:document_id>/notes", methods=["POST"])
