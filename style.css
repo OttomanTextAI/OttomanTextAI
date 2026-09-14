@@ -593,12 +593,23 @@ body.dark-theme .hero-section::after {
 /* 4 sütun: görsel | (❖ ayraç) | Osmanlıca (Arapça) | Türkçe Harfler | Günümüz
    Türkçesi. Kenar boşlukları ("marjini azalt") kasıtlı olarak dar tutuldu ki
    4 sütun geniş masaüstü ekranlarda yan yana sığsın. */
+/* Tek bütün kart: 4 sütunluk grid VE altındaki Bilgi bölümü artık AYNI
+   kartın içinde (referans tasarımdaki kesintisiz görünüm — renkler
+   değişmeden). .workbench-card dıştaki kart çerçevesini taşır,
+   .workbench-grid ise eskiden .workbench-card'ın kendisinde olan grid
+   düzenini taşıyor. */
 .workbench-card {
     background-color: var(--bg-main);
     border-radius: var(--radius-lg);
     border: 1px solid var(--color-border);
     box-shadow: var(--shadow-lg);
     padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    transition: background-color var(--transition-normal), border-color var(--transition-normal);
+}
+
+.workbench-grid {
     display: grid;
 
     grid-template-columns:
@@ -610,7 +621,7 @@ body.dark-theme .hero-section::after {
 
     gap: 0.9rem;
     align-items: stretch;
-    transition: background-color var(--transition-normal), border-color var(--transition-normal), grid-template-columns var(--transition-normal);
+    transition: grid-template-columns var(--transition-normal);
 }
 
 .enhanced-toggle-row {
@@ -2173,7 +2184,7 @@ body.dark-theme .empty-state {
    ❖ ayraç bu düzende gereksiz olduğu için gizlenir. Daha dar ekranlarda
    (bkz. altındaki 1024px sorgusu) tek sütun halinde tam yığılmaya devam eder. */
 @media (max-width: 1400px) {
-    .workbench-card {
+    .workbench-grid {
         grid-template-columns: 1fr 1fr;
     }
 
@@ -2213,7 +2224,7 @@ body.dark-theme .empty-state {
         height: 140px;
     }
 
-    .workbench-card {
+    .workbench-grid {
         grid-template-columns: 1fr;
     }
 
@@ -2446,12 +2457,10 @@ body.dark-theme .empty-state {
     display: flex;
 }
 
-/* "Bilgi" (belge analizi): 4 sütunun altında, tek tıkla açılıp kapanan bir
-   bölüm — artık ayrı bir sekme/sütun değil. .workbench-card ile AYNI dış
-   kart görünümü (arka plan/kenarlık/gölge) veriliyor ki sayfayla bütünleşik
-   dursun; içindeki .info-content-area zaten .box-content'in kendi iç
-   kenarlığını taşıyor — workbench sütunlarındaki "kart içinde kart"
-   düzeniyle birebir tutarlı. */
+/* "Bilgi" (belge analizi) artık ayrı bir kart değil — workbench-card'ın
+   İÇİNDE, 4 sütunun altında ince bir üst çizgiyle ayrılan bir bölüm (bkz.
+   .workbench-bilgi-row aşağıda). AI Belge Araçları ise hâlâ kendi ayrı
+   kartında kalıyor ve bu .info-collapsible-section stilini kullanıyor. */
 .info-collapsible-section {
     display: none;
     margin-top: 1rem;
@@ -2463,10 +2472,30 @@ body.dark-theme .empty-state {
     transition: background-color var(--transition-normal), border-color var(--transition-normal);
 }
 
-/* Henüz analiz verisi yokken (header'ın kendisi .hidden iken) dış kartı da
-   tamamen gizler — aksi halde boş bir kart çerçevesi görünürdü. */
+/* Henüz sonuç yokken (header'ın kendisi .hidden iken) dış kartı da tamamen
+   gizler — aksi halde boş bir kart çerçevesi görünürdü. */
 .info-collapsible-section:has(> .info-collapsible-header:not(.hidden)) {
     display: block;
+}
+
+/* Bilgi bölümü artık workbench-card'ın kendi içinde bir satır — kendi dış
+   kartı yok, sadece 4 sütunluk gridden ince bir çizgiyle ayrılıyor
+   (referans tasarımdaki tek-parça kart görünümü). */
+.workbench-bilgi-row {
+    display: none;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border);
+}
+
+.workbench-bilgi-row:has(> .info-collapsible-header:not(.hidden)) {
+    display: block;
+}
+
+.workbench-bilgi-row .info-content-area {
+    margin-top: 0.7rem;
+    height: auto;
+    max-height: 620px;
 }
 
 .info-collapsible-header {
