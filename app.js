@@ -694,6 +694,81 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
                 date_gregorian: 'Belirtilmemiş',
                 notes: 'Görsel, özgün bir el yazması değil basılı/çoğaltılmış bir metin olduğundan güven skoru %100 verilmemiştir.'
             }
+        },
+        'mdo': {
+            file: 'assets/mdo.png',
+            name: 'mekanik_duzenek_oluk.png',
+            size: '0.06 MB',
+            ocr: `کله که نازل اولدقدن بر مقدار تکرار ایده بعده قصرك ایچنه **بونجاب** وضع
+ایده و کاه قصرك اخرنده و بر طوق **طوغانك** اکثرسنه حواله اولوب و چونکه
+طوغانك حرکتنه مانع اولمیه و بو میزابك وسعتی اولقدر اوله که ایچنده وضع
+اولاجق بندقه بسهولتله حرکت ایده بعده اول میزاب ده مقطع بنادقی
+تعیین ایده لر بو طریقله که بر دانه بندقه یی میزابه قویوب و میزابك کنارنده
+ایکی علامت وضع ایده لر که بونون بعدی بندقه نك قطری قدر اولا و میزابك
+بر کنارنده دخی اول علامت لره مقابل ایکی علامت دخی وضع ایدوب و هر ایکی
+مقابلنده اولان علامت طرف میزابك کنار لرینی شعره صیغجق قدر **تیز اره**
+عرضنده دك خرق ایده لر بعده تیمور دن یا نحاسدن بر شفره یعنی بیوك بچاق دوزرلر
+یوزینك اوزنلغی میزابك انی قدر اولا و اول بچاغك صاپنك دخی یعنی
+یوزینه متصل اولan یرندن بر دلوك دلوب و محور کچوره لر و اول محورك
+ارضنه دك خرق ايده لر بعده تيموردن **ياپيلمش** بر شفره يعنى بيوك بيچاق اوزره
+يوزينك اوزنلغى ميزابك انى قدر اولا و اول بيجاغك صابنك **ذنبى** يعنى
+يوزينه متصل اولان يرندن بر دلوك دلوب محور كچوره لر و اول محورك
+ايكى اوجلرينى ميزابك خرقلرينه وضع ايدوب **فرودينك** اوجنى دوندروب حلقم
+كبى ايده‌لر و بو شفرة نك باشنه بر نسنه ياپشدره لر و كشفه ميزابك طوغانندن طرفه
+طوغانك باشنه قريب يرده واقع اولا پس اگر ميزابك باشنه بر بنده وضع اولنسه
+تكلونوب طوغان طرفه كدر تا واروب او كشفه يه طاينور و اگر شفرة نك ذنبنى
+اشاغه چكسه كشفه نك باشنى حلقوب بندقه طوغانك باشنه دوشر بعده شكل
+مزبور اوزره بر شفره دخی الوب ايكنجى خرقه ادخال ايده‌لر و بو شفرة نك باشنه
+بر دلوك دله لر و اصه لر و ذنبنه بر ثقاله **مسى** شفرة اولينك باشنه اشاغه اولوب **ذنبى**
+مرتفع اولمشدر و شفرة ثانيه نك باشنى مرتفع اولوب ذنبى **منخفض** اولمشدر بعده
+الحق`,
+            tr: `Gülle indikten sonra bir miktar tekrar ede, ondan sonra köşkün içine **buncab** yerleştirile ve bazen köşkün sonunda ve bir halka **doğan şeklindeki kaldıracın** çoğuna havale edilip ve çünkü kaldıracın hareketine engel olmaya ve bu oluğun genişliği o kadar ola ki içinde yerleştirilecek gülle kolaylıkla hareket ede, ondan sonra o olukta güllelerin kesim yerini belirleyeler. Bu yolla ki bir adet gülle oluğa konulup oluğun kenarında iki işaret koyalar ki bunun mesafesi güllenin çapı kadar ola ve oluğun bir kenarında dahi o işaretlere karşılık iki işaret dahi koyup her iki karşılıklı işarette oluğun kenarlarını kıl sığacak kadar **keskin testere** enince yarasalar. Ondan sonra demirden veya bakırdan bir bıçak ağzı yani büyük bıçak yapalar, yüzünün uzunluğu oluğun eni kadar ola ve o bıçağın sapının dahi yani yüzüne bitişik olan yerinden bir delik delip mil geçireler ve o milin...
+Tabanına kadar delik açalar, sonra demirden **yapılmış** bir bıçak yani büyük bıçak üzerine, yüzünün uzunluğu oluğun eni kadar ola ve o bıçağın sapının **kuyruğu** yani yüzüne bitişik olan yerinden bir delik delip mil geçireler ve o milin iki ucunu oluğun deliklerine yerleştirip **alt kısmının** ucunu döndürüp boğaz gibi yapalar ve bu bıçağın başına bir şey yapıştıralar ve kepçe oluğun doğanından tarafa doğanın başına yakın yerde buluna. Sonra eğer oluğun başına bir fındık (bilye) konsa, yuvarlanıp doğan tarafına gider, ta gidip o kepçeye dayanır. Ve eğer bıçağın kuyruğunu aşağı çekse, kepçenin başını yutup fındık doğanın başına düşer. Sonra adı geçen şekil üzere bir bıçak daha alıp ikinci deliğe sokalar ve bu bıçağın başına bir delik delip asalar ve kuyruğuna bir **bakır** ağırlık koyalar. Birinci bıçağın başı aşağı olup **kuyruğu** yükselmiştir ve ikinci bıçağın başı yükselip kuyruğu **alçalmıştır**. Sonra...`,
+            translit: `Gülle ki nazil oldukdan bir mikdar tekrar ide ba'deh kasrın içine **buncab** vaz'
+ide ve gah kasrın ahırında ve bir tavk **toğanın** ekserisine havale olub ve çünki
+toğanın hareketine mani' olmaya ve bu mizabın vüs'ati ol kadar ola ki içinde vaz'
+olacak bendege bi-suhületle hareket ide ba'deh ol mizabda makta'-ı benadıkı
+ta'yin ideler bu tarik ile ki bir dane bendegeyi mizaba koyub ve mizabın kenarında
+iki 'alamet vaz' ideler ki bunun bu'du bendegenin kutru kadar ola ve mizabın
+bir kenarında dahi ol 'alametlere mukabil iki 'alamet dahi vaz' idüb ve her iki
+mukabilinde olan 'alamet taraf-ı mizabın kenarlarını şa'ra sığacak kadar **tiz-ere**
+'arzındadek hark ideler ba'deh timürden ya nühasdan bir şefre ya'ni büyük bıçak düzerler
+yüzünün uzunlığı mizabın eni kadar ola ve ol bıçağın sapının dahi ya'ni
+yüzüne muttasıl olan yerinden bir delük delüb ve mihver geçüreler ve ol mihverin
+arzına dek ḫarḳ ideler baʿdeh tīmūrdan **yapılmış** bir şafra yaʿnī büyük bıçaḳ üzere
+yüzinüñ uzunlığı mīzābıñ eni ḳadar ola ve ol bıçağıñ ṣapınıñ **ẕenebi** yaʿnī
+yüzine muttaṣıl olan yerinden bir delük delüb miḥver geçüreler ve ol miḥverüñ
+iki uclarını mīzābıñ ḫarḳlarına vażʿ idüb **ferūdīnüñ** ucını dönderüb ḥalḳūm
+gibi ideler ve bu şafranuñ başına bir nesne yapışdıralar ve keşfe mīzābıñ ṭoġanından ṭarafa
+ṭoġanuñ başına ḳarīb yerde vāḳıʿ ola pes eger mīzābıñ başına bir bende vażʿ olunsah
+tekerlenüb ṭoġan ṭarafına gider tā varub o keşfeye ṭayanur ve eger şafranuñ ẕenebini
+aşaġa çekse keşfenüñ başını ḥalḳub bındıḳa ṭoġanuñ başına düşer baʿdeh şekil
+mezbūr üzere bir şafra daḫı alub ikinci ḫarḳa idḫāl ideler ve bu şafranuñ başına
+bir delük deleler ve aṣalar ve ẕenebine bir s̱iḳāle **misī** şafra-i evvelüñ başına aşaġa olub **ẕenebi**
+murtefiʿ olmışdur ve şafra-i s̱āniyenüñ başını murtefiʿ olub ẕenebi **munḫafıż** olmışdur baʿdeh
+el-ḥaḳ`,
+            analysis: {
+                document_type: "Yazma Eser / Teknik El Yazması",
+                confidence: 90,
+                style: "Teknik, açıklayıcı ve öğretici bir dil kullanılmıştır.",
+                summary: "Belgede, mekanik bir düzenekte güllelerin hareket ettiği oluğun yapımı, işaretlenmesi ve bilyelerin geçişini kontrol edecek bıçak mekanizmasının montajı teknik detaylarıyla tarif edilmektedir. Belge, bilye, oluk, mil, ağırlık ve kaldıraç gibi parçalardan oluşan mekanik bir düzeneğin yapımını ve çalışma prensibini adım adım tarif etmektedir. Bu metin, muhtemelen El-Cezerî'nin ünlü mekanik eserinin Osmanlıca tercümelerinden bir kesittir.",
+                key_points: [
+                    "Mekanik bir düzenekte güllelerin (bilye) geçtiği oluğun (mizab) yapımı tarif edilmektedir.",
+                    "Oluk üzerinde güllelerin kesim/işaretleme noktalarının nasıl belirleneceği anlatılmaktadır.",
+                    "Demir veya bakırdan yapılan bir bıçak (şefre) mekanizmasının montajı açıklanmaktadır.",
+                    "Bilyelerin geçişini kontrol eden kaldıraç ve ağırlık (sıkale) sistemi tarif edilmektedir.",
+                    "Metin, muhtemelen El-Cezerî'nin mekanik araçlar hakkındaki eserinin Osmanlıca bir tercümesine aittir."
+                ],
+                people: [],
+                places: [],
+                concepts: ["Mizab (Oluk)", "Bendege / Bandıka (Gülle/Bilye)", "Mihver (Mil/Eksen)", "Şefre (Bıçak ağzı)", "Mekanik Düzenek", "Kaldıraç", "Mil", "Oluk", "Ağırlık"],
+                script_type: "Nesih",
+                script_purpose: "Teknik veya bilimsel bir eserin kopyalanması",
+                period_estimate: "18. veya 19. Yüzyıl",
+                date_hijri: "Belirtilmemiş",
+                date_gregorian: "Belirtilmemiş",
+                notes: "Metin, El-Cezeri'nin mekanik araçlar hakkındaki eserinin Osmanlıca tercümelerinden birine ait teknik bir tariftir."
+            }
         }
     };
 
