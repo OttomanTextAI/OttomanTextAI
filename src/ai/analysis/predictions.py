@@ -91,7 +91,7 @@ class DocumentPredictionGenerator:
                 },
             ],
             temperature=0.1,
-            max_tokens=900,
+            max_tokens=2200,
         )
 
         print(
@@ -169,7 +169,7 @@ class DocumentPredictionGenerator:
                     },
                 ],
                 temperature=0.1,
-                max_tokens=650,
+                max_tokens=2200,
             )
 
             print(

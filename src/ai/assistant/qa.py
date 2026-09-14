@@ -281,7 +281,7 @@ class DocumentQA:
                 },
             ],
             temperature=0.1,
-            max_tokens=700,
+            max_tokens=2200,
         )
 
         finish_reason = completion.choices[0].finish_reason
@@ -373,7 +373,7 @@ class DocumentQA:
                     },
                 ],
                 temperature=0.0,
-                max_tokens=700,
+                max_tokens=2200,
             )
 
             print(

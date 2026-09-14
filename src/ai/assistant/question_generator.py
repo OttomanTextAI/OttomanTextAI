@@ -112,7 +112,7 @@ class DocumentQuestionGenerator:
                 },
             ],
             temperature=0.2,
-            max_tokens=400,
+            max_tokens=1600,
         )
 
         finish_reason = completion.choices[0].finish_reason
@@ -172,7 +172,7 @@ class DocumentQuestionGenerator:
                     },
                 ],
                 temperature=0.1,
-                max_tokens=300,
+                max_tokens=1600,
             )
 
             retry_finish_reason = (

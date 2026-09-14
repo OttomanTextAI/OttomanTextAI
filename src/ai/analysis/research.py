@@ -111,7 +111,7 @@ class ResearchSuggestionGenerator:
                 },
             ],
             temperature=0.2,
-            max_tokens=650,
+            max_tokens=2200,
         )
 
         finish_reason = completion.choices[0].finish_reason
@@ -191,7 +191,7 @@ class ResearchSuggestionGenerator:
                     },
                 ],
                 temperature=0.1,
-                max_tokens=400,
+                max_tokens=2200,
             )
 
             print(
