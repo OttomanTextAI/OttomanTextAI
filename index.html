@@ -12,7 +12,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=Noto+Naskh+Arabic:wght@400;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
     
     <!-- Custom Stylesheet -->
-    <link rel="stylesheet" href="style.css?v=20260915-2">
+    <link rel="stylesheet" href="style.css?v=20260915-6">
 </head>
 <body class="dark-theme">
     <!-- Header Navigation Bar -->
@@ -123,7 +123,7 @@
         <!-- Main Interactive Workbench Card -->
         <section class="workbench-section reveal">
             <div class="workbench-card">
-                <div class="workbench-grid">
+                <div class="workbench-main-grid">
 
                 <!-- Column 1: Image Drag & Drop Area -->
                 <div class="workbench-col col-upload">
@@ -218,6 +218,13 @@
                     <div class="divider-crest">❖</div>
                     <div class="divider-line"></div>
                 </div>
+
+                <!-- Sağ bölge: görsel sütunu bu bölgenin toplam yüksekliğine
+                     (3 metin sütunu + Bilgi) eşit olacak şekilde uzuyor;
+                     Bilgi de sadece bu bölgenin altında duruyor, görselin
+                     altına taşmıyor. -->
+                <div class="workbench-right-zone">
+                <div class="workbench-grid">
 
                 <!-- Column 2: Osmanlıca (Arapça Harfler) — always visible -->
                 <div class="workbench-col col-ocr">
@@ -406,6 +413,8 @@
                             </div>
                         </div>
                     </div>
+                </div>
+                </div>
                 </div>
             </div>
 
