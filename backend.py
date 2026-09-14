@@ -3158,7 +3158,96 @@ def get_notes(current_user, document_id):
         for note in notes
     ])
 
+@app.route("/api/notes", methods=["GET"])
+@token_required
+def get_all_notes(current_user):
+    documents = (
+        Document.query
+        .filter_by(user_id=current_user.id)
+        .order_by(Document.uploaded_at.desc())
+        .all()
+    )
 
+    document_ids = [document.id for document in documents]
+
+    if not document_ids:
+        return jsonify([])
+
+    analyses_by_document_id = {
+        analysis.document_id: analysis
+        for analysis in DocumentAnalysis.query
+        .filter(
+            DocumentAnalysis.document_id.in_(
+                document_ids
+            )
+        )
+        .all()
+    }
+
+    notes = (
+        Note.query
+        .filter(
+            Note.document_id.in_(
+                document_ids
+            )
+        )
+        .order_by(Note.created_at.desc())
+        .all()
+    )
+
+    notes_by_document = {}
+
+    for note in notes:
+        notes_by_document.setdefault(
+            note.document_id,
+            []
+        ).append(note)
+
+    result = []
+
+    for document in documents:
+        document_notes = notes_by_document.get(
+            document.id,
+            []
+        )
+
+        if not document_notes:
+            continue
+
+        analysis = analyses_by_document_id.get(
+            document.id
+        )
+
+        document_title = (
+            analysis.title
+            if analysis and analysis.title
+            else document.filename
+        )
+
+        result.append({
+            "document_id": document.id,
+            "document_title": document_title,
+            "notes": [
+                {
+                    "id": note.id,
+                    "document_id":
+                        note.document_id,
+                    "content":
+                        note.content,
+                    "source_type":
+                        note.source_type,
+                    "is_completed":
+                        note.is_completed,
+                    "created_at":
+                        note.created_at.isoformat(),
+                    "updated_at":
+                        note.updated_at.isoformat(),
+                }
+                for note in document_notes
+            ],
+        })
+
+    return jsonify(result)
 @app.route("/api/notes/<int:note_id>", methods=["PATCH"])
 @token_required
 def update_note(current_user, note_id):

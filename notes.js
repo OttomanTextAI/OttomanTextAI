@@ -24,34 +24,60 @@ document.addEventListener('DOMContentLoaded', () => {
     const notesDocumentInfo =
         document.getElementById('notesDocumentInfo');
 
+    const GUEST_NOTES_KEY = 'divane_guest_notes';
+    const MAX_GUEST_NOTES = 3;
 
+
+    function getGuestNotes() {
+            try {
+                const notes = JSON.parse(
+                    localStorage.getItem(GUEST_NOTES_KEY) || '[]'
+                );
+
+                return Array.isArray(notes)
+                    ? notes
+                    : [];
+
+            } catch (error) {
+                return [];
+            }
+        }
+
+
+    function saveGuestNotes(notes) {
+            localStorage.setItem(
+                GUEST_NOTES_KEY,
+                JSON.stringify(notes)
+            );
+        }
     function showStatus(message) {
         notesStatus.textContent = message;
     }
 
 
-    if (!authToken) {
-        showStatus(
-            'Notlarınızı görüntülemek için giriş yapmanız gerekiyor.'
-        );
-
-        notesForm.style.display = 'none';
-        return;
-    }
-
-
-    if (!documentId) {
-        showStatus(
-            'Aktif bir belge bulunamadı. Önce bir belge açın.'
-        );
-
-        notesForm.style.display = 'none';
-        return;
-    }
-
+if (authToken) {
 
     notesDocumentInfo.textContent =
-        `Belge #${documentId}`;
+        'Belgelerinize Ait Notlar';
+
+    if (!documentId) {
+        notesForm.style.display = 'none';
+
+        showStatus(
+            'Yeni not eklemek için önce bir belge açın. ' +
+            'Kayıtlı notlarınızı aşağıda görüntüleyebilirsiniz.'
+        );
+    }
+
+} else {
+    notesDocumentInfo.textContent =
+        `Misafir Notları • En fazla ${MAX_GUEST_NOTES} not`;
+
+    showStatus(
+        'Misafir olarak en fazla 3 not oluşturabilirsiniz. ' +
+        'Kalıcı kullanım için giriş yapabilirsiniz.'
+    );
+}
 
 
     async function apiRequest(
@@ -101,8 +127,64 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    function renderNotes(notes) {
-        notesList.innerHTML = '';
+    function renderDocumentGroups(groups) {
+    notesList.innerHTML = '';
+
+    if (
+        !Array.isArray(groups) ||
+        groups.length === 0
+    ) {
+        const empty =
+            document.createElement('div');
+
+        empty.className = 'notes-empty';
+        empty.textContent =
+            'Henüz not eklenmedi.';
+
+        notesList.appendChild(empty);
+        return;
+    }
+
+    groups.forEach(group => {
+        const section =
+            document.createElement('section');
+
+        section.className =
+            'notes-document-group';
+
+        const title =
+            document.createElement('h3');
+
+        title.className =
+            'notes-document-title';
+
+        title.textContent =
+            `📄 ${group.document_title}`;
+
+        section.appendChild(title);
+
+        const groupList =
+            document.createElement('div');
+
+        groupList.className =
+            'notes-document-list';
+
+        section.appendChild(groupList);
+
+        notesList.appendChild(section);
+
+        renderNotes(
+            group.notes,
+            groupList
+        );
+    });
+}
+
+    function renderNotes(
+        notes,
+        container = notesList
+    ) {
+        container.innerHTML = '';
 
         if (!Array.isArray(notes) ||
             notes.length === 0
@@ -114,7 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
             empty.textContent =
                 'Henüz not eklenmedi.';
 
-            notesList.appendChild(empty);
+            container.appendChild(empty);
             return;
         }
 
@@ -190,123 +272,188 @@ document.addEventListener('DOMContentLoaded', () => {
             item.appendChild(main);
             item.appendChild(deleteBtn);
 
-            notesList.appendChild(item);
+            container.appendChild(item);
 
+        checkbox.addEventListener(
+            'change',
+            async () => {
 
-            checkbox.addEventListener(
-                'change',
-                async () => {
+                // Misafir kullanıcı
+                if (!authToken) {
 
-                    checkbox.disabled = true;
+                    const guestNotes =
+                        getGuestNotes();
 
-                    try {
-                        const data =
-                            await apiRequest(
-                                `/api/notes/${note.id}`,
-                                {
-                                    method: 'PATCH',
-                                    body:
-                                        JSON.stringify({
-                                            is_completed:
-                                                checkbox.checked
-                                        })
-                                }
-                            );
-
-                        item.classList.toggle(
-                            'completed',
-                            !!data.note
-                                ?.is_completed
+                    const targetNote =
+                        guestNotes.find(
+                            item =>
+                                String(item.id) ===
+                                String(note.id)
                         );
 
-                    } catch (error) {
-                        checkbox.checked =
-                            !checkbox.checked;
+                    if (targetNote) {
+                        targetNote.is_completed =
+                            checkbox.checked;
 
-                        alert(
-                            'Not güncellenemedi: ' +
-                            error.message
+                        saveGuestNotes(
+                            guestNotes
                         );
-
-                    } finally {
-                        checkbox.disabled =
-                            false;
                     }
+
+                    item.classList.toggle(
+                        'completed',
+                        checkbox.checked
+                    );
+
+                    return;
                 }
-            );
 
 
-            deleteBtn.addEventListener(
-                'click',
-                async () => {
+                // Giriş yapmış kullanıcı
+                checkbox.disabled = true;
 
-                    const confirmed =
-                        confirm(
-                            'Bu not silinsin mi?'
-                        );
-
-                    if (!confirmed) {
-                        return;
-                    }
-
-                    deleteBtn.disabled = true;
-
-                    try {
+                try {
+                    const data =
                         await apiRequest(
                             `/api/notes/${note.id}`,
                             {
-                                method:
-                                    'DELETE'
+                                method: 'PATCH',
+                                body:
+                                    JSON.stringify({
+                                        is_completed:
+                                            checkbox.checked
+                                    })
                             }
                         );
 
-                        item.remove();
+                    item.classList.toggle(
+                        'completed',
+                        !!data.note?.is_completed
+                    );
 
-                        if (
-                            notesList.children
-                                .length === 0
-                        ) {
-                            loadNotes();
-                        }
+                } catch (error) {
 
-                    } catch (error) {
-                        deleteBtn.disabled =
-                            false;
+                    checkbox.checked =
+                        !checkbox.checked;
 
-                        alert(
-                            'Not silinemedi: ' +
-                            error.message
-                        );
-                    }
+                    alert(
+                        'Not güncellenemedi: ' +
+                        error.message
+                    );
+
+                } finally {
+
+                    checkbox.disabled =
+                        false;
                 }
-            );
+            }
+        );
 
+
+         deleteBtn.addEventListener(
+            'click',
+            async () => {
+
+                const confirmed =
+                    confirm(
+                        'Bu not silinsin mi?'
+                    );
+
+                if (!confirmed) {
+                    return;
+                }
+
+
+                // Misafir kullanıcı
+                if (!authToken) {
+
+                    const guestNotes =
+                        getGuestNotes()
+                            .filter(
+                                item =>
+                                    String(item.id) !==
+                                    String(note.id)
+                            );
+
+                    saveGuestNotes(
+                        guestNotes
+                    );
+
+                    renderNotes(
+                        guestNotes
+                    );
+
+                    return;
+                }
+
+
+                // Giriş yapmış kullanıcı
+                deleteBtn.disabled = true;
+
+                try {
+
+                await apiRequest(
+                    `/api/notes/${note.id}`,
+                    {
+                        method: 'DELETE'
+                    }
+                );
+
+                await loadNotes();
+
+                } catch (error) {
+
+                    deleteBtn.disabled =
+                        false;
+
+                    alert(
+                        'Not silinemedi: ' +
+                        error.message
+                    );
+                }
+            }
+        );
         });
     }
 
 
-    async function loadNotes() {
-        showStatus(
-            'Notlar yükleniyor...'
+async function loadNotes() {
+
+    // Misafir
+    if (!authToken) {
+
+        const guestNotes =
+            getGuestNotes();
+
+        renderNotes(
+            guestNotes
         );
 
-        try {
-            const notes =
-                await apiRequest(
-                    `/api/documents/${documentId}/notes`
-                );
-
-            showStatus('');
-            renderNotes(notes);
-
-        } catch (error) {
-            showStatus(
-                'Notlar yüklenemedi: ' +
-                error.message
-            );
-        }
+        return;
     }
 
+
+    // Giriş yapmış kullanıcı
+    showStatus(
+        'Notlar yükleniyor...'
+    );
+
+    try {
+
+    const groups =
+        await apiRequest('/api/notes');
+
+    showStatus('');
+    renderDocumentGroups(groups);
+
+    } catch (error) {
+
+        showStatus(
+            'Notlar yüklenemedi: ' +
+            error.message
+        );
+    }
+}
 
     notesForm.addEventListener(
         'submit',
@@ -326,6 +473,63 @@ document.addEventListener('DOMContentLoaded', () => {
                     'button[type="submit"]'
                 );
 
+
+                // Misafir kullanıcı
+                if (!authToken) {
+
+                    const guestNotes =
+                        getGuestNotes();
+                    const manualGuestNoteCount =
+                        guestNotes.filter(
+                            note =>
+                                note.source_type === 'manual'
+                        ).length;
+
+                    if (
+                        manualGuestNoteCount >=
+                        MAX_GUEST_NOTES
+                    ) {
+                        alert(
+                            'Misafir olarak en fazla 3 not oluşturabilirsiniz. ' +
+                            'Daha fazla not eklemek ve notlarınızı kalıcı olarak saklamak için giriş yapın.'
+                        );
+
+                        return;
+                    }
+
+
+                    guestNotes.push({
+                        id:
+                            'guest_' +
+                            Date.now(),
+
+                        content:
+                            content,
+
+                        source_type:
+                            'manual',
+
+                        is_completed:
+                            false,
+
+                        created_at:
+                            new Date()
+                                .toISOString()
+                    });
+
+
+                    saveGuestNotes(
+                        guestNotes
+                    );
+
+                    notesInput.value = '';
+
+                    renderNotes(
+                        guestNotes
+                    );
+
+                    return;
+                }
             submitBtn.disabled = true;
             submitBtn.textContent =
                 'Ekleniyor...';
