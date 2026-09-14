@@ -1,4 +1,5 @@
 import base64
+import hashlib
 import json
 import os
 import re
@@ -3364,6 +3365,79 @@ def save_translation():
     original_filename = secure_filename(uploaded_file.filename) or "translation.png"
     extension = original_filename.rsplit(".", 1)[-1].lower() if "." in original_filename else "png"
     file_bytes = uploaded_file.read()
+    file_hash = hashlib.sha256(file_bytes).hexdigest()
+
+    # "Üzerine yaz" onayı: istemci daha önce 409 aldığı için hangi belgenin
+    # üzerine yazılacağını zaten biliyor — burada TEKRAR hash eşleşmesi
+    # aramıyoruz, doğrudan o belgenin (sadece current_user'a aitse)
+    # DocumentText/DocumentAnalysis/DocumentEntity satırlarını güncelliyoruz.
+    # Görsel byte-birebir aynı olduğu için depoya yeniden yüklemiyoruz,
+    # mevcut storage_path/dosya aynen kalıyor.
+    overwrite_document_id = request.form.get("overwrite_document_id", type=int)
+    if overwrite_document_id:
+        target_document = Document.query.filter_by(
+            id=overwrite_document_id, user_id=current_user.id
+        ).first()
+        if not target_document:
+            return jsonify({"error": "Üzerine yazılacak belge bulunamadı."}), 404
+
+        target_document.file_hash = file_hash
+
+        existing_text = DocumentText.query.filter_by(document_id=target_document.id).first()
+        if not existing_text:
+            existing_text = DocumentText(document_id=target_document.id)
+            db.session.add(existing_text)
+        existing_text.ocr_text = parsed.get("ocr", "")
+        existing_text.translit_text = parsed.get("translit", "")
+        existing_text.trans_text = parsed.get("trans", "")
+        existing_text.trans_modern_text = parsed.get("trans_modern", "")
+        existing_text.trans_text_en = parsed.get("trans_en", "")
+
+        existing_analysis = DocumentAnalysis.query.filter_by(document_id=target_document.id).first()
+        if not existing_analysis:
+            existing_analysis = DocumentAnalysis(document_id=target_document.id)
+            db.session.add(existing_analysis)
+        existing_analysis.title = parsed.get("title")
+        existing_analysis.document_type = parsed.get("document_type")
+        existing_analysis.style = parsed.get("style")
+        existing_analysis.summary = parsed.get("summary")
+        existing_analysis.script_type = parsed.get("script_type")
+        existing_analysis.script_purpose = parsed.get("script_purpose")
+        existing_analysis.period_estimate = parsed.get("period_estimate")
+        existing_analysis.date_hijri = parsed.get("date_hijri")
+        existing_analysis.date_gregorian = parsed.get("date_gregorian")
+        existing_analysis.notes = parsed.get("notes")
+        existing_analysis.confidence = parsed.get("confidence")
+
+        _replace_document_entities(target_document.id, parsed)
+
+        db.session.commit()
+
+        return jsonify({
+            "message": "Mevcut belge güncellendi.",
+            "document_id": target_document.id,
+        }), 200
+
+    # "Yeni kayıt olarak ekle" onayı: istemci duplicate uyarısını gördü ve
+    # yine de yeni bir satır istiyor — aşağıdaki hash kontrolünü atlayıp
+    # normal akışa devam ediyoruz (aynı file_hash'e sahip iki Document
+    # olması kasıtlı olarak sorun değil, bkz. görev talimatı).
+    force_new = request.form.get("force_new") == "true"
+
+    if not force_new:
+        duplicate = Document.query.filter_by(
+            user_id=current_user.id, file_hash=file_hash
+        ).first()
+        if duplicate:
+            duplicate_analysis = DocumentAnalysis.query.filter_by(document_id=duplicate.id).first()
+            existing_title = (duplicate_analysis.title if duplicate_analysis else None) or duplicate.filename
+            return jsonify({
+                "duplicate": True,
+                "existing_document_id": duplicate.id,
+                "existing_title": existing_title,
+                "existing_uploaded_at": duplicate.uploaded_at.isoformat() if duplicate.uploaded_at else None,
+            }), 409
+
     storage_path = f"{current_user.id}/{uuid.uuid4()}_{original_filename}"
 
     try:
@@ -3381,6 +3455,7 @@ def save_translation():
         storage_path=storage_path,
         file_type=extension,
         file_size=len(file_bytes),
+        file_hash=file_hash,
     )
     db.session.add(new_document)
     db.session.flush()

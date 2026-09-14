@@ -31,6 +31,10 @@ class Document(db.Model):
     storage_path = db.Column(db.String(500), nullable=False, unique=True)
     file_type = db.Column(db.String(20), nullable=False)
     file_size = db.Column(db.Integer, nullable=False)
+    # Yüklenen dosyanın SHA-256'sı (hex) — aynı kullanıcının aynı görseli
+    # tekrar kaydetmeye çalıştığını tespit etmek için (bkz. backend.py
+    # save_translation). Eski satırlarda NULL olabilir, kasıtlı.
+    file_hash = db.Column(db.String(64), index=True)
     uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 

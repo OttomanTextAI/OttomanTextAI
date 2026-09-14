@@ -2983,12 +2983,28 @@ ${transTextDisplay.textContent}
     // fonksiyonu hiç çağırmaz), giriş yapmış kullanıcının hesabına best
     // effort olarak kaydeder. Kullanıcıyı bekletmemek için await edilmez;
     // başarısız olursa sessizce konsola loglanır.
-    async function saveTranslationToBackend(resultData, imageBlob) {
+    //
+    // overwriteDocumentId/forceNew: backend aynı kullanıcının aynı görseli
+    // (byte-birebir, SHA-256 ile) daha önce kaydettiğini tespit ederse 409
+    // + {duplicate:true, existing_document_id, existing_title,
+    // existing_uploaded_at} döner (bkz. backend.py save_translation). Bu
+    // durumda kullanıcıya basit bir confirm() ile sorulur; "Tamam" =
+    // üzerine yaz (aynı isteği overwrite_document_id ile tekrar atar),
+    // "İptal" = yeni kayıt (aynı isteği force_new=true ile tekrar atar,
+    // backend hash kontrolünü bir daha yapmaz). Her iki tekrar deneme de
+    // bu fonksiyonun kendisini çağırır, sonsuz döngü riski yok çünkü ikinci
+    // istek artık 409 dönmeyecek şekilde işaretli.
+    async function saveTranslationToBackend(resultData, imageBlob, overwriteDocumentId, forceNew) {
         if (!imageBlob || !resultData) return;
         try {
             const formData = new FormData();
             formData.append('image', imageBlob, 'enhanced.png');
             formData.append('result', JSON.stringify(resultData));
+            if (overwriteDocumentId) {
+                formData.append('overwrite_document_id', String(overwriteDocumentId));
+            } else if (forceNew) {
+                formData.append('force_new', 'true');
+            }
 
             const res = await fetchWithTimeout(`${API_BASE_URL}/api/translations/save`, {
                 method: 'POST',
@@ -2997,6 +3013,23 @@ ${transTextDisplay.textContent}
             }, 30000);
 
             const data = await res.json().catch(() => ({}));
+
+            if (res.status === 409 && data.duplicate) {
+                const existingLabel = data.existing_title || 'Adsız belge';
+                const existingDate = data.existing_uploaded_at
+                    ? new Date(data.existing_uploaded_at).toLocaleString('tr-TR')
+                    : '';
+                const wantsOverwrite = confirm(
+                    `Bu belge zaten kayıtlı görünüyor: "${existingLabel}"${existingDate ? ` (${existingDate})` : ''}.\n\n` +
+                    `Üzerine yazmak için Tamam'a, yeni bir kayıt olarak eklemek için İptal'e basın.`
+                );
+                if (wantsOverwrite) {
+                    await saveTranslationToBackend(resultData, imageBlob, data.existing_document_id, false);
+                } else {
+                    await saveTranslationToBackend(resultData, imageBlob, null, true);
+                }
+                return;
+            }
 
             if (!res.ok) {
                 console.warn(
