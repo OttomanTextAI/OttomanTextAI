@@ -1457,29 +1457,27 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         // otomatik geri uygulanabilir (bkz. applyStoredWordCorrections).
         state.documentId = hashText(`${finalOcr}${finalTranslit}${finalTrans}`);
 
-        // Entity işaretleme (kişi/yer/kavram/olay renklendirmesi +
-        // tıklanabilirlik + filtre) VE kelime alternatifi (.uncertain-word)
-        // SADECE Modern Türkçe Çeviri (trans) kolonunda uygulanır — üç
-        // kolonda tutarlılığı garanti etmeye çalışmak hem kırılgan hem
-        // maliyetli çıktı, model zaten en doğru entity tespitini bu
-        // kolonun metninde yapabiliyor. Osmanlıca ve translit kolonları
-        // artık TAMAMEN DÜZ METİN (TTS cümle span'leri hariç) — hiçbir
-        // renkli/altı çizili/tıklanabilir kelime yok.
+        // Entity işaretleme (kişi/yer/kavram/olay renklendirmesi + tıklanabilirlik
+        // + filtre) SADECE Modern Türkçe Çeviri (trans) kolonunda uygulanır — üç
+        // kolonda tutarlılığı garanti etmeye çalışmak hem kırılgan hem maliyetli
+        // çıktı, model zaten en doğru entity tespitini bu kolonun metninde
+        // yapabiliyor. Kelime alternatifi (.uncertain-word tıklanabilirliği) ise
+        // entity işaretlemesinden BAĞIMSIZ bir özellik — ocr ve translit
+        // kolonlarında da kendi field'larıyla ('ocr' / 'translit') çalışır (bkz.
+        // aşağıdaki showWordAlternativesPopover kablolaması).
         const transEntities = buildEntityIndex(finalAnalysis);
 
         ocrEmptyState.classList.add('hidden');
         ocrTextDisplay.classList.remove('hidden');
-        renderWithGuessMarkers(ocrTextDisplay, finalOcr);
+        renderWithGuessMarkers(ocrTextDisplay, finalOcr, { clickableGuesses: true, field: 'ocr' });
+        applyStoredWordCorrections(state.documentId, 'ocr', ocrTextDisplay);
         ocrTools.classList.add('tools-ready');
 
         if (finalTranslit) {
             translitEmptyState.classList.add('hidden');
             translitTextDisplay.classList.remove('hidden');
-            // clickableGuesses/field YOK: translit artık tamamen düz metin
-            // (TTS cümle span'leri hariç) — .uncertain-word işaretlemesi/
-            // tıklanabilirliği bu kolonda kaldırıldı, sadece transTextDisplay'de
-            // kalıyor (bkz. aşağıdaki showWordAlternativesPopover kablolaması).
-            renderWithGuessMarkers(translitTextDisplay, finalTranslit);
+            renderWithGuessMarkers(translitTextDisplay, finalTranslit, { clickableGuesses: true, field: 'translit' });
+            applyStoredWordCorrections(state.documentId, 'translit', translitTextDisplay);
             translitTools.classList.add('tools-ready');
         } else {
             translitEmptyState.classList.remove('hidden');
@@ -1645,12 +1643,13 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     // (bkz. TTS bölümü). entities verilirse (Türkçe çeviri sekmesi), her
     // cümle içinde ayrıca kişi/yer/tarih vurgulaması da uygulanır.
     //
-    // options.clickableGuesses true ise (SADECE Türkçe çeviri sekmesinde),
+    // options.clickableGuesses true ise (ocr/translit/trans kolonlarında),
     // her **tahmin** işaretli <strong>, tıklanabilir bir "belirsiz kelime"
-    // olarak data-word-idx (bu render içinde 0'dan başlayan, belge boyunca
-    // artan bir sayaç) ve data-word-field ('trans') ile işaretlenir — bkz.
-    // showWordAlternativesPopover(). options verilmezse (ocr/translit/en
-    // sekmeleri) davranış sade <strong> kalır — tıklanabilirlik yok.
+    // olarak data-word-idx (bu render içinde 0'dan başlayan, HER ÇAĞRIYA ÖZEL
+    // bir sayaç — yani ocr/translit/trans'ın kendi word-idx'leri birbirinden
+    // bağımsız) ve data-word-field ('ocr'/'translit'/'trans', options.field'dan
+    // gelir) ile işaretlenir — bkz. showWordAlternativesPopover(). options
+    // verilmezse (en sekmesi) davranış sade <strong> kalır — tıklanabilirlik yok.
     function renderSentenceSpansHtml(rawText, entities, options) {
         const clickableGuesses = !!(options && options.clickableGuesses);
         const wordField = (options && options.field) || '';
@@ -2161,9 +2160,9 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
     }
 
     // --- Belirsiz Kelime Alternatifleri (uncertain-word) ---
-    // SADECE Türkçe çeviri sekmesindeki **tahmin** işaretli (.uncertain-word)
-    // kelimelere tıklanınca, kelimenin yakınında küçük
-    // bir kart açılır: OCR/Osmanlıca hali, kökeni ve en fazla 3 alternatif
+    // Osmanlıca (ocr), Translit ve Türkçe çeviri (trans) kolonlarındaki
+    // **tahmin** işaretli (.uncertain-word) kelimelere tıklanınca, kelimenin
+    // yakınında küçük bir kart açılır: OCR/Osmanlıca hali, kökeni ve en fazla 3 alternatif
     // okuma — bunlar ANA çeviri isteğinde değil, tıklama anında YENİ ve
     // küçük bir istekle (/api/word-alternatives) tembel yüklenir (ana
     // çeviriyi yavaşlatmamak, token limitini zorlamamak için). TTS'e hiç
@@ -2215,10 +2214,11 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         return (store[documentId] && store[documentId][field]) || {};
     }
 
-    // trans alanı render edildikten hemen sonra çağrılır (kelime alternatifi
-    // artık sadece bu alanda çalıştığı için): daha önce bu belge için
-    // kaydedilmiş düzeltmeleri ekrana geri uygular (sayfa yenilense/belge
-    // tekrar açılsa bile düzeltmeler kaybolmasın).
+    // Her kolon (ocr/translit/trans) kendi render'ından hemen sonra kendi
+    // field'ıyla çağırır: daha önce bu belge + bu kolon için kaydedilmiş
+    // düzeltmeleri ekrana geri uygular (sayfa yenilense/belge tekrar açılsa
+    // bile düzeltmeler kaybolmasın). field ayrı olduğu için kolonlar
+    // birbirinin düzeltmesini asla geri uygulamaz/ezmez.
     function applyStoredWordCorrections(documentId, field, containerEl) {
         const corrections = loadWordCorrections(documentId, field);
         Object.keys(corrections).forEach(wordIdx => {
@@ -2430,13 +2430,19 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         popover.appendChild(form);
     }
 
-    // Kelime alternatifi kartı (.uncertain-word) SADECE transTextDisplay'de
-    // tetiklenir — ocr/translit kolonları artık tamamen düz metin.
-    transTextDisplay.addEventListener('click', (e) => {
-        const wordEl = e.target.closest('.uncertain-word');
-        if (!wordEl) return;
-        e.stopPropagation();
-        showWordAlternativesPopover(wordEl);
+    // Kelime alternatifi kartı (.uncertain-word) her üç kolonda (ocr/translit/
+    // trans) da aynı şekilde tetiklenir — hangi kolonda tıklandığı targetEl'in
+    // data-word-field'ından ('ocr'/'translit'/'trans') anlaşılır, o field
+    // showWordAlternativesPopover içinde hem /api/word-alternatives isteğine
+    // target_lang olarak hem de saveWordCorrection/applyStoredWordCorrections'a
+    // ayırt edici anahtar olarak gider — kolonlar birbirini ezmez.
+    [ocrTextDisplay, translitTextDisplay, transTextDisplay].forEach(displayEl => {
+        displayEl.addEventListener('click', (e) => {
+            const wordEl = e.target.closest('.uncertain-word');
+            if (!wordEl) return;
+            e.stopPropagation();
+            showWordAlternativesPopover(wordEl);
+        });
     });
 
     document.addEventListener('click', (e) => {
