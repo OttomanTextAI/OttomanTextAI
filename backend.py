@@ -3249,6 +3249,35 @@ def get_all_notes(current_user):
         })
 
     return jsonify(result)
+
+@app.route("/api/notes", methods=["GET"])
+@token_required
+def get_all_notes(current_user):
+    notes = (
+        Note.query
+        .join(Document, Note.document_id == Document.id)
+        .filter(Document.user_id == current_user.id)
+        .order_by(
+            Document.id.desc(),
+            Note.created_at.desc(),
+        )
+        .all()
+    )
+
+    return jsonify([
+        {
+            "id": note.id,
+            "document_id": note.document_id,
+            "document_name": note.document.filename,
+            "content": note.content,
+            "source_type": note.source_type,
+            "is_completed": note.is_completed,
+            "created_at": note.created_at.isoformat(),
+            "updated_at": note.updated_at.isoformat(),
+        }
+        for note in notes
+    ])
+
 @app.route("/api/notes/<int:note_id>", methods=["PATCH"])
 @token_required
 def update_note(current_user, note_id):
@@ -3318,6 +3347,33 @@ def delete_note(current_user, note_id):
         "message": "Not silindi."
     })
 
+@app.route("/api/notes", methods=["GET"])
+@token_required
+def get_all_notes(current_user):
+    notes = (
+        Note.query
+        .join(Document, Note.document_id == Document.id)
+        .filter(Document.user_id == current_user.id)
+        .order_by(
+            Document.id.desc(),
+            Note.created_at.desc(),
+        )
+        .all()
+    )
+
+    return jsonify([
+        {
+            "id": note.id,
+            "document_id": note.document_id,
+            "document_name": note.document.filename,
+            "content": note.content,
+            "source_type": note.source_type,
+            "is_completed": note.is_completed,
+            "created_at": note.created_at.isoformat(),
+            "updated_at": note.updated_at.isoformat(),
+        }
+        for note in notes
+    ])
 @app.route("/api/translations/save", methods=["POST"])
 def save_translation():
     auth_header = request.headers.get("Authorization", "")

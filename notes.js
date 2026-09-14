@@ -71,10 +71,10 @@ if (authToken) {
 
 } else {
     notesDocumentInfo.textContent =
-        `Misafir Notları • En fazla ${MAX_GUEST_NOTES} not`;
+        'Misafir Notları • 3 manuel + 1 AI notu';
 
     showStatus(
-        'Misafir olarak en fazla 3 not oluşturabilirsiniz. ' +
+        'Misafir olarak 3 manuel not ve 1 AI notu oluşturabilirsiniz. ' +
         'Kalıcı kullanım için giriş yapabilirsiniz.'
     );
 }
@@ -440,11 +440,31 @@ async function loadNotes() {
 
     try {
 
-    const groups =
-        await apiRequest('/api/notes');
+const notes =
+    await apiRequest('/api/notes');
 
-    showStatus('');
-    renderDocumentGroups(groups);
+const groupsMap = new Map();
+
+notes.forEach(note => {
+    const key = String(note.document_id);
+
+    if (!groupsMap.has(key)) {
+        groupsMap.set(key, {
+            document_id: note.document_id,
+            document_title:
+                note.document_name || 'İsimsiz Belge',
+            notes: []
+        });
+    }
+
+    groupsMap.get(key).notes.push(note);
+});
+
+const groups =
+    Array.from(groupsMap.values());
+
+showStatus('');
+renderDocumentGroups(groups);
 
     } catch (error) {
 

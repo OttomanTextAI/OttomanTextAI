@@ -187,9 +187,9 @@ class DocumentPredictionGenerator:
                 flush=True,
             )
 
-        result = parse_model_json(
-            retry_text
-        )
+            result = parse_model_json(
+                retry_text
+            )
 
         if not has_usable_result(result):
             print(
@@ -248,16 +248,22 @@ class DocumentPredictionGenerator:
             )
 
             if prediction:
-               {
-                "prediction": prediction,
-                "confidence": confidence,
-                "reason": reason,
-                "note_suitable": True,
-                "note_text": (
-                    f"Tahmin: {prediction}"
-                    + (f"\nGerekçe: {reason}" if reason else "")
-                ),
-            }
+                cleaned_predictions.append(
+                    {
+                        "prediction": prediction,
+                        "confidence": confidence,
+                        "reason": reason,
+                        "note_suitable": True,
+                        "note_text": (
+                            f"Tahmin: {prediction}"
+                            + (
+                                f"\nGerekçe: {reason}"
+                                if reason
+                                else ""
+                            )
+                        ),
+                    }
+                )
 
         cleaned_recommendations = []
 
@@ -274,15 +280,21 @@ class DocumentPredictionGenerator:
             ).strip()
 
             if recommendation:
-                {
-                    "recommendation": recommendation,
-                    "reason": reason,
-                    "note_suitable": True,
-                    "note_text": (
-                        f"Öneri: {recommendation}"
-                        + (f"\nGerekçe: {reason}" if reason else "")
-                    ),
-                }
+                cleaned_recommendations.append(
+                    {
+                        "recommendation": recommendation,
+                        "reason": reason,
+                        "note_suitable": True,
+                        "note_text": (
+                            f"Öneri: {recommendation}"
+                            + (
+                                f"\nGerekçe: {reason}"
+                                if reason
+                                else ""
+                            )
+                        ),
+                    }
+                )
         print(
             "[AI PREDICTIONS] Parsed result:",
             {

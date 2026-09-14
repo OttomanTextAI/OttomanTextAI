@@ -3256,7 +3256,12 @@ ${transTextDisplay.textContent}
             noteAction.onclick = (event) => {
                 event.preventDefault();
                 event.stopPropagation();
-                window.location.href = 'notes.html';
+
+                window.open(
+                    'notes.html',
+                    '_blank',
+                    'noopener,noreferrer'
+                );
             };
 
         } else {
@@ -3677,7 +3682,9 @@ ${transTextDisplay.textContent}
 
             if (!response.ok || !data.success) {
                 throw new Error(
-                    data.error || 'AI tahmin isteği başarısız oldu.'
+                    data.details ||
+                    data.error ||
+                    'AI tahmin isteği başarısız oldu.'
                 );
             }
 
@@ -3952,18 +3959,16 @@ ${transTextDisplay.textContent}
                     `${index + 1}. ${question}`;
 
                 button.addEventListener('click', () => {
-                                    // Hazır Sorular modalından çık
-                                    closeAiFeatureModal();
+                    // Chatbox'ı aç
+                    assistantPanel.classList.remove('hidden');
 
-                                    // Chatbox'ı aç
-                                    assistantPanel.classList.remove('hidden');
+                    // Soruyu chatbox'a yaz
+                    assistantInput.value = question;
+                    assistantInput.focus();
 
-                                    // Soruyu chatbox'a yaz ve otomatik gönder
-                                    assistantInput.value = question;
-                                    assistantInput.focus();
-
-                                    sendAssistantMessage();
-                                });
+                    // Otomatik gönder
+                    sendAssistantMessage();
+                });
 
                 aiFeatureResult.appendChild(button);
             });

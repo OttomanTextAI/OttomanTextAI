@@ -122,13 +122,24 @@ class SuggestionReviewer:
                 },
             ],
             temperature=0.1,
-            max_tokens=350,
+            max_tokens=900,
         )
 
         answer_text = (
             response.choices[0].message.content or ""
         ).strip()
 
+        print(
+            "[SUGGESTION REVIEW] Finish reason:",
+            response.choices[0].finish_reason,
+            flush=True,
+        )
+
+        print(
+            "[SUGGESTION REVIEW] Raw response:",
+            repr(answer_text),
+            flush=True,
+        )
         result = parse_model_json(
             answer_text
         )

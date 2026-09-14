@@ -48,6 +48,12 @@ Kurallar:
 - JSON'dan önce veya sonra açıklama yazma.
 - Markdown veya ```json kod bloğu kullanma.
 - SADECE geçerli JSON döndür.
+- Cevaba doğrudan JSON nesnesiyle başla.
+- JSON dışında hiçbir açıklama, düşünme metni, giriş cümlesi veya sonuç cümlesi yazma.
+- "Wait", "Let's think", "Let's double check" benzeri iç düşünme ifadeleri üretme.
+- En fazla 5 varlık döndür.
+- Her alanı kısa tut.
+- JSON nesnesini mutlaka tamamen kapat.
 
 JSON formatı:
 
@@ -126,7 +132,7 @@ class EntityFilterClassifier:
                 },
             ],
             temperature=0.1,
-            max_tokens=2200,
+            max_tokens=2600,
         )
 
         finish_reason = completion.choices[0].finish_reason
@@ -196,17 +202,20 @@ class EntityFilterClassifier:
                             "veya geçerli JSON değildi. "
                             "Belge anlamlı olduğu için entities listesi boş OLMAMALI. "
                             "Bu kez çok kısa cevap ver. "
-                            "En fazla 8 öğe döndür. "
-                            "Yalnızca en önemli öğeleri seç. "
-                            "subtype en fazla 3 kelime olsun. "
-                            "role en fazla 8 kelime olsun. "
-                            "context en fazla 8 kelime olsun. "
-                            "JSON nesnesini mutlaka tamamen kapat."
+                            "En fazla 3 öğe döndür. "
+                            "Yalnızca metindeki en önemli varlıkları seç. "
+                            "Her öğede text, category, subtype, importance, "
+                            "role, context ve confidence alanları olsun. "
+                            "subtype en fazla 2 kelime olsun. "
+                            "role en fazla 5 kelime olsun. "
+                            "context en fazla 5 kelime olsun. "
+                            "Hiçbir açıklama veya düşünme metni yazma. "
+                            "Sadece tamamlanmış geçerli JSON döndür."
                         ),
                     },
                 ],
                 temperature=0.1,
-                max_tokens=2200,
+                max_tokens=2600,
             )
 
             retry_finish_reason = (
