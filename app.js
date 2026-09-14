@@ -2952,74 +2952,152 @@ ${transTextDisplay.textContent}
         }
     }
 
-        async function addAiResultToNotes(
-        noteText,
-        sourceType = 'manual'
-    ) {
-        if (!state.authToken) {
-            alert('Not eklemek için giriş yapmanız gerekiyor.');
-            return false;
-        }
+       async function addAiResultToNotes(
+    noteText,
+    sourceType = 'manual'
+) {
+    const content = String(noteText || '').trim();
 
-        if (!state.dbDocumentId) {
+    if (!content) {
+        alert('Eklenecek not içeriği bulunamadı.');
+        return false;
+    }
+
+    // -----------------------------
+    // GİRİŞ YAPMAMIŞ KULLANICI
+    // -----------------------------
+    if (!state.authToken) {
+        const GUEST_NOTES_KEY = 'divane_guest_notes';
+        const GUEST_AI_NOTE_USED_KEY =
+            'divane_guest_ai_note_used';
+
+        const aiNoteAlreadyUsed =
+            localStorage.getItem(
+                GUEST_AI_NOTE_USED_KEY
+            ) === 'true';
+
+        if (aiNoteAlreadyUsed) {
             alert(
-                'Belge henüz hesabınıza kaydedilmedi. ' +
-                'Lütfen birkaç saniye sonra tekrar deneyin.'
+                'Misafir olarak yalnızca 1 AI sonucunu ' +
+                'notlarınıza ekleyebilirsiniz. ' +
+                'Daha fazla AI notu kaydetmek için giriş yapın.'
             );
+
             return false;
         }
 
-        const content = String(noteText || '').trim();
-
-        if (!content) {
-            alert('Eklenecek not içeriği bulunamadı.');
-            return false;
-        }
+        let guestNotes = [];
 
         try {
-            const response = await fetchWithTimeout(
-                `${API_BASE_URL}/api/documents/${state.dbDocumentId}/notes`,
-                {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization':
-                            `Bearer ${state.authToken}`
-                    },
-                    body: JSON.stringify({
-                        content: content,
-                        source_type: sourceType
-                    })
-                },
-                30000
+            const storedNotes = JSON.parse(
+                localStorage.getItem(
+                    GUEST_NOTES_KEY
+                ) || '[]'
             );
 
-            const data = await response
-                .json()
-                .catch(() => ({}));
-
-            if (!response.ok) {
-                throw new Error(
-                    data.error || 'Not kaydedilemedi.'
-                );
-            }
-
-            return true;
+            guestNotes =
+                Array.isArray(storedNotes)
+                    ? storedNotes
+                    : [];
 
         } catch (error) {
-            console.error(
-                '[NOTES]',
-                error
-            );
-
-            alert(
-                'Not kaydedilemedi: ' +
-                error.message
-            );
-
-            return false;
+            guestNotes = [];
         }
+
+        guestNotes.push({
+            id:
+                'guest_ai_' +
+                Date.now(),
+
+            content:
+                content,
+
+            source_type:
+                sourceType,
+
+            is_completed:
+                false,
+
+            created_at:
+                new Date().toISOString()
+        });
+
+        localStorage.setItem(
+            GUEST_NOTES_KEY,
+            JSON.stringify(guestNotes)
+        );
+
+        localStorage.setItem(
+            GUEST_AI_NOTE_USED_KEY,
+            'true'
+        );
+
+        return true;
     }
+
+    // -----------------------------
+    // GİRİŞ YAPMIŞ KULLANICI
+    // -----------------------------
+    if (!state.dbDocumentId) {
+        alert(
+            'Belge henüz hesabınıza kaydedilmedi. ' +
+            'Lütfen birkaç saniye sonra tekrar deneyin.'
+        );
+
+        return false;
+    }
+
+    try {
+        const response = await fetchWithTimeout(
+            `${API_BASE_URL}/api/documents/${state.dbDocumentId}/notes`,
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type':
+                        'application/json',
+
+                    'Authorization':
+                        `Bearer ${state.authToken}`
+                },
+
+                body: JSON.stringify({
+                    content:
+                        content,
+
+                    source_type:
+                        sourceType
+                })
+            },
+            30000
+        );
+
+        const data = await response
+            .json()
+            .catch(() => ({}));
+
+        if (!response.ok) {
+            throw new Error(
+                data.error ||
+                'Not kaydedilemedi.'
+            );
+        }
+
+        return true;
+
+    } catch (error) {
+        console.error(
+            '[NOTES]',
+            error
+        );
+
+        alert(
+            'Not kaydedilemedi: ' +
+            error.message
+        );
+
+        return false;
+    }
+}
 
     function attachNoteAction(
     card,
@@ -3766,13 +3844,18 @@ ${transTextDisplay.textContent}
                     `${index + 1}. ${question}`;
 
                 button.addEventListener('click', () => {
-                    assistantPanel.classList.remove('hidden');
+                                    // Hazır Sorular modalından çık
+                                    closeAiFeatureModal();
 
-                    assistantInput.value = question;
-                    assistantInput.focus();
+                                    // Chatbox'ı aç
+                                    assistantPanel.classList.remove('hidden');
 
-                    sendAssistantMessage();
-                });
+                                    // Soruyu chatbox'a yaz ve otomatik gönder
+                                    assistantInput.value = question;
+                                    assistantInput.focus();
+
+                                    sendAssistantMessage();
+                                });
 
                 aiFeatureResult.appendChild(button);
             });
@@ -3842,6 +3925,16 @@ if (Array.isArray(suggestions)) {
 
     aiFeatureResult.appendChild(title);
 
+    const researchTypeLabels = {
+        person: 'Kişi',
+        place: 'Yer',
+        event: 'Olay',
+        concept: 'Kavram',
+        date: 'Tarih',
+        work: 'Eser',
+        organization: 'Kurum',
+        research: 'Araştırma'
+    };
     suggestions.forEach((item, index) => {
         const suggestion =
             typeof item === 'string'
@@ -3880,7 +3973,11 @@ if (Array.isArray(suggestions)) {
         }
 
         if (suggestion.type) {
-            text += `\nTür: ${suggestion.type}`;
+            const typeLabel =
+                researchTypeLabels[suggestion.type] ||
+                suggestion.type;
+
+            text += `\nTür: ${typeLabel}`;
         }
 
         button.textContent = text;
