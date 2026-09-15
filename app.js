@@ -769,6 +769,83 @@ el-ḥaḳ`,
                 date_gregorian: "Belirtilmemiş",
                 notes: "Metin, El-Cezeri'nin mekanik araçlar hakkındaki eserinin Osmanlıca tercümelerinden birine ait teknik bir tariftir."
             }
+        },
+        'svf': {
+            file: 'assets/svf.png',
+            name: 'sivas_vakif_fermani.png',
+            size: '1.93 MB',
+            ocr: `۱ امير الامراء الكرام الكبار ذوي الاقدار **والاحترام** **معدن العز والاجلال**
+۲ سیواس بگربگیسی **اولان** **قدوة الاماثل**
+۳ سیواس قاضیسی **زيدت فضائله** **توقيع رفيع همایون واصل اولیجاق معلوم اولا که**
+۴ توقيع رفيع همایون واصل اولیجاق معلوم اولا که **مضمون** **حكم همایون**
+۵ **تولیت و نظارت** **وقفیه** **موجبجه** **عمل اولنمق**
+۶ سیواسده **سلیمان پاشا** **وقفی** **شروطی** **موجبجه**
+۷ **ضبط اولنمق** **مخالف** **عمل اولنمامق**
+۸ **وقفیه** **موجبجه** **عمل اولنمق** **استدعا** **اولندقده**
+۹ **مقتضاسنجه** **عمل اولنه** **دیو** **حكم همایون**
+۱۰ **مهر شریف** **موجبجه** **عمل اولنه**
+۱۱ **وقف شروطی** **موجبجه** **عمل اولنه**
+۱۲ **موجبجه** **عمل اولنه** **درباره** **مخالفت**
+۱۳ **جدید** **وقفیه** **موجبجه** **عمل اولنه**
+۱۴ **مضمون** **حكم همایون** **موجبجه** **عمل اولنه**
+۱۵ **موجبجه** **عمل اولنه** **دیو** **حكم همایون**
+۱۶ **اجرا** **اولنمق** **مخالف** **عمل اولنمامق**
+۱۷ **في اواسط** **شعبان** **سنه** **تسع وتسعين**`,
+            tr: `1 Emirlerin emiri, kerem ve kadir sahibi büyüklerin en büyüğü, **izzet ve celal madeni**
+2 Sivas beylerbeyi **olan** **seçkinlerin örneği**
+3 Sivas kadısı -**fazileti artsın**- **yüce padişah fermanı ulaştığında malum ola ki**
+4 Yüce padişah fermanı ulaştığında malum ola ki **padişah hükmünün içeriği**
+5 **Tevliyet ve nezaret** işlerinin **vakfiye** **gereğince** **yerine getirilmesi**
+6 Sivas'ta **Süleyman Paşa** **vakfı** **şartları** **gereğince**
+7 **Zapt ve idare olunup** **aksine** **hareket olunmaması**
+8 **Vakfiye** **gereğince** **amel olunması** **talep** **olundukta**
+9 **Gereğince** **amel oluna** **diye** **padişah hükmü**
+10 **Mühr-i şerif** **gereğince** **amel oluna**
+11 **Vakıf şartları** **gereğince** **amel oluna**
+12 **Gereğince** **amel oluna** **muhalefet** **hakkında**
+13 **Yeni** **vakfiye** **gereğince** **amel oluna**
+14 **Padişah hükmünün içeriği** **gereğince** **amel oluna**
+15 **Gereğince** **amel oluna** **diye** **padişah hükmü**
+16 **Yerine getirilip** **aksine** **hareket olunmaması**
+17 **Şaban ayının ortalarında** **sene** **doksan dokuz**`,
+            translit: `1 Emîrü'l-ümerâi'l-kirâmi'l-kibâr zevi'l-akdâr **ve'l-ihtirâm** **ma'dinü'l-izzi ve'l-iclâl**
+2 Sivas beylerbeyisi **olan** **kudvetü'l-emâsil**
+3 Sivas kadısı **zîdet fezâilühû** **tevkî'-i refî'-i hümâyûn vâsıl olıcak ma'lûm ola ki**
+4 tevkî'-i refî'-i hümâyûn vâsıl olıcak ma'lûm ola ki **mazmûn-ı** **hükm-i hümâyûn**
+5 **tevliyet ve nezâret** **vakfiye** **mûcebince** **amel olunmak**
+6 Sivas'ta **Süleyman Paşa** **vakfı** **şurûtu** **mûcebince**
+7 **zabt olunmak** **muhâlif** **amel olunmamak**
+8 **vakfiye** **mûcebince** **amel olunmak** **istid'â** **olundukda**
+9 **muktezâsınca** **amel oluna** **deyü** **hükm-i hümâyûn**
+10 **mühr-i şerîf** **mûcebince** **amel oluna**
+11 **vakıf şurûtu** **mûcebince** **amel oluna**
+12 **mûcebince** **amel oluna** **der-bâre-i** **muhâlefet**
+13 **cedîd** **vakfiye** **mûcebince** **amel oluna**
+14 **mazmûn-ı** **hükm-i hümâyûn** **mûcebince** **amel oluna**
+15 **mûcebince** **amel oluna** **deyü** **hükm-i hümâyûn**
+16 **icrâ** **olunmak** **muhâlif** **amel olunmamak**
+17 **fî evâsıt-ı** **Şa'bân** **sene** **tis'a ve tis'în**`,
+            analysis: {
+                document_type: "Ferman",
+                confidence: 85,
+                style: "Resmî, bürokratik ve diplomatik Osmanlı Türkçesi ile yazılmış divanî üslup.",
+                summary: "Sivas Beylerbeyi ve Sivas Kadısı'na hitaben gönderilen bu ferman, Sivas'ta bulunan bir vakfın tevliyet, nezaret ve vakıf şartlarına dair yaşanan ihtilafların çözülmesini konu almaktadır. Belgede, vakıf kayıtlarının ve yeni defterlerin incelenerek vakfiyedeki şartlara titizlikle uyulması emredilmektedir.",
+                key_points: [
+                    "Sivas Beylerbeyi ve Sivas Kadısı'na hitaben yazılmıştır.",
+                    "Sivas'taki vakfın tevliyet ve nezaret şartları ile vakıf gelirlerinin idaresi ele alınmaktadır.",
+                    "Vakıf şartlarının (şurût-ı vakfiye) ve yeni defter kayıtlarının (defter-i cedid) esas alınması emredilmektedir.",
+                    "Vakıf işlerine dışarıdan müdahale edilmemesi ve şer'î hükümlere göre hareket edilmesi vurgulanmaktadır."
+                ],
+                people: ["Süleyman Paşa"],
+                places: ["Sivas"],
+                concepts: ["Ferman", "Vakıf", "Tevliyet", "Nezaret", "Defter-i Cedid", "Şurût-ı Vakfiye", "Beylerbeyi", "Kadı"],
+                script_type: "Divanî",
+                script_purpose: "Devlet kararlarının ve emirlerinin taşradaki görevlilere tebliği",
+                period_estimate: "17. Yüzyıl Sonu (Sultan II. Süleyman veya Sultan II. Ahmed dönemi)",
+                date_hijri: "Evâsıt-ı Şa'bân 1099",
+                date_gregorian: "Haziran 1688",
+                notes: "Belge, Sivas'taki Süleyman Paşa Vakfı'nın idari ve mali işleyişine dair padişah fermanıdır. Metinde vakfiye şartlarına uyulması ve muhalif hareket edilmemesi mükerrer şekilde vurgulanmıştır."
+            }
         }
     };
 
