@@ -57,6 +57,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const removeFileBtn = document.getElementById('removeFileBtn');
     const scanLine = document.getElementById('scanLine');
 
+    // Dosya Seçimi: Düzenle / Direkt Yükle + Görsel Kırpma (Cropper.js)
+    const fileChoiceModal = document.getElementById('fileChoiceModal');
+    const fileChoicePreviewImg = document.getElementById('fileChoicePreviewImg');
+    const fileChoiceFileName = document.getElementById('fileChoiceFileName');
+    const fileChoiceFileSize = document.getElementById('fileChoiceFileSize');
+    const fileChoiceEditBtn = document.getElementById('fileChoiceEditBtn');
+    const fileChoiceDirectBtn = document.getElementById('fileChoiceDirectBtn');
+    const cropModal = document.getElementById('cropModal');
+    const cropImage = document.getElementById('cropImage');
+    const cropCloseBtn = document.getElementById('cropCloseBtn');
+    const cropCancelBtn = document.getElementById('cropCancelBtn');
+    const cropConfirmBtn = document.getElementById('cropConfirmBtn');
+    let cropperInstance = null;
+
     const statusBadge = document.getElementById('statusBadge');
     const statusMessage = document.getElementById('statusMessage');
     const statusHint = document.getElementById('statusHint');
@@ -1130,74 +1144,171 @@ el-ḥaḳ`,
         fileSize.textContent = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
 
         const reader = new FileReader();
-        reader.onload = async (e) => {
+        reader.onload = (e) => {
             state.imageDataUrl = e.target.result;
-
-            previewImage.src = e.target.result;
-
-            uploadIdleState.classList.add('hidden');
-            uploadActiveState.classList.remove('hidden');
-
-            state.originalFileHash = await computeFileHash(state.selectedFile);
-            state.pendingOverwriteDocumentId = null;
-            const duplicate = await checkDuplicateDocument(state.originalFileHash);
-
-            if (duplicate) {
-                const existingDate = duplicate.existing_uploaded_at
-                    ? new Date(duplicate.existing_uploaded_at).toLocaleString('tr-TR')
-                    : '';
-                const wantsExisting = confirm(
-                    `Bu belgeyi daha önce çevirmiş ve kaydetmişsiniz: "${duplicate.existing_title}"${existingDate ? ` (${existingDate})` : ''}.\n\n` +
-                    `Mevcut çeviriyi görüntülemek için Tamam'a, yeniden çevirip güncellemek için İptal'e basın.`
-                );
-
-                if (wantsExisting) {
-                    try {
-                        const res = await fetchWithTimeout(`${API_BASE_URL}/api/documents/${duplicate.existing_document_id}/analyze`, {
-                            method: 'POST',
-                            headers: { 'Authorization': `Bearer ${state.authToken}` }
-                        }, 30000);
-                        const data = await res.json().catch(() => ({}));
-                        if (res.ok) {
-                            state.dbDocumentId = duplicate.existing_document_id;
-                            await processTranslation({
-                                ocr: data.ocr,
-                                tr: data.trans_modern || data.trans,
-                                trans_en: data.trans_en,
-                                translit: data.translit,
-                                analysis: data
-                            });
-                            return;
-                        }
-                    } catch (err) {
-                        console.warn('Mevcut belge yüklenemedi, yeniden çevriliyor:', err);
-                    }
-                } else {
-                    // Yeniden çevrilip aynı belgenin üzerine yazılacak —
-                    // saveTranslationToBackend'e bunu ayrıca sormasına
-                    // gerek kalmadan doğrudan iletiyoruz.
-                    state.pendingOverwriteDocumentId = duplicate.existing_document_id;
-                }
-            }
-
-            const enhanced = await runImageEnhancement(state.selectedFile, documentProfile.value);
-
-            // İlk (otomatik) iyileştirme başarılı olduysa, kullanıcı hiçbir
-            // butona basmadan çeviriyi kendiliğinden başlat. Bu SADECE bu
-            // ilk enhance için geçerli — documentProfile'ın 'change'
-            // dinleyicisi kendi runImageEnhancement çağrısını doğrudan
-            // yapıyor (bu fonksiyonun içinden geçmiyor), bu yüzden profil
-            // sonradan değiştirildiğinde otomatik çeviri tetiklenmez.
-            // Başarısız olursa (enhanced === false) runImageEnhancement
-            // zaten showProcessingFailure'ı kendi içinde çağırmış olur —
-            // burada ekstra bir şey yapmaya gerek yok, sadece devam etmeyiz.
-            if (enhanced) {
-                statusMessage.textContent = 'Görüntü iyileştirme tamamlandı, çeviri hazırlanıyor...';
-                await processTranslation();
-            }
+            openFileChoiceModal();
         };
         reader.readAsDataURL(file);
     }
+
+    // Dosya seçildikten (veya kırpıldıktan) sonra mevcut enhance+çeviri
+    // akışını başlatan ortak fonksiyon — "Direkt Yükle" ve kırpma sonrası
+    // "Tamam" YOLLARININ İKİSİ DE buraya düşer, böylece enhance/OCR/çeviri
+    // tarafında hiçbir şey değişmiyor; değişen sadece hangi dosyanın/
+    // görüntünün gönderildiği (orijinal ya da kırpılmış).
+    async function startEnhanceAndTranslate() {
+        previewImage.src = state.imageDataUrl;
+        // Kırpma sonrası dosya boyutu değişmiş olabilir (isim aynı kalıyor);
+        // burada güncellemek "Direkt Yükle" için de zararsız (aynı değerler).
+        fileName.textContent = state.selectedFile.name;
+        fileSize.textContent = (state.selectedFile.size / (1024 * 1024)).toFixed(2) + ' MB';
+
+        uploadIdleState.classList.add('hidden');
+        uploadActiveState.classList.remove('hidden');
+
+        state.originalFileHash = await computeFileHash(state.selectedFile);
+        state.pendingOverwriteDocumentId = null;
+        const duplicate = await checkDuplicateDocument(state.originalFileHash);
+
+        if (duplicate) {
+            const existingDate = duplicate.existing_uploaded_at
+                ? new Date(duplicate.existing_uploaded_at).toLocaleString('tr-TR')
+                : '';
+            const wantsExisting = confirm(
+                `Bu belgeyi daha önce çevirmiş ve kaydetmişsiniz: "${duplicate.existing_title}"${existingDate ? ` (${existingDate})` : ''}.\n\n` +
+                `Mevcut çeviriyi görüntülemek için Tamam'a, yeniden çevirip güncellemek için İptal'e basın.`
+            );
+
+            if (wantsExisting) {
+                try {
+                    const res = await fetchWithTimeout(`${API_BASE_URL}/api/documents/${duplicate.existing_document_id}/analyze`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${state.authToken}` }
+                    }, 30000);
+                    const data = await res.json().catch(() => ({}));
+                    if (res.ok) {
+                        state.dbDocumentId = duplicate.existing_document_id;
+                        await processTranslation({
+                            ocr: data.ocr,
+                            tr: data.trans_modern || data.trans,
+                            trans_en: data.trans_en,
+                            translit: data.translit,
+                            analysis: data
+                        });
+                        return;
+                    }
+                } catch (err) {
+                    console.warn('Mevcut belge yüklenemedi, yeniden çevriliyor:', err);
+                }
+            } else {
+                // Yeniden çevrilip aynı belgenin üzerine yazılacak —
+                // saveTranslationToBackend'e bunu ayrıca sormasına gerek
+                // kalmadan doğrudan iletiyoruz.
+                state.pendingOverwriteDocumentId = duplicate.existing_document_id;
+            }
+        }
+
+        const enhanced = await runImageEnhancement(state.selectedFile, documentProfile.value);
+
+        // İlk (otomatik) iyileştirme başarılı olduysa, kullanıcı hiçbir
+        // butona basmadan çeviriyi kendiliğinden başlat. Bu SADECE bu
+        // ilk enhance için geçerli — documentProfile'ın 'change'
+        // dinleyicisi kendi runImageEnhancement çağrısını doğrudan
+        // yapıyor (bu fonksiyonun içinden geçmiyor), bu yüzden profil
+        // sonradan değiştirildiğinde otomatik çeviri tetiklenmez.
+        // Başarısız olursa (enhanced === false) runImageEnhancement
+        // zaten showProcessingFailure'ı kendi içinde çağırmış olur —
+        // burada ekstra bir şey yapmaya gerek yok, sadece devam etmeyiz.
+        if (enhanced) {
+            statusMessage.textContent = 'Görüntü iyileştirme tamamlandı, çeviri hazırlanıyor...';
+            await processTranslation();
+        }
+    }
+
+    // --- Dosya Seçimi: Düzenle / Direkt Yükle modalı ---
+    function openFileChoiceModal() {
+        fileChoicePreviewImg.src = state.imageDataUrl;
+        fileChoiceFileName.textContent = state.selectedFile.name;
+        fileChoiceFileSize.textContent = (state.selectedFile.size / (1024 * 1024)).toFixed(2) + ' MB';
+        fileChoiceModal.classList.remove('hidden');
+    }
+
+    function closeFileChoiceModal() {
+        fileChoiceModal.classList.add('hidden');
+    }
+
+    fileChoiceDirectBtn.addEventListener('click', () => {
+        closeFileChoiceModal();
+        startEnhanceAndTranslate();
+    });
+
+    fileChoiceEditBtn.addEventListener('click', () => {
+        closeFileChoiceModal();
+        openCropModal();
+    });
+
+    // --- Görsel Kırpma (Cropper.js) modalı ---
+    function openCropModal() {
+        cropImage.src = state.imageDataUrl;
+        cropModal.classList.remove('hidden');
+
+        if (cropperInstance) {
+            cropperInstance.destroy();
+            cropperInstance = null;
+        }
+
+        cropperInstance = new Cropper(cropImage, {
+            viewMode: 1,
+            dragMode: 'move',
+            aspectRatio: NaN,
+            autoCropArea: 1,
+            background: false,
+            responsive: true
+        });
+    }
+
+    function closeCropModal() {
+        if (cropperInstance) {
+            cropperInstance.destroy();
+            cropperInstance = null;
+        }
+        cropModal.classList.add('hidden');
+    }
+
+    cropConfirmBtn.addEventListener('click', () => {
+        if (!cropperInstance) return;
+
+        const canvas = cropperInstance.getCroppedCanvas();
+        if (!canvas) return;
+
+        const outputType = state.selectedFile.type && state.selectedFile.type.startsWith('image/')
+            ? state.selectedFile.type
+            : 'image/png';
+
+        canvas.toBlob((blob) => {
+            if (!blob) return;
+
+            const croppedFile = new File([blob], state.selectedFile.name, { type: blob.type || outputType });
+            const croppedDataUrl = canvas.toDataURL(blob.type || outputType);
+
+            closeCropModal();
+
+            state.selectedFile = croppedFile;
+            state.imageDataUrl = croppedDataUrl;
+            startEnhanceAndTranslate();
+        }, outputType);
+    });
+
+    function cancelCropAndReturnToChoice() {
+        closeCropModal();
+        openFileChoiceModal();
+    }
+
+    cropCancelBtn.addEventListener('click', cancelCropAndReturnToChoice);
+    cropCloseBtn.addEventListener('click', cancelCropAndReturnToChoice);
+    cropModal.addEventListener('click', (e) => {
+        if (e.target === cropModal) cancelCropAndReturnToChoice();
+    });
 
     // --- Sample Image Click Handlers ---
     document.querySelectorAll('.sample-card').forEach(card => {
