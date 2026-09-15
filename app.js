@@ -3779,11 +3779,7 @@ ${transTextDisplay.textContent}
                     transTextEn: state.transTextEn
                 })
             );
-                window.open(
-                    'notes.html',
-                    '_blank',
-                    'noopener,noreferrer'
-                );
+                window.location.href = 'notes.html';
             };
 
         } else {
