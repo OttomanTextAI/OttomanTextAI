@@ -17,6 +17,8 @@ document.addEventListener('DOMContentLoaded', () => {
         translitText: '',
         lastAnalysis: null,
         dbDocumentId: null,
+        originalFileHash: null,
+        pendingOverwriteDocumentId: null,
         authToken: localStorage.getItem('auth_token') || null,
         authEmail: localStorage.getItem('auth_email') || null
     };
@@ -1045,6 +1047,40 @@ el-ḥaḳ`,
         };
     }
 
+    // Orijinal dosyanın (iyileştirmeden ÖNCEki hâlinin) SHA-256 hash'i —
+    // iyileştirme adımı bit-birebir deterministik olmayabildiği için
+    // "aynı belge mi" kontrolünü buna değil, bu değişmez orijinal hash'e
+    // dayandırıyoruz.
+    async function computeFileHash(file) {
+        const buffer = await file.arrayBuffer();
+        const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+        return Array.from(new Uint8Array(hashBuffer))
+            .map(b => b.toString(16).padStart(2, '0'))
+            .join('');
+    }
+
+    // Giriş yapılmış kullanıcı için, bu hash'e sahip daha önce kaydedilmiş
+    // bir belge var mı diye backend'e sorar. Giriş yapılmamışsa (Belgelerim
+    // zaten kullanılamayacağı için) hiç sormaya gerek yok.
+    async function checkDuplicateDocument(fileHash) {
+        if (!state.authToken) return null;
+        try {
+            const res = await fetchWithTimeout(`${API_BASE_URL}/api/documents/check-duplicate`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${state.authToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ file_hash: fileHash })
+            }, 10000);
+            if (!res.ok) return null;
+            const data = await res.json();
+            return data.duplicate ? data : null;
+        } catch (err) {
+            return null;
+        }
+    }
+
     async function handleFileSelect(file) {
         if (!file.type.match('image.*')) {
             alert('Lütfen geçerli bir görsel dosyası (JPG, PNG, WEBP) seçin.');
@@ -1063,6 +1099,8 @@ el-ḥaḳ`,
         state.transTextEn = '';
         state.translitText = '';
         state.dbDocumentId = null;
+        state.originalFileHash = null;
+        state.pendingOverwriteDocumentId = null;
 
         clearProcessingFailure();
 
@@ -1099,6 +1137,48 @@ el-ḥaḳ`,
 
             uploadIdleState.classList.add('hidden');
             uploadActiveState.classList.remove('hidden');
+
+            state.originalFileHash = await computeFileHash(state.selectedFile);
+            state.pendingOverwriteDocumentId = null;
+            const duplicate = await checkDuplicateDocument(state.originalFileHash);
+
+            if (duplicate) {
+                const existingDate = duplicate.existing_uploaded_at
+                    ? new Date(duplicate.existing_uploaded_at).toLocaleString('tr-TR')
+                    : '';
+                const wantsExisting = confirm(
+                    `Bu belgeyi daha önce çevirmiş ve kaydetmişsiniz: "${duplicate.existing_title}"${existingDate ? ` (${existingDate})` : ''}.\n\n` +
+                    `Mevcut çeviriyi görüntülemek için Tamam'a, yeniden çevirip güncellemek için İptal'e basın.`
+                );
+
+                if (wantsExisting) {
+                    try {
+                        const res = await fetchWithTimeout(`${API_BASE_URL}/api/documents/${duplicate.existing_document_id}/analyze`, {
+                            method: 'POST',
+                            headers: { 'Authorization': `Bearer ${state.authToken}` }
+                        }, 30000);
+                        const data = await res.json().catch(() => ({}));
+                        if (res.ok) {
+                            state.dbDocumentId = duplicate.existing_document_id;
+                            await processTranslation({
+                                ocr: data.ocr,
+                                tr: data.trans_modern || data.trans,
+                                trans_en: data.trans_en,
+                                translit: data.translit,
+                                analysis: data
+                            });
+                            return;
+                        }
+                    } catch (err) {
+                        console.warn('Mevcut belge yüklenemedi, yeniden çevriliyor:', err);
+                    }
+                } else {
+                    // Yeniden çevrilip aynı belgenin üzerine yazılacak —
+                    // saveTranslationToBackend'e bunu ayrıca sormasına
+                    // gerek kalmadan doğrudan iletiyoruz.
+                    state.pendingOverwriteDocumentId = duplicate.existing_document_id;
+                }
+            }
 
             const enhanced = await runImageEnhancement(state.selectedFile, documentProfile.value);
 
@@ -1517,6 +1597,7 @@ el-ḥaḳ`,
             finalOcr = presetData.ocr;
             finalTrans = presetData.tr;
             finalTranslit = presetData.translit || '';
+            finalTransEn = presetData.trans_en || '';
             // Sample entries may carry pre-written demo analysis fields
             // (summary, people, places, concepts, etc.) — see sampleDatabase.
             finalAnalysis = presetData.analysis || null;
@@ -1737,7 +1818,7 @@ el-ḥaḳ`,
         // üzerinden geldiği için bu blok onlarda hiç çalışmaz.
         if (!presetData) {
             if (state.authToken) {
-                saveTranslationToBackend(finalAnalysis, state.enhancedImageBlob);
+                saveTranslationToBackend(finalAnalysis, state.enhancedImageBlob, state.pendingOverwriteDocumentId);
             } else {
                 alert('Bu çeviri veritabanına kaydedilmedi. Belgelerinizi kaydedip daha sonra görüntüleyebilmek için giriş yapın.');
             }
@@ -3070,6 +3151,9 @@ ${transTextDisplay.textContent}
             const formData = new FormData();
             formData.append('image', imageBlob, 'enhanced.png');
             formData.append('result', JSON.stringify(resultData));
+            if (state.originalFileHash) {
+                formData.append('file_hash', state.originalFileHash);
+            }
             if (overwriteDocumentId) {
                 formData.append('overwrite_document_id', String(overwriteDocumentId));
             } else if (forceNew) {

@@ -3256,6 +3256,36 @@ def delete_note(current_user, note_id):
         "message": "Not silindi."
     })
 
+@app.route("/api/documents/check-duplicate", methods=["POST"])
+@token_required
+def check_duplicate_document(current_user):
+    # Kullanıcı bir dosya seçtiğinde (çeviri/iyileştirme başlamadan önce)
+    # ön yüzden çağrılır — orijinal dosyanın istemci tarafında hesaplanan
+    # SHA-256 hash'ine bakıp bu kullanıcı için daha önce kaydedilmiş aynı
+    # belge var mı diye bakar. Böylece gereksiz bir AI çağrısı yapılmadan
+    # önce kullanıcı uyarılabilir.
+    data = request.get_json(silent=True) or {}
+    file_hash = (data.get("file_hash") or "").strip()
+
+    if not file_hash:
+        return jsonify({"duplicate": False})
+
+    duplicate = Document.query.filter_by(user_id=current_user.id, file_hash=file_hash).first()
+
+    if not duplicate:
+        return jsonify({"duplicate": False})
+
+    duplicate_analysis = DocumentAnalysis.query.filter_by(document_id=duplicate.id).first()
+    existing_title = (duplicate_analysis.title if duplicate_analysis else None) or duplicate.filename
+
+    return jsonify({
+        "duplicate": True,
+        "existing_document_id": duplicate.id,
+        "existing_title": existing_title,
+        "existing_uploaded_at": duplicate.uploaded_at.isoformat() + "Z" if duplicate.uploaded_at else None,
+    })
+
+
 @app.route("/api/translations/save", methods=["POST"])
 def save_translation():
     auth_header = request.headers.get("Authorization", "")
@@ -3303,7 +3333,14 @@ def save_translation():
     original_filename = secure_filename(uploaded_file.filename) or "translation.png"
     extension = original_filename.rsplit(".", 1)[-1].lower() if "." in original_filename else "png"
     file_bytes = uploaded_file.read()
-    file_hash = hashlib.sha256(file_bytes).hexdigest()
+    # İyileştirilmiş (enhanced) görüntünün üretimi tam olarak bit-birebir
+    # deterministik olmayabilir (aynı orijinal dosya iki kez yüklenip
+    # iyileştirildiğinde farklı bir çıktı üretebilir), bu da bu hash'i tekrar
+    # yükleme tespiti için güvenilmez kılardı. İstemci, orijinal dosyayı
+    # (iyileştirmeden önce) kendisi hash'leyip gönderiyorsa onu esas alıyoruz;
+    # göndermezse eskisi gibi bu isteğin (enhanced) baytlarına düşüyoruz.
+    client_file_hash = (request.form.get("file_hash") or "").strip()
+    file_hash = client_file_hash or hashlib.sha256(file_bytes).hexdigest()
 
     # "Üzerine yaz" onayı: istemci daha önce 409 aldığı için hangi belgenin
     # üzerine yazılacağını zaten biliyor — burada TEKRAR hash eşleşmesi
