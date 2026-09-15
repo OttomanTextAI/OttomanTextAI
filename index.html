@@ -10,7 +10,10 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=Noto+Naskh+Arabic:wght@400;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
-    
+
+    <!-- Cropper.js (görsel kırpma arayüzü için) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
+
     <!-- Custom Stylesheet -->
     <link rel="stylesheet" href="style.css?v=20260915-6">
 </head>
@@ -725,6 +728,44 @@
         </div>
     </div>
 
+    <!-- Dosya Seçimi: Düzenle / Direkt Yükle -->
+    <div class="modal-overlay hidden" id="fileChoiceModal">
+        <div class="modal-card file-choice-card">
+            <button class="modal-close" data-close="fileChoiceModal">&times;</button>
+            <h2 class="modal-title">🖼️ Görseli Nasıl Kullanmak İstersiniz?</h2>
+            <div class="modal-body">
+                <div class="file-choice-preview-wrapper">
+                    <img id="fileChoicePreviewImg" src="" alt="Seçilen Görsel Önizleme">
+                </div>
+                <div class="preview-meta file-choice-meta">
+                    <span class="file-name" id="fileChoiceFileName">belge.jpg</span>
+                    <span class="file-size" id="fileChoiceFileSize">1.2 MB</span>
+                </div>
+            </div>
+            <div class="modal-footer file-choice-footer">
+                <button type="button" class="btn btn-outline" id="fileChoiceEditBtn">✂️ Düzenle</button>
+                <button type="button" class="btn btn-primary" id="fileChoiceDirectBtn">Direkt Yükle</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Görsel Kırpma (Cropper.js) -->
+    <div class="modal-overlay hidden" id="cropModal">
+        <div class="modal-card modal-lg crop-modal-card">
+            <button class="modal-close" id="cropCloseBtn">&times;</button>
+            <h2 class="modal-title">✂️ Görseli Kırp</h2>
+            <div class="modal-body crop-modal-body">
+                <div class="crop-image-container">
+                    <img id="cropImage" src="" alt="Kırpılacak Görsel">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline" id="cropCancelBtn">İptal</button>
+                <button type="button" class="btn btn-primary" id="cropConfirmBtn">Tamam</button>
+            </div>
+        </div>
+    </div>
+
     <!-- AI Assistant Widget -->
     <button class="assistant-fab" id="assistantFabBtn" title="Yardımcı Asistan">
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -759,6 +800,9 @@
             </button>
         </div>
     </div>
+
+    <!-- Cropper.js (görsel kırpma arayüzü için) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 
     <!-- Custom JavaScript -->
     <script src="app.js?v=20260915-4"></script>
