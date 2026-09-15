@@ -1438,6 +1438,55 @@ Ergirili Ahmed Şâhîn Efendi - Sjenica'ya
                 date_gregorian: "21 Nisan 1861",
                 notes: "Belgenin alt kısımlarında bazı isimler ve yer adları matbaa baskısından dolayı hafif silik çıkmıştır."
             }
+        },
+        'ssp': {
+            file: 'assets/ssp.png',
+            name: 'su_saati_pengah_risalesi.png',
+            size: '0.03 MB',
+            ocr: `ليلده تمام اون ايكى جام ضيا بولوب منور اولور و جمله اشكال مذكوره
+بو وجه اوزره در كه صحيفه آتيه ده تصوير و تحرير اولندى
+
+فصل ثانى اعمال مزبوره ايچون لازم اولان خزانه ايكى كاسه و ممالكك
+كيفيتنى بيان ايدر اولا لازم خابيه در يعنى نحاسدن دوزلمش بوغازنده كه
+طولى التمش **آرشن** و سعتى بش شبر ده و خابيه مزبوره نك اسفلنده
+بر ثقبه وار در كه اول خابيه ده مملو اولان اب **دلونك** عرضنك
+اطول نهارى مدت ساعاتنده اول ثقبه دن تمام چقمق لازمدر **پنگاه** اقليم
+رابعه ده وضع اولونسه كه انك اطول نهارى اون درت بجق عدد
+و نهار`,
+            tr: `Gecede tam on iki cam ışık bulup aydınlanır ve adı geçen şekillerin hepsi bu şekildedir ki gelecek sayfada resmedilmiş ve yazılmıştır.
+
+İkinci fasıl, sözü edilen işler için gerekli olan hazne, iki kase ve memleketlerin durumunu açıklar; öncelikle gerekli olan huni (kap) bakırdan yapılmış olup boğazındaki uzunluğu altmış **arşın** ve genişliği beş karış olup, adı geçen kabın alt tarafında bir delik vardır ki o kapta dolu olan suyun, **kovanın** enleminin en uzun gününün saatleri süresince o delikten tamamen çıkması lazımdır; **su saati** dördüncü iklimde kurulursa, onun en uzun günü on dört buçuk saat ve gündüzdür.`,
+            translit: `Leylde temām on iki cām ziyā bulub münevver olur ve cümle eşkāl-i mezkūre
+bu vech üzere dir ki sahīfe-i ātiyede tasvīr ve tahrīr olundı
+
+Fasl-ı sānī a'māl-i mezbūre içün lāzım olan hazāne iki kāse ve memālikin
+keyfiyyetini beyān ider evvelā lāzım hābiye dir ya'nī nühāsdan düzilmiş boğazında ki
+tūlı altmış **arşın** ve vüs'ati beş şiber de ve hābiye-i mezbūrenin esfelinde
+bir sakbe var dır ki ol hābiyede memlū olan āb **delvün** 'arzının
+atval-i nehārı müddet sā'atinde ol sakbeden temām çıkmak lāzımdır **pengāh** iqlīm-i
+rābi'ada vaz' olunsa ki anun atval-i nehārı on dörd buçuk 'aded
+ve nehār`,
+            analysis: {
+                document_type: "Kitap Sayfası / Bilimsel Eser",
+                confidence: 92,
+                style: "Bilimsel, teknik ve açıklayıcı",
+                summary: "Belgede, mekanik düzeneklerin (su saati/pengâh) çalışma prensipleri, hazne ve kapların boyutları ile coğrafi iklimlere göre gün uzunluklarının bu düzeneklerin ayarlanmasındaki rolü anlatılmaktadır. Ayrıca geceleyin aydınlanan cam düzeneklerin tasvirine ve sonraki sayfadaki çizimlere atıfta bulunulmaktadır.",
+                key_points: [
+                    "Gece boyunca on iki cam kandilin ışık vererek aydınlandığı, şekillerin bir sonraki sayfada resmedildiği belirtilmektedir.",
+                    "Su saatinin (pengâh) çalışması için gerekli hazne, iki kase ve bakırdan yapılmış huninin ölçüleri tarif edilmektedir.",
+                    "Huninin altındaki delikten suyun, bulunduğu enlemin en uzun gününün saatleri boyunca tamamen boşalması gerektiği anlatılmaktadır.",
+                    "Dördüncü iklimde kurulan bir su saatinde en uzun günün on dört buçuk saat sürdüğü örnek olarak verilmektedir."
+                ],
+                people: [],
+                places: [],
+                concepts: ["Pengâh", "Su Saati", "Hazne", "İklim", "Hiyel"],
+                script_type: "Nesih",
+                script_purpose: "Bilimsel ve teknik bilgi aktarımı",
+                period_estimate: "Osmanlı Dönemi (18. veya 19. yüzyıl)",
+                date_hijri: "Belirtilmemiş",
+                date_gregorian: "Belirtilmemiş",
+                notes: "Metin, Banu Musa kardeşlerin veya El-Cezeri'nin hiyel (mekanik) kitaplarının Osmanlıca tercümelerinden (muhtemelen Tercüme-i Hiyel) bir sayfadır. Satır aralarında sonradan yapılmış düzeltmeler (derkenar/düzeltme notları) bulunmaktadır."
+            }
         }
     };
 
