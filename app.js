@@ -2469,12 +2469,26 @@ işbu berât-ı âlî-şânım mugâyir-i ref' olunmamak takaddüm ve taraf-ı �
 
         if (!alternation) return wrapPlainText(escapedText);
 
-        // Kelime sınırı: eşleşmenin hemen öncesinde/sonrasında başka bir
-        // harf/rakam OLMAMALI — yoksa kısa bir aday (örn. "Karaman") daha
-        // uzun, alakasız bir kelimenin (örn. "Karamanoğlu") içinde
-        // yanlışlıkla eşleşebilir.
+        // Kelime sınırı: eşleşmenin hemen ÖNCESİNDE başka bir harf/rakam
+        // OLMAMALI — yoksa kısa bir aday (örn. "Karaman") daha uzun,
+        // alakasız bir kelimenin (örn. "Karamanoğlu") içinde yanlışlıkla
+        // eşleşebilir. Bu taraf sıkı tutuluyor: entity hâlâ kelimenin TAM
+        // BAŞINDA olmak zorunda (örn. "Aliye" içinde "Ali" yine eşleşmez).
+        //
+        // SONDA ise tam kelime sınırı yerine, Türkçe çekim eklerine izin
+        // veren daha esnek bir kural var: entity'den hemen sonra 0-6
+        // karakterlik küçük harf (a-z + çğıöşü) dizisi varsa eşleşmeye
+        // DAHİL edilir (örn. "Hoşgörü" + "de" -> "Hoşgörüde" bütünüyle
+        // vurgulanır). Karakter sınıfı zaten yalnızca küçük harfle
+        // eşleştiği için büyük harf/rakam/boşluk gelirse ek otomatik
+        // olarak 0 karakterde durur; sondaki `(?![\p{L}\p{N}])` de hâlâ
+        // eşleşmenin (entity + varsa ek) bir harf/rakamın ORTASINDA değil,
+        // tam bir kelime sınırında bitmesini garanti eder — 6 karakterden
+        // uzun bir ek varsa (örn. "Hoşgörüsüzlükle") bu sınır hiç
+        // sağlanamayacağı için eşleşme tamamen reddedilir, yanlış/yarım
+        // bir vurgulama olmaz.
         const re = new RegExp(
-            `(?<![\\p{L}\\p{N}])(?:${alternation})(?![\\p{L}\\p{N}])`,
+            `(?<![\\p{L}\\p{N}])(?:${alternation})[a-zçğıöşü]{0,6}(?![\\p{L}\\p{N}])`,
             'giu'
         );
         const parts = [];
@@ -3836,11 +3850,7 @@ ${transTextDisplay.textContent}
                     transTextEn: state.transTextEn
                 })
             );
-                window.open(
-                    'notes.html',
-                    '_blank',
-                    'noopener,noreferrer'
-                );
+                window.location.href = 'notes.html';
             };
 
         } else {
