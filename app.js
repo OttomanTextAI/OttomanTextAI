@@ -1348,6 +1348,96 @@ Validenizin o güzel sözüne karşı`,
                 date_gregorian: "17 Mart 1898",
                 notes: "Belgenin sağ tarafındaki dikey dize oldukça yıpranmış ve silik olduğundan tahmini olarak okunmuştur."
             }
+        },
+        'tah': {
+            file: 'assets/tah.png',
+            name: 'tercuman_i_ahval_25.png',
+            size: '0.04 MB',
+            ocr: `ترجمان احوال
+١١ شوال بازار ١٢٧٧ نومرو ٢٥
+اشبو غزته داخلیه و خارجیه هر درلو حوادث ایله فنون و صنایعه دائر مباحثی شامل اوله رق **ایکی کونده بر کره** بازار و صالی و پنچشنبه کونلری چیقار. ابونولق ایستمک دیینلر استانبولده باغچه قبوسی اوزونده کائن مطبعه سنه مراجعه اوله. در سعادت ایچون **ثلاثی** (١٥٠) والتی ایلیغی (٨٠) غرو شdr. طشره ایچون پوست خانه اجرت دخی اولنور. بر نسخه سی (٤٠) پاره به در.
+
+حوادث داخلیه
+ترجمان احوال شمدی یه قدر هفته ده بر کره اوله رق چیقارلمش ایسه ده بو غزته نك حین ظهورندن بروسا بر محلی غزته لرنده کوریلان آثار ترقی یه نظراً من بعد بزم بو حالده دواممز جائز و مناسب کوریلمز مقدمه لری و عداوتدینی وجهله بک کونده بر کونه بر نشری دخی درجهء کفایه ده اوله میه جغندن دها صیق چیقارلمسی لازم کلشدر چونکه آثار مدنیتی بر درجهء اعلایه ایصال ایله اعصار سابقة به بالوجوه تقدمی باهر اولان شو زمانمزده تلغراف و اوطه سیله و رقاچ آیه ظرفنده کرهء ارضك هر طرفندن اخذینه دست رس اولنان حوادث مهمهء پولیتقیه و سائره نك اعlانی هفته باشنده قدر تأخیر اولنمق حقا و یوفسر وکالات نافعه حقنده بر ظلم دینك اولیور اشته شو مصلحت عامه مبنی بوندن بویله ترجمان احوالك دخی هفته ده اوچ کره یعنی بازار و صالی و پنچشنبه کونلری چیقارلمسی و بعض احبامزدن دخی معاونتله حسن تحریر و تنظیمنه اولکیندن زیاده دقت و اهتمام قلنمی وجیبهء ذمت عد اولنمشدر بو جهتله طبع اولنه رق **اجرا به** مطالعه سنه رغبت ایدن ذواتك استحصال اسباب خشنودیلری ارجم آمالدر.
+
+توجیهات
+دولتلو اسماعیل پاشا حضرتلرینك کیف مزاچلری **اولدیغنه** مبنی بوسنه ایپکی تفتیش قومیسیونی ریاستنی علاوه سیله روم ایلی و بالکان واردوی همایونی مشیرلکی مجالس عالیه سنه مأمور دولتلو رأفتلو عمر پاشا حضرتلرینه
+خزینهء خاصهء شاهانه نظارت جلیله سی دولتلو حسیب پاشا حضرتلرینه
+ارضروم والیسی دولتلو ادهم پاشا حضرتلرینك انفصالی وقوعنه مبنی ایالت مزبوره و **بالکوز** سیواس والیسی سابق دولتلو خیرالدین پاشا حضرتلرینه
+مجلس مالیه تنظیمیات اعضالغی خزینهء خاصه ناظری سابق عطوفتلو رضا افندی حضرتلرینه
+قپو کتبی جلیلی مرتضی علی افندی افندیمجه قائممقامی نصب اولنمش اولدیغندن محاسب جلیلات مذکوره روم ایلی محاسب جلیلی سابق عزتلو امین افندی یه
+حلب محاسب جلیلی عزتلو هرتین افندینك انفصالی محاسب جliلی مذکوره روفه محاسب جلیلی سابق رفعتلو سیفی افندی یه
+
+(بعض محللره مأمور بیورلمش اولان نائبلر)
+دیره لی دبدبه عزمی افندی - نوه برده مع بلاغه
+قواله مفتیسی لبیb محمد امین افندی - سلطان سلیم دبرکفه انبارینه
+منوفاق احمد شاکر افندی - تراویکه
+ارکیر یلی احمد شاهین افندی - سنکه
+استانبول محکمه سی کتبه سندن عبدالکریم شمی افندی - بوداق اوزی یه`,
+            tr: `Tercüman-ı Ahval
+11 Şevval Pazar 1277 Sayı 25
+İşbu gazete iç ve dış her türlü haberler ile fen ve sanayiye dair konuları içerecek şekilde **iki günde bir** pazar, salı ve perşembe günleri çıkar. Abonelik isteyenler İstanbul'da Bahçekapısı üzerinde bulunan matbaasına müracaat etsinler. İstanbul için **üç aylığı** (150) ve altı aylığı (80) kuruştur. Taşra için postahane ücreti de eklenir. Bir nüshası (40) paradır.
+
+İç Haberler
+Tercüman-ı Ahval şimdiye kadar haftada bir kere olarak çıkarılmış ise de bu gazetenin ortaya çıkışından beri diğer yerel gazetelerde görülen ilerleme eserlerine bakılarak bundan sonra bizim bu durumda devam etmemiz uygun görülmez. Haftada bir kere yayınlanması yeterli olamayacağından daha sık çıkarılması gerekmiştir. Çünkü medeniyet eserlerini en yüksek dereceye ulaştırarak geçmiş asırlara her bakımdan üstünlüğü açık olan zamanımızda, telgraf odası vasıtasıyla dünyanın her tarafından alınan önemli siyasi haberlerin yayınlanmasının hafta başına kadar geciktirilmesi faydalı işler hakkında bir haksızlık olmaktadır. İşte bu genel faydaya dayanarak bundan böyle Tercüman-ı Ahval'in de haftada üç kere yani pazar, salı ve perşembe günleri çıkarılması ve bazı dostlarımızın yardımıyla yazım ve düzenlenmesine eskisinden daha fazla dikkat edilmesi bir görev sayılmıştır. Bu şekilde basılarak **okunmasına** ilgi gösteren kişilerin memnuniyetinin kazanılması en büyük amacımızdır.
+
+Atamalar
+Devletli İsmail Paşa hazretlerinin rahatsız **olduğuna** dayanarak bu sene İpek Teftiş Komisyonu başkanlığı ek göreviyle Rumeli ve Balkan ve Ordu-yı Hümayun müşirliği yüksek meclislerine memur devletli refetli Ömer Paşa hazretlerine
+Hazine-i Hassa-i Şahane bakanlığı devletli Hasib Paşa hazretlerine
+Erzurum valisi devletli Edhem Paşa hazretlerinin görevden ayrılması üzerine adı geçen eyalete ve **tamamen** eski Sivas valisi devletli Hayreddin Paşa hazretlerine
+Maliye Meclisi Tanzimat üyeliği eski Hazine-i Hassa bakanı atufetli Rıza Efendi hazretlerine
+Kapı kâtipliği Murtaza Ali Efendi tarafından vekaleten yürütüldüğünden, söz konusu muhasebeciliğe eski Rumeli muhasebecisi izzetli Emin Efendi'ye
+Halep muhasebecisi izzetli Hertin Efendi'nin görevden ayrılmasıyla adı geçen muhasebeciliğe eski Rufe muhasebecisi rıfatlı Seyfi Efendi'ye
+
+(Bazı yerlere memur edilen naipler)
+Direli Debdebe Azmi Efendi - Noveberde'ye
+Kavala müftüsü Lebib Mehmed Emin Efendi - Sultan Selim Debre-i Kefe ambarına
+Menufak Ahmed Şakir Efendi - Travnik'e
+Ergirili Ahmed Şahin Efendi - Sjenica'ya
+İstanbul mahkemesi kâtiplerinden Abdülkerim Şemi Efendi - Budaközü'ne`,
+            translit: `Tercümân-ı Ahvâl
+11 Şevvâl Bâzâr 1277 Numara 25
+İşbu gazete dâhiliyye ve hâriciyye her dürlü havâdis ile fünûn ve sanâyi'e dâir mebâhisi şâmil olarak **iki günde bir kere** bâzâr ve salı ve pençşenbih günleri çıkar. Abonelik istemek diyenler İstanbul'da Bahçekapısı üzerinde kâin matbaasına mürâca'at ola. Der-sa'âdet içün **sülâsî** (150) ve altı aylığı (80) kuruşdur. Taşra içün postahâne ücreti dahi olunur. Bir nüshası (40) parayadır.
+
+Havâdis-i Dâhiliyye
+Tercümân-ı Ahvâl şimdiye kadar haftada bir kere olarak çıkarılmış ise de bu gazetenin hîn-i zuhûrundan berû sâir mahallî gazetelerinde görülen âsâr-ı terakkîye nazaran min-ba'd bizim bu hâlde devâmımız câiz ve münâsib görülmez mukaddemeleri ve adâvetdînî vechile pek günde bir güne bir neşri dahi derece-i kifâyede olamayacağından daha sık çıkarılması lâzım gelmişdir çünkü âsâr-ı medeniyyeti bir derece-i a'lâya îsâl ile a'sâr-ı sâbıkaya bil-vücûh tekaddümü bâhir olan şu zamânımızda telgraf ve odasıyla ve birkaç ay zarfında küre-i arzın her tarafından ahzine dest-res olunan havâdis-i mühimme-i politikiyye ve sâirenin i'lânı hafta başına kadar te'hîr olunmak hakkâ ve yufser vekâlât-ı nâfi'a hakkında bir zulüm demek oluyor işte şu maslahat-ı âmme mebnî bundan böyle Tercümân-ı Ahvâl'in dahi haftada üç kere ya'nî bâzâr ve salı ve pençşenbih günleri çıkarılması ve bazı ahbâbımızdan dahi mu'âvenetle hüsn-i tahrîr ve tanzîmine ilkinden ziyâde dikkat ve ihtimâm kılınması vecîbe-i zimmet addolunmuşdur bu cihetle tab' olunarak **icrâ-yı** mütâla'asına rağbet eden zevâtın istihsâl-i esbâb-ı huşnûdîleri ercâ-yı âmâldir.
+
+Tevcîhât
+Devletlü İsmâ'îl Paşa hazretlerinin keyf-i mizâcları **olduğuna** mebnî bu sene İpek Teftîş Komisyonu riyâsetini ilâvesiyle Rûmeli ve Balkan ve Ordu-yı Hümâyûn müşîrliği mecâlis-i âliyesine me'mûr devletlü re'fetlü Ömer Paşa hazretlerine
+Hazîne-i Hassa-i Şâhâne nezâret-i celîlesi devletlü Hasîb Paşa hazretlerine
+Erzurûm vâlîsi devletlü Edhem Paşa hazretlerinin infisâli vukû'una mebnî eyâlet-i mezbûre ve **balkuz** Sîvâs vâlîsi sâbık devletlü Hayreddîn Paşa hazretlerine
+Meclis-i Mâliyye Tanzîmât a'zâlığı Hazîne-i Hassa nâzırı sâbık 'atûfetlü Rızâ Efendi hazretlerine
+Kapu kütüb-i celîli Murtazâ 'Alî Efendi efendimizce kâ'immakâmı nasb olunmuş olduğundan muhâsib-i celîlât-ı mezkûre Rûmeli muhâsib-i celîli sâbık 'izzetlü Emîn Efendi'ye
+Haleb muhâsib-i celîli 'izzetlü Hertin Efendi'nin infisâli muhâsib-i celîli mezkûre Rûfe muhâsib-i celîli sâbık rıf'atlü Seyfî Efendi'ye
+
+(Ba'zı mahallere me'mûr buyurulmuş olan nâ'ibler)
+Dîreli Debdebe 'Azmî Efendi - Noveberde ma'a belâga
+Kavala müftîsi Lebîb Mehmed Emîn Efendi - Sultân Selîm Debre-i Kefe anbârına
+Menûfâk Ahmed Şâkir Efendi - Travnik'e
+Ergirili Ahmed Şâhîn Efendi - Sjenica'ya
+İstanbul mahkemesi ketebesinden 'Abdülkerîm Şem'î Efendi - Budaközü'ne`,
+            analysis: {
+                document_type: "Gazete",
+                confidence: 92,
+                style: "Resmî ve haber dili, Osmanlı Türkçesi matbu nesir.",
+                summary: "Tercüman-ı Ahval gazetesinin 11 Şevval 1277 tarihli 25. sayısıdır. Gazetenin yayın periyodunun haftada birden haftada üçe (Pazar, Salı, Perşembe) çıkarıldığı ilan edilmektedir. Ayrıca iç haberler (Havadis-i Dahiliye) kısmında çeşitli devlet görevlerine yapılan yeni atamalar ve tayinler (tevcihat) listelenmektedir.",
+                key_points: [
+                    "Tercüman-ı Ahval gazetesinin yayın sıklığı haftada birden haftada üçe çıkarılmıştır.",
+                    "Gazete pazar, salı ve perşembe günleri yayınlanacaktır.",
+                    "İsmail Paşa'nın rahatsızlığı sebebiyle İpek Teftiş Komisyonu Başkanlığı Ömer Paşa'ya verilmiştir.",
+                    "Erzurum Valiliğine, eski Sivas Valisi Hayreddin Paşa atanmıştır.",
+                    "Çeşitli bölgelere yeni kadılar ve naipler tayin edilmiştir."
+                ],
+                people: ["İsmail Paşa", "Ömer Paşa", "Hasib Paşa", "Edhem Paşa", "Hayreddin Paşa", "Rıza Efendi", "Emin Efendi", "Seyfi Efendi", "Azmi Efendi", "Lebib Mehmed Emin Efendi", "Ahmed Şakir Efendi", "Ahmed Şahin Efendi", "Abdülkerim Şemi Efendi"],
+                places: ["İstanbul", "Rumeli", "Balkan", "Erzurum", "Sivas", "Halep", "Kavala", "Travnik", "Budaközü"],
+                concepts: ["Havadis-i Dahiliye", "Tevcihat", "Hazine-i Hassa-i Şahane", "Meclis-i Maliye", "Nâib"],
+                script_type: "Matbu",
+                script_purpose: "Haber ve İlan",
+                period_estimate: "Osmanlı Tanzimat Dönemi",
+                date_hijri: "11 Şevval 1277",
+                date_gregorian: "21 Nisan 1861",
+                notes: "Belgenin alt kısımlarında bazı isimler ve yer adları matbaa baskısından dolayı hafif silik çıkmıştır."
+            }
         }
     };
 
