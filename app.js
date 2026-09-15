@@ -1497,10 +1497,13 @@ ve nehār`,
         el.scrollIntoView({ behavior: 'smooth', block: options.block || 'start' });
     }
 
-    // --- Scroll Reveal (fade + slide up every time an element enters the viewport) ---
+    // --- Scroll Reveal (fade + slide up once, the first time an element enters the viewport) ---
     const revealObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
-            entry.target.classList.toggle('is-visible', entry.isIntersecting);
+            if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+                revealObserver.unobserve(entry.target);
+            }
         });
     }, { threshold: 0.15 });
 

@@ -85,10 +85,10 @@
             </button>
 
             <span class="side-drawer-section-label">Hesap</span>
-            <button type="button" class="side-drawer-item" data-modal="authModal">
+            <a href="profile.html" class="side-drawer-item">
                 <span class="side-drawer-icon">👤</span>
                 <span>Profilim</span>
-            </button>
+            </a>
             <span class="side-drawer-section-label">Site</span>
             <button type="button" class="side-drawer-item" data-modal="aboutModal">
                 <span class="side-drawer-icon">ℹ️</span>
@@ -810,6 +810,7 @@
             <div class="hidden" id="authLoggedInView">
                 <h2 class="modal-title">👤 Hesabım</h2>
                 <p class="modal-hint">Giriş yapıldı: <strong id="authUserEmail"></strong></p>
+                <a href="profile.html" class="btn btn-primary btn-block" style="margin-bottom: 0.7rem;">Profil Ayarları</a>
                 <button class="btn btn-outline btn-block" id="logoutBtn">Çıkış Yap</button>
             </div>
         </div>
@@ -892,7 +893,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 
     <!-- Custom JavaScript -->
-    <script src="app.js?v=20260915-11"></script>
+    <script src="app.js?v=20260915-12"></script>
 
 </body>
 </html>

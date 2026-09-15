@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profilim — Divane</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=Noto+Naskh+Arabic:wght@400;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css?v=20260915-13">
+    <style>
+        .profile-page-grid {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 1.75rem;
+            align-items: start;
+        }
+        .profile-summary-card {
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            padding: 1.75rem 1.4rem;
+            text-align: center;
+            position: sticky;
+            top: 1.5rem;
+        }
+        .profile-avatar-wrap {
+            position: relative;
+            width: 96px;
+            height: 96px;
+            margin: 0 auto 0.9rem;
+        }
+        .profile-avatar-img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--color-gold);
+            background: var(--bg-input);
+            display: block;
+        }
+        .profile-avatar-edit-btn {
+            background: none;
+            border: none;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--color-gold);
+            cursor: pointer;
+            padding: 0.2rem;
+        }
+        .profile-avatar-edit-btn:hover { color: var(--color-gold-light); }
+        .profile-name {
+            font-family: var(--font-heading);
+            font-size: 1.2rem;
+            margin: 0.6rem 0 0.1rem;
+        }
+        .profile-title-text {
+            font-size: 0.85rem;
+            color: var(--color-text-muted);
+            margin-bottom: 0.2rem;
+        }
+        .profile-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+            text-align: left;
+            margin-top: 1.2rem;
+            border-top: 1px solid var(--color-border);
+            padding-top: 1rem;
+        }
+        .profile-nav-item {
+            background: none;
+            border: none;
+            text-align: left;
+            padding: 0.65rem 0.7rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: var(--color-text-main);
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .profile-nav-item:hover { background: var(--bg-input); }
+        .profile-nav-item.active { background: var(--color-gold-bg); color: var(--color-gold); }
+        .profile-content-card {
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            padding: 1.75rem 1.9rem;
+        }
+        .profile-content-title {
+            font-family: var(--font-heading);
+            font-size: 1.25rem;
+            margin: 0 0 1.3rem;
+        }
+        .profile-form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.2rem 1.6rem;
+        }
+        .profile-form-group label {
+            display: block;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--color-text-muted);
+            margin-bottom: 0.4rem;
+        }
+        .profile-form-group input,
+        .profile-form-group textarea {
+            width: 100%;
+            background: var(--bg-input);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            padding: 0.65rem 0.8rem;
+            font-size: 0.9rem;
+            color: var(--color-text-main);
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+        .profile-form-group input:focus,
+        .profile-form-group textarea:focus {
+            outline: none;
+            border-color: var(--color-gold);
+        }
+        .profile-form-group input:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+        }
+        .profile-form-group.field-bio {
+            grid-row: span 2;
+            display: flex;
+            flex-direction: column;
+        }
+        .profile-form-group.field-bio textarea {
+            flex: 1;
+            min-height: 120px;
+            resize: vertical;
+        }
+        .profile-form-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.8rem;
+            margin-top: 1.6rem;
+            padding-top: 1.2rem;
+            border-top: 1px solid var(--color-border);
+        }
+        .profile-save-msg {
+            font-size: 0.85rem;
+            margin-right: auto;
+            align-self: center;
+        }
+        .profile-save-msg.success { color: var(--color-accent-green); }
+        .profile-save-msg.error { color: var(--color-accent-red); }
+        .profile-placeholder-panel {
+            color: var(--color-text-muted);
+            font-size: 0.9rem;
+            padding: 2.5rem 0;
+            text-align: center;
+        }
+        @media (max-width: 780px) {
+            .profile-page-grid { grid-template-columns: 1fr; }
+            .profile-summary-card { position: static; }
+            .profile-form-grid { grid-template-columns: 1fr; }
+            .profile-form-group.field-bio { grid-row: auto; }
+        }
+    </style>
+</head>
+<body class="dark-theme">
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <button type="button" class="icon-btn side-menu-toggle" id="sideMenuToggle" title="Menü" aria-expanded="false" aria-controls="sideDrawer">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+
+                <a href="index.html" class="brand-logo">
+                    <img src="assets/icon.png" alt="Divane" class="brand-logo-img">
+                    <span class="brand-subtitle">OSMANLICA ÇEVİRİ</span>
+                </a>
+            </div>
+
+            <nav class="nav-menu">
+                <a href="index.html" class="nav-link">Ana Sayfa</a>
+                <a href="index.html#about" class="nav-link">Hakkında</a>
+                <a href="index.html#contact" class="nav-link">İletişim</a>
+            </nav>
+
+            <div class="nav-actions">
+                <button class="icon-btn theme-toggle-btn" id="themeToggleBtn" title="Karanlık/Aydınlık Tema">
+                    <span class="theme-icon">🌙</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Ana sayfadaki (index.html) ile aynı sol menü çekmecesi — tutarlılık
+         için buraya da eklendi (bkz. profile.js'teki aç/kapa kablolaması).
+         Sadece bu alt-sayfada var olan hedefler listelendi (Harita/Hakkında/
+         İletişim modalları yalnızca index.html'de tanımlı). -->
+    <div class="side-drawer-overlay hidden" id="sideDrawerOverlay"></div>
+    <aside class="side-drawer" id="sideDrawer" aria-hidden="true">
+        <div class="side-drawer-header">
+            <span class="side-drawer-title">Menü</span>
+            <button type="button" class="modal-close" id="sideDrawerClose" title="Kapat">&times;</button>
+        </div>
+        <div class="side-drawer-body">
+            <img src="assets/ornament-divider.png" alt="" aria-hidden="true" class="side-drawer-flourish">
+            <a href="documents.html" class="side-drawer-item">
+                <span class="side-drawer-icon">📂</span>
+                <span>Belgelerim</span>
+            </a>
+            <a href="notes.html" class="side-drawer-item">
+                <span class="side-drawer-icon">📝</span>
+                <span>Notlarım</span>
+            </a>
+            <a href="index.html" class="side-drawer-item">
+                <span class="side-drawer-icon">🏠</span>
+                <span>Ana Sayfa</span>
+            </a>
+        </div>
+    </aside>
+
+    <main class="page-wrapper" style="padding-top: 2.5rem;">
+        <h1 style="font-family: var(--font-heading); font-size: 1.8rem; margin: 0 0 1.5rem;">👤 Profilim</h1>
+
+        <div id="loginRequired" class="hidden" style="background: var(--bg-card); border-radius: var(--radius-md); padding: 2rem; text-align: center;">
+            <p style="margin-bottom: 1.2rem;">Profilinizi görüntülemek için giriş yapmalısınız.</p>
+            <a href="index.html" class="btn btn-primary">Ana Sayfaya Dön ve Giriş Yap</a>
+        </div>
+
+        <div id="profileView" class="profile-page-grid hidden">
+            <aside class="profile-summary-card">
+                <div class="profile-avatar-wrap">
+                    <img id="profileAvatarImg" class="profile-avatar-img" src="assets/icon.png" alt="Profil fotoğrafı">
+                </div>
+                <input type="file" id="avatarFileInput" accept="image/jpeg,image/png,image/webp" class="hidden">
+                <button type="button" class="profile-avatar-edit-btn" id="avatarEditBtn">🖊 Fotoğrafı Değiştir</button>
+
+                <h2 class="profile-name" id="profileSummaryName">—</h2>
+                <p class="profile-title-text" id="profileSummaryTitle"></p>
+
+                <nav class="profile-nav">
+                    <button type="button" class="profile-nav-item active" data-panel="personalInfoPanel">Kişisel Bilgiler</button>
+                    <button type="button" class="profile-nav-item" data-panel="securityPanel">Şifre ve Güvenlik</button>
+                    <button type="button" class="profile-nav-item" data-panel="preferencesPanel">Çeviri &amp; OCR Tercihleri</button>
+                    <button type="button" class="profile-nav-item" data-panel="subscriptionPanel">Abonelik &amp; Kullanım</button>
+                </nav>
+            </aside>
+
+            <div class="profile-content-card">
+                <div id="personalInfoPanel">
+                    <h2 class="profile-content-title">Kişisel Profil Bilgileri</h2>
+                    <form id="profileForm">
+                        <div class="profile-form-grid">
+                            <div class="profile-form-group">
+                                <label for="profileFullName">Ad Soyad</label>
+                                <input type="text" id="profileFullName" placeholder="Ad Soyad">
+                            </div>
+                            <div class="profile-form-group">
+                                <label for="profileTitleInput">Meslek / Unvan</label>
+                                <input type="text" id="profileTitleInput" placeholder="Meslek / Unvan">
+                            </div>
+                            <div class="profile-form-group">
+                                <label for="profileEmail">E-posta Adresi</label>
+                                <input type="email" id="profileEmail" disabled>
+                            </div>
+                            <div class="profile-form-group">
+                                <label for="profileSpecialty">Uzmanlık / Çalışma Alanı</label>
+                                <input type="text" id="profileSpecialty" placeholder="Uzmanlık / Çalışma Alanı">
+                            </div>
+                            <div class="profile-form-group">
+                                <label for="profilePhone">Telefon Numarası</label>
+                                <input type="tel" id="profilePhone" placeholder="Telefon Numarası">
+                            </div>
+                            <div class="profile-form-group field-bio">
+                                <label for="profileBio">Hakkımda / Biyografi</label>
+                                <textarea id="profileBio" placeholder="Hakkımda / Biyografi"></textarea>
+                            </div>
+                            <div class="profile-form-group">
+                                <label for="profileInstitution">Okul / Üniversite / Kurum</label>
+                                <input type="text" id="profileInstitution" placeholder="Okul / Üniversite / Kurum">
+                            </div>
+                        </div>
+
+                        <div class="profile-form-actions">
+                            <span class="profile-save-msg" id="profileSaveMsg"></span>
+                            <button type="button" class="btn btn-outline" id="profileCancelBtn">İptal</button>
+                            <button type="submit" class="btn btn-primary" id="profileSaveBtn">Değişiklikleri Kaydet</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div id="securityPanel" class="profile-placeholder-panel hidden">
+                    <p>Şifre ve güvenlik ayarları yakında burada olacak.</p>
+                </div>
+                <div id="preferencesPanel" class="profile-placeholder-panel hidden">
+                    <p>Çeviri &amp; OCR tercihleri yakında burada olacak.</p>
+                </div>
+                <div id="subscriptionPanel" class="profile-placeholder-panel hidden">
+                    <p>Abonelik &amp; kullanım bilgileri yakında burada olacak.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="profile.js?v=20260915-1"></script>
+</body>
+</html>

@@ -21,6 +21,16 @@ class User(db.Model):
     password_hash = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+    # Profil sayfası (profile.html) alanları — hepsi opsiyonel, hesap
+    # oluşturulurken sadece email/şifre alınıyor.
+    full_name = db.Column(db.String(150))
+    title = db.Column(db.String(150))
+    specialty = db.Column(db.String(255))
+    phone = db.Column(db.String(50))
+    institution = db.Column(db.String(255))
+    bio = db.Column(db.Text)
+    avatar_storage_path = db.Column(db.String(500))
+
 
 class Document(db.Model):
     __tablename__ = "documents"
