@@ -268,7 +268,6 @@ function renderRestoredTranslation() {
         String(state.dbDocumentId)
     );
 
-    setOutputTab('trans');
 
     console.log(
         '[STATE RESTORE] Translation rendered:',
@@ -286,8 +285,6 @@ function renderRestoredTranslation() {
         }
     }, 150);
 }
-restoreTranslationState();
-renderRestoredTranslation();
 
     // Pre-set Sample Manuscript Database for Demo/Testing
     const sampleDatabase = {
@@ -6397,5 +6394,10 @@ if (aiAnalyzeSelectionBtn) {
             sendAssistantMessage();
         }
     });
+
+    // Notes sayfasından dönüldüyse kayıtlı çeviriyi geri yükle.
+    // Tüm UI değişkenleri initialize edildikten sonra çalışmalıdır.
+    restoreTranslationState();
+    renderRestoredTranslation();
 });
 
