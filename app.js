@@ -1649,6 +1649,77 @@ Hoca Ferşad İbrahim`,
                 date_gregorian: "5 Kasım 1921",
                 notes: "Belge, matbu (basılı) bir yazı karakterine sahiptir ve oldukça okunaklıdır. Tarih kısmında hem Rumi (1336) hem de Miladi (1921) tarihler yan yana verilmiştir."
             }
+        },
+        'ase': {
+            file: 'assets/ase.png',
+            name: 'askeri_sevkiyat_serif_emirler_arz.png',
+            size: '0.01 MB',
+            ocr: `موجبجه عمل اولنه
+دیو امر اولنمشدر
+
+پادشاهم
+
+شوكتلو كرامتلو مهابتلو افندم ولينعمم افندم
+عون و عنايت باري ايله بوندن بويله عساکر معينه و مرخصه نك سفره **ذخيره يدي** سوق و تسيير اولنه جق
+طوائف عسكريه نك **كل ما صدره زير بنات** و قيام و قرار دن اتفاقا و تاما ايلدكي مصلحتك **بي بعض نظام**
+و شروطي حاوي **انالطرفي** و عدم **بيلنك** صالح و معول و **اورته قوللرنده** اولان وزراي عظام و ميرميران
+و ضابطان عسكريه و قضات و نوابه خطابا اصدار و افاده اولنمش **قطعه** امر شريفك ممالك محروسه ده اولان
+بو و قرا و قصابات واقع محاكم **سجلو نه** قيد و دائما دستور العمل طوتولمق اوزره ايجون **بالوزرايه**
+خط همايون ملوكانه‌لري كشيده بيورلمق لازم اولديغندن ذكر اولنان **التي** قطعه امر عالي شريف حضور
+لامع النور شاهانه‌لري قيلنمشدر منظور و معلوم **هميونلري** بيورلدقده بشقه بشقه هر برينك **بالوزرايه**
+موجبجه عمل اولنه ديو مبارك خط همايونلري كشيده بيورلمق بابنده امر و فرمان شوكتلو كرامتلو
+مهابتلو افندم ولينعمم افندم پادشاهم حضرتلرينكدر`,
+            tr: `Gereğince amel olunsun
+diye emredilmiştir.
+
+Padişahım
+
+Şevketli, kerametli, heybetli efendim, velinimetim efendim,
+Allah'ın yardımı ve inayetiyle bundan böyle belirli ve izinli askerlerin sefere **yiyecek tedarikiyle** sevk ve gönderilmesi sağlanacaktır.
+Askeri sınıfların **ortaya çıkan tüm meselelerde temel** ve karar birliğiyle ittifak halinde ve tamamen gerçekleştirdiği işlerin **bazı nizamsızlıklardan**
+ve her iki tarafı da içeren şartlardan uzak, aralarında anlaşmazlık olmaksızın, düzgün ve güvenilir bir şekilde yürütülmesi için, orta kollarında bulunan yüce vezirler, beylerbeyleri,
+askeri zabitler, kadılar ve naiblere hitaben çıkarılmış ve ifade edilmiş olan şerif emirlerin, korunan memleketlerde bulunan
+şehir, köy ve kasabalardaki mahkeme **sicillerine** kaydedilmesi ve daima kılavuz edinilmesi amacıyla, vezirlere hitaben
+padişahın hatt-ı hümayununun yazılması gerektiğinden, bahsedilen **altı** adet şerif emrin padişahın
+nurlu huzuruna sunulduğu, padişahın bilgisi dahilinde olduğunda her birinin vezirlere hitaben ayrı ayrı
+"gereğince amel olunsun" şeklinde mübarek hatt-ı hümayunlarının yazılması hususunda emir ve ferman şevketli, kerametli,
+heybetli efendim, velinimetim efendim padişahım hazretlerinindir.`,
+            translit: `Mûcebince amel oluna
+deyu emr olunmuşdur
+
+Pâdişâhım
+
+Şevketlü kerâmetlü mehâbetlü efendim veliyy-i ni'metim efendim
+Avn ü inâyet-i bârî ile bundan böyle asâkir-i muayyen ve murahhasanın sefere **zahîre yedi** sevk ve tisyâr olunacak
+tavâif-i askeriyenin **küll-i mâ sadara zîr-i binât** ve kıyâm ve karârdan ittifâkan ve tämmen eylediği maslahatın **bî-ba'z-ı nizâm**
+ve şurûtu hâvî **ani't-tarafeyn** ve adem-i **beynin** sâlih ve muavvel ve **orta kullarında** olan vüzerâ-yı izâm ve mîrimîrân
+ve zâbitân-ı askeriyye ve kuzât ve nüvvâba hitâben ısdâr ve ifâde olunmuş **kıt'a** emr-i şerîfin memâlik-i mahrûsede olan
+bû ve kurâ ve kasabâtda vâki' mehâkim **sicilline** kayd ve dâimen düstûrü'l-amel tutulmak üzere içün **bi'l-vüzerâye**
+hatt-ı hümâyûn-ı mülûkâneleri keşîde buyurulmak lâzım geldiğinden zikr olunan **altı** kıt'a emr-i âlî-i şerîf huzûr-ı
+lâmi'ü'n-nûr-ı şâhâneleri kılınmışdır manzûr ve ma'lûm-ı **hümâyûnları** buyuruldukda başka başka her birinin **bi'l-vüzerâye**
+mûcebince amel oluna deyu mübârek hatt-ı hümâyûnları keşîde buyurulmak bâbında emr-i fermân şevketlü kerâmetlü
+mehâbetlü efendim veliyy-i ni'metim efendim pâdişâhım hazretlerinindir.`,
+            analysis: {
+                document_type: "Arz / Hatt-ı Hümâyun",
+                confidence: 85,
+                style: "Resmî, bürokratik ve diplomatik Osmanlı Türkçesi",
+                summary: "Belge, askerlerin sefere yiyecek tedarikiyle sevk edilmesi ve askeri sınıfların ittifakla yürüttüğü işlerin düzgünce idare edilmesi amacıyla çıkarılan şerif emirlerin mahkeme sicillerine kaydedilmesini talep etmektedir. Bu doğrultuda hazırlanan altı adet emrin padişahın onayına sunulduğu ve üzerlerine 'gereğince hareket edilsin' şeklinde hatt-ı hümayun yazılması rica edilmektedir.",
+                key_points: [
+                    "Askerlerin sefere yiyecek tedarikiyle sevk edilmesinin düzenlenmesi.",
+                    "Askeri sınıfların ittifakla yürüttüğü işlerin düzgün ve güvenilir şekilde yürütülmesi.",
+                    "Çıkarılan şerif emirlerin şehir, köy ve kasabalardaki mahkeme sicillerine kaydedilmesi.",
+                    "Hazırlanan altı adet şerif emrin padişahın onayına sunulması ve üzerlerine hatt-ı hümayun yazılmasının talep edilmesi."
+                ],
+                people: [],
+                places: [],
+                concepts: ["hatt-ı hümayun", "vezirler", "beylerbeyleri", "sicil", "kadılar", "naibler"],
+                script_type: "Rik'a",
+                script_purpose: "Padişaha sunulan arz ve üzerine yazılan hatt-ı hümayun",
+                period_estimate: "18. veya 19. Yüzyıl",
+                date_hijri: "Belirtilmemiş",
+                date_gregorian: "Belirtilmemiş",
+                notes: "Belgenin sol üst köşesinde padişahın 'mûcebince amel oluna' şeklindeki hatt-ı hümayunu yer almaktadır."
+            }
         }
     };
 
