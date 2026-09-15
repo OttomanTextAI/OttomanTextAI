@@ -17,8 +17,6 @@ document.addEventListener('DOMContentLoaded', () => {
         translitText: '',
         lastAnalysis: null,
         dbDocumentId: null,
-        apiKey: localStorage.getItem('gemini_api_key') || '',
-        engine: localStorage.getItem('translation_engine') || 'gemini-flash',
         authToken: localStorage.getItem('auth_token') || null,
         authEmail: localStorage.getItem('auth_email') || null
     };
@@ -107,11 +105,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const sideDrawerClose = document.getElementById('sideDrawerClose');
 
     const themeToggleBtn = document.getElementById('themeToggleBtn');
-    const settingsBtn = document.getElementById('settingsBtn');
-    const settingsModal = document.getElementById('settingsModal');
-    const apiKeyInput = document.getElementById('apiKeyInput');
-    const modelSelect = document.getElementById('modelSelect');
-    const saveSettingsBtn = document.getElementById('saveSettingsBtn');
     // Hesap (Giriş / Kayıt) modalı
     const profileBtn = document.getElementById('profileBtn');
     const authModal = document.getElementById('authModal');
@@ -3414,21 +3407,6 @@ ${transTextDisplay.textContent}
             const modalId = btn.getAttribute('data-close');
             document.getElementById(modalId)?.classList.add('hidden');
         });
-    });
-
-    settingsBtn.addEventListener('click', () => {
-        apiKeyInput.value = state.apiKey;
-        modelSelect.value = state.engine;
-        settingsModal.classList.remove('hidden');
-    });
-
-    saveSettingsBtn.addEventListener('click', () => {
-        state.apiKey = apiKeyInput.value.trim();
-        state.engine = modelSelect.value;
-        localStorage.setItem('gemini_api_key', state.apiKey);
-        localStorage.setItem('translation_engine', state.engine);
-        settingsModal.classList.add('hidden');
-        alert('API ve Motor ayarları başarıyla kaydedildi!');
     });
 
     // Close modal on backdrop click
