@@ -2723,117 +2723,14 @@ def logout(current_user):
     db.session.commit()
 
     return jsonify({"message": "Çıkış yapıldı."})
-def _avatar_signed_url(user):
-    if not user.avatar_storage_path or supabase_client is None:
-        return None
-    try:
-        result = supabase_client.storage.from_(DOCUMENTS_BUCKET).create_signed_url(
-            user.avatar_storage_path, 3600
-        )
-        return result.get("signedURL") or result.get("signedUrl")
-    except Exception:
-        return None
-
-
-def _serialize_profile(user):
-    return {
-        "user_id": user.id,
-        "email": user.email,
-        "created_at": user.created_at.isoformat() + "Z",
-        "full_name": user.full_name,
-        "title": user.title,
-        "specialty": user.specialty,
-        "phone": user.phone,
-        "institution": user.institution,
-        "bio": user.bio,
-        "avatar_url": _avatar_signed_url(user),
-    }
-
-
 @app.route("/api/auth/me", methods=["GET"])
 @token_required
 def get_current_user(current_user):
-    return jsonify(_serialize_profile(current_user))
-
-
-PROFILE_TEXT_FIELDS = {
-    "full_name": 150,
-    "title": 150,
-    "specialty": 255,
-    "phone": 50,
-    "institution": 255,
-}
-
-
-@app.route("/api/profile", methods=["PUT"])
-@token_required
-def update_profile(current_user):
-    data = request.get_json(silent=True) or {}
-
-    for field, max_length in PROFILE_TEXT_FIELDS.items():
-        if field not in data:
-            continue
-        value = (data.get(field) or "").strip()
-        if len(value) > max_length:
-            return jsonify({"error": f"{field} en fazla {max_length} karakter olabilir."}), 400
-        setattr(current_user, field, value or None)
-
-    if "bio" in data:
-        bio = (data.get("bio") or "").strip()
-        if len(bio) > 2000:
-            return jsonify({"error": "Biyografi en fazla 2000 karakter olabilir."}), 400
-        current_user.bio = bio or None
-
-    db.session.commit()
-
-    return jsonify(_serialize_profile(current_user))
-
-
-ALLOWED_AVATAR_EXTENSIONS = {"jpg", "jpeg", "png", "webp"}
-
-
-@app.route("/api/profile/avatar", methods=["POST"])
-@token_required
-def update_profile_avatar(current_user):
-    if supabase_client is None:
-        return jsonify({"error": "Dosya depolama servisi şu anda yapılandırılmamış."}), 503
-    if "file" not in request.files:
-        return jsonify({"error": "Dosya bulunamadı."}), 400
-
-    uploaded_file = request.files["file"]
-
-    if uploaded_file.filename == "":
-        return jsonify({"error": "Dosya seçilmedi."}), 400
-
-    original_filename = secure_filename(uploaded_file.filename)
-    extension = original_filename.rsplit(".", 1)[-1].lower() if "." in original_filename else ""
-
-    if extension not in ALLOWED_AVATAR_EXTENSIONS:
-        return jsonify({"error": "Sadece JPG, PNG veya WEBP dosyaları yüklenebilir."}), 400
-
-    file_bytes = uploaded_file.read()
-    new_storage_path = f"avatars/{current_user.id}/{uuid.uuid4()}_{original_filename}"
-
-    try:
-        supabase_client.storage.from_(DOCUMENTS_BUCKET).upload(
-            new_storage_path,
-            file_bytes,
-            {"content-type": uploaded_file.mimetype},
-        )
-    except Exception as error:
-        return jsonify({"error": f"Fotoğraf depolamaya yüklenemedi: {error}"}), 502
-
-    old_storage_path = current_user.avatar_storage_path
-    current_user.avatar_storage_path = new_storage_path
-    db.session.commit()
-
-    if old_storage_path:
-        try:
-            supabase_client.storage.from_(DOCUMENTS_BUCKET).remove([old_storage_path])
-        except Exception:
-            pass
-
-    return jsonify({"avatar_url": _avatar_signed_url(current_user)})
+    return jsonify({
+        "user_id": current_user.id,
+        "email": current_user.email,
+        "created_at": current_user.created_at.isoformat() + "Z",
+    })
 @app.route("/api/documents/upload", methods=["POST"])
 @token_required
 def upload_document(current_user):

@@ -174,10 +174,16 @@ profileForm.addEventListener('submit', async (e) => {
             }),
         });
 
+        // Yeni profil alanları veritabanına henüz eklenmediyse (bkz. proje
+        // notu) backend bu uçta 404 döner ve gövde JSON olmaz — bunu ayırt
+        // edip anlamlı bir mesaj göstermek için res.json() öncesi res.ok
+        // kontrol ediliyor.
+        if (!res.ok) {
+            const data = await res.json().catch(() => null);
+            throw new Error((data && data.error) || 'Kaydedilemedi (bu özellik henüz sunucuda etkin değil).');
+        }
+
         const data = await res.json();
-
-        if (!res.ok) throw new Error(data.error || 'Kaydedilemedi.');
-
         currentProfile = data;
         renderProfileSummary(currentProfile);
         showSaveMsg('Değişiklikler kaydedildi.', 'success');
@@ -204,10 +210,12 @@ avatarFileInput.addEventListener('change', async () => {
             body: formData,
         });
 
+        if (!res.ok) {
+            const data = await res.json().catch(() => null);
+            throw new Error((data && data.error) || 'Fotoğraf yüklenemedi (bu özellik henüz sunucuda etkin değil).');
+        }
+
         const data = await res.json();
-
-        if (!res.ok) throw new Error(data.error || 'Fotoğraf yüklenemedi.');
-
         if (currentProfile) currentProfile.avatar_url = data.avatar_url;
         profileAvatarImg.src = data.avatar_url || 'assets/icon.png';
     } catch (err) {
