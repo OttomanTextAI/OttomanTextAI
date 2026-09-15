@@ -1077,6 +1077,77 @@ zeyd kadre **mektub**...`,
                 date_gregorian: "Ekim 1572",
                 notes: "Belge, 16. yüzyıl Osmanlı eyalet idaresindeki asayiş sorunlarını, vakıf denetimlerini ve yerel yöneticilerin sorumluluklarını gösteren önemli bir arşiv kaydıdır."
             }
+        },
+        'hbv': {
+            file: 'assets/hbv.png',
+            name: 'haci_bayram_veli_berati.png',
+            size: '0.18 MB',
+            ocr: `حاجی بیرام ولی سلکنده اشبو رافع توقيع رفیع الشأن خاقانی قدوة الصلحاء **السالكين**
+السيد محمد سعيد بابا ولد متوفی طیب بابا عن اصلح وارشد اولانلر غب زماننا الیه **بموجب**
+زبدة تقواه ديوان همايونه عرضحال ايدوب انقره ده واقع حاجی بیرام ولی وقفنك
+وظیفه معینه ایله تولیت و مشیختنه و وظیفه معینه ایله زاویه دارلغنه بونلر افدم
+بر وجه مشروطه باباسی محصولندن متصرف و رفعنی ایجاب ایدر بر وجه حرکتی
+يوقيكن اصحاب اغراضدن السيد قاسم بابا ابن السيد **خلیل** بابا اصلح اولاد واقربا اولمق
+اوزره بر تقریب اوزرینه برات و فتوا ننه خط همایون کشیده ایتدروب **جناب**
+عزل کلی و عیal اولانندن خوار اولغله تولیت و مشیخت و زاویه دارلق **جناب**
+اول و باباسی نائبلرندن اوله بغنه بناء كما فی الاول ابقا و يدينه برات عالی شانم
+ديرلمك بابنده استدعاى عنایت ایتمکله مومی الیهك استدعاى اوزره
+مسامحه اولنمق بابنده اراده سنيه ملوکانه تعلفنه بناء هر وجه استدعا موجبنجه
+اولنمق اوزره اعلم العلماء المتبحرين افضل الفضلاء المتورعين بالفعل شيخ الاسلام
+مولانا احمد اسعد ادام الله تعالى فضائله اشارت ایتمکلہ اشارت موجبنجه
+توجیه اولنمق فرمانم اولمشدر حقنده مزید عنایت پادشاهانم ظهور کتروب
+بيك ايكيوز يكرمی اوچ سنه سی رجبنك دوزنجی کونی تاریخيله مورخ و بوندان
+رؤس همايونم موجبنجه بو برات همايونم ویردم و بیوردم که غب زماننا
+الیهك اولادندن ارشد و اصلح مومی الیه السيد محمد سعيد بابا ولد متوفی طیب بابا
+زبدة تقواه واروب مرقومك ربع و نصف مزبورك تولیت و مشیخت و زاویه
+دارلغنه کما فی بر وجه مشروطه متصرف اولوب ادای خدمت ایلدکدن صکره
+بوندن اول جهات مذکوره نك وظیفه معینه لرینه توجهله متصرف اولدقدن
+ینه اولو جهله وظیفه معینه لرینی اوقاف مزبوره محصولندن الوب متصرف اولوب
+اشبو برات عالیشانم مغایر رفع اولنمامق تقدم و طرف اخر دن هیچ فرد...`,
+            tr: `Hacı Bayram Veli yolunda, bu yüce padişahlık nişanını taşıyan, salihlerin **ve süluk edenlerin** örneği, müteveffa Tayyib Baba'nın oğlu es-Seyyid Muhammed Said Baba, zamanımızda en layık ve olgun olanlardan olup, takvasının temizliğiyle Divan-ı Hümayun'a dilekçe sunup Ankara'da bulunan Hacı Bayram Veli Vakfı'nın belirlenmiş vazife ile tevliyet ve meşihatına ve belirlenmiş vazife ile zaviyedarlığına önceden beri şart koşulduğu üzere babasının gelirinden tasarruf etmekte iken ve görevden alınmasını gerektirecek hiçbir hareketi yokken, garaz sahiplerinden es-Seyyid **Halil** Baba'nın oğlu es-Seyyid Kasım Baba en layık evlat ve akraba olduğunu iddia ederek bir yolunu bulup berat ve fetva ile hatt-ı hümayun çıkarttırıp **tarafından** tamamen görevden alınmasına ve ailesiyle perişan olmasına sebep olduğundan, tevliyet, meşihat ve zaviyedarlığın **tarafından** önceden olduğu gibi kendisine ve babasının naiplerine verilmesi ricasıyla lütuf talep etmiştir. Adı geçenin talebi üzerine müsamaha gösterilmesi hususunda padişahın iradesi çıktığından, dilekçesi doğrultusunda işlem yapılmak üzere, derin alimlerin en bilgini, takva sahiplerinin en faziletlisi olan fiilen Şeyhülislam Mevlana Ahmed Esad (Allah faziletlerini daim etsin) işaret ettiğinden, bu işaret uyarınca görevin iade edilmesi fermanım olmuştur. Kendisine padişahlık lütfumun bir nişanesi olarak bin iki yüz yirmi üç senesi Receb ayının dokuzuncu günü tarihiyle tarihlenen ve rûs-ı hümayunum gereğince bu berat-ı hümayunumu verdim ve buyurdum ki: Adı geçenin evlatlarından en olgun ve layık olan müteveffa Tayyib Baba oğlu es-Seyyid Muhammed Said Baba gidip adı geçen vakfın dörtte bir ve yarım hisselerinin tevliyet, meşihat ve zaviyedarlığına şart koşulduğu üzere tasarruf edip hizmetini yerine getirdikten sonra, bundan önce söz konusu görevlerin belirlenmiş maaşlarını alarak tasarruf ettiği gibi yine aynı şekilde belirlenmiş maaşlarını adı geçen vakıfların gelirinden alıp tasarruf ede ve bu yüce beratıma aykırı olarak görevden el çektirilmeye, başkaları tarafından hiçbir müdahale olunmaya...`,
+            translit: `Hacı Bayram Veli silkinde işbu rafi'-i tevkî'-i refî'-i şân-ı hakanî kudvetü's-sulehâ **es-sâlikîn**
+es-Seyyid Muhammed Said Baba veled-i müteveffa Tayyib Baba 'an aslah ve arşad olanlar gıbbe zamânınâ ileyhi **bi-mûceb**
+zübdetü takvâh dîvân-ı hümâyûna arz-ı hâl idüb Ankara'da vâki' Hacı Bayram Veli vakfının
+vazîfe-i muayyene ile tevliyet ve meşîhatine ve vazîfe-i muayyene ile zâviyedarlığına bunlar akdem
+bir vech-i meşrûta babası mahsûlünden mutasarrıf ve ref'ini îcâb ider bir vech-i hareketi
+yok iken ashâb-ı agrâzdan es-Seyyid Kasım Baba ibn es-Seyyid **Halil** Baba aslah evlâd ve akrabâ olmak
+üzere bir takrîb üzerine berât ve fetvâ nene hatt-ı hümâyûn keşîde itdürüb **cenâb**
+'azl-i küllî ve 'iyâl olanından hâr olgala tevliyet ve meşîhat ve zâviyedarlık **cenâb**
+evvel ve babası nâiblerinden ola bağına binâen kemâ fi'l-evvel ibkâ ve yedine berât-ı âlî-şânım
+dirilmek bâbında istid'â-yı 'inâyet itmekle mûmâ-ileyhin istid'âsı üzere
+müsâmaha olunmak bâbında irâde-i seniyye-i mülûkâne taallukuna binâen her vech-i istid'â mûcebince
+olunmak üzere a'lemü'l-ulemâi'l-mütebahhirîn efdalü'l-fudalâi'l-müteverri'în bi'l-fi'l Şeyhülislâm
+Mevlânâ Ahmed Esad edâmallâhu teâlâ fezâilehu işâret itmekle işâret mûcebince
+tevcîh olunmak fermânım olmuşdur hakkında mezîd-i 'inâyet-i pâdişâhânem zuhûr getürüb
+bin iki yüz yirmi üç senesi Recebinin dokuzuncu günü târîhiyle müverrah ve bundan
+rûs-ı hümâyûnum mûcebince bu berât-ı hümâyûnum virdim ve buyurdum ki gıbbe zamânınâ
+ileyhin evlâdından arşad ve aslah mûmâ-ileyh es-Seyyid Muhammed Said Baba veled-i müteveffa Tayyib Baba
+zübdetü takvâh varub merkûmun rub' ve nısf-ı mezbûrun tevliyet ve meşîhat ve zâviye
+darlığına kemâ fî bir vech-i meşrûta mutasarrıf olub edâ-yı hizmet eyledikden sonra
+bundan evvel cihât-ı mezkûrenin vazîfe-i muayyenelerine teveccühle mutasarrıf oldukdan
+yine ol vechile vazîfe-i muayyenelerini evkâf-ı mezbûre mahsûlünden alub mutasarrıf olub
+işbu berât-ı âlî-şânım mugâyir-i ref' olunmamak takaddüm ve taraf-ı âhardan hîç ferd...`,
+            analysis: {
+                document_type: "Berat",
+                confidence: 92,
+                style: "Resmî, bürokratik ve hukuki bir üslup kullanılmıştır.",
+                summary: "Ankara'da bulunan Hacı Bayram Veli Vakfı'nın tevliyet, meşihat ve zaviyedarlık görevlerinin, haksız yere elinden alınan es-Seyyid Muhammed Said Baba'ya Şeyhülislam Ahmed Esad Efendi'nin işareti ve padişahın iradesiyle iade edildiğine dair berattır.",
+                key_points: [
+                    "Hacı Bayram Veli Vakfı'nın tevliyet, meşihat ve zaviyedarlık görevleri es-Seyyid Muhammed Said Baba'ya aittir.",
+                    "es-Seyyid Kasım Baba'nın hileli girişimleriyle bu görevler el değiştirmiştir.",
+                    "Şeyhülislam Ahmed Esad Efendi'nin işareti ve padişahın iradesiyle görevler eski sahibi es-Seyyid Muhammed Said Baba'ya iade edilmiştir.",
+                    "Karar, 9 Receb 1223 tarihinde berat-ı hümayun ile tescil edilmiştir."
+                ],
+                people: ["Mevlana Ahmed Esad", "es-Seyyid Muhammed Said Baba", "Tayyib Baba", "es-Seyyid Kasım Baba", "es-Seyyid Halil Baba"],
+                places: ["Ankara"],
+                concepts: ["tevliyet", "meşihat", "zâviyedarlık", "berât-ı hümâyûn", "vakıf", "Şeyhülislâm"],
+                script_type: "Dîvânî",
+                script_purpose: "Atama ve Hak İadesi Beratı",
+                period_estimate: "II. Mahmud Dönemi",
+                date_hijri: "9 Receb 1223",
+                date_gregorian: "31 Ağustos 1808",
+                notes: "Belge, Hacı Bayram Veli soyundan gelenler arasındaki vakıf görevleri ihtilafını ve Şeyhülislamın müdahalesiyle hakkın iade edilmesini konu almaktadır."
+            }
         }
     };
 
