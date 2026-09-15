@@ -274,6 +274,17 @@ function renderRestoredTranslation() {
         '[STATE RESTORE] Translation rendered:',
         state.dbDocumentId
     );
+
+        setTimeout(() => {
+        const translationSection = document.getElementById('translationSection');
+
+        if (translationSection) {
+            translationSection.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+    }, 150);
 }
 restoreTranslationState();
 renderRestoredTranslation();
