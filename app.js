@@ -1720,6 +1720,88 @@ mehâbetlü efendim veliyy-i ni'metim efendim pâdişâhım hazretlerinindir.`,
                 date_gregorian: "Belirtilmemiş",
                 notes: "Belgenin sol üst köşesinde padişahın 'mûcebince amel oluna' şeklindeki hatt-ı hümayunu yer almaktadır."
             }
+        },
+        'phd': {
+            file: 'assets/phd.png',
+            name: 'profesorun_hayat_dersi.png',
+            size: '0.01 MB',
+            ocr: `پروفیسورك حیات درسی: بر كون بر فلسفه پروفیسوری، كرسی یه چیقدی و اوكنده بر قاچ اشیا
+واردی. درسی آلیشیلمامش بیجیمده ایشله‌یه‌جكی بللیدی.
+ماصه‌نك اوزرینه بویوك بر جام قاوانوز قویدی. آردندن ماصه‌نك آلتندن بویوك تاشلر چیقاردی و
+بو تاشلری قاوانوزك ایچنه تك تك یرلشدیردی. صوكره اوگرنجیلره دونه‌رك قاوانوزك دولو اولوب
+اولمادیغنی صوردی. اوگرنجیلر قاوانوزه باقدیلار و دولو اولدوغنی سؤیلدیلر. پروفیسور
+بونك اوزرینه ماصه‌نك آلتندن بر قوطو چاقیل تاشی چیقاردی. چاقیللری قاوانوزك ایچنه دوكدی و
+صاللادی. چاقیللار، بویوك تاشلرك آراسنده كی بوشلوقلره یرلشدی. پروفیسور
+یكیدن قاوانوزك دولو اولوب اولمادیغنی صوردی. اوگرنجیلر بو كز داها ترددلی بر شكلده
+دولو اولدوغنی سؤیلدیلر. بونكله یتینمه‌ین پروفیسور، ماصه‌نك آلتندن قوم چیقاردی.
+قومی یاواش یاواش قاوانوزك ایچنه دوكدی. قوم، چاقیللرك آراسنده كی اك كوچك بوشلوقلره
+قدر صیزدی. پروفیسور تكرار صنفه‌ دوندی و قاوانوزك دولو اولوب اولمادیغنی صوردی. اوگرنجیلر
+شاشیردیلار و طولمش اولابیلجگنی سؤیلدیلر. صوك اولارقده پروفیسور بر بارداق
+صو چیقاردی و قاوانوزك ایچنه دوكدی.
+قومی یاواش یاواش قاوانوزك ایچنه دوكدی. قوم، چاقیللرك آراسنده كی اك كوچك بوشلقلره
+قدر صیزدی. پروفسور تكرار صنفه دوندی و قاوانوزك طولو اولوب اولمادیغنی صوردی. اوگرنجیلر
+شاشیردیلر و طولمش اولابیلجگنی سویلدیلر. صوك اولارق ده پروفسور بر بارداق
+صو چیقاردی و قاوانوزك ایچنه دوكدی.
+پروفسور بو دنیدن نه آكلادیقلرینی صوردی. اوگرنجیلری دیكله ین پروفسور شویله دوام ایتدی. بو
+قاوانوزك حیاتی تمثیل ایتدیگینی سویلیه رك ایچنده كیلر حیاتكزدەكی دگرلردیر دیدی. بویوك طاشلر
+سزك ایچون اك اؤنملیلردیر. یعنی عائلەكز، صاغلیغكز، اشكز، چوجوقلریغز، دوستلریغز و دینی
+حیاتكزدیر. چاقیل طاشلری ایسه، اوینز، آرابەكز كبی حیاتكزدەكی دیگر اؤنملى اما ایكنجیل شیلردیر.
+قاوانوزه **اولجه قومی** قوم ایسه حیاتك كوچك و اؤنمسز آیرینتیلریدیر. شویله دقت ایدك: " اگر
+طولدیرورسه كز بویوك طاشلره و چاقیل طاشلرینه یر قالماز. حیات ده بویله دیر. زمانكزی و انرژیكزی
+کوچك شیلره خرجلرسه كز، گرچكدن اؤنملى اولان شیلر
+ایچون وقتكز قالمایا جق و ایسراف ایتمش اولاجقسدر. اونك ایچون زمانكزی نریه خرجادیغكزه
+دقت ایدك دیدی. www.osmanlicaogren.com`,
+            tr: `Profesörün hayat dersi: Bir gün bir felsefe profesörü, kürsüye çıktı ve önünde birkaç eşya vardı. Dersi alışılmamış biçimde işleyeceği belliydi. Masanın üzerine büyük bir cam kavanoz koydu. Ardından masanın altından büyük taşlar çıkardı ve bu taşları kavanozun içine tek tek yerleştirdi. Sonra öğrencilere dönerek kavanozun dolu olup olmadığını sordu. Öğrenciler kavanoza baktılar ve dolu olduğunu söylediler. Profesör bunun üzerine masanın altından bir kutu çakıl taşı çıkardı. Çakılları kavanozun içine döktü ve salladı. Çakıllar, büyük taşların arasındaki boşluklara yerleşti. Profesör yeniden kavanozun dolu olup olmadığını sordu. Öğrenciler bu kez daha tereddütlü bir şekilde dolu olduğunu söylediler. Bununla yetinmeyen profesör, masanın altından kum çıkardı. Kumu yavaş yavaş kavanozun içine döktü. Kum, çakılların arasındaki en küçük boşluklara kadar sızdı. Profesör tekrar sınıfa döndü ve kavanozun dolu olup olmadığını sordu. Öğrenciler şaşırdılar ve dolmuş olabileceğini söylediler. Son olarak da profesör bir bardak su çıkardı ve kavanozun içine döktü.
+Kumu yavaş yavaş kavanozun içine döktü. Kum, çakılların arasındaki en küçük boşluklara kadar sızdı. Profesör tekrar sınıfa döndü ve kavanozun dolu olup olmadığını sordu. Öğrenciler şaşırdılar ve dolmuş olabileceğini söylediler. Son olarak da profesör bir bardak su çıkardı ve kavanozun içine döktü. Profesör bu deneyden ne anladıklarını sordu. Öğrencileri dinleyen profesör şöyle devam etti. Bu kavanozun hayatı temsil ettiğini söyleyerek içindekiler hayatınızdaki değerlerdir dedi. Büyük taşlar sizin için en önemlileridir. Yani aileniz, sağlığınız, eşiniz, çocuklarınız, dostlarınız ve dini hayatınızdır. Çakıl taşları ise, eviniz, arabanız gibi hayatınızdaki diğer önemli ama ikincil şeylerdir. Kavanoza **önce kumu** [koyarsanız], kum ise hayatın küçük ve önemsiz ayrıntılarıdır. Şöyle dikkat edin: " Eğer doldurursanız büyük taşlara ve çakıl taşlarına yer kalmaz. Hayat da böyledir. Zamanınızı ve enerjinizi küçük şeylere harcarsanız, gerçekten önemli olan şeyler için vaktiniz kalmayacak ve israf etmiş olacaksınızdır. Onun için zamanınızı nereye harcadığınıza dikkat edin dedi. www.osmanlicaogren.com`,
+            translit: `profesörüñ ḥayāt dersi: bir gün bir felsefe profesörü, kürsüye çıḳdı ve öñünde bir ḳaç eşyā
+vardı. dersi alışılmamış biçimde işleyecegi belliydi.
+maṣanuñ üzerine büyük bir cām ḳavānoz ḳoydu. ardından maṣanuñ altından büyük taşlar çıḳardı ve
+bu taşları ḳavānozuñ içine tek tek yerleştirdi. ṣoñra ögrencilere dönerek ḳavānozuñ dolu olup
+olmadıġını ṣordu. ögrenciler ḳavānoza baḳdılar ve dolu olduġını söylediler. profesör
+bunuñ üzerine maṣanuñ altından bir ḳuṭu çaḳıl taşı çıḳardı. çaḳılları ḳavānozuñ içine döktü ve
+ṣalladı. çaḳıllar, büyük taşlaruñ arasındaki boşluḳlara yerleşdi. profesör
+yegiden ḳavānozuñ dolu olup olmadıġını ṣordu. ögrenciler bu kez daha tereddüdlü bir şekilde
+dolu olduġını söylediler. bununla yetinmeyen profesör, maṣanuñ altından ḳum çıḳardı.
+ḳumu yavaş yavaş ḳavānozuñ içine döktü. ḳum, çaḳıllaruñ arasındaki eñ küçük boşluḳlara
+ḳadar ṣızdı. profesör tekrār ṣınıfa döndi ve ḳavānozuñ dolu olup olmadıġını ṣordu. ögrenciler
+şāşırdılar ve ṭolmuş olabilecegini söylediler. ṣoñ olarak da profesör bir bardaḳ
+ṣu çıḳardı ve ḳavānozuñ içine döktü.
+Qumı yavaş yavaş qavanozuñ içine dökdi. Qum, çaqıllarıñ arasındaki eñ küçük boşluqlara
+qadar sızdı. Profesör tekrar sınıfa döndi ve qavanozuñ dolu olup olmadıġını sordı. Öğrenciler
+şaşırdılar ve dolmuş olabilecegini söylediler. Soñ olarak da profesör bir bardaq
+su çıqardı ve qavanozuñ içine dökdi.
+Profesör bu deneyden ne añladıqlarını sordı. Öğrencileri diñleyen profesör şöyle devam itdi. Bu
+qavanozuñ hayatı temsil itdigeni söyleyerek içindekiler hayatıñızdaki degerlerdir didi. Büyük taşlar
+sizik içün eñ önemlilerdir. Ya'ni 'aileñiz, saġlıġıñız, eşiñiz, çocuqlarıñız, dostlarıñız ve dini
+hayatıñızdır. Çaqıl taşları ise, eviñiz, arabáñız gibi hayatıñızdaki diger önemli ama ikincil şeylerdir.
+Qavanoza **evvelce qumı** qum ise hayatıñ küçük ve önemsiz ayrıntılarıdır. Şöyle diqqat idiñ: " Eger
+doldurursañız büyük taşlara ve çaqıl taşlarına yer qalmaz. Hayat da böyledir. Zamanıñızı ve enerjiñizi
+küçük şeylere harcarsañız, gerçekten önemli olan şeyler
+içün vaqtıñız qalmayacaq ve israf itmiş olacaqsınızdır. Onuñ içün zamanıñızı nereye harcadıġıñıza
+diqqat idiñ didi. www.osmanlicaogren.com`,
+            analysis: {
+                document_type: "Hikaye / Kıssa",
+                confidence: 99,
+                style: "Sade, öğretici ve akıcı bir anlatım dili",
+                summary: "Bir felsefe profesörü, sınıfta boş bir kavanozu sırasıyla büyük taşlar, çakıllar, kum ve suyla doldurarak öğrencilerine hayatın öncelikleri hakkında uygulamalı bir ders vermektedir. Bir profesörün sınıfta kavanoz, büyük taşlar, çakıl taşları, kum ve su kullanarak gerçekleştirdiği deney anlatılmaktadır. Bu deney üzerinden öğrencilere hayattaki öncelikleri doğru belirleme ve zamanı verimli kullanma konusunda önemli bir ders verilmektedir.",
+                key_points: [
+                    "Bir felsefe profesörü, dersi alışılmadık bir yöntemle işlemektedir.",
+                    "Kavanoza sırasıyla büyük taşlar, çakıllar, kum ve su doldurulur.",
+                    "Öğrenciler her aşamada kavanozun dolup dolmadığını değerlendirir.",
+                    "Profesör, kavanozu sırasıyla büyük taşlar, çakıllar, kum ve suyla doldurarak hayatın aşamalarını simgeleyen bir deney yapar.",
+                    "Kavanozdaki büyük taşlar aile, sağlık ve inanç gibi en temel değerleri; çakıllar ev ve araba gibi ikincil öncelikleri; kum ise önemsiz ayrıntıları temsil eder.",
+                    "Zaman ve enerjinin önemsiz şeylere harcanması durumunda, hayatta gerçekten değer taşıyan unsurlara yer kalmayacağı vurgulanır."
+                ],
+                people: [],
+                places: [],
+                concepts: ["hayat dersi", "felsefe", "hayat", "aile", "sağlık", "dini hayat", "zaman", "enerji"],
+                script_type: "Matbu",
+                script_purpose: "Eğitim / Okuma Parçası",
+                period_estimate: "Geç Osmanlı veya Erken Cumhuriyet Dönemi",
+                date_hijri: "Belirtilmemiş",
+                date_gregorian: "Belirtilmemiş",
+                notes: "Metin, modern dönemde basılmış bir Osmanlıca okuma kitabından alınmış son derece net ve okunaklı bir matbu metindir."
+            }
         }
     };
 
