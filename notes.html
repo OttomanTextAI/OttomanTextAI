@@ -228,29 +228,79 @@
 
 <body class="dark-theme">
     <header class="navbar">
-    <div class="nav-container">
+        <div class="nav-container">
+            <div class="nav-left">
+                <button type="button" class="icon-btn side-menu-toggle" id="sideMenuToggle" title="Menü" aria-expanded="false" aria-controls="sideDrawer">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
 
-        <div class="nav-left">
-            <a href="index.html?restore=1" class="brand-logo">
-                <img src="assets/icon.png" alt="Divane" class="brand-logo-img">
-                <span class="brand-subtitle">OSMANLICA ÇEVİRİ</span>
+                <a href="index.html?restore=1" class="brand-logo">
+                    <img src="assets/icon.png" alt="Divane" class="brand-logo-img">
+                    <span class="brand-subtitle">OSMANLICA ÇEVİRİ</span>
+                </a>
+            </div>
+
+            <nav class="nav-menu">
+                <a href="index.html?restore=1" class="nav-link">Ana Sayfa</a>
+                <a href="index.html#about" class="nav-link">Hakkında</a>
+                <a href="index.html#contact" class="nav-link">İletişim</a>
+            </nav>
+
+            <div class="nav-actions">
+                <button class="icon-btn theme-toggle-btn" id="themeToggleBtn" title="Karanlık/Aydınlık Tema">
+                    <span class="theme-icon">🌙</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Ana sayfadaki (index.html) ile aynı sol menü çekmecesi — tutarlılık
+         için buraya da eklendi (bkz. notes.js'teki aç/kapa kablolaması).
+         Harita/Hakkında/İletişim modalları yalnızca index.html'de tanımlı
+         olduğu için buradan index.html'e bağlanıyor (data-modal yerine
+         gerçek href). -->
+    <div class="side-drawer-overlay hidden" id="sideDrawerOverlay"></div>
+    <aside class="side-drawer" id="sideDrawer" aria-hidden="true">
+        <div class="side-drawer-header">
+            <span class="side-drawer-title">Menü</span>
+            <button type="button" class="modal-close" id="sideDrawerClose" title="Kapat">&times;</button>
+        </div>
+        <div class="side-drawer-body">
+            <img src="assets/ornament-divider.png" alt="" aria-hidden="true" class="side-drawer-flourish">
+            <span class="side-drawer-section-label">Belgelerim</span>
+            <a href="documents.html" class="side-drawer-item">
+                <span class="side-drawer-icon">📂</span>
+                <span>Belgelerim</span>
+            </a>
+            <a href="notes.html" class="side-drawer-item">
+                <span class="side-drawer-icon">📝</span>
+                <span>Notlarım</span>
+            </a>
+            <a href="index.html#map" class="side-drawer-item">
+                <span class="side-drawer-icon">🗺️</span>
+                <span>Harita</span>
+            </a>
+
+            <span class="side-drawer-section-label">Hesap</span>
+            <a href="profile.html" class="side-drawer-item">
+                <span class="side-drawer-icon">👤</span>
+                <span>Profilim</span>
+            </a>
+            <span class="side-drawer-section-label">Site</span>
+            <a href="index.html#about" class="side-drawer-item">
+                <span class="side-drawer-icon">ℹ️</span>
+                <span>Hakkında</span>
+            </a>
+            <a href="index.html#contact" class="side-drawer-item">
+                <span class="side-drawer-icon">✉️</span>
+                <span>İletişim</span>
             </a>
         </div>
-
-        <nav class="nav-menu">
-            <a href="index.html?restore=1" class="nav-link">
-                Ana Sayfa
-            </a>
-            <a href="documents.html" class="nav-link">
-                Belgelerim
-            </a>
-            <a href="notes.html" class="nav-link active">
-                Notlarım
-            </a>
-        </nav>
-
-    </div>
-</header>
+    </aside>
 
     <main class="notes-page">
 
