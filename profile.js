@@ -83,8 +83,18 @@ const profileAvatarImg = document.getElementById('profileAvatarImg');
 const avatarFileInput = document.getElementById('avatarFileInput');
 const avatarEditBtn = document.getElementById('avatarEditBtn');
 
+// Kayıt formunda alınan ad soyad, backend'de henüz bir sütunu olmadığı için
+// (bkz. proje notları — DB migrasyonu bekleniyor) index.html/app.js
+// tarafından sadece localStorage'a yazılıyor. Backend bir full_name
+// döndürene kadar buradan, sadece aynı hesaba (e-posta eşleşmesi) aitse
+// okunuyor.
+function localFullNameFallback(email) {
+    if (localStorage.getItem('auth_full_name_email') !== email) return '';
+    return localStorage.getItem('auth_full_name') || '';
+}
+
 function fillFormFromProfile(profile) {
-    profileFullName.value = profile.full_name || '';
+    profileFullName.value = profile.full_name || localFullNameFallback(profile.email) || '';
     profileTitleInput.value = profile.title || '';
     profileEmail.value = profile.email || '';
     profileSpecialty.value = profile.specialty || '';
@@ -94,7 +104,7 @@ function fillFormFromProfile(profile) {
 }
 
 function renderProfileSummary(profile) {
-    profileSummaryName.textContent = profile.full_name || profile.email || '—';
+    profileSummaryName.textContent = profile.full_name || localFullNameFallback(profile.email) || profile.email || '—';
     profileSummaryTitle.textContent = profile.title || '';
     profileAvatarImg.src = profile.avatar_url || 'assets/icon.png';
 }

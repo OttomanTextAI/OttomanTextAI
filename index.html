@@ -46,7 +46,7 @@
                 <button class="icon-btn theme-toggle-btn" id="themeToggleBtn" title="Karanlık/Aydınlık Tema">
                     <span class="theme-icon">🌙</span>
                 </button>
-                <button class="icon-btn profile-btn" id="profileBtn" data-modal="authModal" title="Kullanıcı Profili">
+                <button class="icon-btn profile-btn" id="profileBtn" title="Giriş Yap">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                         <circle cx="12" cy="7" r="4"></circle>
@@ -792,6 +792,10 @@
 
                 <form id="registerForm" class="auth-form hidden">
                     <div class="form-group">
+                        <label for="registerFullName">Ad Soyad</label>
+                        <input type="text" id="registerFullName" class="form-input" placeholder="Ad Soyad" required autocomplete="name">
+                    </div>
+                    <div class="form-group">
                         <label for="registerEmail">E-posta</label>
                         <input type="email" id="registerEmail" class="form-input" placeholder="eposta@ornek.com" required autocomplete="username">
                     </div>
@@ -813,6 +817,19 @@
                 <a href="profile.html" class="btn btn-primary btn-block" style="margin-bottom: 0.7rem;">Profil Ayarları</a>
                 <button class="btn btn-outline btn-block" id="logoutBtn">Çıkış Yap</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Giriş/kayıt sonrası profil tamamlama daveti (authModal ile aynı
+         .modal-overlay/.modal-card iskeleti kullanılıyor). -->
+    <div class="modal-overlay hidden" id="profilePromptModal">
+        <div class="modal-card">
+            <button class="modal-close" data-close="profilePromptModal">&times;</button>
+            <h2 class="modal-title">✨ Profilinizi Tamamlayın</h2>
+            <div class="hero-ornament-line" style="margin: 0 auto 1rem;"></div>
+            <p class="modal-hint">Deneyiminizi kişiselleştirmek için meslek, uzmanlık alanı ve biyografi gibi bilgilerinizi profilinize ekleyin.</p>
+            <a href="profile.html" class="btn btn-primary btn-block" style="margin-top: 1rem;">Profili Doldur</a>
+            <button type="button" class="btn btn-outline btn-block" data-close="profilePromptModal" style="margin-top: 0.7rem;">Daha Sonra</button>
         </div>
     </div>
 
@@ -893,7 +910,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 
     <!-- Custom JavaScript -->
-    <script src="app.js?v=20260915-12"></script>
+    <script src="app.js?v=20260915-13"></script>
 
 </body>
 </html>

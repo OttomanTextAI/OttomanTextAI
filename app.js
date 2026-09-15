@@ -25,7 +25,11 @@ const state = {
     engine: localStorage.getItem('translation_engine') || 'gemini-flash',
 
     authToken: localStorage.getItem('auth_token') || null,
-    authEmail: localStorage.getItem('auth_email') || null
+    authEmail: localStorage.getItem('auth_email') || null,
+    // Kayıt formunda alınan ad soyad — backend'deki 'users' tablosuna bu
+    // alan için sütun eklenene kadar (bkz. proje notları) sadece burada,
+    // yerelde tutuluyor; profile.html bunu geri okuyup gösteriyor.
+    authFullName: localStorage.getItem('auth_full_name') || null
 };
 
  function restoreTranslationState() {
@@ -172,6 +176,7 @@ const state = {
     // Hesap (Giriş / Kayıt) modalı
     const profileBtn = document.getElementById('profileBtn');
     const authModal = document.getElementById('authModal');
+    const profilePromptModal = document.getElementById('profilePromptModal');
     const authTabs = document.getElementById('authTabs');
     const authError = document.getElementById('authError');
     const authLoggedOutView = document.getElementById('authLoggedOutView');
@@ -182,6 +187,7 @@ const state = {
     const loginPassword = document.getElementById('loginPassword');
     const loginSubmitBtn = document.getElementById('loginSubmitBtn');
     const registerForm = document.getElementById('registerForm');
+    const registerFullName = document.getElementById('registerFullName');
     const registerEmail = document.getElementById('registerEmail');
     const registerPassword = document.getElementById('registerPassword');
     const registerPasswordConfirm = document.getElementById('registerPasswordConfirm');
@@ -4305,6 +4311,7 @@ ${transTextDisplay.textContent}
         authLoggedOutView.classList.toggle('hidden', loggedIn);
         authLoggedInView.classList.toggle('hidden', !loggedIn);
         profileBtn.classList.toggle('is-authenticated', loggedIn);
+        profileBtn.title = loggedIn ? 'Çıkış Yap' : 'Giriş Yap';
 
         if (loggedIn) {
             authUserEmail.textContent = state.authEmail || '';
@@ -4313,12 +4320,29 @@ ${transTextDisplay.textContent}
         }
     }
 
-    function setAuthSession(token, email) {
+    function setAuthSession(token, email, fullName) {
         state.authToken = token;
         state.authEmail = email;
         localStorage.setItem('auth_token', token);
         localStorage.setItem('auth_email', email);
+
+        if (fullName) {
+            state.authFullName = fullName;
+            localStorage.setItem('auth_full_name', fullName);
+            localStorage.setItem('auth_full_name_email', email);
+        } else if (localStorage.getItem('auth_full_name_email') !== email) {
+            // Bu tarayicida baska bir hesabin adi kalmis olabilir (paylasilan
+            // cihaz) — e-posta eslesmiyorsa yanlislikla gosterilmesin.
+            state.authFullName = null;
+            localStorage.removeItem('auth_full_name');
+            localStorage.removeItem('auth_full_name_email');
+        }
+
         updateAuthUI();
+    }
+
+    function promptProfileCompletion() {
+        profilePromptModal.classList.remove('hidden');
     }
 
     function clearAuthSession() {
@@ -4328,6 +4352,10 @@ ${transTextDisplay.textContent}
         localStorage.removeItem('auth_email');
         updateAuthUI();
     }
+
+    // Sayfa ilk açıldığında navbar'daki profil ikonunun rengi/title'ı
+    // (Giriş Yap / Çıkış Yap) modal hiç açılmadan da doğru görünsün diye.
+    updateAuthUI();
 
     authTabs.addEventListener('click', (e) => {
         const btn = e.target.closest('[data-auth-tab]');
@@ -4360,6 +4388,7 @@ ${transTextDisplay.textContent}
             setAuthSession(data.token, data.email);
             loginForm.reset();
             authModal.classList.add('hidden');
+            promptProfileCompletion();
         } catch (err) {
             showAuthError(classifyTranslationError(err));
         } finally {
@@ -4372,6 +4401,7 @@ ${transTextDisplay.textContent}
         e.preventDefault();
         clearAuthError();
 
+        const fullName = registerFullName.value.trim();
         const email = registerEmail.value.trim();
         const password = registerPassword.value;
 
@@ -4384,10 +4414,14 @@ ${transTextDisplay.textContent}
         registerSubmitBtn.textContent = 'Kayıt olunuyor...';
 
         try {
+            // full_name backend'e de gönderiliyor (ileride veritabanına
+            // eklenince otomatik kaydedilsin diye) ama şu an backend bu
+            // alanı henüz işlemiyor/saklamıyor — bu yüzden ayrıca yerelde
+            // (setAuthSession'a 3. parametre olarak) de tutuluyor.
             const res = await fetchWithTimeout(`${API_BASE_URL}/api/auth/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password })
+                body: JSON.stringify({ email, password, full_name: fullName })
             });
             const data = await res.json().catch(() => ({}));
 
@@ -4406,9 +4440,10 @@ ${transTextDisplay.textContent}
             const loginData = await loginRes.json().catch(() => ({}));
 
             if (loginRes.ok) {
-                setAuthSession(loginData.token, loginData.email);
+                setAuthSession(loginData.token, loginData.email, fullName);
                 registerForm.reset();
                 authModal.classList.add('hidden');
+                promptProfileCompletion();
             } else {
                 setAuthTab('login');
                 loginEmail.value = email;
@@ -4422,7 +4457,7 @@ ${transTextDisplay.textContent}
         }
     });
 
-    logoutBtn.addEventListener('click', () => {
+    function performLogout() {
         // Önce yerelde ANINDA çıkış yaptırıyoruz — sunucunun (özellikle
         // Render'ın soğuk başlangıcında 30-60 saniye sürebilen) yanıtını
         // beklemek butonun "çalışmıyormuş" gibi hissettirmesine sebep
@@ -4441,6 +4476,21 @@ ${transTextDisplay.textContent}
                 // sunucu tarafındaki token er ya da geç kendiliğinden
                 // (7 günlük süre dolunca) geçersiz olacaktır.
             });
+        }
+    }
+
+    logoutBtn.addEventListener('click', performLogout);
+
+    // Üst navbar'daki profil ikonu artık oturum durumuna göre iki farklı işi
+    // tek tıklamada yapıyor: çıkış yapılmışsa giriş modalını açar, giriş
+    // yapılmışsa modalı hiç açmadan doğrudan çıkış yapar (bkz. updateAuthUI
+    // içindeki title/ikon güncellemesi).
+    profileBtn.addEventListener('click', () => {
+        if (state.authToken) {
+            performLogout();
+        } else {
+            authModal.classList.remove('hidden');
+            updateAuthUI();
         }
     });
 

@@ -31,6 +31,11 @@
             width: 96px;
             height: 96px;
             margin: 0 auto 0.9rem;
+            background: none;
+            border: none;
+            padding: 0;
+            display: block;
+            cursor: pointer;
         }
         .profile-avatar-img {
             width: 100%;
@@ -40,17 +45,9 @@
             border: 2px solid var(--color-gold);
             background: var(--bg-input);
             display: block;
+            transition: opacity var(--transition-fast);
         }
-        .profile-avatar-edit-btn {
-            background: none;
-            border: none;
-            font-size: 0.78rem;
-            font-weight: 600;
-            color: var(--color-gold);
-            cursor: pointer;
-            padding: 0.2rem;
-        }
-        .profile-avatar-edit-btn:hover { color: var(--color-gold-light); }
+        .profile-avatar-wrap:hover .profile-avatar-img { opacity: 0.85; }
         .profile-name {
             font-family: var(--font-heading);
             font-size: 1.2rem;
@@ -58,7 +55,8 @@
         }
         .profile-title-text {
             font-size: 0.85rem;
-            color: var(--color-text-muted);
+            font-weight: 600;
+            color: var(--color-gold);
             margin-bottom: 0.2rem;
         }
         .profile-nav {
@@ -85,6 +83,7 @@
         .profile-nav-item:hover { background: var(--bg-input); }
         .profile-nav-item.active { background: var(--color-gold-bg); color: var(--color-gold); }
         .profile-content-card {
+            position: relative;
             background: var(--bg-card-subtle);
             border: 1px solid var(--color-border);
             border-radius: var(--radius-md);
@@ -236,11 +235,13 @@
 
         <div id="profileView" class="profile-page-grid hidden">
             <aside class="profile-summary-card">
-                <div class="profile-avatar-wrap">
+                <img src="assets/ornament-divider.png" alt="" aria-hidden="true" class="side-drawer-flourish" style="max-width: 130px; margin-bottom: 1.1rem;">
+
+                <button type="button" class="profile-avatar-wrap" id="avatarEditBtn" title="Fotoğrafı Değiştir">
                     <img id="profileAvatarImg" class="profile-avatar-img" src="assets/icon.png" alt="Profil fotoğrafı">
-                </div>
+                    <span class="icon-plus-badge" aria-hidden="true">🖊</span>
+                </button>
                 <input type="file" id="avatarFileInput" accept="image/jpeg,image/png,image/webp" class="hidden">
-                <button type="button" class="profile-avatar-edit-btn" id="avatarEditBtn">🖊 Fotoğrafı Değiştir</button>
 
                 <h2 class="profile-name" id="profileSummaryName">—</h2>
                 <p class="profile-title-text" id="profileSummaryTitle"></p>
@@ -254,8 +255,13 @@
             </aside>
 
             <div class="profile-content-card">
+                <img src="assets/ornament-corner.png" alt="" aria-hidden="true" class="card-corner-ornament corner-tl">
+                <img src="assets/ornament-corner.png" alt="" aria-hidden="true" class="card-corner-ornament corner-tr">
+                <img src="assets/ornament-corner.png" alt="" aria-hidden="true" class="card-corner-ornament corner-br">
+                <img src="assets/ornament-corner.png" alt="" aria-hidden="true" class="card-corner-ornament corner-bl">
                 <div id="personalInfoPanel">
                     <h2 class="profile-content-title">Kişisel Profil Bilgileri</h2>
+                    <div class="hero-ornament-line" style="margin: -0.8rem 0 1.4rem;"></div>
                     <form id="profileForm">
                         <div class="profile-form-grid">
                             <div class="profile-form-group">
@@ -309,6 +315,6 @@
         </div>
     </main>
 
-    <script src="profile.js?v=20260915-1"></script>
+    <script src="profile.js?v=20260915-2"></script>
 </body>
 </html>
