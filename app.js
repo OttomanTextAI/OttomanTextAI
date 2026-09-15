@@ -5,23 +5,71 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- State Management ---
-    const state = {
-        selectedFile: null,
-        imageDataUrl: null,
-        enhancedImageBlob: null,
-        enhancedImageUrl: null,
-        isProcessing: false,
-        ocrText: '',
-        transText: '',
-        transTextEn: '',
-        translitText: '',
-        lastAnalysis: null,
-        dbDocumentId: null,
-        originalFileHash: null,
-        pendingOverwriteDocumentId: null,
-        authToken: localStorage.getItem('auth_token') || null,
-        authEmail: localStorage.getItem('auth_email') || null
-    };
+const state = {
+    selectedFile: null,
+    imageDataUrl: null,
+    enhancedImageBlob: null,
+    enhancedImageUrl: null,
+    isProcessing: false,
+    ocrText: '',
+    transText: '',
+    transTextEn: '',
+    translitText: '',
+    lastAnalysis: null,
+    dbDocumentId: null,
+
+    originalFileHash: null,
+    pendingOverwriteDocumentId: null,
+    
+    apiKey: localStorage.getItem('gemini_api_key') || '',
+    engine: localStorage.getItem('translation_engine') || 'gemini-flash',
+
+    authToken: localStorage.getItem('auth_token') || null,
+    authEmail: localStorage.getItem('auth_email') || null
+};
+
+ function restoreTranslationState() {
+    const params = new URLSearchParams(window.location.search);
+
+    if (params.get('restore') !== '1') {
+        return;
+    }
+
+    const saved =
+        localStorage.getItem('divane_translation_state');
+
+    if (!saved) {
+        return;
+    }
+
+    try {
+        const restored = JSON.parse(saved);
+
+        state.dbDocumentId =
+            restored.dbDocumentId || null;
+
+        state.ocrText =
+            restored.ocrText || '';
+
+        state.translitText =
+            restored.translitText || '';
+
+        state.transText =
+            restored.transText || '';
+
+        state.transTextEn =
+            restored.transTextEn || '';
+
+        console.log(
+            '[STATE RESTORE] Translation restored'
+        );
+    } catch (error) {
+        console.warn(
+            '[STATE RESTORE] Restore failed:',
+            error
+        );
+    }
+}
 
     // /api/auth/* ve /api/documents/* uç noktaları da diğer her şey gibi bu
     // backend'de yaşıyor.
@@ -171,6 +219,55 @@ document.addEventListener('DOMContentLoaded', () => {
     const resultScriptDetails = document.getElementById('resultScriptDetails');
     const resultDateDetails = document.getElementById('resultDateDetails');
     const resultNotes = document.getElementById('resultNotes');
+
+function renderRestoredTranslation() {
+    if (!state.dbDocumentId) {
+        return;
+    }
+
+    if (state.ocrText) {
+        ocrTextDisplay.textContent = state.ocrText;
+        ocrTextDisplay.classList.remove('hidden');
+        ocrEmptyState.classList.add('hidden');
+        ocrTools.classList.add('tools-ready');
+    }
+
+    if (state.translitText) {
+        translitTextDisplay.textContent = state.translitText;
+        translitTextDisplay.classList.remove('hidden');
+        translitEmptyState.classList.add('hidden');
+        translitTools.classList.add('tools-ready');
+    }
+
+    if (state.transText) {
+        transTextDisplay.textContent = state.transText;
+        transTextDisplay.classList.remove('hidden');
+        transEmptyState.classList.add('hidden');
+        transTools.classList.add('tools-ready');
+    }
+
+    // İngilizce çeviri
+    if (state.transTextEn) {
+        enTextDisplay.textContent = state.transTextEn;
+        enTextDisplay.classList.remove('hidden');
+        enEmptyState.classList.add('hidden');
+        enTools.classList.add('tools-ready');
+    }
+
+    localStorage.setItem(
+        'active_document_id',
+        String(state.dbDocumentId)
+    );
+
+    setOutputTab('trans');
+
+    console.log(
+        '[STATE RESTORE] Translation rendered:',
+        state.dbDocumentId
+    );
+}
+restoreTranslationState();
+renderRestoredTranslation();
 
     // Pre-set Sample Manuscript Database for Demo/Testing
     const sampleDatabase = {
@@ -3522,6 +3619,27 @@ ${transTextDisplay.textContent}
                 event.preventDefault();
                 event.stopPropagation();
 
+            sessionStorage.setItem(
+                'divane_translation_state',
+                JSON.stringify({
+                    dbDocumentId: state.dbDocumentId,
+                    ocrText: state.ocrText,
+                    transText: state.transText,
+                    transTextEn: state.transTextEn,
+                    translitText: state.translitText
+                })
+            );
+           
+            localStorage.setItem(
+                'divane_translation_state',
+                JSON.stringify({
+                    dbDocumentId: state.dbDocumentId,
+                    ocrText: state.ocrText,
+                    translitText: state.translitText,
+                    transText: state.transText,
+                    transTextEn: state.transTextEn
+                })
+            );
                 window.open(
                     'notes.html',
                     '_blank',

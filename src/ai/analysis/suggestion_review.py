@@ -122,7 +122,7 @@ class SuggestionReviewer:
                 },
             ],
             temperature=0.1,
-            max_tokens=900,
+            max_tokens=1200,
         )
 
         answer_text = (
@@ -140,10 +140,67 @@ class SuggestionReviewer:
             repr(answer_text),
             flush=True,
         )
+
         result = parse_model_json(
             answer_text
         )
-            
+
+        if (
+            not result
+            or response.choices[0].finish_reason == "length"
+        ):
+            print(
+                "[SUGGESTION REVIEW] Retrying...",
+                flush=True,
+            )
+
+            retry_response = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": (
+                            SUGGESTION_REVIEW_SYSTEM_PROMPT
+                            + "\n\n"
+                            + "Önceki cevap geçerli JSON olarak "
+                            + "işlenemedi veya yarım kaldı. "
+                            + "Bu kez yalnızca tek bir kısa ve "
+                            + "eksiksiz JSON nesnesi döndür."
+                        ),
+                    },
+                    {
+                        "role": "user",
+                        "content": user_prompt,
+                    },
+                ],
+                temperature=0.1,
+                max_tokens=1200,
+            )
+
+            retry_text = (
+                retry_response.choices[0].message.content
+                or ""
+            ).strip()
+
+            print(
+                "[SUGGESTION REVIEW] Retry finish reason:",
+                retry_response.choices[0].finish_reason,
+                flush=True,
+            )
+
+            print(
+                "[SUGGESTION REVIEW] Retry raw response:",
+                repr(retry_text),
+                flush=True,
+            )
+
+            retry_result = parse_model_json(
+                retry_text
+            )
+
+            if retry_result:
+                result = retry_result
+
         if not result:
             fallback_text = (
                 ai_suggestion

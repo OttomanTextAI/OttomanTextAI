@@ -396,9 +396,6 @@ class DocumentQA:
             parsed_answer = parse_model_json(
                 retry_text
             )
-            parsed_answer = parse_model_json(
-                retry_text
-            )
 
             if not has_usable_answer(parsed_answer):
                 print(
@@ -455,7 +452,7 @@ class DocumentQA:
                         }
                     ],
                     temperature=0.1,
-                    max_tokens=500,
+                    max_tokens=1200,
                 )
 
                 external_answer = (
@@ -485,7 +482,7 @@ class DocumentQA:
                             }
                         ],
                         temperature=0.1,
-                        max_tokens=400,
+                        max_tokens=1200,
                     )
 
                     external_answer = (
