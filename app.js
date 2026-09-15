@@ -1148,6 +1148,206 @@ işbu berât-ı âlî-şânım mugâyir-i ref' olunmamak takaddüm ve taraf-ı �
                 date_gregorian: "31 Ağustos 1808",
                 notes: "Belge, Hacı Bayram Veli soyundan gelenler arasındaki vakıf görevleri ihtilafını ve Şeyhülislamın müdahalesiyle hakkın iade edilmesini konu almaktadır."
             }
+        },
+        'hmg': {
+            file: 'assets/hmg.png',
+            name: 'hanimlara_mahsus_gazete.png',
+            size: '0.04 MB',
+            ocr: `خاتونلره مخصوص غزته‌نك
+خانملره مخصوص
+قسمی
+نومرو ٣     فی ٥ مارت سنه ٣١٣
+غزته‌مزك بوقسمی «ابكار و امهات» ه خدمت مخصوصه اولمق اوزره تشكيل ايدلمشدر
+اعتلاى امتك سرمايه‌سى دختران معرفت آثاردور
+**شهير مجموعه الايكاددر مانكيزيك فضائلى ارات**
+
+منكشه
+اى رنك روى بهار اولان منكشه
+بودر فضيلت و محجوبيت
+حزين بر قلبك مؤثر و طاتلى بر خيالى
+بكرسين!!.. شو چمنلر آره سندن
+نشر ايلديكك رايحه لطيفه انسايه تازه،
+طاتلى حيات بخش ايدييور. يشيل بر
+ميشه آغاجنك سايه صفا آورنده
+نظر تحسيندن كيزلنمك ايچون جلا
+ساز عيون اولان صيق چمنلر آره سنه
+صوقيلورسين! فقط نشر ايتديکك
+كوزل قوقولرله معطر هواى نسيمى
+بكا بولديغك محلى درعقب اخطار
+و افهام ايدييور!.
+قورقمه! قورقمه! بن سنك يالكز
+مفتون لطافت و حقارتكم، چمنلر
+اوزرنده كى مناظر طبيعه نك بنى دها
+زياده مفتون ايده بيليور. بن سنك
+قيمتكى تقدير ايتديكم ايچون بهار حياتكه
+صاله دست غدر ايتمكى مصماً روا
+كورمهم. بك ضعیف اولان جسمكله
+انسانلرك روح و فكرينه القا ايلديكك
+حسيات لطيفه حقيقةً بك فوق العاده،
+بك شاعرانه در.
+سنك مزيت و خدمتك حق بين
+اولانلر نزدنده محافظه حياتكى تأمين
+ايدر. عمر طبيعندن استفاده ايده
+مييلر هيچ بر مزيته. بو قيمته مالك
+اولميانلردر.
+كافة ذيروحك نباتاتدن هيچ بر
+فرقى يوقدر. هم نوعنه خدمت ايتمك
+ايچون كوچكلکنده چاليشه‌رق حليه
+فضل و كمال ايله تزيين ذات و صفات
+ايدن انسانلرك سنك كبى قوقولى و
+لطيف چيچكلردن فرقى يوقدر. جاهل
+و قسمت معارفدن محروم قالانلر ايسه
+احاله نظره بيله تنزل ايدلمين خار
+و خاشاك مثلندندر
+سيروزلو رجائى خليل حلوى
+افندى كريمه‌سى
+لمان
+
+ایکی محرره بیننده مکالمه
+خديجه خانم ايله سميحه خانم
+خ — همشهريم كچن هفته غالباً
+سهو ترتيب اوله‌رق سوزلرمز بربرينه
+قاريشدى.
+س — اويله اولمش اما ضررى
+يوق، مقصدينه يتدى. همده بنده كز
+والده كزك او كوزل سوزينه قارشى`,
+            tr: `Hatunlara mahsus gazetenin
+Hanımlara Mahsus
+Kısmı
+Numara 3     5 Mart sene 1313
+Gazetemizin bu kısmı "genç kızlar ve anneler"e özel hizmet etmek üzere oluşturulmuştur.
+Milletin yükselmesinin sermayesi, marifet eserleri gösteren kızlardır.
+**Şehir mecmuası el-İkad'dır mankizik fezaili erat**
+
+Menekşe
+Ey baharın yüzünün rengi olan menekşe!
+Budur fazilet ve mahcubiyet.
+Hüzünlü bir kalbin etkileyici ve tatlı bir hayali gibi
+Beklersin!!.. Şu çimenler arasından
+Yaydığın o hoş koku insana taze,
+Tatlı bir hayat bahşediyor. Yeşil bir
+Meşe ağacının safa veren gölgesinde,
+Beğeni dolu bakışlardan gizlenmek için gözleri süsleyen
+Sık çimenler arasına
+Sokulursun! Fakat yaydığın
+Güzel kokularla bezenmiş rüzgarın havası,
+Bana bulunduğun yeri hemen haber veriyor
+Ve anlatıyor!.
+Korkma! Korkma! Ben senin yalnızca
+Güzelliğine ve alçakgönüllülüğüne hayranım; çimenler
+Üzerindeki doğal manzaralar beni daha
+Çok büyüleyebilir. Ben senin
+Değerini takdir ettiğim için, hayatının baharına
+Haksızlık elini uzatmayı asla uygun
+Görmem. Pek zayıf olan bedeninle
+İnsanların ruhuna ve fikrine aşıladığın
+O hoş duygular gerçekten pek fevkalade,
+Pek şairanedir.
+Senin meziyetin ve hizmetin, hakkı görenler
+Nezdinde hayatının korunmasını temin
+Eder. Doğal ömründen istifade edemeyenler
+Hiçbir meziyete, bu değere sahip
+Olmayanlardır.
+Bütün canlıların bitkilerden hiçbir
+Farkı yoktur. Kendi türüne hizmet etmek
+İçin küçüklüğünde çalışarak erdem ve olgunluk
+Süsüyle kendi zatını ve sıfatlarını süsleyen
+İnsanların, senin gibi kokulu ve
+Hoş çiçeklerden farkı yoktur. Cahil
+Ve bilgi nasibinden mahrum kalanlar ise,
+Bakmaya bile tenezzül edilmeyen diken
+Ve çer çöp gibidir.
+Sirozlu Recai Halil Halvi
+Efendi'nin kızı
+Leman
+
+İki Kadın Yazar Arasında Konuşma
+Hatice Hanım ile Semiha Hanım
+H — Hemşehrim, geçen hafta galiba
+Dizgi hatası olarak sözlerimiz birbirine
+Karıştı.
+S — Öyle olmuş ama zararı
+Yok, amacına ulaştı. Hem de bendeniz
+Annenizin o güzel sözüne karşı`,
+            translit: `Hatunlara mahsus gazetenin
+Hanımlara Mahsus
+Kısmı
+Numara 3     Fi 5 Mart sene 313
+Gazetemizin bu kısmı "ebkâr ve ümmehât"a hizmet-i mahsusa olmak üzere teşkil edilmiştir
+İ'tilâ-yı ümmetin sermayesi duhterân-ı ma'rifet-âsârdır
+**Şehir mecmuası el-İkad'dır mankizik fezaili erat**
+
+Menekşe
+Ey reng-i rû-yı bahar olan menekşe
+Budur fazilet ve mahcubiyet
+Hazin bir kalbin müessir ve tatlı bir hayali
+Beklersin!!.. Şu çemenler arasından
+Neşr eylediğin rayiha-i latife insana taze,
+Tatlı hayat bahş ediyor. Yeşil bir
+Meşe ağacının saye-i safa-âverinde
+Nazar-ı tahsinden gizlenmek için cilâ
+Sâz-ı uyûn olan sık çemenler arasına
+Sokulursun! Fakat neşr ettiğin
+Güzel kokularla muattar havâ-yı nesîmi
+Bana bulduğun mahalli der-akab ihtar
+Ve ifham ediyor!.
+Korkma! Korkma! Ben senin yalnız
+Meftun-ı letafet ve hakaretinim, çemenler
+Üzerindeki menâzır-ı tabiiyenin beni daha
+Ziyade meftun edebiliyor. Ben senin
+Kıymetini takdir ettiğim için bahar-ı hayatına
+Sâle-i dest-i gadr etmeyi musammem-i revâ
+Görmem. Pek zaif olan cisminle
+İnsanların ruh ve fikrine ilka eylediğin
+Hissiyat-ı latife hakikaten pek fevkalade,
+Pek şairanedir.
+Senin meziyet ve hizmetin hak-bîn
+Olanlar nezdinde muhafaza-i hayatını temin
+Eder. Ömr-i tabiinden istifade ede
+meyeler hiçbir meziyete. Bu kıymete malik
+Olmayanlardır.
+Kâffe-i zî-rûhun nebatattan hiçbir
+Farkı yoktur. Hem-nev'ine hizmet etmek
+İçin küçüklüğünde çalışarak hilye-i
+Fazl u kemal ile tezyin-i zat ve sıfat
+Eden insanların senin gibi kokulu ve
+Latif çiçeklerden farkı yoktur. Cahil
+Ver kısmet-i maariften mahrum kalanlar ise
+İhale-i nazara bile tenezzül edilmeyen har
+Ve haşak mislindendir
+Sirozlu Recai Halil Halvi
+Efendi kerimesi
+Leman
+
+İki muharrire beyninde mükâleme
+Hatice Hanım ile Semiha Hanım
+Ha — Hemşehrim geçen hafta galiba
+Sehv-i tertib olarak sözlerimiz birbirine
+Karıştı.
+Se — Öyle olmuş ama zararı
+Yok, maksadına yetti. Hem de bendeniz
+Validenizin o güzel sözüne karşı`,
+            analysis: {
+                document_type: "Gazete / Dergi",
+                confidence: 92,
+                style: "Edebi, öğretici ve söyleşi tarzında kaleme alınmış bir dille yazılmıştır.",
+                summary: "Hanımlara Mahsus Gazete'nin bu ekinde genç kızlar ve anneler için eğitici ve edebi yazılar sunulmaktadır. Sayfada Leman Hanım'ın ahlaki ve felsefi çıkarımlar içeren 'Menekşe' başlıklı yazısı ile Hatice Hanım ve Semiha Hanım arasındaki edebi söyleşi yer almaktadır.",
+                key_points: [
+                    "Gazetenin bu özel bölümü genç kızların ve annelerin eğitimine katkı sağlamak amacıyla çıkarılmıştır.",
+                    "Leman Hanım, menekşe çiçeği üzerinden alçakgönüllülük, erdem ve cehalet kavramlarını sorgulamaktadır.",
+                    "Eğitimden mahrum kalan cahil insanlar, doğadaki değersiz diken ve çer çöpe benzetilmiştir.",
+                    "Hatice Hanım ve Semiha Hanım arasındaki diyalogda bir önceki sayıdaki dizgi hatasından bahsedilmektedir."
+                ],
+                people: ["Leman", "Recai Halil Halvi Efendi", "Hatice Hanım", "Semiha Hanım"],
+                places: ["Siroz"],
+                concepts: ["ebkâr ve ümmehât", "maarif", "fazl u kemal"],
+                script_type: "Matbu",
+                script_purpose: "Süreli Yayın / Gazete",
+                period_estimate: "II. Abdülhamid Dönemi",
+                date_hijri: "Belirtilmemiş",
+                date_gregorian: "17 Mart 1898",
+                notes: "Belgenin sağ tarafındaki dikey dize oldukça yıpranmış ve silik olduğundan tahmini olarak okunmuştur."
+            }
         }
     };
 
