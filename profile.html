@@ -298,8 +298,28 @@
                     </form>
                 </div>
 
-                <div id="securityPanel" class="profile-placeholder-panel hidden">
-                    <p>Şifre ve güvenlik ayarları yakında burada olacak.</p>
+                <div id="securityPanel" class="hidden">
+                    <h2 class="profile-content-title">Şifre ve Güvenlik</h2>
+                    <div class="hero-ornament-line" style="margin: 0 0 1.4rem;"></div>
+                    <form id="passwordForm" style="max-width: 380px;">
+                        <div class="profile-form-group" style="margin-bottom: 1.1rem;">
+                            <label for="currentPassword">Mevcut Şifre</label>
+                            <input type="password" id="currentPassword" autocomplete="current-password" required>
+                        </div>
+                        <div class="profile-form-group" style="margin-bottom: 1.1rem;">
+                            <label for="newPassword">Yeni Şifre</label>
+                            <input type="password" id="newPassword" autocomplete="new-password" minlength="6" required>
+                        </div>
+                        <div class="profile-form-group">
+                            <label for="newPasswordConfirm">Yeni Şifre (Tekrar)</label>
+                            <input type="password" id="newPasswordConfirm" autocomplete="new-password" minlength="6" required>
+                        </div>
+
+                        <div class="profile-form-actions">
+                            <span class="profile-save-msg" id="passwordSaveMsg"></span>
+                            <button type="submit" class="btn btn-primary" id="passwordSaveBtn">Şifreyi Değiştir</button>
+                        </div>
+                    </form>
                 </div>
                 <div id="preferencesPanel" class="profile-placeholder-panel hidden">
                     <p>Çeviri &amp; OCR tercihleri yakında burada olacak.</p>
@@ -311,6 +331,6 @@
         </div>
     </main>
 
-    <script src="profile.js?v=20260915-3"></script>
+    <script src="profile.js?v=20260915-4"></script>
 </body>
 </html>

@@ -145,12 +145,13 @@ async function loadProfile() {
     }
 }
 
-function showSaveMsg(text, type) {
-    profileSaveMsg.textContent = text;
-    profileSaveMsg.className = 'profile-save-msg' + (type ? ' ' + type : '');
+function showSaveMsg(text, type, el) {
+    el = el || profileSaveMsg;
+    el.textContent = text;
+    el.className = 'profile-save-msg' + (type ? ' ' + type : '');
     if (text) {
         setTimeout(() => {
-            if (profileSaveMsg.textContent === text) profileSaveMsg.textContent = '';
+            if (el.textContent === text) el.textContent = '';
         }, 4000);
     }
 }
@@ -235,8 +236,57 @@ avatarFileInput.addEventListener('change', async () => {
     }
 });
 
-// --- Sol menüdeki sekmeler (yalnızca "Kişisel Bilgiler" şu an işlevsel;
-// diğerleri "yakında" içerikli birer yer tutucu). ---
+// --- Şifre Değiştirme (backend'deki mevcut password_hash sütununu
+// kullandığı için, diğer profil alanlarının aksine DB migrasyonu
+// beklemeden şu an tam çalışıyor). ---
+const passwordForm = document.getElementById('passwordForm');
+const currentPasswordInput = document.getElementById('currentPassword');
+const newPasswordInput = document.getElementById('newPassword');
+const newPasswordConfirmInput = document.getElementById('newPasswordConfirm');
+const passwordSaveBtn = document.getElementById('passwordSaveBtn');
+const passwordSaveMsg = document.getElementById('passwordSaveMsg');
+
+passwordForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!authToken) { requireLogin(); return; }
+
+    if (newPasswordInput.value !== newPasswordConfirmInput.value) {
+        showSaveMsg('Yeni şifreler eşleşmiyor.', 'error', passwordSaveMsg);
+        return;
+    }
+
+    passwordSaveBtn.disabled = true;
+    showSaveMsg('', '', passwordSaveMsg);
+
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/auth/password`, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${authToken}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                current_password: currentPasswordInput.value,
+                new_password: newPasswordInput.value,
+            }),
+        });
+
+        const data = await res.json().catch(() => ({}));
+
+        if (!res.ok) throw new Error(data.error || 'Şifre değiştirilemedi.');
+
+        passwordForm.reset();
+        showSaveMsg('Şifreniz güncellendi.', 'success', passwordSaveMsg);
+    } catch (err) {
+        showSaveMsg(err.message, 'error', passwordSaveMsg);
+    } finally {
+        passwordSaveBtn.disabled = false;
+    }
+});
+
+// --- Sol menüdeki sekmeler (yalnızca "Kişisel Bilgiler" ve "Şifre ve
+// Güvenlik" şu an işlevsel; diğerleri "yakında" içerikli birer yer
+// tutucu). ---
 const profileNavItems = document.querySelectorAll('.profile-nav-item');
 const profilePanels = {
     personalInfoPanel: document.getElementById('personalInfoPanel'),
