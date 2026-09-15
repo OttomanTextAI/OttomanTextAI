@@ -121,16 +121,12 @@ function requireLogin() {
 let allDocs = [];
 
 function renderDocumentsList() {
-    const query = (docSearchInput.value || '').trim().toLowerCase();
+    // Arama artık backend'de (belge içeriği dahil) yapılıyor — allDocs
+    // zaten sadece eşleşen belgeleri içeriyor, burada sadece sıralanıyor.
+    const query = (docSearchInput.value || '').trim();
     const sortOrder = docSortSelect.value;
 
-    let docs = allDocs.filter(doc => {
-        if (!query) return true;
-        const haystack = `${doc.title || ''} ${doc.filename || ''}`.toLowerCase();
-        return haystack.includes(query);
-    });
-
-    docs = docs.slice().sort((a, b) => {
+    let docs = allDocs.slice().sort((a, b) => {
         const diff = new Date(a.uploaded_at) - new Date(b.uploaded_at);
         return sortOrder === 'date-asc' ? diff : -diff;
     });
@@ -173,7 +169,9 @@ async function loadDocuments() {
     documentsList.innerHTML = '<p>Yükleniyor...</p>';
 
     try {
-        const res = await fetch(`${API_BASE_URL}/api/documents?per_page=100`, {
+        const query = (docSearchInput.value || '').trim();
+        const url = `${API_BASE_URL}/api/documents?per_page=100${query ? `&q=${encodeURIComponent(query)}` : ''}`;
+        const res = await fetch(url, {
             headers: { 'Authorization': `Bearer ${authToken}` }
         });
 
@@ -596,7 +594,14 @@ documentsList.addEventListener('click', async (e) => {
     }
 });
 
-docSearchInput.addEventListener('input', renderDocumentsList);
+// Arama artık belge içeriğini de taramak için backend'e gidiyor — her
+// tuş vuruşunda değil, kullanıcı yazmayı biraz durdurunca (350ms) istek
+// atıyoruz, gereksiz sık istek gitmesin diye.
+let docSearchDebounceTimer = null;
+docSearchInput.addEventListener('input', () => {
+    clearTimeout(docSearchDebounceTimer);
+    docSearchDebounceTimer = setTimeout(loadDocuments, 350);
+});
 docSortSelect.addEventListener('change', renderDocumentsList);
 
 backToListBtn.addEventListener('click', () => {

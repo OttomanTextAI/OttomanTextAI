@@ -2771,10 +2771,38 @@ def list_documents(current_user):
     page = request.args.get("page", 1, type=int)
     per_page = request.args.get("per_page", 20, type=int)
     per_page = min(per_page, 100)
+    search_query = (request.args.get("q") or "").strip()
+
+    documents_query = Document.query.filter_by(user_id=current_user.id)
+
+    if search_query:
+        # Sadece başlık/dosya adına değil, belgenin gerçek içeriğine
+        # (Osmanlıca metin, harf çevirisi, Türkçe/İngilizce çeviri, özet)
+        # göre de arama yapılabilsin diye DocumentText/DocumentAnalysis'e
+        # LEFT JOIN atıp hepsinde ILIKE ile arıyoruz. 1:1 ilişki olduğu
+        # için (her belgenin en fazla bir metin/analiz satırı) join'in
+        # tekrar eden Document satırı üretme riski yok.
+        pattern = f"%{search_query}%"
+        documents_query = (
+            documents_query
+            .outerjoin(DocumentText, DocumentText.document_id == Document.id)
+            .outerjoin(DocumentAnalysis, DocumentAnalysis.document_id == Document.id)
+            .filter(
+                db.or_(
+                    Document.filename.ilike(pattern),
+                    DocumentAnalysis.title.ilike(pattern),
+                    DocumentAnalysis.summary.ilike(pattern),
+                    DocumentText.ocr_text.ilike(pattern),
+                    DocumentText.translit_text.ilike(pattern),
+                    DocumentText.trans_text.ilike(pattern),
+                    DocumentText.trans_modern_text.ilike(pattern),
+                    DocumentText.trans_text_en.ilike(pattern),
+                )
+            )
+        )
 
     pagination = (
-        Document.query
-        .filter_by(user_id=current_user.id)
+        documents_query
         .order_by(Document.uploaded_at.desc())
         .paginate(page=page, per_page=per_page, error_out=False)
     )
