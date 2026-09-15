@@ -298,21 +298,23 @@
                     </form>
                 </div>
 
-                <div id="securityPanel" class="hidden" style="text-align: center;">
+                <div id="securityPanel" class="hidden">
                     <h2 class="profile-content-title">Şifre ve Güvenlik</h2>
-                    <div class="hero-ornament-line" style="margin: 0 auto 1.4rem;"></div>
-                    <form id="passwordForm" style="max-width: 380px; margin: 0 auto; text-align: left;">
-                        <div class="profile-form-group" style="margin-bottom: 1.1rem;">
-                            <label for="currentPassword">Mevcut Şifre</label>
-                            <input type="password" id="currentPassword" autocomplete="current-password" required>
-                        </div>
-                        <div class="profile-form-group" style="margin-bottom: 1.1rem;">
-                            <label for="newPassword">Yeni Şifre</label>
-                            <input type="password" id="newPassword" autocomplete="new-password" minlength="6" required>
-                        </div>
-                        <div class="profile-form-group">
-                            <label for="newPasswordConfirm">Yeni Şifre (Tekrar)</label>
-                            <input type="password" id="newPasswordConfirm" autocomplete="new-password" minlength="6" required>
+                    <div class="hero-ornament-line" style="margin: 0 0 1.4rem;"></div>
+                    <form id="passwordForm">
+                        <div class="profile-form-grid">
+                            <div class="profile-form-group" style="grid-column: 1 / -1;">
+                                <label for="currentPassword">Mevcut Şifre</label>
+                                <input type="password" id="currentPassword" autocomplete="current-password" required>
+                            </div>
+                            <div class="profile-form-group">
+                                <label for="newPassword">Yeni Şifre</label>
+                                <input type="password" id="newPassword" autocomplete="new-password" minlength="6" required>
+                            </div>
+                            <div class="profile-form-group">
+                                <label for="newPasswordConfirm">Yeni Şifre (Tekrar)</label>
+                                <input type="password" id="newPasswordConfirm" autocomplete="new-password" minlength="6" required>
+                            </div>
                         </div>
 
                         <div class="profile-form-actions">
