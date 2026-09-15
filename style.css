@@ -9,12 +9,21 @@
        Divane logo (deep umber ink + antique gold) instead of a navy accent
        tinted lighter, so light and dark mode read as genuinely different
        palettes rather than the same scheme at two brightness levels. */
-    --bg-main: #FDFBF6;
+    /* Sayfa zemini artık belirgin şekilde altın/krem — kartların (bg-card,
+       beyaza yakın) üzerinde net biçimde öne çıkması için. Öncesinde ikisi
+       de neredeyse beyazdı ("iki renk birbirine çok benziyor" geri
+       bildirimi buradan geliyordu). */
+    --bg-main: #EDDBAA;
     --bg-header: #FFFFFF;
     --bg-header-translucent: rgba(255, 255, 255, 0.94);
     --bg-card: #FFFFFF;
     --bg-card-subtle: #FBF6EC;
     --bg-input: #F6F0E3;
+    /* Ana kartların (workbench, örnek belgeler, AI araçları) kendi zemini —
+       altın sayfa ile bembeyaz iç kutular (.box-content) arasında bir ara
+       ton, üç katmanlı derinlik oluşturuyor: altın sayfa > krem dış kart >
+       beyaz iç kutu. */
+    --bg-card-outer: #FBF6EC;
 
     --color-primary-navy: #5C3A22;
     --color-primary-navy-hover: #4A2E1A;
@@ -27,11 +36,20 @@
     --color-border: #E6D9C4;
     --color-border-hover: #B8863D;
 
-    --color-accent-red: #D9534F;
-    --color-accent-green: #2B8A3E;
-    --color-accent-blue: #3F7CC4;
-    --color-accent-purple: #8B5FBF;
-    --color-accent-teal: #1E8C86;
+    /* Osmanlı tezhip (el yazması tezyinatı) paleti: hâkim renk hep ALTIN,
+       yanına lal kırmızısı (lake/madder red) ve zümrüt/lacivert ÇOK
+       AZ ve tonlu kullanılır — eşit ağırlıkta 5 canlı renk yan yana
+       (gökkuşağı) DEĞİL. Bu yüzden tonlar bilinçli olarak koyulaştırıldı/
+       kirletildi (mücevher tonu, saf/parlak değil) ve altına yakın sıcak
+       bir zeminde toplandı; sadece zümrüt ve lacivert soğuk nota olarak
+       kalıyor. Koyu temada aynı aile daha canlı hallerine geçiyor. */
+    --color-gold-deep: #8F6A2E;
+    --color-bronze: #7A5230;
+    --color-accent-red: #8B3A3A;
+    --color-accent-green: #3D6B45;
+    --color-accent-blue: #3A6B7A;
+    --color-accent-purple: #6B4058;
+    --color-accent-teal: #2A6F6F;
 
     /* Belirsiz/tıklanabilir kelime alt çizgisi (bkz. .uncertain-word) —
        kart/entity-tag/TTS highlight renkleriyle karışmaması için ayrı bir
@@ -83,6 +101,11 @@ body.dark-theme {
     --bg-card: #111A2E;
     --bg-card-subtle: #162138;
     --bg-input: #1B2945;
+    /* Koyu temada mevcut görünüm bilinçli olarak korunuyor — ana kartlar
+       zaten sayfadan (bg-main) farklı ve daha açık bir tonda (bg-card).
+       Bu token light temadaki gibi ayrı bir "orta katman" değil, doğrudan
+       bg-main'e eşitleniyor ki dark theme hiç değişmesin. */
+    --bg-card-outer: var(--bg-main);
 
     --color-primary-navy: #1c2a46;
     --color-primary-navy-hover: #1d2c48;
@@ -94,6 +117,17 @@ body.dark-theme {
     --color-text-light: #A59B8B;
     --color-border: #233452;
     --color-uncertain-underline: rgba(255, 255, 255, 0.55);
+
+    /* Aynı tezhip ailesi, koyu lacivert zemin üzerinde okunması için biraz
+       daha canlı — ama yine saf/parlak "gökkuşağı" renkleri değil, kirletilmiş
+       mücevher tonları. */
+    --color-gold-deep: #B8863D;
+    --color-bronze: #A87C4A;
+    --color-accent-red: #B85C5C;
+    --color-accent-green: #5C9367;
+    --color-accent-blue: #5C93A0;
+    --color-accent-purple: #93677E;
+    --color-accent-teal: #4A9494;
 
     --hero-bg-start: #0D1627;
     --hero-bg-mid: #141F36;
@@ -197,6 +231,8 @@ body {
     opacity: 0.85;
 }
 
+/* Menü, kullanıcının sağladığı altın flörnuş görselinin üzerine
+   oturuyor — düz metin linkleri yerine dekoratif bir şerit içinde. */
 .nav-menu {
     display: flex;
     align-items: center;
@@ -217,7 +253,8 @@ body {
     color: var(--on-header-text-hover);
 }
 
-.nav-link.active::after, .nav-link:hover::after {
+/* Alt çizgi artık aniden belirmiyor — ortadan büyüyerek açılıyor. */
+.nav-link::after {
     content: '';
     position: absolute;
     bottom: -2px;
@@ -226,6 +263,12 @@ body {
     height: 2px;
     background: linear-gradient(90deg, var(--color-gold), var(--color-gold-light));
     border-radius: var(--radius-full);
+    transform: scaleX(0);
+    transition: transform var(--transition-normal);
+}
+
+.nav-link.active::after, .nav-link:hover::after {
+    transform: scaleX(1);
 }
 
 /* Sol üstteki hamburger butonuna tıklayınca soldan kayarak açılan menü
@@ -322,35 +365,79 @@ body {
     padding: 0.8rem;
 }
 
+/* Yan menünün en üstünde, orta (merkezi) bir süsleme olarak — kullanıcının
+   "menüye ekle" derken kastettiği yer burasıydı, üst menü değil. */
+.side-drawer-flourish {
+    display: block;
+    width: 85%;
+    max-width: 220px;
+    height: auto;
+    margin: 0.2rem auto 0.6rem;
+    opacity: 0.85;
+}
+
 .side-drawer-item {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 0.9rem;
     width: 100%;
     background: transparent;
     border: none;
+    border-left: 3px solid transparent;
     border-radius: var(--radius-sm);
-    padding: 0.8rem 0.9rem;
+    padding: 0.8rem 0.9rem 0.8rem 0.7rem;
     cursor: pointer;
     font-size: 0.9rem;
     font-weight: 600;
     color: var(--on-header-text);
     text-decoration: none;
-    transition: background var(--transition-fast), color var(--transition-fast);
+    transition: background var(--transition-fast), color var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
 }
 
 .side-drawer-item:hover {
     background: var(--color-gold-bg);
     color: var(--on-header-text-hover);
+    border-left-color: var(--color-gold);
+    transform: translateX(4px);
+}
+
+.side-drawer-item:hover .side-drawer-icon {
+    transform: scale(1.12);
 }
 
 .side-drawer-icon {
     flex-shrink: 0;
-    width: 24px;
-    font-size: 1.25rem;
+    width: 30px;
+    height: 30px;
+    font-size: 1.05rem;
     display: flex;
     align-items: center;
     justify-content: center;
+    border-radius: var(--radius-sm);
+    background: var(--color-gold-bg);
+    transition: transform var(--transition-fast);
+}
+
+/* Her menü öğesinin ikon rozeti kendi mücevher tonunu taşıyor — düz bir
+   liste yerine daha canlı/dolu bir menü. */
+.side-drawer-item:nth-child(3n+1) .side-drawer-icon { background: var(--color-gold-bg); }
+.side-drawer-item:nth-child(3n+2) .side-drawer-icon { background: rgba(143, 106, 46, 0.16); }
+.side-drawer-item:nth-child(3n+3) .side-drawer-icon { background: rgba(122, 82, 48, 0.18); }
+
+/* Menü artık birden çok grup içeriyor (Belgelerim/Hesap/Site) — hoca'nın
+   "daha dolu" isteği doğrultusunda genişletildi. */
+.side-drawer-section-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--on-header-text-muted);
+    padding: 0.9rem 0.9rem 0.2rem;
+}
+
+.side-drawer-section-label:first-child {
+    padding-top: 0.2rem;
 }
 
 .nav-actions {
@@ -560,10 +647,12 @@ body.dark-theme .hero-section::after {
 }
 
 .btn-primary {
+    position: relative;
     background-color: var(--color-primary-navy);
     color: #FFFFFF;
     box-shadow: 0 4px 14px rgba(13, 22, 39, 0.25);
     border: 1px solid var(--color-primary-navy);
+    overflow: hidden;
 }
 
 .btn-primary:hover {
@@ -571,6 +660,24 @@ body.dark-theme .hero-section::after {
     transform: translateY(-2px);
     box-shadow: 0 8px 20px rgba(13, 22, 39, 0.35);
     border-color: var(--color-gold);
+}
+
+/* Altın parıltı — hover'da soldan sağa süzülen ince bir ışık şeridi. */
+.btn-primary::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -60%;
+    width: 40%;
+    height: 100%;
+    background: linear-gradient(115deg, transparent, rgba(212, 162, 76, 0.5), transparent);
+    transform: skewX(-20deg);
+    transition: left 0.65s ease;
+    pointer-events: none;
+}
+
+.btn-primary:hover::after {
+    left: 130%;
 }
 
 .btn-outline {
@@ -601,7 +708,8 @@ body.dark-theme .hero-section::after {
    .workbench-grid sadece o 3 metin sütununun kendi iç grid'idir. Bilgi
    böylece sadece sağ bölgenin altında durur, görselin altına taşmaz. */
 .workbench-card {
-    background-color: var(--bg-main);
+    position: relative;
+    background-color: var(--bg-card-outer);
     border-radius: var(--radius-lg);
     border: 1px solid var(--color-border);
     box-shadow: var(--shadow-lg);
@@ -610,6 +718,30 @@ body.dark-theme .hero-section::after {
     flex-direction: column;
     transition: background-color var(--transition-normal), border-color var(--transition-normal);
 }
+
+/* Gerçek altın kabartma köşe süslemesi (kullanıcının sağladığı görsel) —
+   4 köşede, her biri kendi yönüne 90° döndürülerek. Kartın kendi
+   overflow'unu etkilememesi için ayrı, üstte duran img'ler; dekoratif
+   olduğundan aria-hidden. */
+/* Kartların üzerinde (özellikle çalışma alanının sol üst köşesindeki
+   görüntü iyileştirme anahtarının üstüne) taştığı ve dört köşenin eşit
+   görünmediği için buradan kaldırılıp GİRİŞ (hero) bölümüne taşındı —
+   kare tuval (300x300) sayesinde döndürülmüş halleri artık birebir aynı
+   boyutta görünüyor. hero-section'ın overflow:hidden'ı yüzünden negatif
+   değil, sınırın biraz İÇİNDE konumlanıyor. */
+.card-corner-ornament {
+    position: absolute;
+    width: 120px;
+    height: auto;
+    opacity: 0.85;
+    pointer-events: none;
+    z-index: 3;
+}
+
+.card-corner-ornament.corner-tl { top: 14px; left: 14px; transform: rotate(0deg); }
+.card-corner-ornament.corner-tr { top: 14px; right: 14px; transform: rotate(90deg); }
+.card-corner-ornament.corner-br { bottom: 14px; right: 14px; transform: rotate(180deg); }
+.card-corner-ornament.corner-bl { bottom: 14px; left: 14px; transform: rotate(270deg); }
 
 .workbench-main-grid {
     display: grid;
@@ -994,6 +1126,7 @@ body.dark-theme .hero-section::after {
     border-color: var(--color-gold);
     color: var(--color-gold);
     background: var(--color-gold-bg);
+    transform: scale(1.12) rotate(-4deg);
 }
 
 .box-content {
@@ -1164,7 +1297,7 @@ body.dark-theme .empty-state {
    visually distinct from the lighter sentence-level background. */
 .tts-word-active {
     background-color: var(--color-gold);
-    color: var(--bg-main);
+    color: var(--bg-card);
     border-radius: 2px;
     padding: 0 1px;
 }
@@ -1768,6 +1901,23 @@ body.dark-theme .empty-state {
     border: 1px solid var(--color-border);
     padding: 0.5rem 1rem;
     border-radius: var(--radius-full);
+    transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+/* Skora göre pill'in kendisi de renkleniyor — sadece rakamın rengi değil. */
+.confidence-pill:has(.confidence-value.confidence-low) {
+    background: rgba(178, 58, 72, 0.1);
+    border-color: rgba(178, 58, 72, 0.35);
+}
+
+.confidence-pill:has(.confidence-value.confidence-mid) {
+    background: var(--color-gold-bg);
+    border-color: rgba(184, 134, 61, 0.35);
+}
+
+.confidence-pill:has(.confidence-value:not(.confidence-low):not(.confidence-mid)) {
+    background: rgba(30, 113, 69, 0.1);
+    border-color: rgba(30, 113, 69, 0.35);
 }
 
 .confidence-label {
@@ -1949,9 +2099,25 @@ body.dark-theme .empty-state {
 }
 
 /* Sample Manuscripts Section */
+/* Sayfa boyunca alt alta gelen büyük bölümler arasında (workbench →
+   örnek belgeler gibi) düz bir çizgi yerine kullanıcının sağladığı altın
+   flörnuş görseli. */
+.section-divider {
+    display: flex;
+    justify-content: center;
+    margin: 0.5rem 0 2rem;
+}
+
+.section-divider img {
+    width: 280px;
+    max-width: 60%;
+    height: auto;
+    opacity: 0.9;
+}
+
 .samples-section {
     padding: 2.5rem;
-    background-color: var(--bg-main);
+    background-color: var(--bg-card-outer);
     border-radius: var(--radius-lg);
     border: 1px solid var(--color-border);
     box-shadow: var(--shadow-sm);
@@ -2053,6 +2219,36 @@ body.dark-theme .empty-state {
     background: var(--color-gold-bg);
     padding: 0.15rem 0.5rem;
     border-radius: var(--radius-full);
+}
+
+/* Üst şerit rengi kaldırıldı — artık gerçek çerçeve görseli (bkz.
+   .sample-card-frame) dekorasyonu üstleniyor; etiket rengi tonal
+   geçişi (altın→bronz→koyu bronz) hâlâ kalıyor. */
+.sample-card:nth-child(3n+2) .sample-tag {
+    color: var(--color-gold-deep);
+    background: rgba(143, 106, 46, 0.12);
+}
+
+.sample-card:nth-child(3n+3) .sample-tag {
+    color: var(--color-bronze);
+    background: rgba(122, 82, 48, 0.14);
+}
+
+/* Kullanıcının sağladığı altın çerçeve görseli, her örnek belge kartının
+   tamamını saran ince bir çerçeve gibi — kartın üstüne bindirilir. */
+.sample-card {
+    position: relative;
+}
+
+.sample-card-frame {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
+    pointer-events: none;
+    opacity: 0.85;
+    z-index: 2;
 }
 
 /* Footer */
@@ -2495,9 +2691,10 @@ body.dark-theme .empty-state {
    .workbench-bilgi-row aşağıda). AI Belge Araçları ise hâlâ kendi ayrı
    kartında kalıyor ve bu .info-collapsible-section stilini kullanıyor. */
 .info-collapsible-section {
+    position: relative;
     display: none;
     margin-top: 1rem;
-    background-color: var(--bg-main);
+    background-color: var(--bg-card-outer);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-lg);
@@ -2514,15 +2711,47 @@ body.dark-theme .empty-state {
 /* Bilgi bölümü artık workbench-card'ın kendi içinde bir satır — kendi dış
    kartı yok, sadece 4 sütunluk gridden ince bir çizgiyle ayrılıyor
    (referans tasarımdaki tek-parça kart görünümü). */
+/* Kullanıcının sağladığı altın flörnuş görseli, 4 sütun ile Bilgi
+   arasında bir "bölüm arası" ayracı gibi (düz çizgi yerine). */
+/* main-grid ile AYNI 3 sütun şablonu — böylece içeriği (.workbench-bilgi-inner,
+   3. sütuna yerleştirilmiş) yine sadece sağdaki metin sütunlarının hizasında
+   duruyor, ama satırın kendisi artık kartın tam genişliğinde (üstündeki
+   ayracın ortalanabilmesi için gerekliydi). */
 .workbench-bilgi-row {
     display: none;
-    margin-top: 1rem;
-    padding-top: 1rem;
-    border-top: 1px solid var(--color-border);
+    grid-template-columns: 0.5fr auto 1.35fr;
+    margin-top: 0.5rem;
 }
 
-.workbench-bilgi-row:has(> .info-collapsible-header:not(.hidden)) {
-    display: block;
+.workbench-bilgi-inner {
+    grid-column: 3;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+/* Ayraç görseli artık kendi elementinde (bkz. .workbench-divider-flourish)
+   ve kartın TAMAMINA göre ortalanıyor; Bilgi satırıyla aynı anda
+   görünür/gizlenir. */
+.workbench-divider-flourish {
+    display: none;
+    justify-content: center;
+    padding: 0.4rem 0;
+}
+
+.workbench-card:has(#infoTabBtn:not(.hidden)) .workbench-divider-flourish {
+    display: flex;
+}
+
+.workbench-divider-flourish img {
+    width: 260px;
+    max-width: 55%;
+    height: auto;
+    opacity: 0.9;
+}
+
+.workbench-bilgi-row:has(#infoTabBtn:not(.hidden)) {
+    display: grid;
 }
 
 .workbench-bilgi-row .info-content-area {

@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
 
     <!-- Custom Stylesheet -->
-    <link rel="stylesheet" href="style.css?v=20260915-6">
+    <link rel="stylesheet" href="style.css?v=20260915-13">
 </head>
 <body class="dark-theme">
     <!-- Header Navigation Bar -->
@@ -69,19 +69,40 @@
             <button type="button" class="modal-close" id="sideDrawerClose" title="Kapat">&times;</button>
         </div>
         <div class="side-drawer-body">
+            <img src="assets/ornament-divider.png" alt="" aria-hidden="true" class="side-drawer-flourish">
+            <span class="side-drawer-section-label">Belgelerim</span>
             <a href="documents.html" class="side-drawer-item">
                 <span class="side-drawer-icon">📂</span>
                 <span>Belgelerim</span>
+            </a>
+            <a href="notes.html" class="side-drawer-item">
+                <span class="side-drawer-icon">📝</span>
+                <span>Notlarım</span>
             </a>
             <button type="button" class="side-drawer-item" data-modal="mapModal">
                 <span class="side-drawer-icon">🗺️</span>
                 <span>Harita</span>
             </button>
 
-                        <a href="notes.html" class="side-drawer-item">
-                <span class="side-drawer-icon">📝</span>
-                <span>Notlarım</span>
-            </a>
+            <span class="side-drawer-section-label">Hesap</span>
+            <button type="button" class="side-drawer-item" data-modal="authModal">
+                <span class="side-drawer-icon">👤</span>
+                <span>Profilim</span>
+            </button>
+            <button type="button" class="side-drawer-item" id="drawerSettingsBtn">
+                <span class="side-drawer-icon">⚙️</span>
+                <span>Ayarlar</span>
+            </button>
+
+            <span class="side-drawer-section-label">Site</span>
+            <button type="button" class="side-drawer-item" data-modal="aboutModal">
+                <span class="side-drawer-icon">ℹ️</span>
+                <span>Hakkında</span>
+            </button>
+            <button type="button" class="side-drawer-item" data-modal="contactModal">
+                <span class="side-drawer-icon">✉️</span>
+                <span>İletişim</span>
+            </button>
         </div>
     </aside>
 
@@ -90,6 +111,10 @@
         
         <!-- Hero Section -->
         <section class="hero-section">
+            <img src="assets/ornament-corner.png" alt="" aria-hidden="true" class="card-corner-ornament corner-tl">
+            <img src="assets/ornament-corner.png" alt="" aria-hidden="true" class="card-corner-ornament corner-tr">
+            <img src="assets/ornament-corner.png" alt="" aria-hidden="true" class="card-corner-ornament corner-br">
+            <img src="assets/ornament-corner.png" alt="" aria-hidden="true" class="card-corner-ornament corner-bl">
             <div class="hero-container">
                 <div class="hero-logo-visual">
                     <img src="assets/icon.png" alt="Divane" class="hero-logo-img">
@@ -320,13 +345,24 @@
                 </div>
 
             </div>
+                </div>
+                </div>
 
-                <!-- "Bilgi" (Belge Analizi): artık ayrı bir kart değil —
-                     workbench-card'ın İÇİNDE, 4 sütunun altında ince bir
-                     ayrım çizgisiyle ayrılan, tek tıkla açılıp kapanan bir
-                     bölüm (referans tasarımdaki tek-parça kart görünümü,
-                     renkler değiştirilmeden). -->
-                <div class="workbench-bilgi-row" id="workbenchBilgiRow">
+            <!-- Ayraç artık workbench-card'ın DOĞRUDAN çocuğu — böylece
+                 kartın TAMAMININ genişliğine göre ortalanabiliyor (Bilgi
+                 satırı sadece sağ bölgeyi kapladığı için, ayracı onun
+                 içine koymak kartın bütününe göre ortasız görünüyordu). -->
+            <div class="workbench-divider-flourish" aria-hidden="true">
+                <img src="assets/ornament-divider.png" alt="">
+            </div>
+
+            <!-- "Bilgi" (Belge Analizi): artık workbench-main-grid'in
+                 DIŞINDA, kartın doğrudan çocuğu — ama kendi iç grid'i
+                 (main-grid ile AYNI 3 sütun şablonu) içeriğini yine sadece
+                 sağdaki 3 metin sütununun hizasına oturtuyor, görselin
+                 altına taşmıyor. -->
+            <div class="workbench-bilgi-row" id="workbenchBilgiRow">
+                <div class="workbench-bilgi-inner">
                     <button class="info-collapsible-header hidden" id="infoTabBtn" aria-expanded="false">
                         <span class="box-icon"></span>
                         <span>Bilgi (Belge Analizi)</span>
@@ -410,7 +446,6 @@
                             </div>
                         </div>
                     </div>
-                </div>
                 </div>
                 </div>
             </div>
@@ -525,6 +560,9 @@
             <p class="status-hint hidden" id="statusHint">Belgenizin uzunluğuna ve el yazısı zorluğuna göre bu işlem birkaç dakika sürebilir, nadir durumlarda daha da uzayabilir; lütfen sayfayı kapatmadan bekleyin.</p>
         </section>
 
+        <div class="section-divider" aria-hidden="true">
+            <img src="assets/ornament-divider.png" alt="">
+        </div>
 
         <!-- Sample Documents Section for Instant Demo -->
         <section class="samples-section reveal">
@@ -540,6 +578,7 @@
                         <h4>Fatih Sultan Mehmed'in Ahidnamesi</h4>
                         <span class="sample-tag">Osmanlıca Ahidnâme / Ferman</span>
                     </div>
+                    <img src="assets/ornament-frame.png" alt="" aria-hidden="true" class="sample-card-frame">
                 </div>
                 <div class="sample-card" data-sample="1">
                     <div class="sample-img-container">
@@ -550,6 +589,7 @@
                         <h4>İstiklâl Marşı</h4>
                         <span class="sample-tag">Millî Marş</span>
                     </div>
+                    <img src="assets/ornament-frame.png" alt="" aria-hidden="true" class="sample-card-frame">
                 </div>
                 <div class="sample-card" data-sample="hero">
                     <div class="sample-img-container">
@@ -560,6 +600,7 @@
                         <h4>Fuzûlî'nin Su Kasidesi</h4>
                         <span class="sample-tag">Osmanlıca Divan Şiiri / Na't-ı Nebevî</span>
                     </div>
+                    <img src="assets/ornament-frame.png" alt="" aria-hidden="true" class="sample-card-frame">
                 </div>
                 <div class="sample-card" data-sample="mdo">
                     <div class="sample-img-container">
@@ -570,6 +611,7 @@
                         <h4>Mekanik Düzenek ve Oluk Yapım Kılavuzu</h4>
                         <span class="sample-tag">Yazma Eser / Teknik El Yazması</span>
                     </div>
+                    <img src="assets/ornament-frame.png" alt="" aria-hidden="true" class="sample-card-frame">
                 </div>
                 <div class="sample-card" data-sample="svf">
                     <div class="sample-img-container">
@@ -855,6 +897,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 
     <!-- Custom JavaScript -->
+<<<<<<< Updated upstream
     <script src="app.js?v=20260915-10"></script>
+=======
+    <script src="app.js?v=20260915-3"></script>
+>>>>>>> Stashed changes
 </body>
 </html>

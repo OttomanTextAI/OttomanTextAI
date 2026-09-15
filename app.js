@@ -4267,6 +4267,31 @@ ${transTextDisplay.textContent}
         });
     });
 
+<<<<<<< Updated upstream
+=======
+    settingsBtn.addEventListener('click', () => {
+        apiKeyInput.value = state.apiKey;
+        modelSelect.value = state.engine;
+        settingsModal.classList.remove('hidden');
+    });
+
+    // Sol menüdeki "Ayarlar" — navbar'daki settingsBtn ile aynı ön-doldurma
+    // mantığını tekrarlamak yerine doğrudan onun click'ini tetikliyor.
+    const drawerSettingsBtn = document.getElementById('drawerSettingsBtn');
+    if (drawerSettingsBtn) {
+        drawerSettingsBtn.addEventListener('click', () => settingsBtn.click());
+    }
+
+    saveSettingsBtn.addEventListener('click', () => {
+        state.apiKey = apiKeyInput.value.trim();
+        state.engine = modelSelect.value;
+        localStorage.setItem('gemini_api_key', state.apiKey);
+        localStorage.setItem('translation_engine', state.engine);
+        settingsModal.classList.add('hidden');
+        alert('API ve Motor ayarları başarıyla kaydedildi!');
+    });
+
+>>>>>>> Stashed changes
     // Close modal on backdrop click
     document.querySelectorAll('.modal-overlay').forEach(overlay => {
         overlay.addEventListener('click', (e) => {
