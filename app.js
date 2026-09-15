@@ -1487,6 +1487,76 @@ ve nehār`,
                 date_gregorian: "Belirtilmemiş",
                 notes: "Metin, Banu Musa kardeşlerin veya El-Cezeri'nin hiyel (mekanik) kitaplarının Osmanlıca tercümelerinden (muhtemelen Tercüme-i Hiyel) bir sayfadır. Satır aralarında sonradan yapılmış düzeltmeler (derkenar/düzeltme notları) bulunmaktadır."
             }
+        },
+        'sya': {
+            file: 'assets/sya.png',
+            name: 'sehir_ici_silah_yasagi_ilani.png',
+            size: '0.01 MB',
+            ocr: `إعلان
+
+شهر ايچنده سلاح اتمسی نظاماً ممنوع اولديغی معلومدر
+حالبوكه ايام مخصوصه ده اشبو ممنوعيتك خلافنه سلاح
+اتيلور بونك ضررلری ايسه ميدانده در بوجهتله
+شمديدن بالجمله محلات امام ومختارلرينه تنبيهات لازمه نك
+اجراسيله بيرامده وايام سائره ده هیچ بر كيمسه نك تفريح
+اتمه مسی وشايد اتان اولورسه ضابطه جه **طوتولوب**
+اون كون حبس اولندقده ن صوكره جزای نقدی دخی
+النه رق مجازات ايدلمسی مجلس اداره ولايتدن بالا علام
+**منضبطه يه** امر وتبليغ ايدلمكين اكا كوره بتون امام ومختارلرك
+محله لرنده كی دليقانلولره بوندن صوكره هانگی كون اولورسه
+اولسون سلاح اتلميه جكنی وشايد اتان اولورسه حبس
+وجزا اولنه جغنی كوزلجه اكلادوب ممنوعيته دقت ايتمه لری
+تنبيه اولنور`,
+            tr: `İlan
+
+Şehir içinde silah atılmasının kanunen yasak olduğu bilinmektedir.
+Halbuki özel günlerde bu yasağın aksine silah
+atılmaktadır, bunun zararları ise ortadadır. Bu sebeple
+şimdiden bütün mahallelerin imam ve muhtarlarına gerekli uyarıların
+yapılmasıyla bayramda ve diğer günlerde hiçbir kimsenin şenlik için (silah)
+atmaması ve şayet atan olursa zabıtaca **tutulup**
+on gün hapsedildikten sonra para cezası da
+alınarak cezalandırılması Vilayet İdare Meclisi'nden bildirilerek
+**kolluk kuvvetlerine** emredilip tebliğ edilmiş olmakla, ona göre bütün imam ve muhtarların
+mahallelerindeki delikanlılara bundan sonra hangi gün olursa
+olsun silah atılmayacağını ve şayet atan olursa hapis
+ve ceza uygulanacağını güzelce anlatıp yasağa dikkat etmeleri
+tembih olunur.`,
+            translit: `İ'lân
+
+Şehir içinde silâh atması nizâmen memnû' olduğu ma'lûmdur
+Halbuki eyyâm-ı mahsûsada işbu memnû'iyetin hilâfına silâh
+atılıyor bunun zararları ise meydandadır bu cihetle
+şimdiden bilcümle mahallât imâm ve muhtârlarına tenbîhât-ı lâzımenin
+icrâsıyla bayramda ve eyyâm-ı sâirede hiçbir kimsenin tefrîh
+etmemesi ve şâyet atan olursa zâbıtaca **tutulup**
+on gün habs olunduktan sonra cezâ-yı nakdî dahi
+alınarak mücâzât edilmesi Meclis-i İdâre-i Vilâyet'ten bi'l-i'lâm
+**münzâbıtaya** emr ve teblîğ edilmekin ona göre bütün imâm ve muhtârların
+mahallelerindeki delikanlılara bundan sonra hangi gün olursa
+olsun silâh atılmayacağını ve şâyet atan olursa habs
+ve cezâ olunacağını güzelce anlatıp memnû'iyete dikkat etmeleri
+tenbîh olunur`,
+            analysis: {
+                document_type: "İlan",
+                confidence: 95,
+                style: "Resmî ve uyarıcı bir dil",
+                summary: "Belge, şehir içinde silah atılmasının kanunen yasak olduğunu hatırlatan ve bu yasağa uymayanlara uygulanacak cezaları bildiren resmi bir ilandır. Bayram ve özel günlerde silah atanların on gün hapis ve para cezası ile cezalandırılacağı belirtilerek, mahalle muhtar ve imamlarının gençleri bu konuda uyarması istenmektedir.",
+                key_points: [
+                    "Şehir içinde silah atılması kanunen kesinlikle yasaktır.",
+                    "Yasağa uymayıp silah atanlar kolluk kuvvetlerince yakalanarak on gün hapis ve para cezasına çarptırılacaktır.",
+                    "Mahalle imamları ve muhtarları, mahallelerindeki gençleri bu yasak ve cezalar konusunda bilgilendirmekle yükümlüdür."
+                ],
+                people: [],
+                places: [],
+                concepts: ["Meclis-i İdâre-i Vilâyet", "münzâbıta", "imâm", "muhtâr", "cezâ-yı nakdî"],
+                script_type: "Matbu",
+                script_purpose: "Kamuoyunu bilgilendirme ve uyarı",
+                period_estimate: "Geç Osmanlı Dönemi",
+                date_hijri: "Belirtilmemiş",
+                date_gregorian: "Belirtilmemiş",
+                notes: "Belge matbu (baskı) harflerle yazılmış resmi bir duyurudur. Bazı kelimeler mürekkep dağılması nedeniyle hafif silik çıksa da bağlamdan net olarak anlaşılmaktadır."
+            }
         }
     };
 
