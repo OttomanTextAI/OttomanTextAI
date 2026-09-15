@@ -31,18 +31,19 @@ const state = {
     // yerelde tutuluyor; profile.html bunu geri okuyup gösteriyor.
     authFullName: localStorage.getItem('auth_full_name') || null
 };
-
- function restoreTranslationState() {
+function restoreTranslationState() {
     const params = new URLSearchParams(window.location.search);
 
     if (params.get('restore') !== '1') {
         return;
     }
 
-    const saved =
-        localStorage.getItem('divane_translation_state');
+    const saved = localStorage.getItem(
+        'divane_translation_state'
+    );
 
     if (!saved) {
+        console.warn('[STATE RESTORE] Saved translation not found');
         return;
     }
 
@@ -65,8 +66,10 @@ const state = {
             restored.transTextEn || '';
 
         console.log(
-            '[STATE RESTORE] Translation restored'
+            '[STATE RESTORE] Translation restored:',
+            state.dbDocumentId
         );
+
     } catch (error) {
         console.warn(
             '[STATE RESTORE] Restore failed:',
@@ -4485,17 +4488,6 @@ ${transTextDisplay.textContent}
             noteAction.onclick = (event) => {
                 event.preventDefault();
                 event.stopPropagation();
-
-            sessionStorage.setItem(
-                'divane_translation_state',
-                JSON.stringify({
-                    dbDocumentId: state.dbDocumentId,
-                    ocrText: state.ocrText,
-                    transText: state.transText,
-                    transTextEn: state.transTextEn,
-                    translitText: state.translitText
-                })
-            );
            
             localStorage.setItem(
                 'divane_translation_state',
@@ -4507,7 +4499,8 @@ ${transTextDisplay.textContent}
                     transTextEn: state.transTextEn
                 })
             );
-                window.location.href = 'notes.html';
+
+            window.location.href = 'notes.html';
             };
 
         } else {
