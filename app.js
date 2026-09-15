@@ -4766,6 +4766,46 @@ ${transTextDisplay.textContent}
         }
     });
 
+    const contactForm = document.getElementById('contactForm');
+    if (contactForm) {
+        const contactSubmitBtn = contactForm.querySelector('button[type="submit"]');
+        contactForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const name = document.getElementById('contactName').value.trim();
+            const email = document.getElementById('contactEmail').value.trim();
+            const message = document.getElementById('contactMsg').value.trim();
+
+            const originalBtnText = contactSubmitBtn.textContent;
+            contactSubmitBtn.disabled = true;
+            contactSubmitBtn.textContent = 'Gönderiliyor...';
+
+            try {
+                const res = await fetchWithTimeout(`${API_BASE_URL}/api/contact`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, message })
+                });
+
+                if (!res.ok) {
+                    throw new Error('Mesaj gönderilemedi');
+                }
+
+                contactForm.reset();
+                contactSubmitBtn.textContent = 'Mesajınız Alındı ✓';
+                setTimeout(() => {
+                    document.getElementById('contactModal').classList.add('hidden');
+                    contactSubmitBtn.textContent = originalBtnText;
+                }, 1200);
+            } catch (err) {
+                alert('Mesajınız gönderilemedi. Lütfen daha sonra tekrar deneyin.');
+                contactSubmitBtn.textContent = originalBtnText;
+            } finally {
+                contactSubmitBtn.disabled = false;
+            }
+        });
+    }
+
     function performLogout() {
         // Önce yerelde ANINDA çıkış yaptırıyoruz — sunucunun (özellikle
         // Render'ın soğuk başlangıcında 30-60 saniye sürebilen) yanıtını

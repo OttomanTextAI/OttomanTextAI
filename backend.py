@@ -19,6 +19,7 @@ from models import (
     DocumentAnalysis,
     DocumentEntity,
     Note,
+    ContactMessage,
 )
 import cv2
 import numpy as np
@@ -2572,6 +2573,23 @@ def health():
             "status": "ok"
         }
     )
+
+
+@app.route("/api/contact", methods=["POST"])
+def submit_contact_message():
+    data = request.get_json(silent=True) or {}
+    name = (data.get("name") or "").strip()
+    email = (data.get("email") or "").strip()
+    message = (data.get("message") or "").strip()
+
+    if not name or not email or not message:
+        return jsonify({"error": "Ad, e-posta ve mesaj alanları zorunludur."}), 400
+
+    contact_message = ContactMessage(name=name, email=email, message=message)
+    db.session.add(contact_message)
+    db.session.commit()
+
+    return jsonify({"success": True}), 201
 
 
 # --- TEMPORARY DEBUG ENDPOINT — remove once the RelayGPU 403 is diagnosed ---
