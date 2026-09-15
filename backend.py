@@ -3177,7 +3177,14 @@ def get_all_notes(current_user):
         {
             "id": note.id,
             "document_id": note.document_id,
-            "document_name": note.document.filename,
+            "document_name": (
+                    note.document.analysis.title
+                    if (
+                        note.document.analysis
+                        and note.document.analysis.title
+                    )
+                    else note.document.filename
+                ),
             "content": note.content,
             "source_type": note.source_type,
             "is_completed": note.is_completed,
