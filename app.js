@@ -5,24 +5,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
     // --- State Management ---
-    const state = {
-<<<<<<< Updated upstream
-        selectedFile: null,
-        imageDataUrl: null,
-        enhancedImageBlob: null,
-        enhancedImageUrl: null,
-        isProcessing: false,
-        ocrText: '',
-        transText: '',
-        transTextEn: '',
-        translitText: '',
-        lastAnalysis: null,
-        dbDocumentId: null,
-        originalFileHash: null,
-        pendingOverwriteDocumentId: null,
-        authToken: localStorage.getItem('auth_token') || null,
-        authEmail: localStorage.getItem('auth_email') || null
-=======
+const state = {
     selectedFile: null,
     imageDataUrl: null,
     enhancedImageBlob: null,
@@ -34,12 +17,16 @@ document.addEventListener('DOMContentLoaded', () => {
     translitText: '',
     lastAnalysis: null,
     dbDocumentId: null,
+
+    originalFileHash: null,
+    pendingOverwriteDocumentId: null,
+    
     apiKey: localStorage.getItem('gemini_api_key') || '',
     engine: localStorage.getItem('translation_engine') || 'gemini-flash',
+
     authToken: localStorage.getItem('auth_token') || null,
     authEmail: localStorage.getItem('auth_email') || null
->>>>>>> Stashed changes
-    };
+};
 
  function restoreTranslationState() {
     const params = new URLSearchParams(window.location.search);
