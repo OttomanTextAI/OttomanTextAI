@@ -2731,6 +2731,28 @@ def get_current_user(current_user):
         "email": current_user.email,
         "created_at": current_user.created_at.isoformat() + "Z",
     })
+
+
+@app.route("/api/auth/password", methods=["PUT"])
+@token_required
+def change_password(current_user):
+    data = request.get_json(silent=True) or {}
+    current_password = data.get("current_password") or ""
+    new_password = data.get("new_password") or ""
+
+    if not current_password or not new_password:
+        return jsonify({"error": "Mevcut ve yeni şifre zorunludur."}), 400
+
+    if not bcrypt.check_password_hash(current_user.password_hash, current_password):
+        return jsonify({"error": "Mevcut şifre hatalı."}), 401
+
+    if len(new_password) < 6:
+        return jsonify({"error": "Yeni şifre en az 6 karakter olmalıdır."}), 400
+
+    current_user.password_hash = bcrypt.generate_password_hash(new_password).decode("utf-8")
+    db.session.commit()
+
+    return jsonify({"message": "Şifreniz güncellendi."})
 @app.route("/api/documents/upload", methods=["POST"])
 @token_required
 def upload_document(current_user):
