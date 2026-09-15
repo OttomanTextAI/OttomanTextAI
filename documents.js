@@ -19,7 +19,14 @@ const detailContent = document.getElementById('detailContent');
 const backToListBtn = document.getElementById('backToListBtn');
 const docsCountBadge = document.getElementById('docsCountBadge');
 const docSearchInput = document.getElementById('docSearchInput');
-const docSortSelect = document.getElementById('docSortSelect');
+const docFilterDropdown = document.getElementById('docFilterDropdown');
+const docFilterToggle = document.getElementById('docFilterToggle');
+const docFilterMenu = document.getElementById('docFilterMenu');
+const docFilterActiveDot = document.getElementById('docFilterActiveDot');
+const docFilterTypeList = document.getElementById('docFilterTypeList');
+
+let currentSort = 'date-desc';
+let currentTypeFilter = null;
 
 // Üst navbar'daki tema anahtarı ve sol menü çekmecesi — index.html/app.js
 // ile birebir aynı davranış (aynı 'theme' localStorage anahtarı paylaşılır,
@@ -122,17 +129,26 @@ let allDocs = [];
 
 function renderDocumentsList() {
     // Arama artık backend'de (belge içeriği dahil) yapılıyor — allDocs
-    // zaten sadece eşleşen belgeleri içeriyor, burada sadece sıralanıyor.
+    // zaten sadece eşleşen belgeleri içeriyor, burada sadece sıralanıp
+    // (varsa) belge türüne göre filtreleniyor.
     const query = (docSearchInput.value || '').trim();
-    const sortOrder = docSortSelect.value;
 
-    let docs = allDocs.slice().sort((a, b) => {
+    docFilterActiveDot.classList.toggle('hidden', !currentTypeFilter);
+
+    let docs = currentTypeFilter
+        ? allDocs.filter(doc => doc.document_type === currentTypeFilter)
+        : allDocs.slice();
+
+    docs.sort((a, b) => {
         const diff = new Date(a.uploaded_at) - new Date(b.uploaded_at);
-        return sortOrder === 'date-asc' ? diff : -diff;
+        return currentSort === 'date-asc' ? diff : -diff;
     });
 
     if (docs.length === 0) {
-        documentsList.innerHTML = `<p style="color: var(--color-text-muted);">${query ? 'Aramanızla eşleşen bir belge bulunamadı.' : 'Henüz kaydedilmiş bir belge bulunmuyor. Ana sayfada bir çeviri yapıp kaydettiğinizde burada listelenecektir.'}</p>`;
+        const emptyMessage = currentTypeFilter
+            ? `"${currentTypeFilter}" türünde bir belge bulunamadı.`
+            : (query ? 'Aramanızla eşleşen bir belge bulunamadı.' : 'Henüz kaydedilmiş bir belge bulunmuyor. Ana sayfada bir çeviri yapıp kaydettiğinizde burada listelenecektir.');
+        documentsList.innerHTML = `<p style="color: var(--color-text-muted);">${emptyMessage}</p>`;
         return;
     }
 
@@ -191,6 +207,7 @@ async function loadDocuments() {
         docsCountBadge.textContent = `${data.total_documents ?? allDocs.length} Belge`;
         docsCountBadge.classList.toggle('hidden', allDocs.length === 0);
 
+        buildTypeFilterMenu();
         renderDocumentsList();
     } catch (err) {
         documentsList.innerHTML = `<p>Belgeler yüklenemedi: ${escapeHtml(err.message)}</p>`;
@@ -602,7 +619,61 @@ docSearchInput.addEventListener('input', () => {
     clearTimeout(docSearchDebounceTimer);
     docSearchDebounceTimer = setTimeout(loadDocuments, 350);
 });
-docSortSelect.addEventListener('change', renderDocumentsList);
+// "Filtrele" açılır menüsü: Sırala seçenekleri sabit (HTML'de), Belge
+// Türü listesi ise kayıtlı belgelerde gerçekten geçen türlere göre
+// (ör. Ferman, Dua) her belge yüklendiğinde yeniden oluşturuluyor.
+function buildTypeFilterMenu() {
+    const types = Array.from(new Set(allDocs.map(doc => doc.document_type).filter(Boolean))).sort();
+
+    if (types.length === 0) {
+        docFilterTypeList.innerHTML = `<p class="doc-filter-menu-label" style="padding:0.3rem 0.6rem; text-transform:none;">Henüz belge türü yok.</p>`;
+        return;
+    }
+
+    docFilterTypeList.innerHTML = types.map(type => `
+        <button type="button" class="doc-filter-menu-item${type === currentTypeFilter ? ' active' : ''}" data-type="${escapeHtml(type)}">${escapeHtml(type)}</button>
+    `).join('');
+}
+
+function closeFilterMenu() {
+    docFilterMenu.classList.add('hidden');
+}
+
+docFilterToggle.addEventListener('click', () => {
+    docFilterMenu.classList.toggle('hidden');
+});
+
+document.addEventListener('click', (e) => {
+    if (!docFilterDropdown.contains(e.target)) closeFilterMenu();
+});
+
+function updateSortActiveState() {
+    docFilterMenu.querySelectorAll('[data-sort]').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-sort') === currentSort);
+    });
+}
+updateSortActiveState();
+
+docFilterMenu.addEventListener('click', (e) => {
+    const sortBtn = e.target.closest('[data-sort]');
+    if (sortBtn) {
+        currentSort = sortBtn.getAttribute('data-sort');
+        updateSortActiveState();
+        closeFilterMenu();
+        renderDocumentsList();
+        return;
+    }
+
+    const typeBtn = e.target.closest('[data-type]');
+    if (typeBtn) {
+        const type = typeBtn.getAttribute('data-type');
+        // Aynı türe tekrar tıklamak filtreyi kaldırır (tümünü göster).
+        currentTypeFilter = currentTypeFilter === type ? null : type;
+        closeFilterMenu();
+        buildTypeFilterMenu();
+        renderDocumentsList();
+    }
+});
 
 backToListBtn.addEventListener('click', () => {
     detailView.classList.add('hidden');
