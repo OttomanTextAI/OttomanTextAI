@@ -24,6 +24,11 @@ const docFilterToggle = document.getElementById('docFilterToggle');
 const docFilterMenu = document.getElementById('docFilterMenu');
 const docFilterActiveDot = document.getElementById('docFilterActiveDot');
 const docFilterTypeList = document.getElementById('docFilterTypeList');
+const docTypeFilterDropdown = document.getElementById('docTypeFilterDropdown');
+const docTypeFilterToggle = document.getElementById('docTypeFilterToggle');
+const docTypeFilterMenu = document.getElementById('docTypeFilterMenu');
+const docTypeFilterActiveDot = document.getElementById('docTypeFilterActiveDot');
+const docTypeFilterTypeList = document.getElementById('docTypeFilterTypeList');
 
 let currentSort = 'date-desc';
 let currentTypeFilter = null;
@@ -134,6 +139,7 @@ function renderDocumentsList() {
     const query = (docSearchInput.value || '').trim();
 
     docFilterActiveDot.classList.toggle('hidden', !currentTypeFilter);
+    docTypeFilterActiveDot.classList.toggle('hidden', !currentTypeFilter);
 
     let docs = currentTypeFilter
         ? allDocs.filter(doc => doc.document_type === currentTypeFilter)
@@ -357,10 +363,6 @@ function _renderDocDetailAnalysisCard(data) {
                         : `<p class="doc-detail-empty">Tespit edilemedi.</p>`}
                     <h4>👤 Kişiler</h4>
                     ${_renderDocDetailTagList(data.people)}
-                    <h4>📍 Yerler</h4>
-                    ${_renderDocDetailTagList(data.places)}
-                    <h4>💡 Kavramlar</h4>
-                    ${_renderDocDetailTagList(data.concepts)}
                 </div>
                 <div class="doc-analysis-col">
                     <h4>✍️ Yazı &amp; Dil</h4>
@@ -399,6 +401,14 @@ function _renderDocDetailAnalysisCard(data) {
                             </div>
                         ` : ''}
                     </div>
+                    <h4>💡 Kavramlar</h4>
+                    ${_renderDocDetailTagList(data.concepts)}
+                </div>
+            </div>
+            <div class="doc-analysis-full-row">
+                <div class="doc-analysis-col">
+                    <h4>📍 Yerler</h4>
+                    ${_renderDocDetailTagList(data.places)}
                 </div>
             </div>
             ${data.notes ? `
@@ -626,25 +636,37 @@ function buildTypeFilterMenu() {
     const types = Array.from(new Set(allDocs.map(doc => doc.document_type).filter(Boolean))).sort();
 
     if (types.length === 0) {
-        docFilterTypeList.innerHTML = `<p class="doc-filter-menu-label" style="padding:0.3rem 0.6rem; text-transform:none;">Henüz belge türü yok.</p>`;
+        const emptyHtml = `<p class="doc-filter-menu-label" style="padding:0.3rem 0.6rem; text-transform:none;">Henüz belge türü yok.</p>`;
+        docFilterTypeList.innerHTML = emptyHtml;
+        docTypeFilterTypeList.innerHTML = emptyHtml;
         return;
     }
 
-    docFilterTypeList.innerHTML = types.map(type => `
+    const typeButtonsHtml = types.map(type => `
         <button type="button" class="doc-filter-menu-item${type === currentTypeFilter ? ' active' : ''}" data-type="${escapeHtml(type)}">${escapeHtml(type)}</button>
     `).join('');
+
+    docFilterTypeList.innerHTML = typeButtonsHtml;
+    docTypeFilterTypeList.innerHTML = typeButtonsHtml;
 }
 
 function closeFilterMenu() {
     docFilterMenu.classList.add('hidden');
+    docTypeFilterMenu.classList.add('hidden');
 }
 
 docFilterToggle.addEventListener('click', () => {
+    docTypeFilterMenu.classList.add('hidden');
     docFilterMenu.classList.toggle('hidden');
 });
 
+docTypeFilterToggle.addEventListener('click', () => {
+    docFilterMenu.classList.add('hidden');
+    docTypeFilterMenu.classList.toggle('hidden');
+});
+
 document.addEventListener('click', (e) => {
-    if (!docFilterDropdown.contains(e.target)) closeFilterMenu();
+    if (!docFilterDropdown.contains(e.target) && !docTypeFilterDropdown.contains(e.target)) closeFilterMenu();
 });
 
 function updateSortActiveState() {
@@ -654,7 +676,7 @@ function updateSortActiveState() {
 }
 updateSortActiveState();
 
-docFilterMenu.addEventListener('click', (e) => {
+function handleFilterMenuClick(e) {
     const sortBtn = e.target.closest('[data-sort]');
     if (sortBtn) {
         currentSort = sortBtn.getAttribute('data-sort');
@@ -673,7 +695,10 @@ docFilterMenu.addEventListener('click', (e) => {
         buildTypeFilterMenu();
         renderDocumentsList();
     }
-});
+}
+
+docFilterMenu.addEventListener('click', handleFilterMenuClick);
+docTypeFilterMenu.addEventListener('click', handleFilterMenuClick);
 
 backToListBtn.addEventListener('click', () => {
     detailView.classList.add('hidden');
