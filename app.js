@@ -1493,6 +1493,233 @@ ve nehār`,
                 date_gregorian: "Belirtilmemiş",
                 notes: "Metin, Banu Musa kardeşlerin veya El-Cezeri'nin hiyel (mekanik) kitaplarının Osmanlıca tercümelerinden (muhtemelen Tercüme-i Hiyel) bir sayfadır. Satır aralarında sonradan yapılmış düzeltmeler (derkenar/düzeltme notları) bulunmaktadır."
             }
+        },
+        'sya': {
+            file: 'assets/sya.png',
+            name: 'sehir_ici_silah_yasagi_ilani.png',
+            size: '0.01 MB',
+            ocr: `إعلان
+
+شهر ايچنده سلاح اتمسی نظاماً ممنوع اولديغی معلومدر
+حالبوكه ايام مخصوصه ده اشبو ممنوعيتك خلافنه سلاح
+اتيلور بونك ضررلری ايسه ميدانده در بوجهتله
+شمديدن بالجمله محلات امام ومختارلرينه تنبيهات لازمه نك
+اجراسيله بيرامده وايام سائره ده هیچ بر كيمسه نك تفريح
+اتمه مسی وشايد اتان اولورسه ضابطه جه **طوتولوب**
+اون كون حبس اولندقده ن صوكره جزای نقدی دخی
+النه رق مجازات ايدلمسی مجلس اداره ولايتدن بالا علام
+**منضبطه يه** امر وتبليغ ايدلمكين اكا كوره بتون امام ومختارلرك
+محله لرنده كی دليقانلولره بوندن صوكره هانگی كون اولورسه
+اولسون سلاح اتلميه جكنی وشايد اتان اولورسه حبس
+وجزا اولنه جغنی كوزلجه اكلادوب ممنوعيته دقت ايتمه لری
+تنبيه اولنور`,
+            tr: `İlan
+
+Şehir içinde silah atılmasının kanunen yasak olduğu bilinmektedir.
+Halbuki özel günlerde bu yasağın aksine silah
+atılmaktadır, bunun zararları ise ortadadır. Bu sebeple
+şimdiden bütün mahallelerin imam ve muhtarlarına gerekli uyarıların
+yapılmasıyla bayramda ve diğer günlerde hiçbir kimsenin şenlik için (silah)
+atmaması ve şayet atan olursa zabıtaca **tutulup**
+on gün hapsedildikten sonra para cezası da
+alınarak cezalandırılması Vilayet İdare Meclisi'nden bildirilerek
+**kolluk kuvvetlerine** emredilip tebliğ edilmiş olmakla, ona göre bütün imam ve muhtarların
+mahallelerindeki delikanlılara bundan sonra hangi gün olursa
+olsun silah atılmayacağını ve şayet atan olursa hapis
+ve ceza uygulanacağını güzelce anlatıp yasağa dikkat etmeleri
+tembih olunur.`,
+            translit: `İ'lân
+
+Şehir içinde silâh atması nizâmen memnû' olduğu ma'lûmdur
+Halbuki eyyâm-ı mahsûsada işbu memnû'iyetin hilâfına silâh
+atılıyor bunun zararları ise meydandadır bu cihetle
+şimdiden bilcümle mahallât imâm ve muhtârlarına tenbîhât-ı lâzımenin
+icrâsıyla bayramda ve eyyâm-ı sâirede hiçbir kimsenin tefrîh
+etmemesi ve şâyet atan olursa zâbıtaca **tutulup**
+on gün habs olunduktan sonra cezâ-yı nakdî dahi
+alınarak mücâzât edilmesi Meclis-i İdâre-i Vilâyet'ten bi'l-i'lâm
+**münzâbıtaya** emr ve teblîğ edilmekin ona göre bütün imâm ve muhtârların
+mahallelerindeki delikanlılara bundan sonra hangi gün olursa
+olsun silâh atılmayacağını ve şâyet atan olursa habs
+ve cezâ olunacağını güzelce anlatıp memnû'iyete dikkat etmeleri
+tenbîh olunur`,
+            analysis: {
+                document_type: "İlan",
+                confidence: 95,
+                style: "Resmî ve uyarıcı bir dil",
+                summary: "Belge, şehir içinde silah atılmasının kanunen yasak olduğunu hatırlatan ve bu yasağa uymayanlara uygulanacak cezaları bildiren resmi bir ilandır. Bayram ve özel günlerde silah atanların on gün hapis ve para cezası ile cezalandırılacağı belirtilerek, mahalle muhtar ve imamlarının gençleri bu konuda uyarması istenmektedir.",
+                key_points: [
+                    "Şehir içinde silah atılması kanunen kesinlikle yasaktır.",
+                    "Yasağa uymayıp silah atanlar kolluk kuvvetlerince yakalanarak on gün hapis ve para cezasına çarptırılacaktır.",
+                    "Mahalle imamları ve muhtarları, mahallelerindeki gençleri bu yasak ve cezalar konusunda bilgilendirmekle yükümlüdür."
+                ],
+                people: [],
+                places: [],
+                concepts: ["Meclis-i İdâre-i Vilâyet", "münzâbıta", "imâm", "muhtâr", "cezâ-yı nakdî"],
+                script_type: "Matbu",
+                script_purpose: "Kamuoyunu bilgilendirme ve uyarı",
+                period_estimate: "Geç Osmanlı Dönemi",
+                date_hijri: "Belirtilmemiş",
+                date_gregorian: "Belirtilmemiş",
+                notes: "Belge matbu (baskı) harflerle yazılmış resmi bir duyurudur. Bazı kelimeler mürekkep dağılması nedeniyle hafif silik çıksa da bağlamdan net olarak anlaşılmaktadır."
+            }
+        },
+        'gkt': {
+            file: 'assets/gkt.png',
+            name: 'gumushanevi_kutuphaneleri_dilekce.png',
+            size: '0.03 MB',
+            ocr: `شرق اوردوسی قوماندانی دولتو کاظم قره بکر پاشا
+حضرتلرینه
+
+دولتو افندم حضرتلری
+ناسك خيرلوسى او كمسه در كه جناب حق آنى امتك حوائجنده
+استخدام بيورر مآلنده بولنان حديث شريفى خاطر ساميلرينه
+كترمك صورتيله عرض حال و استرحام ما فى الباله باشلارم.
+كمشخانه وى احمد ضياءالدين افندى قدس سرهنك اوف
+ريزه بايبورد مملكتلرنده بولنان اوچ عدد كتبخانه سنك باش
+متوليسى بولنان داعيلرى شو استيلاده قصبه لرك بايبورد
+جهتنده بولنان روسلر طرفندن امحا و كتابلر بالجمله تفليسه
+نقل اولنديغى تحقيقات اخيره داعيانه مله تظاهر ايلمش و
+كتابلر كتب دينيه دن اولمغله اهل اسلامجه محترم اولدقلرندن
+جلبلرى و ينه وضع استفاده اولنسی و شيخ مشار اليه
+حضرتلرينك كتابلرينك هر حالده همم عظيمه يه محتاج
+بولنمشدر.
+اللهك توفيقى اللهك ديننه نصرت ايده جكلرله برابر
+بولنديغى ذات معلومدر. و اشبو مسئلهء معروضه نك خير و
+حصوله واصل اولماسى احق همم جليله قابل بولنديغى
+داعيلرنجه معلوم بولنديغندن كتب معروضه نك تفليسدن جلب
+اولنماسى اسبابنك استكمالنى رجا و نياز ايلرم. فرمان
+٥ تشرين ثانى ١٣٣٦
+٥ قاسم ١٩٢١
+اوف قضاسى مدرسلرندن
+خواجه فرشاد ابراهيم`,
+            tr: `Şark Ordusu Kumandanı Devletlü Kazım Karabekir Paşa Hazretlerine
+
+Devletlü Efendim Hazretleri,
+'İnsanların hayırlısı, Cenâb-ı Hakk'ın kendisini ümmetin ihtiyaçlarında istihdam ettiği kimsedir' mealindeki hadîs-i şerîfi yüksek hatırınıza getirmek suretiyle arz-ı hâl ve içimdeki istirhamı sunmaya başlarım.
+Gümüşhanevî Ahmed Ziyâeddin Efendi (kuddise sırruhû) hazretlerinin Of, Rize ve Bayburt memleketlerinde bulunan üç adet kütüphanesinin başmütevellîsi olan duacınız, son işgal sırasında bu kasabaların Bayburt tarafında bulunan Ruslar tarafından tahrip edildiğini ve kitapların tamamen Tiflis'e nakledildiğini son araştırmalarımla ortaya çıkarmış bulunmaktayım. Bu kitaplar dinî kitaplar olduğundan ve Müslümanlarca kutsal/saygın kabul edildiğinden, geri getirilerek yeniden istifadeye sunulması ve adı geçen Şeyh Hazretlerinin kitaplarının her hâlükârda büyük gayretlere muhtaç olduğu görülmüştür.
+Allah'ın yardımının, O'nun dinine yardım edeceklerle beraber olduğu herkesçe bilinen bir gerçektir. Bu arz edilen meselenin hayırla sonuçlanması, yüce gayretlerin en çok hak ettiği bir durum olduğu duacınızca bilindiğinden, söz konusu kitapların Tiflis'ten geri getirilmesi için gerekli girişimlerin tamamlanmasını rica ve niyaz ederim. Fermân [efendimindir].
+5 Teşrîn-i Sânî 1336
+5 Kasım 1921
+Of kazası müderrislerinden
+Hoca Ferşad İbrahim`,
+            translit: `Şark Ordusu Kumandanı Devletlü Kazım Karabekir Paşa
+Hazretlerine
+
+Devletlü Efendim Hazretleri
+Nâsın hayırlısı o kimsedir ki Cenâb-ı Hakk anı ümmetin havâicinde
+istihdâm buyurur meâlinde bulunan hadîs-i şerîfi hâtır-ı sâmîlerine
+getirmek sûretiyle arz-ı hâl ve istirhâm-ı mâ-fi'l-bâle başlarım.
+Gümüşhanevî Ahmed Ziyâeddin Efendi kuddise sırruhunun Of
+Rize Bayburt memleketlerinde bulunan üç aded kütüphanesinin baş
+mütevellîsi bulunan dâîleri şu istîlâda kasabaların Bayburt
+cihetinde bulunan Ruslar tarafından imhâ ve kitaplar bil-cümle Tiflis'e
+nakl olunduğu tahkîkât-ı ahîre-i dâîyânemle tezâhür eylemiş ve
+kitaplar kütüb-i dîniyeden olmakla ehl-i İslâmca muhterem olduklarından
+celbleri ve yine vaz'-ı istifâde olunması ve Şeyh-i müşârun-ileyh
+hazretlerinin kitaplarının her hâlde himem-i azîmeye muhtâç
+bulunmuştur.
+Allah'ın tevfîki Allah'ın dînine nusret edeceklerle beraber
+bulunduğu zât-ı ma'lûmdur. Ve işbu mesele-i ma'rûzenin hayır ve
+husûle vâsıl olması ahakk-ı himem-i celîle kabil bulunduğu
+dâîlerince ma'lûm bulunduğundan kütüb-i ma'rûzenin Tiflis'ten celb
+olunması esbâbının istikmâlini ricâ ve niyâz eylerim. Fermân
+5 Teşrîn-i Sânî 1336
+5 Kasım 1921
+Of kazâsı müderrislerinden
+Hoca Ferşad İbrahim`,
+            analysis: {
+                document_type: "Dilekçe / Resmî Mektup",
+                confidence: 98,
+                style: "Resmî, hürmetkâr ve rica edici bir üslup kullanılmıştır.",
+                summary: "Of kazası müderrislerinden Hoca Ferşad İbrahim, Doğu Ordusu Komutanı Kazım Karabekir Paşa'ya başvurarak Gümüşhanevî Ahmed Ziyâeddin Efendi'nin Of, Rize ve Bayburt'taki kütüphanelerinden Ruslar tarafından Tiflis'e kaçırılan dinî kitapların geri getirilmesini talep etmektedir. Dilekçe sahibi, bu kutsal eserlerin kurtarılması için gerekli girişimlerin başlatılmasını rica etmektedir.",
+                key_points: [
+                    "Gümüşhanevî Ahmed Ziyâeddin Efendi'ye ait Of, Rize ve Bayburt'taki üç kütüphane Rus işgali sırasında tahrip edilmiştir.",
+                    "Kütüphanelerdeki dinî kitapların tamamı Ruslar tarafından Tiflis'e nakledilmiştir.",
+                    "Dilekçe sahibi Hoca Ferşad İbrahim, kitapların Müslümanlar için taşıdığı önemi vurgulayarak geri getirilmesini istemektedir.",
+                    "Talep, dönemin Doğu Ordusu Komutanı Kazım Karabekir Paşa'ya iletilmiştir."
+                ],
+                people: ["Kazım Karabekir Paşa", "Ahmed Ziyâeddin Efendi", "Hoca Ferşad İbrahim"],
+                places: ["Of", "Rize", "Bayburt", "Tiflis"],
+                concepts: ["hadîs-i şerîf", "kütüphane", "mütevellî", "müderris"],
+                script_type: "Nesih",
+                script_purpose: "Resmî yazışma ve dilekçe",
+                period_estimate: "Milli Mücadele Dönemi",
+                date_hijri: "Belirtilmemiş",
+                date_gregorian: "5 Kasım 1921",
+                notes: "Belge, matbu (basılı) bir yazı karakterine sahiptir ve oldukça okunaklıdır. Tarih kısmında hem Rumi (1336) hem de Miladi (1921) tarihler yan yana verilmiştir."
+            }
+        },
+        'ase': {
+            file: 'assets/ase.png',
+            name: 'askeri_sevkiyat_serif_emirler_arz.png',
+            size: '0.01 MB',
+            ocr: `موجبجه عمل اولنه
+دیو امر اولنمشدر
+
+پادشاهم
+
+شوكتلو كرامتلو مهابتلو افندم ولينعمم افندم
+عون و عنايت باري ايله بوندن بويله عساکر معينه و مرخصه نك سفره **ذخيره يدي** سوق و تسيير اولنه جق
+طوائف عسكريه نك **كل ما صدره زير بنات** و قيام و قرار دن اتفاقا و تاما ايلدكي مصلحتك **بي بعض نظام**
+و شروطي حاوي **انالطرفي** و عدم **بيلنك** صالح و معول و **اورته قوللرنده** اولان وزراي عظام و ميرميران
+و ضابطان عسكريه و قضات و نوابه خطابا اصدار و افاده اولنمش **قطعه** امر شريفك ممالك محروسه ده اولان
+بو و قرا و قصابات واقع محاكم **سجلو نه** قيد و دائما دستور العمل طوتولمق اوزره ايجون **بالوزرايه**
+خط همايون ملوكانه‌لري كشيده بيورلمق لازم اولديغندن ذكر اولنان **التي** قطعه امر عالي شريف حضور
+لامع النور شاهانه‌لري قيلنمشدر منظور و معلوم **هميونلري** بيورلدقده بشقه بشقه هر برينك **بالوزرايه**
+موجبجه عمل اولنه ديو مبارك خط همايونلري كشيده بيورلمق بابنده امر و فرمان شوكتلو كرامتلو
+مهابتلو افندم ولينعمم افندم پادشاهم حضرتلرينكدر`,
+            tr: `Gereğince amel olunsun
+diye emredilmiştir.
+
+Padişahım
+
+Şevketli, kerametli, heybetli efendim, velinimetim efendim,
+Allah'ın yardımı ve inayetiyle bundan böyle belirli ve izinli askerlerin sefere **yiyecek tedarikiyle** sevk ve gönderilmesi sağlanacaktır.
+Askeri sınıfların **ortaya çıkan tüm meselelerde temel** ve karar birliğiyle ittifak halinde ve tamamen gerçekleştirdiği işlerin **bazı nizamsızlıklardan**
+ve her iki tarafı da içeren şartlardan uzak, aralarında anlaşmazlık olmaksızın, düzgün ve güvenilir bir şekilde yürütülmesi için, orta kollarında bulunan yüce vezirler, beylerbeyleri,
+askeri zabitler, kadılar ve naiblere hitaben çıkarılmış ve ifade edilmiş olan şerif emirlerin, korunan memleketlerde bulunan
+şehir, köy ve kasabalardaki mahkeme **sicillerine** kaydedilmesi ve daima kılavuz edinilmesi amacıyla, vezirlere hitaben
+padişahın hatt-ı hümayununun yazılması gerektiğinden, bahsedilen **altı** adet şerif emrin padişahın
+nurlu huzuruna sunulduğu, padişahın bilgisi dahilinde olduğunda her birinin vezirlere hitaben ayrı ayrı
+"gereğince amel olunsun" şeklinde mübarek hatt-ı hümayunlarının yazılması hususunda emir ve ferman şevketli, kerametli,
+heybetli efendim, velinimetim efendim padişahım hazretlerinindir.`,
+            translit: `Mûcebince amel oluna
+deyu emr olunmuşdur
+
+Pâdişâhım
+
+Şevketlü kerâmetlü mehâbetlü efendim veliyy-i ni'metim efendim
+Avn ü inâyet-i bârî ile bundan böyle asâkir-i muayyen ve murahhasanın sefere **zahîre yedi** sevk ve tisyâr olunacak
+tavâif-i askeriyenin **küll-i mâ sadara zîr-i binât** ve kıyâm ve karârdan ittifâkan ve tämmen eylediği maslahatın **bî-ba'z-ı nizâm**
+ve şurûtu hâvî **ani't-tarafeyn** ve adem-i **beynin** sâlih ve muavvel ve **orta kullarında** olan vüzerâ-yı izâm ve mîrimîrân
+ve zâbitân-ı askeriyye ve kuzât ve nüvvâba hitâben ısdâr ve ifâde olunmuş **kıt'a** emr-i şerîfin memâlik-i mahrûsede olan
+bû ve kurâ ve kasabâtda vâki' mehâkim **sicilline** kayd ve dâimen düstûrü'l-amel tutulmak üzere içün **bi'l-vüzerâye**
+hatt-ı hümâyûn-ı mülûkâneleri keşîde buyurulmak lâzım geldiğinden zikr olunan **altı** kıt'a emr-i âlî-i şerîf huzûr-ı
+lâmi'ü'n-nûr-ı şâhâneleri kılınmışdır manzûr ve ma'lûm-ı **hümâyûnları** buyuruldukda başka başka her birinin **bi'l-vüzerâye**
+mûcebince amel oluna deyu mübârek hatt-ı hümâyûnları keşîde buyurulmak bâbında emr-i fermân şevketlü kerâmetlü
+mehâbetlü efendim veliyy-i ni'metim efendim pâdişâhım hazretlerinindir.`,
+            analysis: {
+                document_type: "Arz / Hatt-ı Hümâyun",
+                confidence: 85,
+                style: "Resmî, bürokratik ve diplomatik Osmanlı Türkçesi",
+                summary: "Belge, askerlerin sefere yiyecek tedarikiyle sevk edilmesi ve askeri sınıfların ittifakla yürüttüğü işlerin düzgünce idare edilmesi amacıyla çıkarılan şerif emirlerin mahkeme sicillerine kaydedilmesini talep etmektedir. Bu doğrultuda hazırlanan altı adet emrin padişahın onayına sunulduğu ve üzerlerine 'gereğince hareket edilsin' şeklinde hatt-ı hümayun yazılması rica edilmektedir.",
+                key_points: [
+                    "Askerlerin sefere yiyecek tedarikiyle sevk edilmesinin düzenlenmesi.",
+                    "Askeri sınıfların ittifakla yürüttüğü işlerin düzgün ve güvenilir şekilde yürütülmesi.",
+                    "Çıkarılan şerif emirlerin şehir, köy ve kasabalardaki mahkeme sicillerine kaydedilmesi.",
+                    "Hazırlanan altı adet şerif emrin padişahın onayına sunulması ve üzerlerine hatt-ı hümayun yazılmasının talep edilmesi."
+                ],
+                people: [],
+                places: [],
+                concepts: ["hatt-ı hümayun", "vezirler", "beylerbeyleri", "sicil", "kadılar", "naibler"],
+                script_type: "Rik'a",
+                script_purpose: "Padişaha sunulan arz ve üzerine yazılan hatt-ı hümayun",
+                period_estimate: "18. veya 19. Yüzyıl",
+                date_hijri: "Belirtilmemiş",
+                date_gregorian: "Belirtilmemiş",
+                notes: "Belgenin sol üst köşesinde padişahın 'mûcebince amel oluna' şeklindeki hatt-ı hümayunu yer almaktadır."
+            }
         }
     };
 
