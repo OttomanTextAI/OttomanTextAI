@@ -17,6 +17,7 @@ const state = {
     translitText: '',
     lastAnalysis: null,
     dbDocumentId: null,
+    restoredEntityFilterType: null,
 
     originalFileHash: null,
     pendingOverwriteDocumentId: null,
@@ -64,6 +65,12 @@ function restoreTranslationState() {
 
         state.transTextEn =
             restored.transTextEn || '';
+
+        state.lastAnalysis =
+            restored.lastAnalysis || null;
+
+        state.restoredEntityFilterType =
+         restored.activeEntityFilterType || null;
 
         console.log(
             '[STATE RESTORE] Translation restored:',
@@ -228,61 +235,165 @@ function restoreTranslationState() {
     const resultScriptDetails = document.getElementById('resultScriptDetails');
     const resultDateDetails = document.getElementById('resultDateDetails');
     const resultNotes = document.getElementById('resultNotes');
-
 function renderRestoredTranslation() {
     if (!state.dbDocumentId) {
         return;
     }
 
+    // Normal çeviri akışındaki documentId mantığını yeniden oluştur.
+    state.documentId = hashText(
+        `${state.ocrText}\u0001${state.translitText}\u0001${state.transText}`
+    );
+
+    // Analizden entity listesini yeniden oluştur.
+    const transEntities = buildEntityIndex(
+        state.lastAnalysis
+    );
+
+    // =========================
+    // OCR
+    // =========================
+
     if (state.ocrText) {
-        ocrTextDisplay.textContent = state.ocrText;
-        ocrTextDisplay.classList.remove('hidden');
         ocrEmptyState.classList.add('hidden');
+        ocrTextDisplay.classList.remove('hidden');
+
+        renderWithGuessMarkers(
+            ocrTextDisplay,
+            state.ocrText,
+            {
+                clickableGuesses: true,
+                field: 'ocr'
+            }
+        );
+
+        applyStoredWordCorrections(
+            state.documentId,
+            'ocr',
+            ocrTextDisplay
+        );
+
         ocrTools.classList.add('tools-ready');
     }
 
+    // =========================
+    // TRANSLITERATION
+    // =========================
+
     if (state.translitText) {
-        translitTextDisplay.textContent = state.translitText;
-        translitTextDisplay.classList.remove('hidden');
         translitEmptyState.classList.add('hidden');
+        translitTextDisplay.classList.remove('hidden');
+
+        renderWithGuessMarkers(
+            translitTextDisplay,
+            state.translitText,
+            {
+                clickableGuesses: true,
+                field: 'translit'
+            }
+        );
+
+        applyStoredWordCorrections(
+            state.documentId,
+            'translit',
+            translitTextDisplay
+        );
+
         translitTools.classList.add('tools-ready');
     }
 
+    // =========================
+    // MODERN TÜRKÇE
+    // =========================
+
     if (state.transText) {
-        transTextDisplay.textContent = state.transText;
-        transTextDisplay.classList.remove('hidden');
         transEmptyState.classList.add('hidden');
+        transTextDisplay.classList.remove('hidden');
+
+        renderColumnWithEntities(
+            transTextDisplay,
+            state.transText,
+            transEntities,
+            {
+                clickableGuesses: true,
+                field: 'trans'
+            }
+        );
+
+        applyStoredWordCorrections(
+            state.documentId,
+            'trans',
+            transTextDisplay
+        );
+
         transTools.classList.add('tools-ready');
+
+        // Entity / AI Belirsizliği filtresi
+        const hasFilterableEntities =
+            getEntityFilterCategories().length > 0;
+
+        entityFilterDropdown.classList.toggle(
+            'hidden',
+            !hasFilterableEntities
+        );
     }
 
-    // İngilizce çeviri
+    // =========================
+    // ENGLISH
+    // =========================
+
     if (state.transTextEn) {
-        enTextDisplay.textContent = state.transTextEn;
-        enTextDisplay.classList.remove('hidden');
         enEmptyState.classList.add('hidden');
+        enTextDisplay.classList.remove('hidden');
+
+        renderWithGuessMarkers(
+            enTextDisplay,
+            state.transTextEn
+        );
+
         enTools.classList.add('tools-ready');
     }
 
+    // =========================
+    // BELGE ANALİZİ
+    // =========================
+
+    if (state.lastAnalysis) {
+        renderResultsPanel(
+            state.lastAnalysis
+        );
+
+        setInfoExpanded(true);
+
+        // AI Belge Araçları
+        aiToolsTabBtn.classList.remove('hidden');
+        setAiToolsExpanded(true);
+    } else {
+        clearInfoTab();
+    }
+
+    // Aktif belgeyi koru
     localStorage.setItem(
         'active_document_id',
         String(state.dbDocumentId)
     );
 
+    // Türkçe görünüm
+    setOutputTab('trans');
+
+    if (state.restoredEntityFilterType) {
+        applyEntityFilter(
+            state.restoredEntityFilterType
+        );
+    }
 
     console.log(
-        '[STATE RESTORE] Translation rendered:',
+        '[STATE RESTORE] Workspace restored:',
         state.dbDocumentId
     );
 
-        setTimeout(() => {
-        const translationSection = document.getElementById('translationSection');
-
-        if (translationSection) {
-            translationSection.scrollIntoView({
-                behavior: 'smooth',
-                block: 'start'
-            });
-        }
+    setTimeout(() => {
+        smoothScrollTo(dropZone);
     }, 150);
 }
 
@@ -4504,7 +4615,9 @@ ${transTextDisplay.textContent}
                     ocrText: state.ocrText,
                     translitText: state.translitText,
                     transText: state.transText,
-                    transTextEn: state.transTextEn
+                    transTextEn: state.transTextEn,
+                    lastAnalysis: state.lastAnalysis,
+                    activeEntityFilterType: activeEntityFilterType
                 })
             );
 
@@ -5228,7 +5341,13 @@ ${transTextDisplay.textContent}
             const response = await fetchWithTimeout(
                 'https://ottoman-text-ai.onrender.com/api/ai/suggested-questions',
                 {
-                    method: 'GET'
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        document_text: state.transText
+                    })
                 },
                 75000
             );
@@ -5318,7 +5437,13 @@ ${transTextDisplay.textContent}
             const response = await fetchWithTimeout(
                 'https://ottoman-text-ai.onrender.com/api/ai/research-suggestions',
                 {
-                    method: 'GET'
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        document_text: state.transText
+                    })
                 },
                 45000
             );

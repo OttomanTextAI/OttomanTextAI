@@ -2216,34 +2216,38 @@ def ai_entity_filter():
             }
         ), 500
 
-    
-@app.route("/api/ai/research-suggestions", methods=["GET"])
+@app.route("/api/ai/research-suggestions", methods=["POST"])
 def ai_research_suggestions():
-    global document_retriever
-
-    if (
-        document_retriever is None
-        or not document_retriever.document_indexed
-        or not document_retriever.document_text
-    ):
-        return jsonify(
-            {
-                "error": (
-                    "Research suggestions require "
-                    "an indexed document."
-                )
-            }
-        ), 400
-
     try:
+        data = request.get_json(silent=True) or {}
+
+        document_text = (
+            data.get("document_text")
+            or ""
+        ).strip()
+
+        if not document_text:
+            return jsonify(
+                {
+                    "error": "Document text is required."
+                }
+            ), 400
+
         model = get_llm_config().get("model")
+
+        if not model:
+            return jsonify(
+                {
+                    "error": "LLM model is not configured."
+                }
+            ), 500
 
         generator = ResearchSuggestionGenerator(
             model=model,
         )
 
         suggestions = generator.generate(
-            document_text=document_retriever.document_text,
+            document_text=document_text,
         )
 
         return jsonify(
@@ -2269,18 +2273,42 @@ def ai_research_suggestions():
                 "details": str(error),
             }
         ), 500
-    
-@app.route("/api/ai/suggested-questions", methods=["GET"])
+@app.route("/api/ai/suggested-questions", methods=["POST"])
 def ai_suggested_questions():
     """
-    Generate suggested questions for the currently indexed document.
+    Generate suggested questions for the active document.
 
-    The active document text is reused from the RAG retriever,
-    so the frontend does not need to send the document again.
+    If the in-memory RAG index was lost because of a worker restart,
+    rebuild it from the document text sent by the frontend.
     """
-    global document_retriever
+    global document_retriever, document_qa
 
     try:
+        data = request.get_json(silent=True) or {}
+
+        document_text = (
+            data.get("document_text")
+            or ""
+        ).strip()
+
+        # Render/Gunicorn restart sonrası RAM'deki index kaybolmuşsa
+        # frontend'den gelen mevcut belge metniyle yeniden oluştur.
+        if (
+            document_retriever is None
+            or not document_retriever.document_indexed
+            or not document_retriever.document_text
+        ):
+            if document_text:
+                print(
+                    "[AI QUESTIONS] In-memory document missing; "
+                    "rebuilding from request text.",
+                    flush=True,
+                )
+
+                _index_translation_for_rag({
+                    "trans": document_text
+                })
+
         if (
             document_retriever is None
             or not document_retriever.document_indexed
@@ -2330,7 +2358,6 @@ def ai_suggested_questions():
                 "details": str(error),
             }
         ), 500
-
     
 @app.route("/api/ai/index-document", methods=["POST"])
 def ai_index_document():
