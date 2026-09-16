@@ -59,63 +59,64 @@ document.addEventListener('DOMContentLoaded', () => {
     // 'sample' alanı, ana sayfadaki "Örnek Osmanlıca Belgeler" bölümündeki
     // gerçek belgelerden birine karşılık geliyorsa dolduruluyor (bkz.
     // index.html'deki .sample-card[data-sample] ve app.js'teki sampleDatabase/
-    // handleSampleDeepLink). x/y koordinatları 1000x620'lik SVG viewBox'a
-    // göre, gerçek coğrafi konumun KABA bir şeması — bu ilk sürüm hassas bir
-    // kartografik projeksiyon değil, stilize bir gösterim.
+    // handleSampleDeepLink). x/y koordinatları assets/harita-zemin.webp
+    // (1320x961) üzerindeki piksel konumlarına karşılık gelir — gerçek bir
+    // kabartma haritanın (Ancient World Mapping Center, Tom Elliott, 2004)
+    // üzerine görsel olarak yerleştirildi.
     const CITIES = [
         {
-            id: 'edirne', name: 'Edirne', x: 230, y: 140,
+            id: 'edirne', name: 'Edirne', x: 600, y: 400,
             era: 'Başkent (1365–1453)',
             blurb: 'İstanbul\'un fethinden önce imparatorluğun başkentiydi; Selimiye Camii gibi başyapıtlara ev sahipliği yapar.',
         },
         {
-            id: 'istanbul', name: 'İstanbul', x: 330, y: 190,
+            id: 'istanbul', name: 'İstanbul', x: 647, y: 423,
             era: 'Başkent (1453–1922)',
             blurb: '1453\'te fethedilerek İmparatorluğun başkenti oldu; siyasi, kültürel ve ticari hayatın merkeziydi.',
             sample: { key: 'tah', file: 'assets/tah.png', title: 'Tercüman-ı Ahval Gazetesi\'nin 25. Sayısı' },
         },
         {
-            id: 'bursa', name: 'Bursa', x: 360, y: 235,
+            id: 'bursa', name: 'Bursa', x: 660, y: 450,
             era: 'Başkent (1326–1365)',
             blurb: 'Osmanlı Beyliği\'nin ilk başkentiydi; erken dönem cami ve külliyeleriyle tanınır.',
         },
         {
-            id: 'ankara', name: 'Ankara', x: 440, y: 260,
+            id: 'ankara', name: 'Ankara', x: 760, y: 470,
             era: 'Osmanlı Anadolusu',
             blurb: 'Anadolu ticaret yollarının kesiştiği önemli bir merkezdi; Hacı Bayram Veli\'nin vakfı burada kuruldu.',
             sample: { key: 'hbv', file: 'assets/hbv.png', title: 'Hacı Bayram Veli Vakfı Tevliyet ve Meşihat Beratı' },
         },
         {
-            id: 'konya', name: 'Konya', x: 470, y: 330,
+            id: 'konya', name: 'Konya', x: 740, y: 520,
             era: 'Anadolu Beylikleri – Osmanlı',
             blurb: 'Selçuklu mirasının ve Mevlevîlik kültürünün merkezi; Osmanlı döneminde de önemli bir ilim şehri oldu.',
         },
         {
-            id: 'sivas', name: 'Sivas', x: 590, y: 270,
+            id: 'sivas', name: 'Sivas', x: 850, y: 460,
             era: 'Osmanlı Anadolusu',
             blurb: 'Anadolu\'nun doğusunda önemli bir vakıf ve idare merkeziydi.',
             sample: { key: 'svf', file: 'assets/svf.png', title: 'Sivas\'taki Vakıf Şartlarına Dair Ferman' },
         },
         {
-            id: 'halep', name: 'Halep', x: 650, y: 320,
+            id: 'halep', name: 'Halep', x: 870, y: 530,
             era: 'Osmanlı Suriyesi',
             blurb: 'Ticaret yollarının kesiştiği kadim bir şehir; Osmanlı idaresinde önemli bir eyalet merkeziydi.',
             sample: { key: 'sbh', file: 'assets/sbh.png', title: 'Şam, Baalbek ve Halep Mühimme Hükümleri' },
         },
         {
-            id: 'sam', name: 'Şam', x: 640, y: 390,
+            id: 'sam', name: 'Şam', x: 880, y: 580,
             era: 'Osmanlı Suriyesi',
             blurb: 'Osmanlı Suriyesi\'nin idari merkezlerinden biri ve hac yolunun önemli bir durağıydı.',
             sample: { key: 'sbh', file: 'assets/sbh.png', title: 'Şam, Baalbek ve Halep Mühimme Hükümleri' },
         },
         {
-            id: 'bagdat', name: 'Bağdat', x: 760, y: 380,
+            id: 'bagdat', name: 'Bağdat', x: 990, y: 580,
             era: 'Osmanlı Irak\'ı',
             blurb: 'Fuzûlî gibi büyük divan şairlerinin yaşadığı, Osmanlı Irak\'ının kültürel merkeziydi.',
             sample: { key: 'hero', file: 'assets/sk.png', title: 'Fuzûlî\'nin Su Kasidesi' },
         },
         {
-            id: 'kahire', name: 'Kahire', x: 480, y: 500,
+            id: 'kahire', name: 'Kahire', x: 780, y: 595,
             era: 'Osmanlı Mısır\'ı (1517–1914)',
             blurb: '1517\'de Osmanlı topraklarına katıldı; Mısır eyaletinin başkenti ve önemli bir İslam ilim merkeziydi.',
         },

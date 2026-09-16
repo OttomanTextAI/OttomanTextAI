@@ -24,43 +24,20 @@
             border: 1px solid var(--color-border);
             box-shadow: var(--shadow-lg);
             overflow: hidden;
-            background:
-                radial-gradient(circle at 80% 15%, rgba(197, 160, 89, 0.14), transparent 55%),
-                linear-gradient(135deg, var(--hero-bg-start) 0%, var(--hero-bg-mid) 55%, var(--hero-bg-end) 100%);
+            background: #0D1627;
         }
-        .map-frame::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%230D1627' stroke-width='1'%3E%3Cpolygon points='60,8 112,60 60,112 8,60'/%3E%3Ccircle cx='60' cy='60' r='26'/%3E%3C/g%3E%3C/svg%3E");
-            background-size: 120px 120px;
-            opacity: 0.06;
-            pointer-events: none;
-        }
-        body.dark-theme .map-frame::before {
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%23C5A059' stroke-width='1'%3E%3Cpolygon points='60,8 112,60 60,112 8,60'/%3E%3Ccircle cx='60' cy='60' r='26'/%3E%3C/g%3E%3C/svg%3E");
+        #mapBaseImg {
+            display: block;
+            width: 100%;
+            height: auto;
         }
         #mapSvg {
             display: block;
             width: 100%;
             height: auto;
-            position: relative;
+            position: absolute;
+            inset: 0;
             z-index: 1;
-        }
-        .map-region {
-            fill: var(--color-gold);
-            opacity: 0.08;
-            stroke: var(--color-gold);
-            stroke-width: 1.5;
-            stroke-opacity: 0.35;
-        }
-        .map-region-label {
-            fill: var(--color-text-muted);
-            font-family: var(--font-heading);
-            font-size: 20px;
-            font-style: italic;
-            text-anchor: middle;
-            opacity: 0.75;
         }
         .map-city-dot {
             fill: var(--color-gold);
@@ -263,32 +240,24 @@
     <main class="page-wrapper" style="padding-top: 2.5rem;">
         <h1 style="font-family: var(--font-heading); font-size: 1.8rem; margin: 0 0 0.6rem;">🗺️ Osmanlı Coğrafyası</h1>
         <p class="map-intro">
-            İmparatorluğun geniş coğrafyasından, sitedeki örnek belgelerle de bağlantılı birkaç şehri işaretledik.
-            Bir şehrin üzerine gelin veya tıklayın — bu ilk sürüm stilize/şematik bir gösterimdir, yıllara göre
-            sınır değişimlerini gösteren gerçek tarihi harita katmanları ileride eklenecek.
+            İmparatorluğun geniş coğrafyasından, sitedeki örnek belgelerle de bağlantılı birkaç şehri gerçek bir
+            tarihi kabartma harita üzerinde işaretledik. Bir şehrin üzerine gelin veya tıklayın.
         </p>
 
         <div class="map-frame">
-            <svg id="mapSvg" viewBox="0 0 1000 620" role="img" aria-label="Osmanlı coğrafyası şeması">
-                <ellipse class="map-region" cx="250" cy="160" rx="190" ry="110"></ellipse>
-                <text class="map-region-label" x="250" y="105">Rumeli</text>
-
-                <ellipse class="map-region" cx="480" cy="280" rx="230" ry="130"></ellipse>
-                <text class="map-region-label" x="480" y="215">Anadolu</text>
-
-                <ellipse class="map-region" cx="700" cy="380" rx="190" ry="140"></ellipse>
-                <text class="map-region-label" x="700" y="310">Şam ve Irak</text>
-
-                <ellipse class="map-region" cx="480" cy="520" rx="150" ry="90"></ellipse>
-                <text class="map-region-label" x="480" y="475">Mısır</text>
-
+            <img id="mapBaseImg" src="assets/harita-zemin.webp" alt="Avrupa, Akdeniz ve Yakın Doğu kabartma haritası">
+            <svg id="mapSvg" viewBox="0 0 1320 961" role="img" aria-label="Osmanlı coğrafyası — şehir işaretleri">
                 <g id="mapCities"></g>
             </svg>
         </div>
 
+        <p style="font-size: 0.78rem; color: var(--color-text-muted); margin-top: 0.6rem;">
+            Harita: Tom Elliott, Ancient World Mapping Center, University of North Carolina at Chapel Hill (© 2004).
+        </p>
+
         <div class="map-legend" id="mapLegend"></div>
     </main>
 
-    <script src="map.js?v=20260916-1"></script>
+    <script src="map.js?v=20260916-2"></script>
 </body>
 </html>
