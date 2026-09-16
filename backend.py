@@ -77,6 +77,7 @@ else:
 
 ALLOWED_DOCUMENT_EXTENSIONS = {"pdf", "doc", "docx", "txt", "jpg", "jpeg", "png", "webp"}
 DOCUMENTS_BUCKET = "documents"
+AVATARS_BUCKET = "avatars"
 document_retriever = None
 document_qa = None
 
@@ -2788,10 +2789,24 @@ def logout(current_user):
 @app.route("/api/auth/me", methods=["GET"])
 @token_required
 def get_current_user(current_user):
+    avatar_url = None
+    if current_user.avatar_storage_path and supabase_client is not None:
+        try:
+            signed_results = supabase_client.storage.from_(AVATARS_BUCKET).create_signed_urls(
+                [current_user.avatar_storage_path], 300
+            )
+            if signed_results:
+                avatar_url = signed_results[0].get("signedURL") or signed_results[0].get("signedUrl")
+        except Exception:
+            pass
+
     return jsonify({
         "user_id": current_user.id,
         "email": current_user.email,
         "created_at": current_user.created_at.isoformat() + "Z",
+        "full_name": current_user.full_name,
+        "title": current_user.title,
+        "avatar_url": avatar_url,
     })
 
 

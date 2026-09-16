@@ -109,6 +109,27 @@ function renderProfileSummary(profile) {
     profileAvatarImg.src = profile.avatar_url || 'assets/icon.png';
 }
 
+// Sol menüdeki hesap kartı — aynı profile fetch'inden dolduruluyor, ayrı
+// bir /api/auth/me isteği atmaya gerek yok.
+function renderSidebarProfileCard(profile) {
+    const nameEl = document.getElementById('sidebarProfileName');
+    const titleEl = document.getElementById('sidebarProfileTitle');
+    const avatarEl = document.getElementById('sidebarProfileAvatar');
+    if (!nameEl || !profile) return;
+    nameEl.textContent = profile.full_name || localFullNameFallback(profile.email) || (profile.email ? profile.email.split('@')[0] : '') || 'Profilim';
+    if (profile.title) {
+        titleEl.textContent = profile.title;
+        titleEl.hidden = false;
+    }
+    if (profile.avatar_url && avatarEl) {
+        avatarEl.innerHTML = '';
+        const img = document.createElement('img');
+        img.src = profile.avatar_url;
+        img.alt = '';
+        avatarEl.appendChild(img);
+    }
+}
+
 function requireLogin() {
     authToken = null;
     loginRequired.classList.remove('hidden');
@@ -138,6 +159,7 @@ async function loadProfile() {
         profileView.classList.remove('hidden');
         fillFormFromProfile(currentProfile);
         renderProfileSummary(currentProfile);
+        renderSidebarProfileCard(currentProfile);
     } catch (err) {
         loginRequired.classList.remove('hidden');
         loginRequired.querySelector('p').textContent = 'Profil bilgileri yüklenemedi: ' + err.message;

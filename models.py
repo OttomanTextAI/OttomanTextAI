@@ -20,6 +20,9 @@ class User(db.Model):
     email = db.Column(db.String(255), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    full_name = db.Column(db.String(150))
+    title = db.Column(db.String(150))
+    avatar_storage_path = db.Column(db.String(500))
 
 
 class Document(db.Model):

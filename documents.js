@@ -92,6 +92,38 @@ document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && sideDrawer.classList.contains('open')) closeSideDrawer();
 });
 
+// Sol menüdeki hesap kartı — /api/auth/me'den gelen full_name/title/
+// avatar_url ile dolduruluyor; giriş yoksa placeholder (silüet +
+// "Profilim") olduğu gibi kalır.
+function renderSidebarProfileCard(profile) {
+    const nameEl = document.getElementById('sidebarProfileName');
+    const titleEl = document.getElementById('sidebarProfileTitle');
+    const avatarEl = document.getElementById('sidebarProfileAvatar');
+    if (!nameEl || !profile) return;
+    const fallbackName = profile.email ? profile.email.split('@')[0] : '';
+    nameEl.textContent = profile.full_name || fallbackName || 'Profilim';
+    if (profile.title) {
+        titleEl.textContent = profile.title;
+        titleEl.hidden = false;
+    }
+    if (profile.avatar_url && avatarEl) {
+        avatarEl.innerHTML = '';
+        const img = document.createElement('img');
+        img.src = profile.avatar_url;
+        img.alt = '';
+        avatarEl.appendChild(img);
+    }
+}
+
+if (authToken) {
+    fetch(`${API_BASE_URL}/api/auth/me`, {
+        headers: { 'Authorization': `Bearer ${authToken}` }
+    })
+        .then(res => res.ok ? res.json() : null)
+        .then(renderSidebarProfileCard)
+        .catch(() => {});
+}
+
 function escapeHtml(text) {
     return (text || '')
         .replace(/&/g, '&amp;')

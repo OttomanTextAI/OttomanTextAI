@@ -4688,6 +4688,29 @@ ${transTextDisplay.textContent}
         item.addEventListener('click', closeSideDrawer);
     });
 
+    // Sol menüdeki hesap kartı — /api/auth/me'den gelen full_name/title/
+    // avatar_url ile dolduruluyor; giriş yoksa placeholder (silüet +
+    // "Profilim") olduğu gibi kalır.
+    function renderSidebarProfileCard(profile) {
+        const nameEl = document.getElementById('sidebarProfileName');
+        const titleEl = document.getElementById('sidebarProfileTitle');
+        const avatarEl = document.getElementById('sidebarProfileAvatar');
+        if (!nameEl || !profile) return;
+        const fallbackName = profile.email ? profile.email.split('@')[0] : '';
+        nameEl.textContent = profile.full_name || fallbackName || 'Profilim';
+        if (profile.title) {
+            titleEl.textContent = profile.title;
+            titleEl.hidden = false;
+        }
+        if (profile.avatar_url && avatarEl) {
+            avatarEl.innerHTML = '';
+            const img = document.createElement('img');
+            img.src = profile.avatar_url;
+            img.alt = '';
+            avatarEl.appendChild(img);
+        }
+    }
+
     // --- Modal Management ---
     document.querySelectorAll('[data-modal]').forEach(trigger => {
         trigger.addEventListener('click', (e) => {
@@ -4973,7 +4996,10 @@ ${transTextDisplay.textContent}
         fetchWithTimeout(`${API_BASE_URL}/api/auth/me`, {
             headers: { 'Authorization': `Bearer ${state.authToken}` }
         }).then(res => {
-            if (!res.ok) clearAuthSession();
+            if (!res.ok) { clearAuthSession(); return null; }
+            return res.json();
+        }).then(profile => {
+            if (profile) renderSidebarProfileCard(profile);
         }).catch(() => {});
     }
 

@@ -55,6 +55,40 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.key === 'Escape' && sideDrawer.classList.contains('open')) closeSideDrawer();
     });
 
+    // Sol menüdeki hesap kartı — /api/auth/me'den gelen full_name/title/
+    // avatar_url ile dolduruluyor; giriş yoksa placeholder (silüet +
+    // "Profilim") olduğu gibi kalır.
+    const authToken = localStorage.getItem('auth_token');
+
+    function renderSidebarProfileCard(profile) {
+        const nameEl = document.getElementById('sidebarProfileName');
+        const titleEl = document.getElementById('sidebarProfileTitle');
+        const avatarEl = document.getElementById('sidebarProfileAvatar');
+        if (!nameEl || !profile) return;
+        const fallbackName = profile.email ? profile.email.split('@')[0] : '';
+        nameEl.textContent = profile.full_name || fallbackName || 'Profilim';
+        if (profile.title) {
+            titleEl.textContent = profile.title;
+            titleEl.hidden = false;
+        }
+        if (profile.avatar_url && avatarEl) {
+            avatarEl.innerHTML = '';
+            const img = document.createElement('img');
+            img.src = profile.avatar_url;
+            img.alt = '';
+            avatarEl.appendChild(img);
+        }
+    }
+
+    if (authToken) {
+        fetch('https://ottoman-text-ai.onrender.com/api/auth/me', {
+            headers: { 'Authorization': `Bearer ${authToken}` }
+        })
+            .then(res => res.ok ? res.json() : null)
+            .then(renderSidebarProfileCard)
+            .catch(() => {});
+    }
+
     // --- Şehir verisi ---
     // 'sample' alanı, ana sayfadaki "Örnek Osmanlıca Belgeler" bölümündeki
     // gerçek belgelerden birine karşılık geliyorsa dolduruluyor (bkz.
