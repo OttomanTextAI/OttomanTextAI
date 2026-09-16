@@ -1544,7 +1544,9 @@ def assistant_endpoint():
         JSON body:
         {
             "message": "...",
-            "history": [...]
+            "history": [...],
+            "selected_context": {...},
+            "document_text": "..."
         }
 
     Returns:
@@ -1554,7 +1556,7 @@ def assistant_endpoint():
             "sources": [...]
         }
     """
-    global document_qa
+    global document_qa, document_retriever
 
     try:
         data = request.get_json(silent=True) or {}
@@ -1586,32 +1588,47 @@ def assistant_endpoint():
                 }
             ), 400
 
-        if document_qa is None:
-            document_text = str(
-                data.get("document_text") or ""
-            ).strip()
+        document_text = str(
+            data.get("document_text") or ""
+        ).strip()
 
-            if document_text:
-                print(
-                    "[ASSISTANT RAG] In-memory document missing; "
-                    "rebuilding from request text.",
-                    flush=True,
-                )
+        needs_rag_rebuild = (
+            document_qa is None
+            or document_retriever is None
+            or not document_retriever.document_indexed
+            or not document_retriever.document_text
+            or (
+                document_text
+                and document_retriever.document_text.strip()
+                != document_text
+            )
+        )
 
-                _index_translation_for_rag({
-                    "trans": document_text
-                })
+        if needs_rag_rebuild and document_text:
+            print(
+                "[ASSISTANT RAG] RAG index missing or document changed; "
+                "rebuilding from request text.",
+                flush=True,
+            )
 
-            if document_qa is None:
-                return jsonify(
-                    {
-                        "reply": (
-                            "Belge hakkında yardımcı olabilmem için "
-                            "önce bir belgenin işlenmesi gerekiyor."
-                        ),
-                        "sources": [],
-                    }
-                )
+            _index_translation_for_rag({
+                "trans": document_text
+            })
+
+        if (
+            document_qa is None
+            or document_retriever is None
+            or not document_retriever.document_indexed
+        ):
+            return jsonify(
+                {
+                    "reply": (
+                        "Belge hakkında yardımcı olabilmem için "
+                        "önce bir belgenin işlenmesi gerekiyor."
+                    ),
+                    "sources": [],
+                }
+            )
 
         result = document_qa.answer(
             question=user_message,
