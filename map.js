@@ -278,6 +278,7 @@ document.addEventListener('DOMContentLoaded', () => {
         {
             id: 'sam', name: 'Şam', lat: 33.5138, lng: 36.2765,
             cover: 'assets/sehirler/sam.jpg',
+            coverPosition: 'center bottom',
             era: 'Osmanlı Suriyesi',
             blurb: 'Osmanlı Suriyesi\'nin idari merkezlerinden biri ve hac yolunun önemli bir durağıydı.',
             documents: [
@@ -377,6 +378,7 @@ document.addEventListener('DOMContentLoaded', () => {
         {
             id: 'tiflis', name: 'Tiflis', lat: 41.7151, lng: 44.8271,
             cover: 'assets/sehirler/tiflis.jpg',
+            coverPosition: 'center bottom',
             era: 'Kafkasya — Osmanlı-Safevi Sınır Bölgesi',
             blurb: 'Kafkasya\'nın önemli bir merkeziydi; Osmanlı orduları tarafından zaman zaman ele geçirildi ve idare edildi.',
             documents: [
@@ -402,6 +404,7 @@ document.addEventListener('DOMContentLoaded', () => {
         {
             id: 'trablusgarp', name: 'Trablusgarp', lat: 32.8872, lng: 13.1913,
             cover: 'assets/sehirler/trablusgarp.jpg',
+            coverPosition: 'center top',
             era: 'Trablusgarp Savaşı (1911–1912)',
             blurb: 'İtalya\'nın işgaline karşı verilen savunma savaşı burada yaşandı; Mustafa Kemal ve Enver Bey gibi subaylar gönüllü olarak burada görev aldı.',
             category: 'wwi',
@@ -476,6 +479,7 @@ document.addEventListener('DOMContentLoaded', () => {
         {
             id: 'inonu', name: 'İnönü', lat: 39.8264, lng: 30.1544,
             cover: 'assets/sehirler/inonu.jpg',
+            coverPosition: 'center bottom',
             era: 'Kurtuluş Savaşı — İnönü Muharebeleri (1921)',
             blurb: 'Birinci ve İkinci İnönü Muharebeleri\'nin yapıldığı, düzenli ordunun ilk büyük zaferlerini kazandığı cephe.',
             category: 'independence',
@@ -490,6 +494,7 @@ document.addEventListener('DOMContentLoaded', () => {
         {
             id: 'afyonkarahisar', name: 'Afyonkarahisar', lat: 38.7507, lng: 30.5567,
             cover: 'assets/sehirler/afyonkarahisar.jpg',
+            coverPosition: 'center bottom',
             era: 'Kurtuluş Savaşı — Büyük Taarruz\'un Başlangıcı (26 Ağustos 1922)',
             blurb: 'Büyük Taarruz, Mustafa Kemal\'in karargâh kurduğu Kocatepe\'den, buradan başlatıldı.',
             category: 'independence',
@@ -699,13 +704,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     loadYearBoundary(updateYearLabel());
 
-    // city.category sadece alt başlık gruplaması için kullanılıyor (bkz.
-    // aşağıdaki headingsShown) — işaretler/rozetler artık hepsi aynı
-    // (altın) renkte, kategoriye göre renk farkı yok.
+    // city.category alttaki şehir dizininde grup başlığı olarak kullanılıyor
+    // (bkz. buildLegend()) — işaretler/rozetler hepsi aynı (altın) renkte,
+    // kategoriye göre renk farkı yok. 'default' = category alanı olmayan
+    // (Osmanlı imparatorluk dönemi) şehirler.
     const CATEGORY_META = {
+        default: { label: 'Osmanlı Şehirleri' },
         wwi: { label: 'Trablusgarp ve Birinci Dünya Savaşı (1911–1918)' },
         independence: { label: 'Kurtuluş Savaşı (1919–1922)' },
     };
+    const CATEGORY_ORDER = ['default', 'wwi', 'independence'];
 
     function cityIcon(city) {
         return L.divIcon({
@@ -789,6 +797,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const coverSrc = city.cover || (docs.length ? docs[0].file : null);
         if (coverSrc) {
             cityModalCover.alt = city.cover ? city.name : docs[0].title;
+            cityModalCover.style.objectPosition = city.coverPosition || 'center';
             cityModalCover.src = coverSrc;
             // Class'ı kaldırıp bir reflow sonrası geri eklemek, aynı <img>
             // elemanı şehirden şehre yeniden kullanıldığında animasyonun her
@@ -826,7 +835,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.key === 'Escape' && !cityModal.classList.contains('hidden')) closeCityModal();
     });
 
-    const headingsShown = new Set();
+    // Şehir başına marker + hover önizlemesi kuruluyor; şehir dizini
+    // (aşağıdaki buildLegend()) ayrı bir geçişte, kategoriye göre gruplayıp
+    // alfabetik sıralayarak oluşturuluyor — bu yüzden her şehrin marker'ına
+    // sonradan (dizinden) erişebilmek için id'ye göre saklanıyor.
+    const markersById = {};
+    const itemsById = {};
 
     CITIES.forEach(city => {
         const marker = L.marker([city.lat, city.lng], { icon: cityIcon(city), keyboard: true, title: city.name })
@@ -842,25 +856,65 @@ document.addEventListener('DOMContentLoaded', () => {
             ${renderDocsHtml(city.documents || [])}
         `, { className: 'map-city-hover', direction: 'top', offset: [0, -12] });
 
-        const categoryMeta = city.category && CATEGORY_META[city.category];
-        if (categoryMeta && !headingsShown.has(city.category)) {
+        markersById[city.id] = marker;
+    });
+
+    // --- Şehir dizini (alttaki liste) ---
+    // Kategoriye göre gruplanır (Osmanlı Şehirleri / Trablusgarp ve I. Dünya
+    // Savaşı / Kurtuluş Savaşı), her grup içinde Türkçe alfabetik sıraya
+    // dizilir — 42 şehri tek bir düzensiz "chip bulutu" yerine taranabilir
+    // bir dizin gibi göstermek için.
+    function buildLegend() {
+        const groups = new Map();
+        CATEGORY_ORDER.forEach(key => groups.set(key, []));
+        CITIES.forEach(city => {
+            const key = city.category && CATEGORY_META[city.category] ? city.category : 'default';
+            groups.get(key).push(city);
+        });
+
+        CATEGORY_ORDER.forEach(key => {
+            const cities = groups.get(key);
+            if (!cities.length) return;
+            cities.sort((a, b) => a.name.localeCompare(b.name, 'tr'));
+
+            const group = document.createElement('div');
+            group.className = 'map-legend-group';
+
             const heading = document.createElement('span');
             heading.className = 'map-legend-heading';
-            heading.textContent = categoryMeta.label;
-            mapLegend.appendChild(heading);
-            headingsShown.add(city.category);
-        }
+            heading.textContent = CATEGORY_META[key].label;
+            group.appendChild(heading);
 
-        const chip = document.createElement('button');
-        chip.type = 'button';
-        chip.className = 'map-legend-chip';
-        chip.textContent = city.name;
-        mapLegend.appendChild(chip);
+            const list = document.createElement('div');
+            list.className = 'map-legend-list';
 
-        marker.on('click', () => openCityModal(city, chip, marker.getElement()));
-        chip.addEventListener('click', () => {
-            map.flyTo([city.lat, city.lng], Math.max(map.getZoom(), map.getMinZoom() + 2), { duration: 0.6 });
-            openCityModal(city, chip, marker.getElement());
+            cities.forEach(city => {
+                const marker = markersById[city.id];
+                const item = document.createElement('button');
+                item.type = 'button';
+                item.className = 'map-legend-item';
+                item.textContent = city.name;
+                item.addEventListener('click', () => {
+                    map.flyTo([city.lat, city.lng], Math.max(map.getZoom(), map.getMinZoom() + 2), { duration: 0.6 });
+                    openCityModal(city, item, marker.getElement());
+                });
+                list.appendChild(item);
+                itemsById[city.id] = item;
+            });
+
+            group.appendChild(list);
+            mapLegend.appendChild(group);
+        });
+    }
+
+    buildLegend();
+
+    // Marker'a doğrudan (dizinden değil) tıklanınca da aynı pencere açılır —
+    // dizindeki karşılığı da (itemsById) vurgulansın diye bu kablolama
+    // buildLegend()'den SONRA yapılıyor.
+    CITIES.forEach(city => {
+        markersById[city.id].on('click', () => {
+            openCityModal(city, itemsById[city.id], markersById[city.id].getElement());
         });
     });
 });

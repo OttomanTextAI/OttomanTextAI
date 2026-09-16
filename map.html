@@ -259,6 +259,7 @@
             margin: 0 -2rem 1.2rem -2rem;
             max-height: 240px;
             object-fit: cover;
+            object-position: center;
             border-radius: var(--radius-lg) var(--radius-lg) 0 0;
             opacity: 0;
         }
@@ -358,39 +359,67 @@
             color: var(--color-gold);
         }
 
+        /* Alttaki şehir dizini — artık dağınık bir "chip" bulutu değil,
+           kategoriye göre gruplanmış, her grup içinde alfabetik sıralı,
+           çok sütunlu bir dizin/indeks (bkz. map.js'teki buildLegend()). */
         .map-legend {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            margin-top: 1.2rem;
+            margin-top: 1.8rem;
         }
-        .map-legend-chip {
-            background: var(--bg-card-subtle);
-            border: 1px solid var(--color-border);
-            border-radius: var(--radius-full);
-            padding: 0.4rem 0.9rem;
-            font-size: 0.82rem;
-            font-weight: 600;
-            cursor: pointer;
-            color: var(--color-text-main);
-            transition: all var(--transition-fast);
+        .map-legend-group {
+            margin-top: 1.8rem;
         }
-        .map-legend-chip:hover,
-        .map-legend-chip.active {
-            border-color: var(--color-gold);
-            background: var(--color-gold-bg);
-            color: var(--color-gold);
+        .map-legend-group:first-child {
+            margin-top: 0;
         }
         .map-legend-heading {
-            flex-basis: 100%;
-            margin-top: 0.6rem;
-            font-size: 0.7rem;
-            font-weight: 700;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-            color: var(--color-text-muted);
+            display: block;
+            font-family: var(--font-heading);
+            font-style: italic;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--color-gold);
+            padding-bottom: 0.5rem;
+            margin-bottom: 0.7rem;
+            border-bottom: 1px solid var(--color-border);
         }
-        .map-legend-heading:first-child { margin-top: 0; }
+        .map-legend-list {
+            columns: 220px;
+            column-gap: 2rem;
+        }
+        .map-legend-item {
+            display: block;
+            width: 100%;
+            break-inside: avoid;
+            text-align: left;
+            background: none;
+            border: none;
+            border-bottom: 1px solid transparent;
+            padding: 0.32rem 0;
+            font-size: 0.86rem;
+            color: var(--color-text-main);
+            cursor: pointer;
+            transition: color var(--transition-fast), border-color var(--transition-fast);
+        }
+        .map-legend-item:hover {
+            color: var(--color-gold);
+            border-color: var(--color-border);
+        }
+        .map-legend-item.active {
+            color: var(--color-gold);
+            font-weight: 700;
+        }
+
+        .map-divider {
+            display: block;
+            width: 100%;
+            max-width: 480px;
+            height: auto;
+            margin: 2.4rem auto 0.4rem;
+            opacity: 0.85;
+        }
+        body.dark-theme .map-divider {
+            filter: brightness(0.92);
+        }
     </style>
 </head>
 <body class="dark-theme">
@@ -516,6 +545,8 @@
         </p>
 
         <div class="map-legend" id="mapLegend"></div>
+
+        <img src="assets/ornament-flourish.png" alt="" aria-hidden="true" class="map-divider">
     </main>
 
     <!-- Şehre tıklanınca açılan bilgi penceresi — sitenin genel modal
@@ -547,6 +578,6 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
-    <script src="map.js?v=20260916-16"></script>
+    <script src="map.js?v=20260916-19"></script>
 </body>
 </html>
