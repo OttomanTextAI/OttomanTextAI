@@ -64,6 +64,59 @@
             stroke: var(--color-gold);
         }
 
+        /* Seçili yıldaki Osmanlı sınırı — ülke şekillerinin (.map-country-shape,
+           soluk/sabit) üzerine, daha belirgin bir dolgu/çizgiyle biner (bkz.
+           map.js'teki loadYearBoundary() — her yıl değişiminde bringToFront()
+           ile üstte tutulur). */
+        .map-ottoman-boundary {
+            fill: var(--color-gold);
+            stroke: var(--color-gold-light);
+        }
+
+        .map-timeline {
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
+            margin-top: 1rem;
+            padding: 0.7rem 1.1rem;
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+        }
+        .map-timeline-label {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--color-text-muted);
+            flex-shrink: 0;
+        }
+        .map-timeline-slider {
+            flex: 1;
+            accent-color: var(--color-gold);
+            cursor: pointer;
+        }
+        .map-timeline-year {
+            font-family: var(--font-heading);
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: var(--color-gold);
+            min-width: 3.6em;
+            text-align: right;
+        }
+        .map-timeline-status {
+            font-size: 0.78rem;
+            color: var(--color-text-muted);
+            font-style: italic;
+            flex-shrink: 0;
+        }
+        .map-timeline-credit {
+            font-size: 0.74rem;
+            color: var(--color-text-light);
+            margin-top: 0.4rem;
+        }
+        .map-timeline-credit a {
+            color: inherit;
+        }
+
         /* Şehir işaretleri artık Leaflet divIcon'u — nokta + her zaman görünen
            etiket, haritayı yakınlaştırdıkça/uzaklaştırdıkça konumunu koruyor
            (bkz. map.js'teki cityIcon()). */
@@ -93,6 +146,7 @@
         .map-city-marker.active .map-city-dot {
             background: var(--color-primary-navy);
         }
+
         .map-city-label {
             position: absolute;
             left: 12px;
@@ -211,6 +265,16 @@
             background: var(--color-gold-bg);
             color: var(--color-gold);
         }
+        .map-legend-heading {
+            flex-basis: 100%;
+            margin-top: 0.6rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            color: var(--color-text-muted);
+        }
+        .map-legend-heading:first-child { margin-top: 0; }
     </style>
 </head>
 <body class="dark-theme">
@@ -294,18 +358,29 @@
         <p class="map-intro">
             İmparatorluğun geniş coğrafyasından, sitedeki örnek belgelerle de bağlantılı birkaç şehri gerçek
             koordinatlarıyla işaretledik. Haritayı sürükleyip fare tekerleğiyle yakınlaştırabilir, bir şehrin
-            üzerine gelip tıklayabilirsiniz.
+            üzerine gelip tıklayabilirsiniz. Alttaki şeridi sürükleyerek imparatorluğun yıllara göre sınırlarını
+            da görebilirsiniz.
         </p>
 
         <div class="map-frame">
             <div id="mapContainer" role="img" aria-label="Osmanlı coğrafyası — gezilebilir harita"></div>
         </div>
 
+        <div class="map-timeline" id="mapTimeline">
+            <span class="map-timeline-label">Sınırlar</span>
+            <input type="range" id="mapYearSlider" class="map-timeline-slider" min="0" max="15" step="1" value="4" aria-label="Yıla göre imparatorluk sınırları">
+            <span class="map-timeline-year" id="mapTimelineYear">1600</span>
+            <span class="map-timeline-status" id="mapTimelineStatus" hidden>yükleniyor…</span>
+        </div>
+        <p class="map-timeline-credit">
+            Sınır verisi: <a href="https://github.com/aourednik/historical-basemaps" target="_blank" rel="noopener">aourednik/historical-basemaps</a> (yaklaşık tarihi sınırlar)
+        </p>
+
         <div class="map-legend" id="mapLegend"></div>
     </main>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
-    <script src="map.js?v=20260916-3"></script>
+    <script src="map.js?v=20260916-7"></script>
 </body>
 </html>
