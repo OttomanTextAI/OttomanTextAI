@@ -446,21 +446,23 @@ body {
     padding-top: 0.2rem;
 }
 
-/* "Hesap" bölüm başlığı ile profil kartı arasındaki küçük etiket. */
+/* Kartın en üstünde, avatarla aynı sol hizada küçük "PROFİLİM" etiketi
+   — HTML'de "Profilim" olarak kalıyor, büyük harf gösterimi CSS'ten. */
 .side-drawer-profile-label {
     display: block;
-    padding: 0 0.9rem 0.35rem;
-    font-size: 0.75rem;
+    margin-bottom: 0.5rem;
+    font-size: 0.72rem;
     font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
     color: var(--on-header-text-muted);
 }
 
 /* Hesap bölümündeki profil kartı — eski düz "Profilim" linkinin yerini
-   aldı, tamamı tıklanabilir. */
+   aldı, tamamı tıklanabilir. Dikey: üstte etiket, altında avatar+isim satırı. */
 .side-drawer-profile-card {
     display: flex;
-    align-items: center;
-    gap: 0.85rem;
+    flex-direction: column;
     width: 100%;
     background: var(--bg-input);
     border: 1px solid transparent;
@@ -470,6 +472,13 @@ body {
     text-decoration: none;
     color: var(--on-header-text);
     transition: background var(--transition-fast), border-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.side-drawer-profile-card-row {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    width: 100%;
 }
 
 .side-drawer-profile-card:hover {
