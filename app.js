@@ -4711,6 +4711,113 @@ ${transTextDisplay.textContent}
         }
     }
 
+    // --- Navbar Arama ---
+    // Büyüteç ikonuna tıklayınca açılan küçük dropdown; documents.html'deki
+    // arama ile aynı GET /api/documents?q= uç noktasını (sadece giriş
+    // yapmış kullanıcının kendi belgeleri) kullanır, en fazla 4 sonuç
+    // gösterir. Tam sonuçlar için documents.html?search=... 'a yönlendirir.
+    (function initNavSearch() {
+        const navSearchBtn = document.getElementById('navSearchBtn');
+        const navSearchPanel = document.getElementById('navSearchPanel');
+        const navSearchInput = document.getElementById('navSearchInput');
+        const navSearchResults = document.getElementById('navSearchResults');
+        if (!navSearchBtn) return;
+
+        function closeNavSearch() {
+            navSearchPanel.classList.add('hidden');
+            navSearchBtn.setAttribute('aria-expanded', 'false');
+        }
+
+        navSearchBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const opening = navSearchPanel.classList.contains('hidden');
+            navSearchPanel.classList.toggle('hidden', !opening);
+            navSearchBtn.setAttribute('aria-expanded', String(opening));
+            if (opening) navSearchInput.focus();
+        });
+
+        document.addEventListener('click', (e) => {
+            if (!navSearchPanel.classList.contains('hidden') && !navSearchPanel.contains(e.target) && !navSearchBtn.contains(e.target)) {
+                closeNavSearch();
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeNavSearch();
+        });
+
+        function goToDocumentsSearch(query, docId) {
+            const params = new URLSearchParams();
+            if (query) params.set('search', query);
+            if (docId) params.set('open', docId);
+            window.location.href = `documents.html?${params.toString()}`;
+        }
+
+        function renderNavSearchResults(docs, query) {
+            if (!docs.length) {
+                navSearchResults.innerHTML = `<p class="nav-search-empty">Eşleşen belge bulunamadı.</p>`;
+                return;
+            }
+            const itemsHtml = docs.slice(0, 4).map(doc => `
+                <button type="button" class="nav-search-result-item" data-doc-id="${doc.id}">
+                    <span class="nav-search-result-thumb">${doc.thumbnail_url ? `<img src="${doc.thumbnail_url}" alt="">` : '📄'}</span>
+                    <span class="nav-search-result-title">${escapeHtml(doc.title || doc.filename || '')}</span>
+                </button>
+            `).join('');
+            navSearchResults.innerHTML = itemsHtml + `<a href="#" class="nav-search-more" data-query="${escapeHtml(query)}">Daha fazlası →</a>`;
+        }
+
+        let navSearchTimer = null;
+        let navSearchRequestId = 0;
+        navSearchInput.addEventListener('input', () => {
+            clearTimeout(navSearchTimer);
+            const query = navSearchInput.value.trim();
+            if (!query) {
+                navSearchResults.innerHTML = '';
+                return;
+            }
+            if (!state.authToken) {
+                navSearchResults.innerHTML = `<p class="nav-search-empty">Arama için giriş yapmalısınız.</p>`;
+                return;
+            }
+            navSearchTimer = setTimeout(async () => {
+                const requestId = ++navSearchRequestId;
+                try {
+                    const res = await fetch(`${API_BASE_URL}/api/documents?per_page=4&q=${encodeURIComponent(query)}`, {
+                        headers: { 'Authorization': `Bearer ${state.authToken}` }
+                    });
+                    if (requestId !== navSearchRequestId) return;
+                    if (!res.ok) { navSearchResults.innerHTML = ''; return; }
+                    const data = await res.json();
+                    renderNavSearchResults(data.documents || [], query);
+                } catch (err) {
+                    navSearchResults.innerHTML = '';
+                }
+            }, 350);
+        });
+
+        navSearchInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const query = navSearchInput.value.trim();
+                if (query) goToDocumentsSearch(query);
+            }
+        });
+
+        navSearchResults.addEventListener('click', (e) => {
+            const more = e.target.closest('.nav-search-more');
+            if (more) {
+                e.preventDefault();
+                goToDocumentsSearch(more.getAttribute('data-query'));
+                return;
+            }
+            const item = e.target.closest('.nav-search-result-item');
+            if (item) {
+                goToDocumentsSearch(navSearchInput.value.trim(), item.getAttribute('data-doc-id'));
+            }
+        });
+    })();
+
     // --- Modal Management ---
     document.querySelectorAll('[data-modal]').forEach(trigger => {
         trigger.addEventListener('click', (e) => {

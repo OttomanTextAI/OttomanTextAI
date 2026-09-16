@@ -738,4 +738,18 @@ backToListBtn.addEventListener('click', () => {
     loadDocuments();
 });
 
-loadDocuments();
+// Navbar arama kutusundan "Daha fazlası" / Enter ile buraya gelindiğinde
+// (documents.html?search=...&open=<docId>) arama kutusunu doldurup aynı
+// sorguyla yükler; sonuç listesinde tıklanan belge varsa detayını açar.
+const initialParams = new URLSearchParams(window.location.search);
+const initialSearch = initialParams.get('search');
+const initialOpenId = initialParams.get('open');
+if (initialSearch) {
+    docSearchInput.value = initialSearch;
+}
+
+loadDocuments().then(() => {
+    if (initialOpenId && docsCache[initialOpenId]) {
+        showDocumentDetail(initialOpenId);
+    }
+});

@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
 
     <!-- Custom Stylesheet -->
-    <link rel="stylesheet" href="style.css?v=20260916-15">
+    <link rel="stylesheet" href="style.css?v=20260916-16">
 </head>
 <body class="dark-theme">
     <!-- Header Navigation Bar -->
@@ -43,6 +43,15 @@
             </nav>
 
             <div class="nav-actions">
+                <div class="nav-search" id="navSearch">
+                    <button type="button" class="icon-btn nav-search-btn" id="navSearchBtn" title="Ara" aria-expanded="false" aria-controls="navSearchPanel">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    </button>
+                    <div class="nav-search-panel hidden" id="navSearchPanel">
+                        <input type="text" id="navSearchInput" class="nav-search-input" placeholder="Belgelerde ara..." autocomplete="off">
+                        <div class="nav-search-results" id="navSearchResults"></div>
+                    </div>
+                </div>
                 <button class="icon-btn theme-toggle-btn" id="themeToggleBtn" title="Karanlık/Aydınlık Tema">
                     <span class="theme-icon">🌙</span>
                 </button>
@@ -71,6 +80,7 @@
         <div class="side-drawer-body">
             <img src="assets/ornament-divider.png" alt="" aria-hidden="true" class="side-drawer-flourish">
             <span class="side-drawer-section-label">Hesap</span>
+            <span class="side-drawer-profile-label">Profilim</span>
             <a href="profile.html" class="side-drawer-profile-card" id="sidebarProfileCard">
                 <span class="side-drawer-profile-avatar" id="sidebarProfileAvatar">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"></path></svg>
@@ -956,7 +966,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 
     <!-- Custom JavaScript -->
-   <script src="app.js?v=20260916-2"></script>
+   <script src="app.js?v=20260916-3"></script>
 
 </body>
 </html>

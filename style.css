@@ -446,6 +446,15 @@ body {
     padding-top: 0.2rem;
 }
 
+/* "Hesap" bölüm başlığı ile profil kartı arasındaki küçük etiket. */
+.side-drawer-profile-label {
+    display: block;
+    padding: 0 0.9rem 0.35rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--on-header-text-muted);
+}
+
 /* Hesap bölümündeki profil kartı — eski düz "Profilim" linkinin yerini
    aldı, tamamı tıklanabilir. */
 .side-drawer-profile-card {
@@ -523,6 +532,123 @@ body {
     display: flex;
     align-items: center;
     gap: 0.75rem;
+}
+
+/* Navbar arama — büyüteç ikonuna tıklayınca açılan küçük dropdown, sadece
+   kullanıcının kendi belgelerinde arar (bkz. app.js/notes.js/map.js/
+   profile.js'teki initNavSearch — documents.html'deki arama ile aynı
+   /api/documents?q= uç noktasını kullanır). */
+.nav-search {
+    position: relative;
+}
+
+.nav-search-panel {
+    position: absolute;
+    top: calc(100% + 0.6rem);
+    right: 0;
+    width: 280px;
+    max-width: calc(100vw - 2rem);
+    background: var(--bg-card-subtle);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
+    padding: 0.7rem;
+    z-index: 50;
+}
+
+.nav-search-input {
+    width: 100%;
+    background: var(--bg-input);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 0.55rem 0.8rem;
+    font-size: 0.88rem;
+    color: var(--color-text-main);
+    box-sizing: border-box;
+    font-family: inherit;
+}
+
+.nav-search-input:focus {
+    outline: none;
+    border-color: var(--color-gold);
+}
+
+.nav-search-results {
+    margin-top: 0.6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+.nav-search-result-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 0.4rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    text-align: left;
+    color: var(--color-text-main);
+    font-family: inherit;
+}
+
+.nav-search-result-item:hover {
+    background: var(--bg-input);
+}
+
+.nav-search-result-thumb {
+    flex-shrink: 0;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    background: var(--bg-input);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+}
+
+.nav-search-result-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.nav-search-result-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.nav-search-empty {
+    font-size: 0.82rem;
+    color: var(--color-text-muted);
+    padding: 0.5rem 0.3rem;
+}
+
+.nav-search-more {
+    display: block;
+    text-align: center;
+    margin-top: 0.4rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--color-border);
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--color-gold);
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.nav-search-more:hover {
+    color: var(--color-gold-light);
 }
 
 .icon-btn {
