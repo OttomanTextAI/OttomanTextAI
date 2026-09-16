@@ -531,6 +531,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // kullandığı .modal-overlay/.modal-card/.results-tabs bileşenleriyle
     // aynı görünüm (bkz. style.css).
     const cityModal = document.getElementById('cityModal');
+    const cityModalCard = document.getElementById('cityModalCard');
+    const cityModalCoverLink = document.getElementById('cityModalCoverLink');
+    const cityModalCover = document.getElementById('cityModalCover');
     const cityModalClose = document.getElementById('cityModalClose');
     const cityModalTitle = document.getElementById('cityModalTitle');
     const cityModalEra = document.getElementById('cityModalEra');
@@ -571,6 +574,21 @@ document.addEventListener('DOMContentLoaded', () => {
         cityModalBlurb.textContent = city.blurb;
 
         const docs = city.documents || [];
+
+        // Modal'ın üstündeki "kapak" görseli — ilişkili belgelerden ilkinin
+        // görseli (varsa); yoksa modal düz metinle açılır, kapak alanı hiç
+        // yer kaplamaz.
+        if (docs.length) {
+            cityModalCover.src = docs[0].file;
+            cityModalCover.alt = docs[0].title;
+            cityModalCoverLink.href = `index.html?sample=${encodeURIComponent(docs[0].key)}`;
+            cityModalCoverLink.hidden = false;
+            cityModalCard.classList.add('has-cover');
+        } else {
+            cityModalCoverLink.hidden = true;
+            cityModalCard.classList.remove('has-cover');
+        }
+
         cityModalDocs.innerHTML = docs.length
             ? docs.map(doc => `
                 <a class="map-city-popover-sample" href="index.html?sample=${encodeURIComponent(doc.key)}">
@@ -600,6 +618,14 @@ document.addEventListener('DOMContentLoaded', () => {
     CITIES.forEach(city => {
         const marker = L.marker([city.lat, city.lng], { icon: cityIcon(city), keyboard: true, title: city.name })
             .addTo(map);
+
+        // Üzerine gelince (tıklamadan önce) hafif bir önizleme — büyük
+        // pencere (openCityModal) sadece tıklanınca açılır.
+        marker.bindTooltip(`
+            <span class="map-city-popover-era">${city.era}</span>
+            <div class="entity-popover-text">${city.name}</div>
+            <div class="entity-popover-context">${city.blurb}</div>
+        `, { className: 'map-city-hover', direction: 'top', offset: [0, -12] });
 
         const categoryMeta = city.category && CATEGORY_META[city.category];
         if (categoryMeta && !headingsShown.has(city.category)) {

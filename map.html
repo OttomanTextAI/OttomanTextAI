@@ -249,6 +249,69 @@
             color: var(--color-text-muted);
             font-size: 0.9rem;
         }
+
+        /* Modal'ın üstündeki görsel — ilgili belgenin görseli (varsa),
+           kartın kendi kenar boşluğunu (2rem) aşarak üstte tam genişlikte
+           "kapak" gibi duruyor (bkz. map.js'teki openCityModal()). */
+        .map-city-modal-cover-link { display: block; }
+        .map-city-modal-cover {
+            display: block;
+            width: calc(100% + 4rem);
+            margin: 0 -2rem 1.2rem -2rem;
+            max-height: 240px;
+            object-fit: cover;
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        }
+        #cityModal .modal-card.has-cover {
+            padding-top: 0;
+        }
+        #cityModal .modal-card.has-cover .modal-close {
+            background: rgba(13, 22, 39, 0.55);
+            color: #fff;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #cityModal .modal-card.has-cover .modal-close:hover {
+            background: rgba(13, 22, 39, 0.75);
+            color: #fff;
+        }
+
+        /* Şehrin üzerine gelince (tıklamadan önce) beliren hafif önizleme —
+           Leaflet'in kendi tooltip mekanizması (bkz. map.js'teki
+           marker.bindTooltip()); büyük pencere sadece TIKLANINCA açılır. */
+        .map-city-hover.leaflet-tooltip {
+            background: var(--bg-card);
+            color: var(--color-text-main);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-md);
+            padding: 0.6rem 0.8rem;
+            font-family: var(--font-sans);
+            max-width: 220px;
+            white-space: normal;
+            opacity: 1;
+        }
+        .map-city-hover.leaflet-tooltip-top::before {
+            border-top-color: var(--bg-card);
+        }
+        .map-city-hover .map-city-popover-era {
+            margin-bottom: 0.4rem;
+        }
+        .map-city-hover .entity-popover-text {
+            font-weight: 700;
+            color: var(--color-text-main);
+            margin-bottom: 0.2rem;
+        }
+        .map-city-hover .entity-popover-context {
+            color: var(--color-text-muted);
+            font-size: 0.8rem;
+            line-height: 1.4;
+        }
+
         .map-city-popover-sample {
             display: flex;
             align-items: center;
@@ -424,7 +487,10 @@
          iskeleti (.modal-overlay/.modal-card/.results-tabs) kullanılıyor,
          içerik map.js'teki openCityModal() tarafından dolduruluyor. -->
     <div class="modal-overlay hidden" id="cityModal">
-        <div class="modal-card modal-lg">
+        <div class="modal-card modal-lg" id="cityModalCard">
+            <a class="map-city-modal-cover-link" id="cityModalCoverLink" href="index.html" hidden>
+                <img class="map-city-modal-cover" id="cityModalCover" alt="">
+            </a>
             <button class="modal-close" id="cityModalClose" aria-label="Kapat">&times;</button>
             <h2 class="modal-title" id="cityModalTitle"></h2>
 
@@ -446,6 +512,6 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
-    <script src="map.js?v=20260916-9"></script>
+    <script src="map.js?v=20260916-10"></script>
 </body>
 </html>
