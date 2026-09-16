@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Harita — Divane</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=Noto+Naskh+Arabic:wght@400;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css?v=20260915-13">
+    <style>
+        .map-intro {
+            max-width: 720px;
+            color: var(--color-text-muted);
+            font-size: 0.92rem;
+            line-height: 1.6;
+            margin: 0 0 1.6rem;
+        }
+        .map-frame {
+            position: relative;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--color-border);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            background:
+                radial-gradient(circle at 80% 15%, rgba(197, 160, 89, 0.14), transparent 55%),
+                linear-gradient(135deg, var(--hero-bg-start) 0%, var(--hero-bg-mid) 55%, var(--hero-bg-end) 100%);
+        }
+        .map-frame::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%230D1627' stroke-width='1'%3E%3Cpolygon points='60,8 112,60 60,112 8,60'/%3E%3Ccircle cx='60' cy='60' r='26'/%3E%3C/g%3E%3C/svg%3E");
+            background-size: 120px 120px;
+            opacity: 0.06;
+            pointer-events: none;
+        }
+        body.dark-theme .map-frame::before {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%23C5A059' stroke-width='1'%3E%3Cpolygon points='60,8 112,60 60,112 8,60'/%3E%3Ccircle cx='60' cy='60' r='26'/%3E%3C/g%3E%3C/svg%3E");
+        }
+        #mapSvg {
+            display: block;
+            width: 100%;
+            height: auto;
+            position: relative;
+            z-index: 1;
+        }
+        .map-region {
+            fill: var(--color-gold);
+            opacity: 0.08;
+            stroke: var(--color-gold);
+            stroke-width: 1.5;
+            stroke-opacity: 0.35;
+        }
+        .map-region-label {
+            fill: var(--color-text-muted);
+            font-family: var(--font-heading);
+            font-size: 20px;
+            font-style: italic;
+            text-anchor: middle;
+            opacity: 0.75;
+        }
+        .map-city-dot {
+            fill: var(--color-gold);
+            stroke: var(--bg-card);
+            stroke-width: 2.5;
+            cursor: pointer;
+            transition: r var(--transition-fast), fill var(--transition-fast);
+        }
+        .map-city-group:hover .map-city-dot,
+        .map-city-group.active .map-city-dot {
+            fill: var(--color-gold-light);
+            r: 9;
+        }
+        .map-city-group.active .map-city-dot {
+            fill: var(--color-primary-navy);
+        }
+        .map-city-label {
+            fill: var(--on-header-text, var(--color-text-main));
+            font-family: var(--font-sans);
+            font-weight: 600;
+            font-size: 13px;
+            paint-order: stroke;
+            stroke: var(--bg-header);
+            stroke-width: 3px;
+            pointer-events: none;
+        }
+        .map-city-group { cursor: pointer; }
+        .map-city-group:focus { outline: none; }
+        .map-city-group:focus .map-city-dot { fill: var(--color-gold-light); r: 9; }
+
+        .map-tooltip {
+            position: absolute;
+            z-index: 900;
+            pointer-events: none;
+            background: var(--bg-card);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            padding: 0.35rem 0.7rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            box-shadow: var(--shadow-md);
+            white-space: nowrap;
+            transform: translate(-50%, -120%);
+        }
+
+        .map-city-popover-era {
+            display: inline-block;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+            padding: 0.15rem 0.55rem;
+            border-radius: var(--radius-full);
+            background: var(--color-gold-bg);
+            color: var(--color-gold);
+            margin-bottom: 0.5rem;
+        }
+        .map-city-popover-close {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.6rem;
+            background: none;
+            border: none;
+            font-size: 1.1rem;
+            line-height: 1;
+            color: var(--color-text-muted);
+            cursor: pointer;
+        }
+        .map-city-popover-close:hover { color: var(--color-text-main); }
+        .map-city-popover-sample {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-top: 0.7rem;
+            padding-top: 0.7rem;
+            border-top: 1px solid var(--color-border);
+            text-decoration: none;
+            color: inherit;
+        }
+        .map-city-popover-sample img {
+            width: 40px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--color-border);
+            flex-shrink: 0;
+        }
+        .map-city-popover-sample-label {
+            font-size: 0.7rem;
+            color: var(--color-text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .map-city-popover-sample-title {
+            font-weight: 700;
+            color: var(--color-gold);
+        }
+
+        .map-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1.2rem;
+        }
+        .map-legend-chip {
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-full);
+            padding: 0.4rem 0.9rem;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--color-text-main);
+            transition: all var(--transition-fast);
+        }
+        .map-legend-chip:hover,
+        .map-legend-chip.active {
+            border-color: var(--color-gold);
+            background: var(--color-gold-bg);
+            color: var(--color-gold);
+        }
+    </style>
+</head>
+<body class="dark-theme">
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <button type="button" class="icon-btn side-menu-toggle" id="sideMenuToggle" title="Menü" aria-expanded="false" aria-controls="sideDrawer">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+
+                <a href="index.html" class="brand-logo">
+                    <img src="assets/icon.png" alt="Divane" class="brand-logo-img">
+                    <span class="brand-subtitle">OSMANLICA ÇEVİRİ</span>
+                </a>
+            </div>
+
+            <nav class="nav-menu">
+                <a href="index.html" class="nav-link">Ana Sayfa</a>
+                <a href="index.html#about" class="nav-link">Hakkında</a>
+                <a href="index.html#contact" class="nav-link">İletişim</a>
+            </nav>
+
+            <div class="nav-actions">
+                <button class="icon-btn theme-toggle-btn" id="themeToggleBtn" title="Karanlık/Aydınlık Tema">
+                    <span class="theme-icon">🌙</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Ana sayfadaki (index.html) ile aynı sol menü çekmecesi — tutarlılık
+         için buraya da eklendi (bkz. map.js'teki aç/kapa kablolaması).
+         Harita/Hakkında/İletişim modalları yalnızca index.html'de tanımlı
+         olduğu için buradan index.html'e bağlanıyor (data-modal yerine
+         gerçek href). -->
+    <div class="side-drawer-overlay hidden" id="sideDrawerOverlay"></div>
+    <aside class="side-drawer" id="sideDrawer" aria-hidden="true">
+        <div class="side-drawer-header">
+            <span class="side-drawer-title">Menü</span>
+            <button type="button" class="modal-close" id="sideDrawerClose" title="Kapat">&times;</button>
+        </div>
+        <div class="side-drawer-body">
+            <img src="assets/ornament-divider.png" alt="" aria-hidden="true" class="side-drawer-flourish">
+            <span class="side-drawer-section-label">Belgelerim</span>
+            <a href="documents.html" class="side-drawer-item">
+                <span class="side-drawer-icon">📂</span>
+                <span>Belgelerim</span>
+            </a>
+            <a href="notes.html" class="side-drawer-item">
+                <span class="side-drawer-icon">📝</span>
+                <span>Notlarım</span>
+            </a>
+            <a href="map.html" class="side-drawer-item">
+                <span class="side-drawer-icon">🗺️</span>
+                <span>Harita</span>
+            </a>
+
+            <span class="side-drawer-section-label">Hesap</span>
+            <a href="profile.html" class="side-drawer-item">
+                <span class="side-drawer-icon">👤</span>
+                <span>Profilim</span>
+            </a>
+            <span class="side-drawer-section-label">Site</span>
+            <a href="index.html#about" class="side-drawer-item">
+                <span class="side-drawer-icon">ℹ️</span>
+                <span>Hakkında</span>
+            </a>
+            <a href="index.html#contact" class="side-drawer-item">
+                <span class="side-drawer-icon">✉️</span>
+                <span>İletişim</span>
+            </a>
+        </div>
+    </aside>
+
+    <main class="page-wrapper" style="padding-top: 2.5rem;">
+        <h1 style="font-family: var(--font-heading); font-size: 1.8rem; margin: 0 0 0.6rem;">🗺️ Osmanlı Coğrafyası</h1>
+        <p class="map-intro">
+            İmparatorluğun geniş coğrafyasından, sitedeki örnek belgelerle de bağlantılı birkaç şehri işaretledik.
+            Bir şehrin üzerine gelin veya tıklayın — bu ilk sürüm stilize/şematik bir gösterimdir, yıllara göre
+            sınır değişimlerini gösteren gerçek tarihi harita katmanları ileride eklenecek.
+        </p>
+
+        <div class="map-frame">
+            <svg id="mapSvg" viewBox="0 0 1000 620" role="img" aria-label="Osmanlı coğrafyası şeması">
+                <ellipse class="map-region" cx="250" cy="160" rx="190" ry="110"></ellipse>
+                <text class="map-region-label" x="250" y="105">Rumeli</text>
+
+                <ellipse class="map-region" cx="480" cy="280" rx="230" ry="130"></ellipse>
+                <text class="map-region-label" x="480" y="215">Anadolu</text>
+
+                <ellipse class="map-region" cx="700" cy="380" rx="190" ry="140"></ellipse>
+                <text class="map-region-label" x="700" y="310">Şam ve Irak</text>
+
+                <ellipse class="map-region" cx="480" cy="520" rx="150" ry="90"></ellipse>
+                <text class="map-region-label" x="480" y="475">Mısır</text>
+
+                <g id="mapCities"></g>
+            </svg>
+        </div>
+
+        <div class="map-legend" id="mapLegend"></div>
+    </main>
+
+    <script src="map.js?v=20260916-1"></script>
+</body>
+</html>

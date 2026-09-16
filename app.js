@@ -2408,6 +2408,15 @@ diqqat idiñ didi. www.osmanlicaogren.com`,
         });
     });
 
+    // map.html'deki şehir kartlarındaki "İlgili Eser" linki
+    // (index.html?sample=X) buraya geldiğinde, o örnek belgeyi yukarıdaki
+    // .sample-card tıklama mantığıyla birebir aynı şekilde otomatik yükler.
+    const deepLinkSampleKey = new URLSearchParams(window.location.search).get('sample');
+    if (deepLinkSampleKey) {
+        const targetCard = document.querySelector(`.sample-card[data-sample="${CSS.escape(deepLinkSampleKey)}"]`);
+        if (targetCard) targetCard.click();
+    }
+
     function resetState() {
         hardStopTts();
         closeEntityPopover();

@@ -60,8 +60,8 @@
          soldan kayarak açılır, arkasındaki sayfa karartma katmanıyla
          (#sideDrawerOverlay) gölgede kalır — TarihNet'teki gibi kalıcı bir
          şerit yerine, ekip arkadaşlarının istediği tıkla-aç/kapa modeli.
-         Belgelerim üst menüden buraya taşındı; Harita şimdilik bir yer
-         tutucu (bkz. #mapModal) — ileride interaktif hale getirilecek. -->
+         Belgelerim üst menüden buraya taşındı; Harita artık kendi sayfası
+         (bkz. map.html) — şehir işaretleyicili ilk sürüm. -->
     <div class="side-drawer-overlay hidden" id="sideDrawerOverlay"></div>
     <aside class="side-drawer" id="sideDrawer" aria-hidden="true">
         <div class="side-drawer-header">
@@ -79,10 +79,10 @@
                 <span class="side-drawer-icon">📝</span>
                 <span>Notlarım</span>
             </a>
-            <button type="button" class="side-drawer-item" data-modal="mapModal">
+            <a href="map.html" class="side-drawer-item">
                 <span class="side-drawer-icon">🗺️</span>
                 <span>Harita</span>
-            </button>
+            </a>
 
             <span class="side-drawer-section-label">Hesap</span>
             <a href="profile.html" class="side-drawer-item">
@@ -780,19 +780,6 @@
     </div>
 
     <!-- Contact Modal -->
-    <div class="modal-overlay hidden" id="mapModal">
-        <div class="modal-card">
-            <button class="modal-close" data-close="mapModal">&times;</button>
-            <h2 class="modal-title">🗺️ Harita</h2>
-            <div class="modal-body">
-                <p class="modal-hint">
-                    Belgelerdeki yer adlarını bir harita üzerinde görüntüleme özelliği üzerinde çalışıyoruz.
-                    Bu bölüm yakında etkileşimli hale gelecek.
-                </p>
-            </div>
-        </div>
-    </div>
-
     <div class="modal-overlay hidden" id="contactModal">
         <div class="modal-card">
             <button class="modal-close" data-close="contactModal">&times;</button>
