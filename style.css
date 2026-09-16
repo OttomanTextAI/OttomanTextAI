@@ -419,6 +419,12 @@ body {
     transition: transform var(--transition-fast);
 }
 
+/* Menü ikonları artık emoji değil, tek renkli inline SVG sembolleri —
+   currentColor ile .side-drawer-item'ın metin rengini miras alır. */
+.side-drawer-icon svg {
+    display: block;
+}
+
 /* Her menü öğesinin ikon rozeti kendi mücevher tonunu taşıyor — düz bir
    liste yerine daha canlı/dolu bir menü. */
 .side-drawer-item:nth-child(3n+1) .side-drawer-icon { background: var(--color-gold-bg); }

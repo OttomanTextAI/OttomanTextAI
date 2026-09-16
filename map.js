@@ -568,6 +568,21 @@ document.addEventListener('DOMContentLoaded', () => {
         setActive(null, null);
     }
 
+    // Hem büyük pencerenin "Belgeler" sekmesinde hem de hover önizlemesinde
+    // kullanılan ortak belge listesi — bkz. openCityModal() ve
+    // marker.bindTooltip() aşağıda.
+    function renderDocsHtml(docs, emptyMessage) {
+        if (!docs.length) return emptyMessage ? `<p class="map-city-modal-empty">${emptyMessage}</p>` : '';
+        return docs.map(doc => `
+            <a class="map-city-popover-sample" href="index.html?sample=${encodeURIComponent(doc.key)}">
+                <img src="${doc.file}" alt="">
+                <span>
+                    <span class="map-city-popover-sample-label" style="display:block;">İlgili Eser</span>
+                    <span class="map-city-popover-sample-title">${doc.title}</span>
+                </span>
+            </a>`).join('');
+    }
+
     function openCityModal(city, chip, markerEl) {
         cityModalTitle.textContent = city.name;
         cityModalEra.textContent = city.era;
@@ -589,16 +604,7 @@ document.addEventListener('DOMContentLoaded', () => {
             cityModalCard.classList.remove('has-cover');
         }
 
-        cityModalDocs.innerHTML = docs.length
-            ? docs.map(doc => `
-                <a class="map-city-popover-sample" href="index.html?sample=${encodeURIComponent(doc.key)}">
-                    <img src="${doc.file}" alt="">
-                    <span>
-                        <span class="map-city-popover-sample-label" style="display:block;">İlgili Eser</span>
-                        <span class="map-city-popover-sample-title">${doc.title}</span>
-                    </span>
-                </a>`).join('')
-            : '<p class="map-city-modal-empty">Bu şehirle ilişkilendirilmiş bir örnek belge henüz yok.</p>';
+        cityModalDocs.innerHTML = renderDocsHtml(docs, 'Bu şehirle ilişkilendirilmiş bir örnek belge henüz yok.');
 
         setCityModalTab('info');
         cityModal.classList.remove('hidden');
@@ -620,11 +626,13 @@ document.addEventListener('DOMContentLoaded', () => {
             .addTo(map);
 
         // Üzerine gelince (tıklamadan önce) hafif bir önizleme — büyük
-        // pencere (openCityModal) sadece tıklanınca açılır.
+        // pencere (openCityModal) sadece tıklanınca açılır. Belgeler de
+        // burada (varsa) küçük kartlar olarak gösterilir.
         marker.bindTooltip(`
             <span class="map-city-popover-era">${city.era}</span>
             <div class="entity-popover-text">${city.name}</div>
             <div class="entity-popover-context">${city.blurb}</div>
+            ${renderDocsHtml(city.documents || [])}
         `, { className: 'map-city-hover', direction: 'top', offset: [0, -12] });
 
         const categoryMeta = city.category && CATEGORY_META[city.category];
