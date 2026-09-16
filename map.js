@@ -220,6 +220,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const CITIES = [
         {
             id: 'edirne', name: 'Edirne', lat: 41.6771, lng: 26.5557,
+            cover: 'assets/sehirler/edirne.jpg',
             era: 'Başkent (1365–1453)',
             blurb: 'İstanbul\'un fethinden önce imparatorluğun başkentiydi; Selimiye Camii gibi başyapıtlara ev sahipliği yapar.',
         },
@@ -234,11 +235,13 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         {
             id: 'bursa', name: 'Bursa', lat: 40.1826, lng: 29.0665,
+            cover: 'assets/sehirler/bursa.jpg',
             era: 'Başkent (1326–1365)',
             blurb: 'Osmanlı Beyliği\'nin ilk başkentiydi; erken dönem cami ve külliyeleriyle tanınır.',
         },
         {
             id: 'ankara', name: 'Ankara', lat: 39.9334, lng: 32.8597,
+            cover: 'assets/sehirler/ankara.jpg',
             era: 'Osmanlı Anadolusu / Kurtuluş Savaşı Başkenti',
             blurb: 'Anadolu ticaret yollarının kesiştiği önemli bir merkezdi; Hacı Bayram Veli\'nin vakfı burada kuruldu. 23 Nisan 1920\'de Büyük Millet Meclisi burada açıldı ve şehir Kurtuluş Savaşı\'nın fiilî başkenti oldu.',
             documents: [
@@ -248,11 +251,13 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         {
             id: 'konya', name: 'Konya', lat: 37.8746, lng: 32.4932,
+            cover: 'assets/sehirler/konya.jpg',
             era: 'Anadolu Beylikleri – Osmanlı',
             blurb: 'Selçuklu mirasının ve Mevlevîlik kültürünün merkezi; Osmanlı döneminde de önemli bir ilim şehri oldu.',
         },
         {
             id: 'sivas', name: 'Sivas', lat: 39.7477, lng: 37.0179,
+            cover: 'assets/sehirler/sivas.jpg',
             era: 'Osmanlı Anadolusu / Sivas Kongresi (Eylül 1919)',
             blurb: 'Anadolu\'nun doğusunda önemli bir vakıf ve idare merkeziydi. Eylül 1919\'da toplanan Sivas Kongresi, Erzurum Kongresi kararlarını tüm ülke için genişleterek Millî Mücadele\'nin tek elden yürütülmesini sağladı.',
             documents: [
@@ -262,6 +267,7 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         {
             id: 'halep', name: 'Halep', lat: 36.2021, lng: 37.1343,
+            cover: 'assets/sehirler/halep.jpg',
             era: 'Osmanlı Suriyesi',
             blurb: 'Ticaret yollarının kesiştiği kadim bir şehir; Osmanlı idaresinde önemli bir eyalet merkeziydi.',
             documents: [
@@ -271,6 +277,7 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         {
             id: 'sam', name: 'Şam', lat: 33.5138, lng: 36.2765,
+            cover: 'assets/sehirler/sam.jpg',
             era: 'Osmanlı Suriyesi',
             blurb: 'Osmanlı Suriyesi\'nin idari merkezlerinden biri ve hac yolunun önemli bir durağıydı.',
             documents: [
@@ -279,6 +286,7 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         {
             id: 'bagdat', name: 'Bağdat', lat: 33.3152, lng: 44.3661,
+            cover: 'assets/sehirler/bagdat.jpg',
             era: 'Osmanlı Irak\'ı',
             blurb: 'Fuzûlî gibi büyük divan şairlerinin yaşadığı, Osmanlı Irak\'ının kültürel merkeziydi.',
             documents: [
@@ -287,11 +295,13 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         {
             id: 'kahire', name: 'Kahire', lat: 30.0444, lng: 31.2357,
+            cover: 'assets/sehirler/kahire.jpg',
             era: 'Osmanlı Mısır\'ı (1517–1914)',
             blurb: '1517\'de Osmanlı topraklarına katıldı; Mısır eyaletinin başkenti ve önemli bir İslam ilim merkeziydi.',
         },
         {
             id: 'selanik', name: 'Selanik', lat: 40.6401, lng: 22.9444,
+            cover: 'assets/sehirler/selanik.jpg',
             era: 'Osmanlı Rumelisi (1430–1912)',
             blurb: 'Balkanlar\'ın en kalabalık liman şehirlerinden biriydi; canlı bir Yahudi cemaatine ve tütün ticaretine ev sahipliği yaptı.',
             documents: [
@@ -300,31 +310,37 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         {
             id: 'izmir', name: 'İzmir', lat: 38.4237, lng: 27.1428,
+            cover: 'assets/sehirler/izmir.jpg',
             era: 'Osmanlı Ege Limanı / Kurtuluşu (9 Eylül 1922)',
             blurb: 'Ege kıyısının en işlek ticaret limanıydı; Levanten tüccarların ve çok dilli bir nüfusun buluşma noktasıydı. 15 Mayıs 1919\'da Yunan işgaline uğradı, 9 Eylül 1922\'de Türk ordusunca kurtarılarak Kurtuluş Savaşı fiilen sona erdi.',
         },
         {
             id: 'kudus', name: 'Kudüs', lat: 31.7683, lng: 35.2137,
+            cover: 'assets/sehirler/kudus.jpg',
             era: 'Osmanlı Filistini (1517–1917)',
             blurb: 'Üç semavi din için kutsal kabul edilen şehir; surları Kanuni Sultan Süleyman döneminde yeniden inşa edildi.',
         },
         {
             id: 'mekke', name: 'Mekke', lat: 21.3891, lng: 39.8579,
+            cover: 'assets/sehirler/mekke.jpg',
             era: 'Hicaz Eyaleti — Haremeyn',
             blurb: 'İslam\'ın en kutsal şehri; Osmanlı padişahları bu yüzden "Haremeyn\'in Hizmetkârı" unvanını taşıdı.',
         },
         {
             id: 'medine', name: 'Medine', lat: 24.5247, lng: 39.5692,
+            cover: 'assets/sehirler/medine.jpg',
             era: 'Hicaz Eyaleti — Haremeyn',
             blurb: 'Hz. Muhammed\'in kabrini barındırır; Hicaz Demiryolu ile İstanbul\'a bağlanan hac güzergâhının son durağıydı.',
         },
         {
             id: 'belgrad', name: 'Belgrad', lat: 44.7866, lng: 20.4489,
+            cover: 'assets/sehirler/belgrad.jpg',
             era: 'Osmanlı Sınır Kalesi (1521–1867)',
             blurb: 'Balkanlar\'a açılan kapı ve stratejik bir serhad kalesiydi; Kanuni\'nin 1521\'deki fethiyle imparatorluğa katıldı.',
         },
         {
             id: 'saraybosna', name: 'Saraybosna', lat: 43.8563, lng: 18.4131,
+            cover: 'assets/sehirler/saraybosna.jpg',
             era: 'Bosna Eyaleti',
             blurb: 'Bosna Eyaleti\'nin idari merkeziydi; cami, bedesten ve hanlarıyla Osmanlı şehirciliğinin Balkanlar\'daki örneklerinden biri oldu.',
             documents: [
@@ -333,6 +349,7 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         {
             id: 'trabzon', name: 'Trabzon', lat: 41.0027, lng: 39.7168,
+            cover: 'assets/sehirler/trabzon.jpg',
             era: 'Osmanlı Karadeniz Limanı (1461–)',
             blurb: 'Trabzon Rum İmparatorluğu\'nun fethiyle Osmanlı\'ya katıldı; Karadeniz ticaretinin ve İpek Yolu\'nun önemli bir durağıydı.',
             documents: [
@@ -341,21 +358,25 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         {
             id: 'diyarbakir', name: 'Diyarbakır', lat: 37.9144, lng: 40.2306,
+            cover: 'assets/sehirler/diyarbakir.jpg',
             era: 'Osmanlı Doğu Anadolusu',
             blurb: 'Yukarı Mezopotamya\'nın idari ve ticari merkeziydi; kara bazalt surlarıyla tanınır.',
         },
         {
             id: 'musul', name: 'Musul', lat: 36.3489, lng: 43.1189,
+            cover: 'assets/sehirler/musul.jpg',
             era: 'Osmanlı Irak\'ı — Musul Eyaleti',
             blurb: 'Dicle kıyısında ticaret ve dokumacılıkla öne çıktı; "muslin" kumaşı adını bu şehirden alır.',
         },
         {
             id: 'basra', name: 'Basra', lat: 30.5085, lng: 47.7835,
+            cover: 'assets/sehirler/basra.jpg',
             era: 'Osmanlı Irak\'ı — Basra Eyaleti',
             blurb: 'Basra Körfezi\'ne açılan liman şehri; Hindistan ve Uzakdoğu ile deniz ticaretinin batıya açılan kapısıydı.',
         },
         {
             id: 'tiflis', name: 'Tiflis', lat: 41.7151, lng: 44.8271,
+            cover: 'assets/sehirler/tiflis.jpg',
             era: 'Kafkasya — Osmanlı-Safevi Sınır Bölgesi',
             blurb: 'Kafkasya\'nın önemli bir merkeziydi; Osmanlı orduları tarafından zaman zaman ele geçirildi ve idare edildi.',
             documents: [
@@ -364,11 +385,13 @@ document.addEventListener('DOMContentLoaded', () => {
         },
         {
             id: 'cezayir', name: 'Cezayir', lat: 36.7538, lng: 3.0588,
+            cover: 'assets/sehirler/cezayir.jpg',
             era: 'Cezayir Ocağı (1516–1830)',
             blurb: 'Osmanlı\'ya bağlı yarı özerk bir ocak/eyalet olarak Akdeniz\'de deniz gücünün merkeziydi.',
         },
         {
             id: 'tunus', name: 'Tunus', lat: 36.8065, lng: 10.1815,
+            cover: 'assets/sehirler/tunus.jpg',
             era: 'Tunus Eyaleti (1574–1881)',
             blurb: 'Kuzey Afrika\'daki Osmanlı eyaletlerinden biriydi; Hafsî mirası üzerine kurulan canlı bir liman şehriydi.',
         },
@@ -378,48 +401,49 @@ document.addEventListener('DOMContentLoaded', () => {
         // aşağıdaki CATEGORY_META).
         {
             id: 'trablusgarp', name: 'Trablusgarp', lat: 32.8872, lng: 13.1913,
+            cover: 'assets/sehirler/trablusgarp.jpg',
             era: 'Trablusgarp Savaşı (1911–1912)',
             blurb: 'İtalya\'nın işgaline karşı verilen savunma savaşı burada yaşandı; Mustafa Kemal ve Enver Bey gibi subaylar gönüllü olarak burada görev aldı.',
             category: 'wwi',
         },
         {
             id: 'canakkale', name: 'Çanakkale', lat: 40.1553, lng: 26.4142,
+            cover: 'assets/sehirler/canakkale.jpg',
             era: 'Birinci Dünya Savaşı — Çanakkale Savaşı (1915)',
             blurb: 'İtilaf donanmasının Boğaz\'ı geçme girişimi ve ardından aylar süren kara savaşı burada yaşandı; Osmanlı ordusu için büyük bir savunma zaferiydi.',
             category: 'wwi',
         },
         {
-            id: 'sarikamis', name: 'Sarıkamış', lat: 40.3369, lng: 42.5967,
-            era: 'Kafkas Cephesi — Sarıkamış Harekâtı (Aralık 1914 – Ocak 1915)',
-            blurb: 'Kış koşullarında girişilen kuşatma harekâtı ağır kayıplarla sonuçlandı; Osmanlı ordusunun cephelerdeki en büyük felaketlerinden biriydi.',
-            category: 'wwi',
-        },
-        {
             id: 'kanal', name: 'Kanal Cephesi', lat: 30.5852, lng: 32.2654,
+            cover: 'assets/sehirler/kanal.jpg',
             era: 'Sina Cephesi — Kanal Harekâtı (1915)',
             blurb: 'Osmanlı kuvvetleri, İngiliz kontrolündeki Süveyş Kanalı\'nı geçmeyi denedi; bu harekât Sina-Filistin Cephesi\'nin başlangıcı oldu.',
             category: 'wwi',
         },
         {
             id: 'kutulamare', name: 'Kûtülamâre', lat: 32.5122, lng: 45.8235,
+            cover: 'assets/sehirler/kutulamare.jpg',
             era: 'Irak Cephesi — Kûtülamâre Kuşatması ve Zaferi (1915–1916)',
             blurb: 'Osmanlı kuvvetleri, İngiliz General Townshend komutasındaki orduyu kuşatarak teslim aldı; dönemin en büyük İngiliz yenilgilerinden biriydi.',
             category: 'wwi',
         },
         {
             id: 'gazze', name: 'Gazze', lat: 31.5017, lng: 34.4668,
+            cover: 'assets/sehirler/gazze.jpg',
             era: 'Filistin Cephesi — Gazze Muharebeleri (1917)',
             blurb: 'İngiliz ilerleyişine karşı üç kez savunulan cephe hattıydı; sonunda Kudüs\'ün kaybına giden sürecin başlangıcı oldu.',
             category: 'wwi',
         },
         {
             id: 'yemen', name: 'Yemen Cephesi', lat: 15.3694, lng: 44.1910,
+            cover: 'assets/sehirler/yemen.jpg',
             era: 'Birinci Dünya Savaşı — Yemen Cephesi',
             blurb: 'İmparatorluğun en uzak ve izole cephelerinden biriydi; Osmanlı birlikleri burada savaş boyunca zor koşullar altında görev yaptı.',
             category: 'wwi',
         },
         {
             id: 'hatay', name: 'Hatay', lat: 36.2023, lng: 36.1613,
+            cover: 'assets/sehirler/hatay.jpg',
             era: 'Fransız Mandası ve Hatay Sorunu (1918–1939)',
             blurb: 'Savaş sonrası Fransız mandası altına girdi; halkın direnişi ve uzun bir diplomatik mücadele sonunda 1939\'da Türkiye\'ye katıldı.',
             category: 'wwi',
@@ -430,66 +454,77 @@ document.addEventListener('DOMContentLoaded', () => {
         // gruplanır (bkz. aşağıdaki CATEGORY_META).
         {
             id: 'samsun', name: 'Samsun', lat: 41.2867, lng: 36.3300,
+            cover: 'assets/sehirler/samsun.jpg',
             era: 'Kurtuluş Savaşı — Millî Mücadele\'nin Başlangıcı (19 Mayıs 1919)',
             blurb: 'Mustafa Kemal Paşa\'nın 19 Mayıs 1919\'da çıktığı liman şehri; bu tarih Millî Mücadele\'nin sembolik başlangıcı kabul edilir.',
             category: 'independence',
         },
         {
             id: 'amasya', name: 'Amasya', lat: 40.6499, lng: 35.8353,
+            cover: 'assets/sehirler/amasya.jpg',
             era: 'Kurtuluş Savaşı — Amasya Genelgesi (Haziran 1919)',
             blurb: 'Millî Mücadele\'nin gerekçesinin ve örgütlenme kararının ilan edildiği Amasya Genelgesi burada yayımlandı.',
             category: 'independence',
         },
         {
             id: 'erzurum', name: 'Erzurum', lat: 39.9000, lng: 41.2700,
+            cover: 'assets/sehirler/erzurum.jpg',
             era: 'Kurtuluş Savaşı — Erzurum Kongresi (Temmuz–Ağustos 1919)',
             blurb: 'Doğu vilayetlerinin temsilcilerinin toplandığı, millî iradeyi esas alan ilk kongrelerden biri burada yapıldı.',
             category: 'independence',
         },
         {
             id: 'inonu', name: 'İnönü', lat: 39.8264, lng: 30.1544,
+            cover: 'assets/sehirler/inonu.jpg',
             era: 'Kurtuluş Savaşı — İnönü Muharebeleri (1921)',
             blurb: 'Birinci ve İkinci İnönü Muharebeleri\'nin yapıldığı, düzenli ordunun ilk büyük zaferlerini kazandığı cephe.',
             category: 'independence',
         },
         {
             id: 'sakarya', name: 'Sakarya', lat: 39.5836, lng: 32.1462,
+            cover: 'assets/sehirler/sakarya.jpg',
             era: 'Kurtuluş Savaşı — Sakarya Meydan Muharebesi (Ağustos–Eylül 1921)',
             blurb: 'Ankara\'ya en yakın cephe hattıydı; savaşın dönüm noktalarından Sakarya Meydan Muharebesi burada kazanıldı.',
             category: 'independence',
         },
         {
             id: 'afyonkarahisar', name: 'Afyonkarahisar', lat: 38.7507, lng: 30.5567,
+            cover: 'assets/sehirler/afyonkarahisar.jpg',
             era: 'Kurtuluş Savaşı — Büyük Taarruz\'un Başlangıcı (26 Ağustos 1922)',
             blurb: 'Büyük Taarruz, Mustafa Kemal\'in karargâh kurduğu Kocatepe\'den, buradan başlatıldı.',
             category: 'independence',
         },
         {
             id: 'dumlupinar', name: 'Dumlupınar', lat: 39.1667, lng: 29.8500,
+            cover: 'assets/sehirler/dumlupinar.jpg',
             era: 'Kurtuluş Savaşı — Başkumandanlık Meydan Muharebesi (30 Ağustos 1922)',
             blurb: 'Savaşın kesin sonucunu belirleyen meydan muharebesi burada kazanıldı; 30 Ağustos bugün Zafer Bayramı olarak kutlanır.',
             category: 'independence',
         },
         {
             id: 'mudanya', name: 'Mudanya', lat: 40.3756, lng: 28.8828,
+            cover: 'assets/sehirler/mudanya.jpg',
             era: 'Kurtuluş Savaşı — Mudanya Ateşkesi (Ekim 1922)',
             blurb: 'Savaşı fiilen sona erdiren Mudanya Ateşkes Antlaşması burada imzalandı.',
             category: 'independence',
         },
         {
             id: 'gaziantep', name: 'Gaziantep', lat: 37.0662, lng: 37.3833,
+            cover: 'assets/sehirler/gaziantep.jpg',
             era: 'Kurtuluş Savaşı — Antep Savunması',
             blurb: 'Fransız işgaline karşı direnişiyle "Gazi" unvanını aldı; şehrin bugünkü adı buradan gelir.',
             category: 'independence',
         },
         {
             id: 'maras', name: 'Kahramanmaraş', lat: 37.5753, lng: 36.9228,
+            cover: 'assets/sehirler/maras.jpg',
             era: 'Kurtuluş Savaşı — Maraş Savunması',
             blurb: 'Fransız ve müttefik kuvvetlere karşı direnişiyle "Kahraman" unvanını aldı.',
             category: 'independence',
         },
         {
             id: 'urfa', name: 'Şanlıurfa', lat: 37.1591, lng: 38.7969,
+            cover: 'assets/sehirler/urfa.jpg',
             era: 'Kurtuluş Savaşı — Urfa Savunması',
             blurb: 'İşgale karşı direnişiyle "Şanlı" unvanını aldı.',
             category: 'independence',
