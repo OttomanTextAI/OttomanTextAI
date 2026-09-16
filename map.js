@@ -72,6 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
             id: 'istanbul', name: 'İstanbul', lat: 41.0082, lng: 28.9784,
             era: 'Başkent (1453–1922)',
             blurb: '1453\'te fethedilerek İmparatorluğun başkenti oldu; siyasi, kültürel ve ticari hayatın merkeziydi.',
+            cover: 'assets/3-suleymaniye-camii-ve-cevresi-gouffier.jpg',
             documents: [
                 { key: 'tah', file: 'assets/tah.png', title: 'Tercüman-ı Ahval Gazetesi\'nin 25. Sayısı' },
             ],
@@ -590,13 +591,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const docs = city.documents || [];
 
-        // Modal'ın üstündeki "kapak" görseli — ilişkili belgelerden ilkinin
-        // görseli (varsa); yoksa modal düz metinle açılır, kapak alanı hiç
-        // yer kaplamaz.
-        if (docs.length) {
-            cityModalCover.src = docs[0].file;
-            cityModalCover.alt = docs[0].title;
-            cityModalCoverLink.href = `index.html?sample=${encodeURIComponent(docs[0].key)}`;
+        // Modal'ın üstündeki "kapak" görseli — önce city.cover (şehrin
+        // kendi temsili görseli, varsa), yoksa ilişkili belgelerden ilkinin
+        // görseli kullanılır; hiçbiri yoksa modal düz metinle açılır, kapak
+        // alanı hiç yer kaplamaz. city.cover bir belgeye bağlı olmadığından
+        // tıklanabilir değildir; belge görseli olduğunda ilgili örneğe götürür.
+        const coverSrc = city.cover || (docs.length ? docs[0].file : null);
+        if (coverSrc) {
+            cityModalCover.alt = city.cover ? city.name : docs[0].title;
+            cityModalCover.src = coverSrc;
+            // Class'ı kaldırıp bir reflow sonrası geri eklemek, aynı <img>
+            // elemanı şehirden şehre yeniden kullanıldığında animasyonun her
+            // açılışta baştan oynamasını sağlıyor (senkron — görsel önbellekte
+            // olsa da olmasa da her zaman tetiklenir, 'load' olayına bağlı
+            // değil, böylece görsel hiçbir zaman görünmez kalmaz).
+            cityModalCover.classList.remove('map-city-modal-cover-fade');
+            void cityModalCover.offsetWidth;
+            cityModalCover.classList.add('map-city-modal-cover-fade');
+
+            if (city.cover) {
+                cityModalCoverLink.removeAttribute('href');
+            } else {
+                cityModalCoverLink.href = `index.html?sample=${encodeURIComponent(docs[0].key)}`;
+            }
             cityModalCoverLink.hidden = false;
             cityModalCard.classList.add('has-cover');
         } else {

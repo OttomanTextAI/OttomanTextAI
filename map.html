@@ -260,6 +260,19 @@
             max-height: 240px;
             object-fit: cover;
             border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+            opacity: 0;
+        }
+        /* Görsel yüklenince (bkz. map.js'teki cityModalCover.onload) hafifçe
+           belirir — her açılışta aynı <img> elemanı yeniden kullanıldığı
+           için, class'ın kaldırılıp reflow sonrası geri eklenmesiyle
+           animasyon her seferinde yeniden oynatılır. */
+        .map-city-modal-cover.map-city-modal-cover-fade {
+            animation: cityCoverFadeIn 0.7s ease-out;
+            opacity: 1;
+        }
+        @keyframes cityCoverFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
         #cityModal .modal-card.has-cover {
             padding-top: 0;
@@ -516,6 +529,6 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
-    <script src="map.js?v=20260916-11"></script>
+    <script src="map.js?v=20260916-12"></script>
 </body>
 </html>
