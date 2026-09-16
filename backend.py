@@ -2949,6 +2949,27 @@ def list_documents(current_user):
         analysis = analyses_by_doc_id.get(doc.id)
         return analysis.document_type if analysis else None
 
+    def _script_type(doc):
+        analysis = analyses_by_doc_id.get(doc.id)
+        return analysis.script_type if analysis else None
+
+    # search.html'deki arama sonuçlarında ikincil satır (yer + yazı türü)
+    # için — belge başına ayrı sorgu yerine tek sorguda ilk "place"
+    # entity'sini çekip eşliyoruz (N+1 sorgu sorununu önler).
+    first_place_by_doc_id = {}
+    if doc_ids:
+        place_entities = (
+            DocumentEntity.query
+            .filter(DocumentEntity.document_id.in_(doc_ids), DocumentEntity.category == "place")
+            .order_by(DocumentEntity.id.asc())
+            .all()
+        )
+        for entity in place_entities:
+            first_place_by_doc_id.setdefault(entity.document_id, entity.text)
+
+    def _place(doc):
+        return first_place_by_doc_id.get(doc.id)
+
     # Bucket private olduğu için doğrudan public URL çalışmıyor — kısa
     # ömürlü (5 dk) imzalı indirme linkleri üretiyoruz. Sayfadaki TÜM
     # belgeleri (görsel olsun olmasın, indirme butonu için) tek istekte
@@ -2982,6 +3003,8 @@ def list_documents(current_user):
                 "filename": doc.filename,
                 "title": _display_title(doc),
                 "document_type": _document_type(doc),
+                "script_type": _script_type(doc),
+                "place": _place(doc),
                 "file_type": doc.file_type,
                 "file_size": doc.file_size,
                 "summary": _short_summary(doc),

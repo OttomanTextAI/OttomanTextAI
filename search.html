@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arama Sonuçları — Divane</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=Noto+Naskh+Arabic:wght@400;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="style.css?v=20260916-16">
+    <style>
+        .doc-count-badge {
+            background: var(--bg-input);
+            border: 1px solid var(--color-border);
+            border-radius: 999px;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--color-text-muted);
+        }
+        .search-input-row {
+            margin: 0 0 1.6rem;
+        }
+        .search-page-input {
+            width: 100%;
+            max-width: 480px;
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            padding: 0.7rem 1rem;
+            font-size: 0.95rem;
+            color: var(--color-text-main);
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+        .search-page-input:focus {
+            outline: none;
+            border-color: var(--color-gold);
+        }
+        .search-results-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.9rem;
+        }
+        .search-result-row {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            cursor: pointer;
+            transition: border-color var(--transition-fast), transform var(--transition-fast);
+        }
+        .search-result-row:hover {
+            border-color: var(--color-gold);
+            transform: translateY(-1px);
+        }
+        .search-result-thumb {
+            flex-shrink: 0;
+            width: 84px;
+            aspect-ratio: 3/4;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            background: var(--bg-input);
+            border: 1px solid var(--color-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+        }
+        .search-result-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .search-result-body {
+            flex: 1;
+            min-width: 0;
+        }
+        .search-result-title-row {
+            display: flex;
+            align-items: baseline;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+        }
+        .search-result-title {
+            font-family: var(--font-heading);
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--color-text-main);
+        }
+        .search-result-type {
+            font-size: 0.85rem;
+            color: var(--color-text-muted);
+            font-weight: 600;
+        }
+        .search-result-summary {
+            margin-top: 0.35rem;
+            font-size: 0.88rem;
+            color: var(--color-text-main);
+            line-height: 1.5;
+        }
+        .search-result-meta {
+            margin-top: 0.5rem;
+            font-size: 0.76rem;
+            color: var(--color-text-light);
+        }
+        .search-empty,
+        .search-hint {
+            color: var(--color-text-muted);
+            font-size: 0.9rem;
+            padding: 2rem 0;
+            text-align: center;
+        }
+    </style>
+</head>
+<body class="dark-theme">
+    <header class="navbar">
+        <div class="nav-container">
+            <div class="nav-left">
+                <button type="button" class="icon-btn side-menu-toggle" id="sideMenuToggle" title="Menü" aria-expanded="false" aria-controls="sideDrawer">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+
+                <a href="index.html" class="brand-logo">
+                    <img src="assets/icon.png" alt="Divane" class="brand-logo-img">
+                    <span class="brand-subtitle">OSMANLICA ÇEVİRİ</span>
+                </a>
+            </div>
+
+            <nav class="nav-menu">
+                <a href="index.html" class="nav-link">Ana Sayfa</a>
+                <a href="index.html#about" class="nav-link">Hakkında</a>
+                <a href="index.html#contact" class="nav-link">İletişim</a>
+            </nav>
+
+            <div class="nav-actions">
+                <button class="icon-btn theme-toggle-btn" id="themeToggleBtn" title="Karanlık/Aydınlık Tema">
+                    <span class="theme-icon">🌙</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Ana sayfadaki (index.html) ile aynı sol menü çekmecesi — tutarlılık
+         için buraya da eklendi (bkz. search.js'teki aç/kapa kablolaması). -->
+    <div class="side-drawer-overlay hidden" id="sideDrawerOverlay"></div>
+    <aside class="side-drawer" id="sideDrawer" aria-hidden="true">
+        <div class="side-drawer-header">
+            <span class="side-drawer-title">Menü</span>
+            <button type="button" class="modal-close" id="sideDrawerClose" title="Kapat">&times;</button>
+        </div>
+        <div class="side-drawer-body">
+            <img src="assets/ornament-divider.png" alt="" aria-hidden="true" class="side-drawer-flourish">
+            <span class="side-drawer-section-label">Hesap</span>
+            <span class="side-drawer-profile-label">Profilim</span>
+            <a href="profile.html" class="side-drawer-profile-card" id="sidebarProfileCard">
+                <span class="side-drawer-profile-avatar" id="sidebarProfileAvatar">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"></path></svg>
+                </span>
+                <span class="side-drawer-profile-info">
+                    <span class="side-drawer-profile-name" id="sidebarProfileName">Profilim</span>
+                    <span class="side-drawer-profile-title" id="sidebarProfileTitle" hidden></span>
+                </span>
+            </a>
+
+            <span class="side-drawer-section-label">Belgelerim</span>
+            <a href="documents.html" class="side-drawer-item">
+                <span class="side-drawer-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"></path></svg></span>
+                <span>Belgelerim</span>
+            </a>
+            <a href="notes.html" class="side-drawer-item">
+                <span class="side-drawer-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><path d="M14 3v6h6"></path><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="13" y2="17"></line></svg></span>
+                <span>Notlarım</span>
+            </a>
+            <a href="map.html" class="side-drawer-item">
+                <span class="side-drawer-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-7.5 7-12a7 7 0 1 0-14 0c0 4.5 7 12 7 12z"></path><circle cx="12" cy="9" r="2.5"></circle></svg></span>
+                <span>Harita</span>
+            </a>
+
+            <span class="side-drawer-section-label">Site</span>
+            <a href="index.html#about" class="side-drawer-item">
+                <span class="side-drawer-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><line x1="12" y1="11" x2="12" y2="16"></line><circle cx="12" cy="8" r="1" fill="currentColor" stroke="none"></circle></svg></span>
+                <span>Hakkında</span>
+            </a>
+            <a href="index.html#contact" class="side-drawer-item">
+                <span class="side-drawer-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 7l9 6 9-6"></path></svg></span>
+                <span>İletişim</span>
+            </a>
+        </div>
+    </aside>
+
+    <main class="page-wrapper" style="padding-top: 2.5rem;">
+        <div style="display:flex; align-items:center; gap:0.7rem; margin-bottom:1.2rem; flex-wrap:wrap;">
+            <h1 style="font-family: var(--font-heading); font-size: 1.8rem; margin:0;">🔎 Arama Sonuçları</h1>
+            <span id="searchResultsCount" class="doc-count-badge hidden"></span>
+        </div>
+
+        <div class="search-input-row">
+            <input type="text" id="searchPageInput" class="search-page-input" placeholder="Belgelerde ara..." autocomplete="off">
+        </div>
+
+        <div id="loginRequired" class="hidden" style="background: var(--bg-card); border-radius: var(--radius-md); padding: 2rem; text-align: center;">
+            <p style="margin-bottom: 1.2rem;">Belgelerinizde arama yapmak için giriş yapmalısınız.</p>
+            <a href="index.html" class="btn btn-primary">Ana Sayfaya Dön ve Giriş Yap</a>
+        </div>
+
+        <div id="searchResultsList" class="search-results-list"></div>
+    </main>
+
+    <script src="search.js?v=20260916-1"></script>
+</body>
+</html>

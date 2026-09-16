@@ -178,11 +178,18 @@ function requireLogin() {
         if (e.key === 'Escape') closeNavSearch();
     });
 
-    function goToDocumentsSearch(query, docId) {
+    // Tekil bir sonuca (dropdown'daki 4 sonuçtan biri) tıklanınca hâlâ
+    // doğrudan belgeye gidiyoruz; "Daha fazlası"/Enter ise artık tam
+    // sonuç listesi sayfasına (search.html) yönlendiriyor.
+    function goToDocument(query, docId) {
         const params = new URLSearchParams();
         if (query) params.set('search', query);
-        if (docId) params.set('open', docId);
+        params.set('open', docId);
         window.location.href = `documents.html?${params.toString()}`;
+    }
+
+    function goToSearchPage(query) {
+        window.location.href = `search.html?q=${encodeURIComponent(query)}`;
     }
 
     function renderNavSearchResults(docs, query) {
@@ -232,7 +239,7 @@ function requireLogin() {
         if (e.key === 'Enter') {
             e.preventDefault();
             const query = navSearchInput.value.trim();
-            if (query) goToDocumentsSearch(query);
+            if (query) goToSearchPage(query);
         }
     });
 
@@ -240,12 +247,12 @@ function requireLogin() {
         const more = e.target.closest('.nav-search-more');
         if (more) {
             e.preventDefault();
-            goToDocumentsSearch(more.getAttribute('data-query'));
+            goToSearchPage(more.getAttribute('data-query'));
             return;
         }
         const item = e.target.closest('.nav-search-result-item');
         if (item) {
-            goToDocumentsSearch(navSearchInput.value.trim(), item.getAttribute('data-doc-id'));
+            goToDocument(navSearchInput.value.trim(), item.getAttribute('data-doc-id'));
         }
     });
 })();
