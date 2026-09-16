@@ -72,7 +72,9 @@ document.addEventListener('DOMContentLoaded', () => {
             id: 'istanbul', name: 'İstanbul', lat: 41.0082, lng: 28.9784,
             era: 'Başkent (1453–1922)',
             blurb: '1453\'te fethedilerek İmparatorluğun başkenti oldu; siyasi, kültürel ve ticari hayatın merkeziydi.',
-            sample: { key: 'tah', file: 'assets/tah.png', title: 'Tercüman-ı Ahval Gazetesi\'nin 25. Sayısı' },
+            documents: [
+                { key: 'tah', file: 'assets/tah.png', title: 'Tercüman-ı Ahval Gazetesi\'nin 25. Sayısı' },
+            ],
         },
         {
             id: 'bursa', name: 'Bursa', lat: 40.1826, lng: 29.0665,
@@ -83,7 +85,10 @@ document.addEventListener('DOMContentLoaded', () => {
             id: 'ankara', name: 'Ankara', lat: 39.9334, lng: 32.8597,
             era: 'Osmanlı Anadolusu / Kurtuluş Savaşı Başkenti',
             blurb: 'Anadolu ticaret yollarının kesiştiği önemli bir merkezdi; Hacı Bayram Veli\'nin vakfı burada kuruldu. 23 Nisan 1920\'de Büyük Millet Meclisi burada açıldı ve şehir Kurtuluş Savaşı\'nın fiilî başkenti oldu.',
-            sample: { key: 'hbv', file: 'assets/hbv.png', title: 'Hacı Bayram Veli Vakfı Tevliyet ve Meşihat Beratı' },
+            documents: [
+                { key: 'hbv', file: 'assets/hbv.png', title: 'Hacı Bayram Veli Vakfı Tevliyet ve Meşihat Beratı' },
+                { key: '1', file: 'assets/im.png', title: 'İstiklâl Marşı' },
+            ],
         },
         {
             id: 'konya', name: 'Konya', lat: 37.8746, lng: 32.4932,
@@ -94,25 +99,35 @@ document.addEventListener('DOMContentLoaded', () => {
             id: 'sivas', name: 'Sivas', lat: 39.7477, lng: 37.0179,
             era: 'Osmanlı Anadolusu / Sivas Kongresi (Eylül 1919)',
             blurb: 'Anadolu\'nun doğusunda önemli bir vakıf ve idare merkeziydi. Eylül 1919\'da toplanan Sivas Kongresi, Erzurum Kongresi kararlarını tüm ülke için genişleterek Millî Mücadele\'nin tek elden yürütülmesini sağladı.',
-            sample: { key: 'svf', file: 'assets/svf.png', title: 'Sivas\'taki Vakıf Şartlarına Dair Ferman' },
+            documents: [
+                { key: 'svf', file: 'assets/svf.png', title: 'Sivas\'taki Vakıf Şartlarına Dair Ferman' },
+                { key: 'tah', file: 'assets/tah.png', title: 'Tercüman-ı Ahval Gazetesi\'nin 25. Sayısı' },
+            ],
         },
         {
             id: 'halep', name: 'Halep', lat: 36.2021, lng: 37.1343,
             era: 'Osmanlı Suriyesi',
             blurb: 'Ticaret yollarının kesiştiği kadim bir şehir; Osmanlı idaresinde önemli bir eyalet merkeziydi.',
-            sample: { key: 'sbh', file: 'assets/sbh.png', title: 'Şam, Baalbek ve Halep Mühimme Hükümleri' },
+            documents: [
+                { key: 'sbh', file: 'assets/sbh.png', title: 'Şam, Baalbek ve Halep Mühimme Hükümleri' },
+                { key: 'tah', file: 'assets/tah.png', title: 'Tercüman-ı Ahval Gazetesi\'nin 25. Sayısı' },
+            ],
         },
         {
             id: 'sam', name: 'Şam', lat: 33.5138, lng: 36.2765,
             era: 'Osmanlı Suriyesi',
             blurb: 'Osmanlı Suriyesi\'nin idari merkezlerinden biri ve hac yolunun önemli bir durağıydı.',
-            sample: { key: 'sbh', file: 'assets/sbh.png', title: 'Şam, Baalbek ve Halep Mühimme Hükümleri' },
+            documents: [
+                { key: 'sbh', file: 'assets/sbh.png', title: 'Şam, Baalbek ve Halep Mühimme Hükümleri' },
+            ],
         },
         {
             id: 'bagdat', name: 'Bağdat', lat: 33.3152, lng: 44.3661,
             era: 'Osmanlı Irak\'ı',
             blurb: 'Fuzûlî gibi büyük divan şairlerinin yaşadığı, Osmanlı Irak\'ının kültürel merkeziydi.',
-            sample: { key: 'hero', file: 'assets/sk.png', title: 'Fuzûlî\'nin Su Kasidesi' },
+            documents: [
+                { key: 'hero', file: 'assets/sk.png', title: 'Fuzûlî\'nin Su Kasidesi' },
+            ],
         },
         {
             id: 'kahire', name: 'Kahire', lat: 30.0444, lng: 31.2357,
@@ -123,7 +138,9 @@ document.addEventListener('DOMContentLoaded', () => {
             id: 'selanik', name: 'Selanik', lat: 40.6401, lng: 22.9444,
             era: 'Osmanlı Rumelisi (1430–1912)',
             blurb: 'Balkanlar\'ın en kalabalık liman şehirlerinden biriydi; canlı bir Yahudi cemaatine ve tütün ticaretine ev sahipliği yaptı.',
-            sample: { key: 'hmg', file: 'assets/hmg.png', title: 'Hanımlara Mahsus Gazete Eki' },
+            documents: [
+                { key: 'hmg', file: 'assets/hmg.png', title: 'Hanımlara Mahsus Gazete Eki' },
+            ],
         },
         {
             id: 'izmir', name: 'İzmir', lat: 38.4237, lng: 27.1428,
@@ -154,12 +171,17 @@ document.addEventListener('DOMContentLoaded', () => {
             id: 'saraybosna', name: 'Saraybosna', lat: 43.8563, lng: 18.4131,
             era: 'Bosna Eyaleti',
             blurb: 'Bosna Eyaleti\'nin idari merkeziydi; cami, bedesten ve hanlarıyla Osmanlı şehirciliğinin Balkanlar\'daki örneklerinden biri oldu.',
-            sample: { key: '2', file: 'assets/fsma.png', title: 'Fatih Sultan Mehmed\'in Ahidnamesi' },
+            documents: [
+                { key: '2', file: 'assets/fsma.png', title: 'Fatih Sultan Mehmed\'in Ahidnamesi' },
+            ],
         },
         {
             id: 'trabzon', name: 'Trabzon', lat: 41.0027, lng: 39.7168,
             era: 'Osmanlı Karadeniz Limanı (1461–)',
             blurb: 'Trabzon Rum İmparatorluğu\'nun fethiyle Osmanlı\'ya katıldı; Karadeniz ticaretinin ve İpek Yolu\'nun önemli bir durağıydı.',
+            documents: [
+                { key: 'gkt', file: 'assets/gkt.png', title: 'Gümüşhanevî Kütüphanelerindeki Kitapların Tiflis\'ten Geri Getirilmesi Talebi' },
+            ],
         },
         {
             id: 'diyarbakir', name: 'Diyarbakır', lat: 37.9144, lng: 40.2306,
@@ -180,7 +202,9 @@ document.addEventListener('DOMContentLoaded', () => {
             id: 'tiflis', name: 'Tiflis', lat: 41.7151, lng: 44.8271,
             era: 'Kafkasya — Osmanlı-Safevi Sınır Bölgesi',
             blurb: 'Kafkasya\'nın önemli bir merkeziydi; Osmanlı orduları tarafından zaman zaman ele geçirildi ve idare edildi.',
-            sample: { key: 'gkt', file: 'assets/gkt.png', title: 'Gümüşhanevî Kütüphanelerindeki Kitapların Tiflis\'ten Geri Getirilmesi Talebi' },
+            documents: [
+                { key: 'gkt', file: 'assets/gkt.png', title: 'Gümüşhanevî Kütüphanelerindeki Kitapların Tiflis\'ten Geri Getirilmesi Talebi' },
+            ],
         },
         {
             id: 'cezayir', name: 'Cezayir', lat: 36.7538, lng: 3.0588,
@@ -405,7 +429,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const yearSlider = document.getElementById('mapYearSlider');
     const yearLabel = document.getElementById('mapTimelineYear');
     const yearStatus = document.getElementById('mapTimelineStatus');
+    const yearTicks = document.getElementById('mapTimelineTicks');
     yearSlider.max = String(TIMELINE_YEARS.length - 1);
+
+    // Termometre gibi yıl çentikleri — her TIMELINE_YEARS girdisi için bir
+    // tane, index'e göre eşit aralıklı. Slider hareket ettikçe en yakın
+    // çentik 'active' sınıfıyla vurgulanır (bkz. setActiveTick()).
+    const tickEls = TIMELINE_YEARS.map((year, i) => {
+        const tick = document.createElement('span');
+        tick.className = 'map-timeline-tick';
+        tick.style.left = (TIMELINE_YEARS.length === 1 ? 50 : (i / (TIMELINE_YEARS.length - 1)) * 100) + '%';
+        const label = document.createElement('span');
+        label.textContent = year;
+        tick.appendChild(label);
+        yearTicks.appendChild(tick);
+        return tick;
+    });
+
+    function setActiveTick(index) {
+        tickEls.forEach((tick, i) => tick.classList.toggle('active', i === index));
+    }
 
     function ottomanFeatureName(year) {
         return year >= 1920 ? 'Ottoman Sultanate' : 'Ottoman Empire';
@@ -449,8 +492,10 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateYearLabel() {
-        const year = TIMELINE_YEARS[Number(yearSlider.value)];
+        const index = Number(yearSlider.value);
+        const year = TIMELINE_YEARS[index];
         yearLabel.textContent = year;
+        setActiveTick(index);
         return year;
     }
 
@@ -480,6 +525,29 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // --- Şehir bilgi penceresi (modal) ---
+    // Leaflet'in küçük popup'ı yerine, tıklanan şehir için "Genel Bilgiler"
+    // ve "Belgeler" sekmeli tam bir pencere açılıyor — sitenin zaten
+    // kullandığı .modal-overlay/.modal-card/.results-tabs bileşenleriyle
+    // aynı görünüm (bkz. style.css).
+    const cityModal = document.getElementById('cityModal');
+    const cityModalClose = document.getElementById('cityModalClose');
+    const cityModalTitle = document.getElementById('cityModalTitle');
+    const cityModalEra = document.getElementById('cityModalEra');
+    const cityModalBlurb = document.getElementById('cityModalBlurb');
+    const cityModalDocs = document.getElementById('cityModalDocs');
+    const cityModalTabs = cityModal.querySelectorAll('[data-city-tab]');
+    const cityModalPanels = cityModal.querySelectorAll('[data-city-panel]');
+
+    function setCityModalTab(tab) {
+        cityModalTabs.forEach(btn => btn.classList.toggle('active', btn.getAttribute('data-city-tab') === tab));
+        cityModalPanels.forEach(panel => panel.classList.toggle('active', panel.getAttribute('data-city-panel') === tab));
+    }
+
+    cityModalTabs.forEach(btn => {
+        btn.addEventListener('click', () => setCityModalTab(btn.getAttribute('data-city-tab')));
+    });
+
     let activeChip = null;
     let activeMarkerEl = null;
 
@@ -492,33 +560,48 @@ document.addEventListener('DOMContentLoaded', () => {
         if (markerEl) markerEl.classList.add('active');
     }
 
+    function closeCityModal() {
+        cityModal.classList.add('hidden');
+        setActive(null, null);
+    }
+
+    function openCityModal(city, chip, markerEl) {
+        cityModalTitle.textContent = city.name;
+        cityModalEra.textContent = city.era;
+        cityModalBlurb.textContent = city.blurb;
+
+        const docs = city.documents || [];
+        cityModalDocs.innerHTML = docs.length
+            ? docs.map(doc => `
+                <a class="map-city-popover-sample" href="index.html?sample=${encodeURIComponent(doc.key)}">
+                    <img src="${doc.file}" alt="">
+                    <span>
+                        <span class="map-city-popover-sample-label" style="display:block;">İlgili Eser</span>
+                        <span class="map-city-popover-sample-title">${doc.title}</span>
+                    </span>
+                </a>`).join('')
+            : '<p class="map-city-modal-empty">Bu şehirle ilişkilendirilmiş bir örnek belge henüz yok.</p>';
+
+        setCityModalTab('info');
+        cityModal.classList.remove('hidden');
+        setActive(chip, markerEl);
+    }
+
+    cityModalClose.addEventListener('click', closeCityModal);
+    cityModal.addEventListener('click', (e) => {
+        if (e.target === cityModal) closeCityModal();
+    });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && !cityModal.classList.contains('hidden')) closeCityModal();
+    });
+
     const headingsShown = new Set();
 
     CITIES.forEach(city => {
         const marker = L.marker([city.lat, city.lng], { icon: cityIcon(city), keyboard: true, title: city.name })
             .addTo(map);
 
-        let sampleHtml = '';
-        if (city.sample) {
-            sampleHtml = `
-                <a class="map-city-popover-sample" href="index.html?sample=${encodeURIComponent(city.sample.key)}">
-                    <img src="${city.sample.file}" alt="">
-                    <span>
-                        <span class="map-city-popover-sample-label" style="display:block;">İlgili Eser</span>
-                        <span class="map-city-popover-sample-title">${city.sample.title}</span>
-                    </span>
-                </a>`;
-        }
-
         const categoryMeta = city.category && CATEGORY_META[city.category];
-
-        marker.bindPopup(`
-            <span class="map-city-popover-era">${city.era}</span>
-            <div class="entity-popover-text">${city.name}</div>
-            <div class="entity-popover-context">${city.blurb}</div>
-            ${sampleHtml}
-        `, { className: 'map-city-popup', maxWidth: 280 });
-
         if (categoryMeta && !headingsShown.has(city.category)) {
             const heading = document.createElement('span');
             heading.className = 'map-legend-heading';
@@ -531,13 +614,12 @@ document.addEventListener('DOMContentLoaded', () => {
         chip.type = 'button';
         chip.className = 'map-legend-chip';
         chip.textContent = city.name;
-        chip.addEventListener('click', () => {
-            map.flyTo([city.lat, city.lng], Math.max(map.getZoom(), map.getMinZoom() + 2), { duration: 0.6 });
-            marker.openPopup();
-        });
         mapLegend.appendChild(chip);
 
-        marker.on('popupopen', () => setActive(chip, marker.getElement()));
-        marker.on('popupclose', () => setActive(null, null));
+        marker.on('click', () => openCityModal(city, chip, marker.getElement()));
+        chip.addEventListener('click', () => {
+            map.flyTo([city.lat, city.lng], Math.max(map.getZoom(), map.getMinZoom() + 2), { duration: 0.6 });
+            openCityModal(city, chip, marker.getElement());
+        });
     });
 });

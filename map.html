@@ -69,19 +69,21 @@
            map.js'teki loadYearBoundary() — her yıl değişiminde bringToFront()
            ile üstte tutulur). */
         .map-ottoman-boundary {
-            fill: var(--color-gold);
-            stroke: var(--color-gold-light);
+            fill: var(--color-accent-red);
+            stroke: var(--color-accent-red);
         }
 
         .map-timeline {
-            display: flex;
-            align-items: center;
-            gap: 0.9rem;
             margin-top: 1rem;
-            padding: 0.7rem 1.1rem;
+            padding: 0.7rem 1.1rem 0.5rem;
             background: var(--bg-card-subtle);
             border: 1px solid var(--color-border);
             border-radius: var(--radius-md);
+        }
+        .map-timeline-row {
+            display: flex;
+            align-items: center;
+            gap: 0.9rem;
         }
         .map-timeline-label {
             font-size: 0.82rem;
@@ -89,10 +91,57 @@
             color: var(--color-text-muted);
             flex-shrink: 0;
         }
-        .map-timeline-slider {
+        /* Slider'ın kendisi + altındaki "termometre" yıl skalası aynı
+           genişlikte tek bir sütun olarak dursun diye sarmalayıcı. */
+        .map-timeline-track {
+            position: relative;
             flex: 1;
+            min-width: 0;
+        }
+        .map-timeline-slider {
+            display: block;
+            width: 100%;
             accent-color: var(--color-gold);
             cursor: pointer;
+        }
+        /* Her yıl için ince bir çentik + rakam — bkz. map.js'teki
+           buildTimelineTicks(). Konumlar TIMELINE_YEARS'teki index'e göre
+           (gerçek yıl aralığına göre DEĞİL) eşit aralıklı yerleştiriliyor,
+           çünkü slider'ın adımları da (step=1) index tabanlı. */
+        .map-timeline-ticks {
+            position: relative;
+            height: 1.3rem;
+            margin-top: 1px;
+        }
+        .map-timeline-tick {
+            position: absolute;
+            top: 0;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            pointer-events: none;
+        }
+        .map-timeline-tick::before {
+            content: '';
+            width: 1px;
+            height: 4px;
+            background: var(--color-border);
+        }
+        .map-timeline-tick span {
+            font-size: 0.62rem;
+            font-variant-numeric: tabular-nums;
+            color: var(--color-text-light);
+            white-space: nowrap;
+        }
+        .map-timeline-tick.active::before {
+            background: var(--color-gold);
+            height: 6px;
+        }
+        .map-timeline-tick.active span {
+            color: var(--color-gold);
+            font-weight: 700;
         }
         .map-timeline-year {
             font-family: var(--font-heading);
@@ -163,32 +212,9 @@
                 -2px  0   0 var(--bg-header), 2px  0   0 var(--bg-header);
         }
 
-        /* Leaflet popup'ını sitenin .entity-popover kart diline yaklaştırıyor
-           (bkz. app.js/style.css'teki entity-popover) — tıklanan şehrin
-           bilgisi bu kutunun içinde görünür. */
-        .map-city-popup .leaflet-popup-content-wrapper {
-            background: var(--bg-card);
-            color: var(--color-text-main);
-            border: 1px solid var(--color-border);
-            border-radius: var(--radius-md);
-            box-shadow: var(--shadow-lg);
-        }
-        .map-city-popup .leaflet-popup-content {
-            margin: 0.9rem 1rem;
-            font-size: 0.85rem;
-            line-height: 1.5;
-        }
-        .map-city-popup .leaflet-popup-tip {
-            background: var(--bg-card);
-            border: 1px solid var(--color-border);
-        }
-        .map-city-popup .leaflet-popup-close-button {
-            color: var(--color-text-muted) !important;
-        }
-        .map-city-popup .leaflet-popup-close-button:hover {
-            color: var(--color-text-main) !important;
-        }
-
+        /* Şehir bilgi penceresi — sitenin genel .modal-overlay/.modal-card/
+           .results-tabs bileşenlerini kullanıyor (bkz. style.css), burada
+           sadece içerik-özel küçük dokunuşlar var. */
         .map-city-popover-era {
             display: inline-block;
             font-size: 0.7rem;
@@ -199,20 +225,30 @@
             border-radius: var(--radius-full);
             background: var(--color-gold-bg);
             color: var(--color-gold);
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.9rem;
         }
-        .map-city-popover-close {
-            position: absolute;
-            top: 0.5rem;
-            right: 0.6rem;
-            background: none;
-            border: none;
-            font-size: 1.1rem;
-            line-height: 1;
+        #cityModalDocs {
+            display: flex;
+            flex-direction: column;
+            gap: 0.7rem;
+        }
+        #cityModalDocs .map-city-popover-sample {
+            margin-top: 0;
+            padding-top: 0;
+            border-top: none;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            padding: 0.6rem 0.8rem;
+            transition: border-color var(--transition-fast), background var(--transition-fast);
+        }
+        #cityModalDocs .map-city-popover-sample:hover {
+            border-color: var(--color-gold);
+            background: var(--color-gold-bg);
+        }
+        .map-city-modal-empty {
             color: var(--color-text-muted);
-            cursor: pointer;
+            font-size: 0.9rem;
         }
-        .map-city-popover-close:hover { color: var(--color-text-main); }
         .map-city-popover-sample {
             display: flex;
             align-items: center;
@@ -367,10 +403,15 @@
         </div>
 
         <div class="map-timeline" id="mapTimeline">
-            <span class="map-timeline-label">Sınırlar</span>
-            <input type="range" id="mapYearSlider" class="map-timeline-slider" min="0" max="15" step="1" value="4" aria-label="Yıla göre imparatorluk sınırları">
-            <span class="map-timeline-year" id="mapTimelineYear">1600</span>
-            <span class="map-timeline-status" id="mapTimelineStatus" hidden>yükleniyor…</span>
+            <div class="map-timeline-row">
+                <span class="map-timeline-label">Sınırlar</span>
+                <div class="map-timeline-track">
+                    <input type="range" id="mapYearSlider" class="map-timeline-slider" min="0" max="15" step="1" value="4" aria-label="Yıla göre imparatorluk sınırları">
+                    <div class="map-timeline-ticks" id="mapTimelineTicks"></div>
+                </div>
+                <span class="map-timeline-year" id="mapTimelineYear">1600</span>
+                <span class="map-timeline-status" id="mapTimelineStatus" hidden>yükleniyor…</span>
+            </div>
         </div>
         <p class="map-timeline-credit">
             Sınır verisi: <a href="https://github.com/aourednik/historical-basemaps" target="_blank" rel="noopener">aourednik/historical-basemaps</a> (yaklaşık tarihi sınırlar)
@@ -379,8 +420,32 @@
         <div class="map-legend" id="mapLegend"></div>
     </main>
 
+    <!-- Şehre tıklanınca açılan bilgi penceresi — sitenin genel modal
+         iskeleti (.modal-overlay/.modal-card/.results-tabs) kullanılıyor,
+         içerik map.js'teki openCityModal() tarafından dolduruluyor. -->
+    <div class="modal-overlay hidden" id="cityModal">
+        <div class="modal-card modal-lg">
+            <button class="modal-close" id="cityModalClose" aria-label="Kapat">&times;</button>
+            <h2 class="modal-title" id="cityModalTitle"></h2>
+
+            <div class="results-tabs" role="tablist">
+                <button type="button" class="results-tab-btn active" data-city-tab="info" role="tab">Genel Bilgiler</button>
+                <button type="button" class="results-tab-btn" data-city-tab="docs" role="tab">Belgeler</button>
+            </div>
+
+            <div class="results-tab-panel active" data-city-panel="info">
+                <span class="map-city-popover-era" id="cityModalEra"></span>
+                <div class="modal-body" id="cityModalBlurb"></div>
+            </div>
+
+            <div class="results-tab-panel" data-city-panel="docs">
+                <div id="cityModalDocs"></div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
-    <script src="map.js?v=20260916-7"></script>
+    <script src="map.js?v=20260916-9"></script>
 </body>
 </html>
