@@ -218,19 +218,7 @@ function restoreTranslationState() {
     const infoOutputBox = document.getElementById('infoOutputBox');
     const infoEmptyState = document.getElementById('infoEmptyState');
     const infoContentWrapper = document.getElementById('infoContentWrapper');
-    const resultDocType = document.getElementById('resultDocType');
-    const resultConfidencePill = document.getElementById('resultConfidencePill');
-    const resultConfidenceValue = document.getElementById('resultConfidenceValue');
-    const resultsTabs = document.getElementById('resultsTabs');
-    const resultSummary = document.getElementById('resultSummary');
-    const resultDocInfoGrid = document.getElementById('resultDocInfoGrid');
-    const resultKeyPoints = document.getElementById('resultKeyPoints');
-    const resultPeople = document.getElementById('resultPeople');
-    const resultPlaces = document.getElementById('resultPlaces');
-    const resultConcepts = document.getElementById('resultConcepts');
-    const resultScriptDetails = document.getElementById('resultScriptDetails');
-    const resultDateDetails = document.getElementById('resultDateDetails');
-    const resultNotes = document.getElementById('resultNotes');
+    const infoAnalysisCard = document.getElementById('infoAnalysisCard');
 function renderRestoredTranslation() {
     if (!state.dbDocumentId) {
         return;
@@ -2472,21 +2460,6 @@ diqqat idiñ didi. www.osmanlicaogren.com`,
         setOutputTab('trans');
     }
 
-    // --- Detailed Results Panel (tabbed) ---
-    resultsTabs.addEventListener('click', (e) => {
-        const btn = e.target.closest('.results-tab-btn');
-        if (!btn) return;
-
-        const targetTab = btn.getAttribute('data-tab');
-
-        document.querySelectorAll('.results-tab-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-
-        document.querySelectorAll('.results-tab-panel').forEach(panel => {
-            panel.classList.toggle('active', panel.getAttribute('data-panel') === targetTab);
-        });
-    });
-
     // Clears the "Bilgi" tab back to its empty state and hides the tab
     // button itself — there's nothing useful to show until a translation
     // with analysis data has completed.
@@ -2509,136 +2482,97 @@ diqqat idiñ didi. www.osmanlicaogren.com`,
         setAiToolsExpanded(false);
     }
 
-    // Builds a row of label/value cards for an info-grid section.
-    // fields: [{ label, value }] — entries with an empty/undefined value are skipped.
-    function buildInfoGrid(container, fields) {
-        container.innerHTML = '';
-        const usable = fields.filter(f => f.value !== undefined && f.value !== null && String(f.value).trim() !== '');
-
-        if (usable.length === 0) {
-            container.innerHTML = '<p class="entity-empty-text">Bu belge için bilgi tespit edilemedi.</p>';
-            return;
+    // Renders a list of tag pills (people/places/concepts). Each entry can be
+    // a plain string or an { name, role } object. Mirrors documents.js'in
+    // _renderDocDetailTagList'i — belge analizi kartı her iki sayfada da
+    // aynı görünüme sahip olsun diye.
+    function renderTagListHtml(entities) {
+        const labels = (entities || [])
+            .map(e => (typeof e === 'string' ? e : (e && e.name) || ''))
+            .filter(l => l.trim());
+        if (labels.length === 0) {
+            return '<p class="doc-detail-empty">Tespit edilemedi.</p>';
         }
-
-        usable.forEach(f => {
-            const item = document.createElement('div');
-            item.className = 'info-item';
-            item.innerHTML = `
-                <span class="info-item-label"></span>
-                <span class="info-item-value"></span>
-            `;
-            item.querySelector('.info-item-label').textContent = f.label;
-            item.querySelector('.info-item-value').textContent = f.value;
-            container.appendChild(item);
-        });
+        return `<div class="doc-detail-tag-list">${labels.map(l => `<span class="doc-detail-tag">${escapeHtml(l)}</span>`).join('')}</div>`;
     }
 
-    // Renders "Etiket: değer" lines (used for Yazı & Dil / Tarih & Bağlam,
-    // now shown inline inside İçerik Analizi instead of their own tabs).
-    function buildDetailLines(container, fields) {
-        container.innerHTML = '';
-        const usable = fields.filter(f => f.value !== undefined && f.value !== null && String(f.value).trim() !== '');
-
-        if (usable.length === 0) {
-            container.innerHTML = '<span class="entity-empty-text">Tespit edilemedi</span>';
-            return;
-        }
-
-        usable.forEach(f => {
-            const line = document.createElement('div');
-            line.className = 'detail-line';
-            line.innerHTML = `<span class="detail-line-label"></span> <span class="detail-line-value"></span>`;
-            line.querySelector('.detail-line-label').textContent = f.label + ':';
-            line.querySelector('.detail-line-value').textContent = f.value;
-            container.appendChild(line);
-        });
-    }
-
-    // Renders a list of entity chips (people/places/concepts). Each entry can be
-    // a plain string or an { name, role } object.
-    function buildEntityChips(container, entities) {
-        container.innerHTML = '';
-        if (!entities || entities.length === 0) {
-            container.innerHTML = '<span class="entity-empty-text">Tespit edilemedi</span>';
-            return;
-        }
-
-        entities.forEach(entity => {
-            const label = typeof entity === 'string' ? entity : (entity.name || '');
-            if (!label.trim()) return;
-            const chip = document.createElement('span');
-            chip.className = 'entity-chip';
-            chip.textContent = label;
-            container.appendChild(chip);
-        });
-    }
-
-    function buildList(container, items) {
-        container.innerHTML = '';
-        if (!items || items.length === 0) {
-            container.innerHTML = '<li class="entity-empty-text" style="padding-left:0;">Bu belge için önemli bilgi çıkarılamadı.</li>';
-            return;
-        }
-        items.forEach(text => {
-            if (!text || !String(text).trim()) return;
-            const li = document.createElement('li');
-            li.textContent = text;
-            container.appendChild(li);
-        });
+    function miniBoxHtml(label, value, full) {
+        if (!value) return '';
+        return `
+            <div class="doc-analysis-mini-box${full ? ' full' : ''}">
+                <div class="doc-analysis-mini-label">${escapeHtml(label)}</div>
+                <div class="doc-analysis-mini-value">${escapeHtml(String(value))}</div>
+            </div>
+        `;
     }
 
     // data is the parsed analysis object (see backend /api/translate response
     // and sampleDatabase entries below). Only ocr/trans are guaranteed; every
-    // other field is optional and rendered defensively.
+    // other field is optional and rendered defensively. Bilgi paneli,
+    // documents.js'teki belge detay kartıyla aynı 3 sütunlu düzeni kullanır
+    // (bkz. _renderDocDetailAnalysisCard) — üstteki "Bilgi (Belge Analizi)"
+    // başlığı zaten infoTabBtn'de olduğundan kartın kendi başlığı tekrar
+    // edilmiyor, sadece rozetler sağda gösteriliyor.
     function renderResultsPanel(data) {
-        // Reset to first tab each time a new result comes in
-        document.querySelectorAll('.results-tab-btn').forEach((b, i) => b.classList.toggle('active', i === 0));
-        document.querySelectorAll('.results-tab-panel').forEach((p, i) => p.classList.toggle('active', i === 0));
+        const hasConfidence = typeof data.confidence === 'number';
 
-        resultDocType.textContent = data.document_type || 'Belge Türü Belirlenemedi';
-
-        if (typeof data.confidence === 'number') {
-            resultConfidencePill.classList.remove('hidden');
-            resultConfidenceValue.textContent = `%${Math.round(data.confidence)}`;
-            resultConfidenceValue.classList.remove('confidence-mid', 'confidence-low');
-            if (data.confidence < 60) {
-                resultConfidenceValue.classList.add('confidence-low');
-            } else if (data.confidence < 85) {
-                resultConfidenceValue.classList.add('confidence-mid');
-            }
-        } else {
-            resultConfidencePill.classList.add('hidden');
-        }
-
-        // Genel Bakış
-        resultSummary.textContent = data.summary || 'Bu belge için özet oluşturulamadı.';
-        buildInfoGrid(resultDocInfoGrid, [
-            { label: 'Belge Türü', value: data.document_type },
-            { label: 'Tahmini Dönem', value: data.period_estimate },
-            { label: 'Dil / Üslup', value: data.style },
-        ]);
-
-        // İçerik Analizi
-        buildList(resultKeyPoints, data.key_points);
-        buildEntityChips(resultPeople, data.people);
-        buildEntityChips(resultPlaces, data.places);
-        buildEntityChips(resultConcepts, data.concepts);
-
-        // Yazı & Dil (İçerik Analizi sekmesi içinde, Kişiler/Yerler/Kavramlar yanında)
-        buildDetailLines(resultScriptDetails, [
-            { label: 'Yazı Tipi (Hat)', value: data.script_type },
-            { label: 'Yazının Amacı', value: data.script_purpose },
-        ]);
-
-        // Tarih & Bağlam (İçerik Analizi sekmesi içinde)
-        buildDetailLines(resultDateDetails, [
-            { label: 'Tarih (Hicrî)', value: data.date_hijri },
-            { label: 'Tarih (Miladî)', value: data.date_gregorian },
-            { label: 'Tahmini Dönem', value: data.period_estimate },
-        ]);
-
-        // Notlar
-        resultNotes.textContent = data.notes || 'Bu belge için ek not bulunmuyor.';
+        infoAnalysisCard.innerHTML = `
+            <div class="doc-analysis-header">
+                ${data.document_type ? `<span class="doc-detail-tag">${escapeHtml(data.document_type)}</span>` : ''}
+                ${hasConfidence ? `<span class="doc-detail-confidence-badge">Güven Skoru %${Math.round(data.confidence)}</span>` : ''}
+            </div>
+            <div class="doc-analysis-grid">
+                <div class="doc-analysis-col">
+                    <h4>Kısa Özet</h4>
+                    <p>${escapeHtml(data.summary || 'Bu belge için özet oluşturulamadı.')}</p>
+                    <h4>Belge Bilgileri</h4>
+                    <div class="doc-analysis-mini-grid">
+                        ${miniBoxHtml('Belge Türü', data.document_type)}
+                        ${miniBoxHtml('Tahmini Dönem', data.period_estimate)}
+                    </div>
+                    ${data.style ? `
+                        <div class="doc-analysis-mini-grid" style="margin-top:0.6rem;">
+                            ${miniBoxHtml('Dil / Üslup', data.style, true)}
+                        </div>
+                    ` : ''}
+                </div>
+                <div class="doc-analysis-col">
+                    <h4>Önemli Bilgiler</h4>
+                    ${(data.key_points && data.key_points.length)
+                        ? `<ul>${data.key_points.map(point => `<li>${escapeHtml(point)}</li>`).join('')}</ul>`
+                        : `<p class="doc-detail-empty">Bu belge için önemli bilgi çıkarılamadı.</p>`}
+                    <h4>👤 Kişiler</h4>
+                    ${renderTagListHtml(data.people)}
+                </div>
+                <div class="doc-analysis-col">
+                    <h4>🖋️ Yazı &amp; Dil</h4>
+                    <div class="doc-analysis-mini-grid" style="grid-template-columns: 1fr;">
+                        ${miniBoxHtml('Yazı Tipi (Hat)', data.script_type)}
+                        ${miniBoxHtml('Yazının Amacı', data.script_purpose)}
+                    </div>
+                    <h4>🗓️ Tarih &amp; Bağlam</h4>
+                    <div class="doc-analysis-mini-grid" style="grid-template-columns: 1fr;">
+                        ${miniBoxHtml('Tahmini Dönem', data.period_estimate)}
+                        ${miniBoxHtml('Tarih (Hicrî)', data.date_hijri)}
+                        ${miniBoxHtml('Tarih (Miladî)', data.date_gregorian)}
+                    </div>
+                    <h4>💡 Kavramlar</h4>
+                    ${renderTagListHtml(data.concepts)}
+                </div>
+            </div>
+            <div class="doc-analysis-full-row">
+                <div class="doc-analysis-col">
+                    <h4>📍 Yerler</h4>
+                    ${renderTagListHtml(data.places)}
+                </div>
+            </div>
+            ${data.notes ? `
+                <div class="doc-analysis-notes">
+                    <span>📌</span>
+                    <span><strong>Notlar &amp; Sistem Notları:</strong> ${escapeHtml(data.notes)}</span>
+                </div>
+            ` : ''}
+        `;
 
         infoTabBtn.classList.remove('hidden');
         infoEmptyState.classList.add('hidden');

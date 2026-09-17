@@ -2334,6 +2334,102 @@ body.dark-theme .empty-state {
     }
 }
 
+/* Belge analizi kartı — documents.html'deki belge detay kartıyla aynı
+   3 sütunlu düzen (bkz. .doc-analysis-* burada da index.html'in
+   "Bilgi (Belge Analizi)" paneli için kullanılıyor). */
+.doc-analysis-header {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.2rem;
+}
+.doc-analysis-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+}
+@media (max-width: 900px) {
+    .doc-analysis-grid { grid-template-columns: 1fr; }
+}
+.doc-analysis-full-row {
+    margin-top: 1.1rem;
+}
+.doc-analysis-col h4 {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--color-text-muted);
+    margin: 1.1rem 0 0.5rem 0;
+}
+.doc-analysis-col h4:first-child { margin-top: 0; }
+.doc-analysis-col p {
+    font-size: 0.88rem;
+    line-height: 1.6;
+}
+.doc-analysis-mini-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+}
+.doc-analysis-mini-box {
+    background: var(--bg-input);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 0.6rem 0.8rem;
+}
+.doc-analysis-mini-box.full { grid-column: 1 / -1; }
+.doc-analysis-mini-label {
+    font-size: 0.72rem;
+    color: var(--color-text-muted);
+    margin-bottom: 0.2rem;
+}
+.doc-analysis-mini-value { font-size: 0.85rem; font-weight: 600; }
+.doc-analysis-col ul {
+    margin: 0;
+    padding-left: 1.1rem;
+    font-size: 0.85rem;
+    line-height: 1.7;
+}
+.doc-analysis-notes {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    background: var(--bg-input);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    padding: 0.8rem 1rem;
+    margin-top: 1.3rem;
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+}
+.doc-detail-confidence-badge {
+    background: rgba(76, 175, 80, 0.15);
+    color: #4CAF50;
+    font-size: 0.78rem;
+    font-weight: 700;
+    padding: 0.35rem 0.8rem;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+.doc-detail-tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+.doc-detail-tag {
+    background: var(--bg-input);
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    padding: 0.3rem 0.8rem;
+    font-size: 0.82rem;
+}
+.doc-detail-empty {
+    color: var(--color-text-muted);
+    font-size: 0.88rem;
+}
+
 /* Sample Manuscripts Section */
 /* Sayfa boyunca alt alta gelen büyük bölümler arasında (workbench →
    örnek belgeler gibi) düz bir çizgi yerine kullanıcının sağladığı altın

@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
 
     <!-- Custom Stylesheet -->
-    <link rel="stylesheet" href="style.css?v=20260917-3">
+    <link rel="stylesheet" href="style.css?v=20260918-1">
 </head>
 <body class="dark-theme">
     <!-- Header Navigation Bar -->
@@ -396,70 +396,7 @@
                         </div>
 
                         <div class="info-content-wrapper hidden" id="infoContentWrapper">
-                            <div class="results-header">
-                                <div class="results-header-left">
-                                    <span class="results-doc-type" id="resultDocType">—</span>
-                                </div>
-                                <div class="confidence-pill" id="resultConfidencePill" title="Modelin çeviri/analiz sonucuna olan güveni">
-                                    <span class="confidence-label">Güven Skoru</span>
-                                    <span class="confidence-value" id="resultConfidenceValue">—</span>
-                                </div>
-                            </div>
-
-                            <!-- Tab / Category Buttons -->
-                            <div class="results-tabs" id="resultsTabs" role="tablist">
-                                <button class="results-tab-btn active" data-tab="overview" role="tab">Genel Bakış</button>
-                                <button class="results-tab-btn" data-tab="content" role="tab">İçerik Analizi</button>
-                                <button class="results-tab-btn" data-tab="notes" role="tab">Notlar</button>
-                            </div>
-
-                            <!-- Tab Panels -->
-                            <div class="results-tab-panels">
-
-                                <!-- Genel Bakış -->
-                                <div class="results-tab-panel active" data-panel="overview">
-                                    <h3 class="panel-heading">Kısa Özet</h3>
-                                    <p class="panel-text" id="resultSummary">—</p>
-
-                                    <h3 class="panel-heading">Belge Bilgileri</h3>
-                                    <div class="info-grid" id="resultDocInfoGrid"></div>
-                                </div>
-
-                                <!-- İçerik Analizi -->
-                                <div class="results-tab-panel" data-panel="content">
-                                    <h3 class="panel-heading">Önemli Bilgiler</h3>
-                                    <ul class="panel-list" id="resultKeyPoints"></ul>
-
-                                    <div class="entity-columns">
-                                        <div class="entity-col">
-                                            <h3 class="panel-heading">👤 Kişiler</h3>
-                                            <div class="entity-chip-list" id="resultPeople"></div>
-                                        </div>
-                                        <div class="entity-col">
-                                            <h3 class="panel-heading">📍 Yerler</h3>
-                                            <div class="entity-chip-list" id="resultPlaces"></div>
-                                        </div>
-                                        <div class="entity-col">
-                                            <h3 class="panel-heading">💡 Kavramlar</h3>
-                                            <div class="entity-chip-list" id="resultConcepts"></div>
-                                        </div>
-                                        <div class="entity-col">
-                                            <h3 class="panel-heading">🖋️ Yazı & Dil</h3>
-                                            <div class="detail-line-list" id="resultScriptDetails"></div>
-                                        </div>
-                                        <div class="entity-col">
-                                            <h3 class="panel-heading">🗓️ Tarih & Bağlam</h3>
-                                            <div class="detail-line-list" id="resultDateDetails"></div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Notlar -->
-                                <div class="results-tab-panel" data-panel="notes">
-                                    <p class="panel-text" id="resultNotes">—</p>
-                                </div>
-
-                            </div>
+                            <div id="infoAnalysisCard"></div>
                         </div>
                     </div>
                 </div>

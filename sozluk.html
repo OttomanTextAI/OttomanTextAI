@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=Noto+Naskh+Arabic:wght@400;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="style.css?v=20260917-3">
+    <link rel="stylesheet" href="style.css?v=20260918-1">
     <style>
         .sozluk-intro {
             max-width: 720px;
@@ -140,14 +140,18 @@
             border-color: var(--color-gold);
             color: var(--color-gold);
         }
-        /* Basit, tek sütun liste — her giriş kendi kartında, tanımın
-           birden çok numaralı anlamı varsa (bkz. sozluk.js'teki
-           splitSenses()) alt alta ayrı satırlar olarak gösterilir. */
+        /* İki sütunlu ızgara — her giriş kendi kartında, tanımın birden
+           çok numaralı anlamı varsa (bkz. sozluk.js'teki splitSenses())
+           kartın içinde alt alta ayrı satırlar olarak gösterilir. */
         .sozluk-results {
-            max-width: 760px;
-            display: flex;
-            flex-direction: column;
+            max-width: 1180px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 0.8rem;
+            align-items: start;
+        }
+        @media (max-width: 760px) {
+            .sozluk-results { grid-template-columns: 1fr; }
         }
         .sozluk-entry {
             background: var(--bg-card);
