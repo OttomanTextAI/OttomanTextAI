@@ -103,7 +103,9 @@ function escapeHtml(str) {
 // anlamı tek satırda art arda veriyor — bunları ayrı satırlara bölüyoruz.
 // Numarasız/tek anlamlı tanımlarda hiçbir şey değişmez (tek parça döner).
 function splitSenses(definition) {
-    const re = /(?:^|\s)(\d{1,2})\.(?=\S)/g;
+    // "1. mamurluk... 2. Hind'in..." (aralıklı) ve "1.devlet. 2.talih." (bitişik)
+    // biçimlerinin ikisini de yakalar; eşleşen kısım numara+nokta+varsa boşlukları kapsar.
+    const re = /(?:^|\s)(\d{1,2})\.\s*/g;
     const matches = [...definition.matchAll(re)];
     if (matches.length < 2) return [{ num: null, text: definition }];
 
@@ -115,7 +117,7 @@ function splitSenses(definition) {
     }
     for (let i = 0; i < matches.length; i++) {
         const num = matches[i][1];
-        const start = matches[i].index + matches[i][0].indexOf(num) + num.length + 1; // "N." sonrası
+        const start = matches[i].index + matches[i][0].length;
         const end = i + 1 < matches.length ? matches[i + 1].index + matches[i + 1][0].indexOf(matches[i + 1][1]) : definition.length;
         const text = definition.slice(start, end).trim();
         if (text) senses.push({ num, text });
