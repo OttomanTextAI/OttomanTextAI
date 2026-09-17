@@ -59,9 +59,29 @@ class DocumentPredictionGenerator:
     def __init__(self, model: str):
         self.model = model
 
+        api_key = (
+            os.getenv("RELAY_API_KEY")
+            or ""
+        ).strip()
+
+        base_url = (
+            os.getenv("RELAY_BASE_URL")
+            or ""
+        ).strip()
+
+        if not api_key:
+            raise RuntimeError(
+                "RELAY_API_KEY is not configured."
+            )
+
+        if not base_url:
+            raise RuntimeError(
+                "RELAY_BASE_URL is not configured."
+            )
+
         self.client = OpenAI(
-            api_key=os.getenv("RELAY_API_KEY"),
-            base_url=os.getenv("RELAY_BASE_URL"),
+            api_key=api_key,
+            base_url=base_url,
         )
 
     def generate(self, document_text: str) -> dict:
@@ -127,13 +147,26 @@ class DocumentPredictionGenerator:
             if not isinstance(recommendations, list):
                 return False
 
-            if len(predictions) == 0:
-                return False
+            usable_prediction = any(
+                isinstance(item, dict)
+                and str(
+                    item.get("prediction", "")
+                ).strip()
+                for item in predictions
+            )
 
-            if len(recommendations) == 0:
-                return False
+            usable_recommendation = any(
+                isinstance(item, dict)
+                and str(
+                    item.get("recommendation", "")
+                ).strip()
+                for item in recommendations
+            )
 
-            return True
+            return bool(
+                usable_prediction
+                and usable_recommendation
+            )
 
 
         if not has_usable_result(result):

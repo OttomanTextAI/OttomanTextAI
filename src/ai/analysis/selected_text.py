@@ -163,7 +163,28 @@ class SelectedTextAnalyzer:
             response_text
         )
 
-        if not result:
+        def has_usable_result(data: dict) -> bool:
+            if not isinstance(data, dict):
+                return False
+
+            explanation = str(
+                data.get("explanation", "")
+            ).strip()
+
+            simplified = str(
+                data.get("simplified", "")
+            ).strip()
+
+            context = str(
+                data.get("context", "")
+            ).strip()
+
+            return bool(
+                explanation
+                and simplified
+                and context
+            )
+        if not has_usable_result(result):
             print(
                 "[SELECTED TEXT] Invalid or truncated JSON. Retrying...",
                 flush=True,
@@ -213,7 +234,7 @@ class SelectedTextAnalyzer:
                 retry_text
             )
 
-            if not result:
+            if not has_usable_result(result):
                 print(
                     "[SELECTED TEXT] Retry JSON parsing failed.",
                     flush=True,

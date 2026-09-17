@@ -166,7 +166,7 @@ class DocumentQuestionGenerator:
                             'SADECE {"questions":["Soru 1?","Soru 2?","Soru 3?"]} '
                             "yapısında geçerli JSON döndür. "
                             "questions mutlaka bir liste olsun. "
-                            "Her soru en fazla 8 kelime olsun. "
+                            "Her soru en fazla 10 kelime olsun. "
                             "Başka hiçbir alan veya açıklama ekleme."
                         ),
                     },

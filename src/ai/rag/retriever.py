@@ -44,6 +44,9 @@ class DocumentRetriever:
         if not text or not text.strip():
             raise ValueError("Document text cannot be empty.")
 
+        # Mark the current index as unavailable while rebuilding.
+        self.document_indexed = False
+        
         chunks = chunk_text(
             text=text,
             chunk_size=self.chunk_size,

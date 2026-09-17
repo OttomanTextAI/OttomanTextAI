@@ -163,13 +163,85 @@ class WordAlternativesGenerator:
             response_text
         )
 
-        if not result:
+        def has_usable_result(data: dict) -> bool:
+            if not isinstance(data, dict):
+                return False
+
+            alternatives = data.get("alternatives")
+            origin = str(
+                data.get("origin", "")
+            ).strip()
+
+            if not isinstance(alternatives, list):
+                return False
+
+            has_alternative = any(
+                (
+                    isinstance(item, dict)
+                    and str(item.get("text", "")).strip()
+                )
+                or (
+                    not isinstance(item, dict)
+                    and str(item).strip()
+                )
+                for item in alternatives
+            )
+
+            return bool(
+                origin
+                and has_alternative
+            )
+
+
+        if not has_usable_result(result):
             print(
-                "[WORD ALTERNATIVES] Invalid model response:",
-                repr(response_text),
+                "[WORD ALTERNATIVES] Invalid or incomplete response. Retrying...",
                 flush=True,
             )
-            result = {}
+
+            retry_completion = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": WORD_ALTERNATIVES_SYSTEM_PROMPT,
+                    },
+                    {
+                        "role": "user",
+                        "content": (
+                            f"{user_content}\n\n"
+                            "Önceki cevap geçerli veya eksiksiz JSON değildi. "
+                            "Bu kez kısa ve tamamlanmış JSON döndür. "
+                            "origin boş olmasın ve alternatives en az 1 öğe içersin."
+                        ),
+                    },
+                ],
+                temperature=0.1,
+                max_tokens=2000,
+            )
+
+            print(
+                "[WORD ALTERNATIVES] Retry finish reason:",
+                retry_completion.choices[0].finish_reason,
+                flush=True,
+            )
+
+            retry_text = (
+                retry_completion.choices[0].message.content
+                or ""
+            ).strip()
+
+            result = parse_model_json(
+                retry_text
+            )
+
+            if not has_usable_result(result):
+                print(
+                    "[WORD ALTERNATIVES] Retry returned unusable result:",
+                    repr(retry_text),
+                    flush=True,
+                )
+                result = {}
 
         origin = str(
             result.get("origin", "")

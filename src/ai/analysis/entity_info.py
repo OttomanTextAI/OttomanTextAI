@@ -133,15 +133,65 @@ class EntityInfoGenerator:
             response_text
         )
 
-        if not result:
+        info = (
+            str(result.get("info", "")).strip()
+            if isinstance(result, dict)
+            else ""
+        )
+
+        if not info:
             print(
-                "[ENTITY INFO] Invalid model response:",
-                repr(response_text),
+                "[ENTITY INFO] Invalid or incomplete response. Retrying...",
                 flush=True,
             )
-            result = {}
 
-        info = str(result.get("info", "")).strip()
+            retry_completion = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": ENTITY_INFO_SYSTEM_PROMPT,
+                    },
+                    {
+                        "role": "user",
+                        "content": (
+                            f"{user_content}\n\n"
+                            "Önceki cevap geçerli veya eksiksiz JSON değildi. "
+                            'SADECE {"info":"Kısa bilgi"} yapısında '
+                            "geçerli ve tamamlanmış JSON döndür. "
+                            "info alanını boş bırakma."
+                        ),
+                    },
+                ],
+                temperature=0.1,
+                max_tokens=2000,
+            )
+
+            retry_text = (
+                retry_completion.choices[0].message.content
+                or ""
+            ).strip()
+
+            print(
+                "[ENTITY INFO] Retry finish reason:",
+                retry_completion.choices[0].finish_reason,
+                flush=True,
+            )
+
+            print(
+                "[ENTITY INFO] Retry response:",
+                repr(retry_text),
+                flush=True,
+            )
+
+            retry_result = parse_model_json(
+                retry_text
+            )
+
+            if isinstance(retry_result, dict):
+                info = str(
+                    retry_result.get("info", "")
+                ).strip()
 
         return {
             "info": info,

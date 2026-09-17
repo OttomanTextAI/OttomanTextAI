@@ -153,7 +153,33 @@ class ResearchSuggestionGenerator:
                     suggestion.get("title", "")
                 ).strip()
 
-                if title:
+                query = str(
+                    suggestion.get("query", "")
+                ).strip()
+
+                reason = str(
+                    suggestion.get("reason", "")
+                ).strip()
+
+                suggestion_type = str(
+                    suggestion.get("type", "")
+                ).strip().lower()
+
+                allowed_types = {
+                    "topic",
+                    "person",
+                    "period",
+                    "event",
+                    "place",
+                    "concept",
+                }
+
+                if (
+                    title
+                    and query
+                    and reason
+                    and suggestion_type in allowed_types
+                ):
                     return True
 
             return False

@@ -48,6 +48,10 @@ def optimize_document_context(
             + paragraph_length
             > beginning_budget
         ):
+            if not beginning_parts:
+                beginning_parts.append(
+                    paragraph[:beginning_budget]
+                )
             break
 
         beginning_parts.append(paragraph)
@@ -64,6 +68,10 @@ def optimize_document_context(
             + paragraph_length
             > end_budget
         ):
+            if not end_parts:
+                end_parts.append(
+                    paragraph[-end_budget:]
+                )
             break
 
         end_parts.append(paragraph)

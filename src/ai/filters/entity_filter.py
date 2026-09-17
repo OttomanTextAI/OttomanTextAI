@@ -51,7 +51,6 @@ Kurallar:
 - Cevaba doğrudan JSON nesnesiyle başla.
 - JSON dışında hiçbir açıklama, düşünme metni, giriş cümlesi veya sonuç cümlesi yazma.
 - "Wait", "Let's think", "Let's double check" benzeri iç düşünme ifadeleri üretme.
-- En fazla 5 varlık döndür.
 - Her alanı kısa tut.
 - JSON nesnesini mutlaka tamamen kapat.
 
@@ -174,7 +173,23 @@ class EntityFilterClassifier:
                     entity.get("text", "")
                 ).strip()
 
-                if text:
+                category = str(
+                    entity.get("category", "")
+                ).strip().lower()
+
+                if (
+                    text
+                    and category in {
+                        "person",
+                        "place",
+                        "date",
+                        "event",
+                        "concept",
+                        "institution",
+                        "role",
+                        "work",
+                    }
+                ):
                     return True
 
             return False

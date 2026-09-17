@@ -82,9 +82,29 @@ class SuggestionReviewer:
     def __init__(self, model: str):
         self.model = model
 
+        api_key = (
+            os.getenv("RELAY_API_KEY")
+            or ""
+        ).strip()
+
+        base_url = (
+            os.getenv("RELAY_BASE_URL")
+            or ""
+        ).strip()
+
+        if not api_key:
+            raise RuntimeError(
+                "RELAY_API_KEY is not configured."
+            )
+
+        if not base_url:
+            raise RuntimeError(
+                "RELAY_BASE_URL is not configured."
+            )
+
         self.client = OpenAI(
-            api_key=os.getenv("RELAY_API_KEY"),
-            base_url=os.getenv("RELAY_BASE_URL"),
+            api_key=api_key,
+            base_url=base_url,
         )
 
     def review(
@@ -235,9 +255,20 @@ class SuggestionReviewer:
             min(confidence, 1.0),
         )
 
-        accepted = bool(
-            result.get("accepted", False)
+        accepted_value = result.get(
+            "accepted",
+            False,
         )
+
+        if isinstance(accepted_value, bool):
+            accepted = accepted_value
+        elif isinstance(accepted_value, str):
+            accepted = (
+                accepted_value.strip().lower()
+                == "true"
+            )
+        else:
+            accepted = False
 
         recommended_text = str(
             result.get(

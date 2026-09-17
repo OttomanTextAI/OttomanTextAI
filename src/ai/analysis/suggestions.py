@@ -125,13 +125,71 @@ class AISuggestionGenerator:
             response_text
         )
 
-        if not result:
+        def has_usable_result(data: dict) -> bool:
+            if not isinstance(data, dict):
+                return False
+
+            recommended = data.get("recommended")
+
+            if not isinstance(recommended, dict):
+                return False
+
+            recommended_text = str(
+                recommended.get("text", "")
+            ).strip()
+
+            return bool(recommended_text)
+
+
+        if not has_usable_result(result):
             print(
-                "[AI SUGGESTIONS] Invalid model response:",
-                repr(response_text),
+                "[AI SUGGESTIONS] Invalid or incomplete response. Retrying...",
                 flush=True,
             )
-            result = {}
+
+            retry_completion = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": AI_SUGGESTION_SYSTEM_PROMPT,
+                    },
+                    {
+                        "role": "user",
+                        "content": (
+                            f"{text.strip()}\n\n"
+                            "Önceki cevap geçerli veya eksiksiz JSON değildi. "
+                            "Bu kez yalnızca kısa ve tamamlanmış JSON döndür. "
+                            "recommended alanı ve text değeri boş olmasın."
+                        ),
+                    },
+                ],
+                temperature=0.1,
+                max_tokens=1600,
+            )
+
+            print(
+                "[AI SUGGESTIONS RETRY FINISH REASON]",
+                retry_completion.choices[0].finish_reason,
+                flush=True,
+            )
+
+            retry_text = (
+                retry_completion.choices[0].message.content
+                or ""
+            ).strip()
+
+            result = parse_model_json(
+                retry_text
+            )
+
+            if not has_usable_result(result):
+                print(
+                    "[AI SUGGESTIONS] Retry returned unusable result:",
+                    repr(retry_text),
+                    flush=True,
+                )
+                result = {}
        
         recommended = result.get(
             "recommended",
@@ -202,10 +260,12 @@ class AISuggestionGenerator:
                     "reason": reason,
                 })
 
-        uncertainty = result.get(
-            "uncertainty",
-            "medium",
-        )
+        uncertainty = str(
+            result.get(
+                "uncertainty",
+                "medium",
+            )
+        ).strip().lower()
 
         if uncertainty not in {
             "low",

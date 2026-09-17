@@ -36,6 +36,11 @@ class InMemoryVectorStore:
         if not chunks:
             return
 
+        if any(not embedding for embedding in embeddings):
+            raise ValueError(
+                "Embeddings cannot contain empty vectors."
+            )
+        
         self.chunks.extend(chunks)
         self.embeddings.extend(embeddings)
 
