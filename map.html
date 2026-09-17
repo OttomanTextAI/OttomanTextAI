@@ -53,44 +53,106 @@
             border-color: var(--color-border) !important;
         }
 
-        /* Sağ üstteki "rotaları göster/gizle" düğmesi — .leaflet-control-zoom
-           ile aynı kart dili, ayrıca tıklanınca .active ile vurgulanır. */
-        .map-route-control {
-            border-color: var(--color-border) !important;
+        /* Sağ üstteki rota düğmeleri — her rotanın kendi rengi ve kendi
+           aç/kapa düğmesi var (bkz. map.js'teki RoutePanelControl). Renkler
+           şehir/sınır katmanlarından bilinçli olarak farklı: İpek Yolu için
+           bronz, Baharat Yolu için koyu altın, Hac Yolu için yeşil —
+           tezhip paletindeki mevcut tonlar (--color-bronze/--color-gold-deep/
+           --color-accent-green), yeni renk icat edilmedi. */
+        .map-route-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            background: transparent;
         }
-        .map-route-toggle {
-            background: var(--bg-card);
-            color: var(--color-text-main);
-            border: none;
-            width: 34px;
-            height: 34px;
+        .map-route-btn {
             display: flex;
             align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all var(--transition-fast);
-        }
-        .map-route-toggle:hover {
-            background: var(--color-gold-bg);
-            color: var(--color-gold);
-        }
-        .map-route-toggle.active {
-            background: var(--color-gold);
-            color: #FFFFFF;
-        }
-        /* Rota çizgisi — ülke şekillerindeki aynı sebeple (bkz. aşağıdaki not)
-           renk burada, JS'teki style seçeneklerinde değil, veriliyor. */
-        .map-route-line {
-            stroke: var(--color-accent-blue);
-        }
-        .map-route-tooltip.leaflet-tooltip {
+            gap: 0.5rem;
             background: var(--bg-card);
             color: var(--color-text-main);
             border: 1px solid var(--color-border);
-            font-weight: 600;
+            border-radius: var(--radius-full);
+            padding: 0.4rem 0.8rem 0.4rem 0.6rem;
             font-size: 0.78rem;
-            padding: 0.3rem 0.6rem;
+            font-weight: 600;
+            white-space: nowrap;
+            cursor: pointer;
+            box-shadow: var(--shadow-sm);
+            transition: all var(--transition-fast);
         }
+        .map-route-btn-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            background: var(--color-text-muted);
+        }
+        .map-route-btn--ipek .map-route-btn-dot { background: var(--color-bronze); }
+        .map-route-btn--baharat .map-route-btn-dot { background: var(--color-gold-deep); }
+        .map-route-btn--hac .map-route-btn-dot { background: var(--color-accent-green); }
+
+        .map-route-btn:hover {
+            border-color: var(--color-gold);
+        }
+        .map-route-btn--ipek.active {
+            background: var(--color-bronze);
+            border-color: var(--color-bronze);
+            color: #FFFFFF;
+        }
+        .map-route-btn--ipek.active .map-route-btn-dot { background: #FFFFFF; }
+        .map-route-btn--baharat.active {
+            background: var(--color-gold-deep);
+            border-color: var(--color-gold-deep);
+            color: #FFFFFF;
+        }
+        .map-route-btn--baharat.active .map-route-btn-dot { background: #FFFFFF; }
+        .map-route-btn--hac.active {
+            background: var(--color-accent-green);
+            border-color: var(--color-accent-green);
+            color: #FFFFFF;
+        }
+        .map-route-btn--hac.active .map-route-btn-dot { background: #FFFFFF; }
+
+        /* Rota çizgileri — ülke şekillerindeki aynı sebeple (Leaflet rengi
+           JS'te değil ham SVG attribute'u olarak yazıyor) renk burada
+           veriliyor. Hale (halo), ana çizginin altında daha kalın/soluk bir
+           ikinci çizgi — gravür bir haritada mürekkebin hafif yayılmış
+           görünümünü taklit ediyor. */
+        .map-route-line--ipek { stroke: var(--color-bronze); }
+        .map-route-line--baharat { stroke: var(--color-gold-deep); }
+        .map-route-line--hac { stroke: var(--color-accent-green); }
+        .map-route-line-halo--ipek { stroke: var(--color-bronze); }
+        .map-route-line-halo--baharat { stroke: var(--color-gold-deep); }
+        .map-route-line-halo--hac { stroke: var(--color-accent-green); }
+
+        .map-route-waypoint {
+            stroke-width: 1;
+        }
+        .map-route-waypoint--ipek { fill: var(--color-bronze); stroke: var(--bg-card); }
+        .map-route-waypoint--baharat { fill: var(--color-gold-deep); stroke: var(--bg-card); }
+        .map-route-waypoint--hac { fill: var(--color-accent-green); stroke: var(--bg-card); }
+
+        /* Rota isim etiketi — eski bölge etiketleriyle (bkz. proje geçmişi)
+           aynı eğik başlık fontunu kullanıyor, her zaman görünür (hover
+           gerekmiyor). */
+        .map-route-label-marker span {
+            display: block;
+            font-family: var(--font-heading);
+            font-style: italic;
+            font-weight: 600;
+            font-size: 13px;
+            white-space: nowrap;
+            transform: translate(-50%, -140%);
+            text-shadow:
+                -2px -2px 0 var(--bg-header), 2px -2px 0 var(--bg-header),
+                -2px  2px 0 var(--bg-header), 2px  2px 0 var(--bg-header),
+                 0   -2px 0 var(--bg-header), 0    2px 0 var(--bg-header),
+                -2px  0   0 var(--bg-header), 2px  0   0 var(--bg-header);
+        }
+        .map-route-label-marker--ipek span { color: var(--color-bronze); }
+        .map-route-label-marker--baharat span { color: var(--color-gold-deep); }
+        .map-route-label-marker--hac span { color: var(--color-accent-green); }
 
         /* Ülke şekilleri — Leaflet renk/kalınlığı SVG "fill"/"stroke"
            attribute'u olarak (inline style değil) yazdığı için, gerçek
@@ -720,6 +782,6 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
-    <script src="map.js?v=20260917-4"></script>
+    <script src="map.js?v=20260917-5"></script>
 </body>
 </html>

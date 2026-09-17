@@ -747,62 +747,104 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Tarihî rotalar (İpek Yolu, Baharat Yolu, Hac Yolu) ---
     // CITIES'teki gerçek koordinatları kullanır (ayrı bir koordinat listesi
     // tutmuyor ki şehir konumları değişirse rotalar da otomatik güncellensin).
-    // Sağ üstteki düğmeyle açılıp kapanır, varsayılan olarak gizli.
+    // Her rotanın kendi rengi ve sağ üstte kendi düğmesi var; birbirinden
+    // bağımsız açılıp kapanır, varsayılan olarak hepsi gizli. Her rota; ana
+    // çizginin altında daha soluk/kalın bir "hale" çizgisi, ara şehirlerde
+    // küçük konak noktaları ve güzergâhın ortasına yerleştirilmiş, eski
+    // harita bölge etiketleri gibi eğik başlıklı bir isim etiketiyle
+    // "kabartma harita" hissi vermeye çalışıyor.
     const cityById = {};
     CITIES.forEach(city => { cityById[city.id] = city; });
 
     const ROUTES = [
-        { id: 'ipek-yolu', name: 'İpek Yolu', cityIds: ['van', 'erzurum', 'sivas', 'kayseri', 'ankara', 'bursa', 'istanbul'] },
-        { id: 'baharat-yolu', name: 'Baharat Yolu', cityIds: ['basra', 'bagdat', 'halep', 'istanbul'] },
-        { id: 'hac-yolu', name: 'Hac Yolu (Şam Yolu)', cityIds: ['istanbul', 'sam', 'medine', 'mekke'] },
+        { id: 'ipek-yolu', name: 'İpek Yolu', colorKey: 'ipek', cityIds: ['van', 'erzurum', 'sivas', 'kayseri', 'ankara', 'bursa', 'istanbul'] },
+        { id: 'baharat-yolu', name: 'Baharat Yolu', colorKey: 'baharat', cityIds: ['basra', 'bagdat', 'halep', 'istanbul'] },
+        { id: 'hac-yolu', name: 'Hac Yolu (Şam Yolu)', colorKey: 'hac', cityIds: ['istanbul', 'sam', 'medine', 'mekke'] },
     ];
 
-    const routeLayer = L.layerGroup();
-    ROUTES.forEach(route => {
-        const latlngs = route.cityIds
-            .map(id => cityById[id])
-            .filter(Boolean)
-            .map(city => [city.lat, city.lng]);
-        if (latlngs.length < 2) return;
-        const line = L.polyline(latlngs, {
-            className: 'map-route-line',
-            weight: 2.5,
-            opacity: 0.85,
-            dashArray: '7 7',
-            lineJoin: 'round',
+    function routeLabelIcon(name, colorKey) {
+        return L.divIcon({
+            className: `map-route-label-marker map-route-label-marker--${colorKey}`,
+            html: `<span>${name}</span>`,
+            iconSize: [0, 0],
+            iconAnchor: [0, 0],
         });
-        line.bindTooltip(route.name, { sticky: true, className: 'map-route-tooltip' });
-        routeLayer.addLayer(line);
+    }
+
+    const routeLayers = {};
+    ROUTES.forEach(route => {
+        const points = route.cityIds.map(id => cityById[id]).filter(Boolean);
+        const latlngs = points.map(city => [city.lat, city.lng]);
+        if (latlngs.length < 2) return;
+
+        const group = L.layerGroup();
+
+        // Hale — ana çizginin altında, daha kalın ve soluk; gravür bir
+        // haritada mürekkebin hafifçe yayılmış gibi durmasını taklit eder.
+        L.polyline(latlngs, {
+            className: `map-route-line-halo map-route-line-halo--${route.colorKey}`,
+            weight: 5,
+            opacity: 0.35,
+            lineCap: 'round',
+            lineJoin: 'round',
+        }).addTo(group);
+
+        L.polyline(latlngs, {
+            className: `map-route-line map-route-line--${route.colorKey}`,
+            weight: 2.5,
+            opacity: 0.95,
+            dashArray: '1 6',
+            lineCap: 'round',
+            lineJoin: 'round',
+        }).addTo(group);
+
+        // Ara şehirlerde küçük "konak" noktaları — başlangıç/bitiş hariç,
+        // yol üzerindeki duraklar.
+        points.slice(1, -1).forEach(city => {
+            L.circleMarker([city.lat, city.lng], {
+                className: `map-route-waypoint map-route-waypoint--${route.colorKey}`,
+                radius: 3,
+                weight: 1,
+                interactive: false,
+            }).addTo(group);
+        });
+
+        // İsim etiketi — güzergâhın orta noktasındaki şehre yerleştirilir.
+        const midCity = points[Math.floor((points.length - 1) / 2)];
+        L.marker([midCity.lat, midCity.lng], {
+            icon: routeLabelIcon(route.name, route.colorKey),
+            interactive: false,
+            keyboard: false,
+        }).addTo(group);
+
+        routeLayers[route.id] = group;
     });
 
-    const RouteToggleControl = L.Control.extend({
+    const RoutePanelControl = L.Control.extend({
         options: { position: 'topright' },
         onAdd: function () {
-            const container = L.DomUtil.create('div', 'leaflet-bar map-route-control');
-            const button = L.DomUtil.create('button', 'map-route-toggle', container);
-            button.type = 'button';
-            button.title = 'Tarihî rotaları göster/gizle';
-            button.setAttribute('aria-label', 'Tarihî rotaları göster/gizle');
-            button.innerHTML = `
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="6" cy="6" r="2.5"></circle>
-                    <circle cx="18" cy="18" r="2.5"></circle>
-                    <path d="M8 7.5C12 10 12 14 16 16.5" stroke-dasharray="3 3"></path>
-                </svg>`;
+            const container = L.DomUtil.create('div', 'map-route-panel');
             L.DomEvent.disableClickPropagation(container);
-            L.DomEvent.on(button, 'click', () => {
-                if (map.hasLayer(routeLayer)) {
-                    map.removeLayer(routeLayer);
-                    button.classList.remove('active');
-                } else {
-                    routeLayer.addTo(map);
-                    button.classList.add('active');
-                }
+            ROUTES.forEach(route => {
+                const group = routeLayers[route.id];
+                if (!group) return;
+                const button = L.DomUtil.create('button', `map-route-btn map-route-btn--${route.colorKey}`, container);
+                button.type = 'button';
+                button.innerHTML = `<span class="map-route-btn-dot"></span><span>${route.name}</span>`;
+                L.DomEvent.on(button, 'click', () => {
+                    if (map.hasLayer(group)) {
+                        map.removeLayer(group);
+                        button.classList.remove('active');
+                    } else {
+                        group.addTo(map);
+                        button.classList.add('active');
+                    }
+                });
             });
             return container;
         },
     });
-    map.addControl(new RouteToggleControl());
+    map.addControl(new RoutePanelControl());
 
     // Ülke sınırları — jsDelivr üzerinden TopoJSON olarak çekilip
     // topojson-client ile GeoJSON'a çevriliyor, sonra yukarıdaki bölge
