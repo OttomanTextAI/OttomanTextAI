@@ -123,8 +123,49 @@ function splitSenses(definition) {
     return senses;
 }
 
-function renderSensesHtml(definition) {
+function escapeRegExp(str) {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// Bu sözlük, "kelime-i ek" biçiminde birleşik alt maddeleri (örn. "asel-i Davud",
+// "aff-ı hususi") tek bir tanım metninde art arda sıralıyor — sayı içermedikleri
+// için splitSenses bunları ayıramıyor ve tek bir bitişik blok gibi görünüyorlar.
+// Ana kelimenin kökünü baz alıp bu alt maddeleri de ayrı satırlara bölüyoruz.
+function splitCompoundParts(word, text) {
+    const root = (word.match(/^[A-Za-zÇĞİÖŞÜçğıöşü]+/) || [null])[0];
+    if (!root || root.length < 3) return [{ lead: null, text }];
+
+    const re = new RegExp("(?:^|\\.\\s+)(" + escapeRegExp(root) + "(?:[-’'][\\wÇĞİÖŞÜçğıöşü]+)+)", 'g');
+    const matches = [...text.matchAll(re)];
+    if (matches.length < 1) return [{ lead: null, text }];
+
+    const parts = [];
+    const firstStart = matches[0].index + matches[0][0].indexOf(matches[0][1]);
+    if (firstStart > 0) {
+        const intro = text.slice(0, firstStart).trim();
+        if (intro) parts.push({ lead: null, text: intro });
+    }
+    for (let i = 0; i < matches.length; i++) {
+        const lead = matches[i][1];
+        const start = matches[i].index + matches[i][0].indexOf(lead) + lead.length;
+        const end = i + 1 < matches.length ? matches[i + 1].index + matches[i + 1][0].indexOf(matches[i + 1][1]) : text.length;
+        const rest = text.slice(start, end).trim().replace(/^[:.]\s*/, '');
+        if (rest) parts.push({ lead, text: rest });
+    }
+    return parts.length ? parts : [{ lead: null, text }];
+}
+
+function renderSensesHtml(word, definition) {
     const senses = splitSenses(definition);
+    if (senses.length === 1 && senses[0].num === null) {
+        const parts = splitCompoundParts(word, senses[0].text);
+        return parts.map(p => `
+            <div class="sozluk-sense">
+                ${p.lead ? `<span class="sozluk-sense-lead">${escapeHtml(p.lead)}</span>` : ''}
+                <span>${escapeHtml(p.text)}</span>
+            </div>
+        `).join('');
+    }
     return senses.map(s => `
         <div class="sozluk-sense">
             ${s.num ? `<span class="sozluk-sense-num">${s.num}.</span>` : ''}
@@ -137,7 +178,7 @@ function renderEntries(entries) {
     sozlukResults.innerHTML = entries.map(e => `
         <div class="sozluk-entry">
             <div class="sozluk-entry-word">${escapeHtml(e.word)}</div>
-            <div class="sozluk-entry-def">${renderSensesHtml(e.definition)}</div>
+            <div class="sozluk-entry-def">${renderSensesHtml(e.word, e.definition)}</div>
         </div>
     `).join('');
 }
