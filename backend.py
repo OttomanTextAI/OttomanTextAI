@@ -2654,8 +2654,14 @@ def search_dictionary():
         return jsonify({"results": [], "total_matches": 0})
 
     query_lower = turkish_lower(query)
+    # Günümüz Türkçesiyle arama yapılıp Osmanlıcası bulunabilsin diye tanım
+    # metninde de eşleşme aranıyor — ör. "gemi" yazınca "sefine" bulunabilsin.
+    # Kelime sınırında arama yapılıyor (bare "in" gibi çok kısa/ortak parçalar
+    # her tanımda rastgele eşleşip gürültü yaratmasın diye).
+    def_query_re = re.compile(r'\b' + re.escape(query_lower) + r'\b') if len(query_lower) >= 3 else None
 
     exact, prefix, contains = [], [], []
+    in_definition = []  # (eşleşmenin tanımdaki konumu, entry) — bkz. aşağıdaki sıralama notu
     for entry in DICTIONARY_ENTRIES:
         word_lower = turkish_lower(entry["word"])
         if word_lower == query_lower:
@@ -2664,14 +2670,61 @@ def search_dictionary():
             prefix.append(entry)
         elif query_lower in word_lower:
             contains.append(entry)
+        elif def_query_re:
+            m = def_query_re.search(turkish_lower(entry["definition"]))
+            if m:
+                in_definition.append((m.start(), entry))
 
     prefix.sort(key=lambda e: turkish_lower(e["word"]))
     contains.sort(key=lambda e: turkish_lower(e["word"]))
-    ordered = exact + prefix + contains
+    # Tanım-eşleşmelerini alfabetik değil, eşleşen kelimenin tanımda NE KADAR
+    # ERKEN geçtiğine göre sırala: gerçek karşılık genelde POS etiketinden
+    # sonra ilk kelime olarak gelir (örn. "sefine (a.i.) : gemi, vapur."),
+    # oysa "gemi" kelimesi uzun bir açıklamanın ortasında da geçebilir
+    # (örn. "gemi kılavuzu") — alfabetik sıralama gerçek karşılığı sona atardı.
+    in_definition.sort(key=lambda t: (t[0], turkish_lower(t[1]["word"])))
+    in_definition = [e for _, e in in_definition]
+
+    word_hits = exact + prefix + contains
+    ordered = word_hits + in_definition
+
+    # DICTIONARY_ENTRIES'teki paylaşılan dict'leri değiştirmeden, sadece
+    # döndürülecek sayfa için "matched_in" eklenmiş kopyalar üretiliyor.
+    results = [
+        {**e, "matched_in": "word" if i < len(word_hits) else "definition"}
+        for i, e in enumerate(ordered[:limit])
+    ]
 
     return jsonify({
-        "results": ordered[:limit],
+        "results": results,
         "total_matches": len(ordered),
+        "query": query,
+    })
+
+
+@app.route("/api/dictionary/letter", methods=["GET"])
+def browse_dictionary_by_letter():
+    letter = (request.args.get("letter") or "").strip()
+    if not letter:
+        return jsonify({"results": [], "total": 0})
+    letter_lower = turkish_lower(letter)[:1]
+
+    try:
+        offset = max(int(request.args.get("offset", 0)), 0)
+    except (TypeError, ValueError):
+        offset = 0
+    try:
+        limit = min(max(int(request.args.get("limit", 40)), 1), 100)
+    except (TypeError, ValueError):
+        limit = 40
+
+    matches = [e for e in DICTIONARY_ENTRIES if turkish_lower(e["word"])[:1] == letter_lower]
+    matches.sort(key=lambda e: turkish_lower(e["word"]))
+
+    return jsonify({
+        "results": matches[offset:offset + limit],
+        "total": len(matches),
+        "offset": offset,
     })
 
 

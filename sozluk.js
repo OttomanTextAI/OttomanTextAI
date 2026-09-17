@@ -157,40 +157,214 @@ function splitCompoundParts(word, text) {
     return parts.length ? parts : [{ lead: null, text }];
 }
 
+// Sözlüğün kendi kısaltmalar sayfasından (Devellioğlu, Osmanlıca-Türkçe
+// Ansiklopedik Lûgat) alınan kod -> tam kelime karşılıkları. Madde başındaki
+// "(f.b.i.)" gibi kısaltma bloklarını "(Farsça, birleşik, isim)" gibi
+// okunur hale getirmek için kullanılıyor.
+const ABBR_MAP = {
+    a: 'Arapça', f: 'Farsça', t: 'Türkçe', o: 'Osmanlıca',
+    fr: 'Fransızca', ing: 'İngilizce', alm: 'Almanca',
+    grk: 'Grekçe', lit: 'Latince', yun: 'Yunanca',
+    i: 'isim', s: 'sıfat', zf: 'zarf', fi: 'fiil', zm: 'zamir',
+    e: 'edat', n: 'nida', b: 'birleşik', c: 'çoğul', cü: 'cümle',
+    it: 'isim tamlaması', m: 'masdar', ha: 'harf', hz: 'Hazret-i',
+    ed: 'edebiyat', est: 'estetik', fels: 'felsefe', mant: 'mantık',
+    huk: 'hukuk', hek: 'hekimlik', müz: 'müzik', zool: 'zooloji',
+    bot: 'botanik', kim: 'kimya', tar: 'tarih', tas: 'tasavvuf',
+    biy: 'biyoloji', psik: 'psikoloji', ask: 'askerlik',
+    den: 'denizcilik', jeol: 'jeoloji', jeod: 'jeodezi',
+    anat: 'anatomi', astr: 'astronomi', coğr: 'coğrafya',
+    fık: 'fıkıh', fiz: 'fizik', fizy: 'fizyoloji', geo: 'geometri',
+    gr: 'gramer', hak: 'hakkında', koz: 'kozmografya',
+    leng: 'lengüistik', mad: 'madencilik', mat: 'matematik',
+    mec: 'mecazen', mece: 'mecelle', meteor: 'meteoroloji',
+    müen: 'müennes', or: 'ormancılık', ö: 'ölüm', ped: 'pedagoji',
+    rub: 'rubai', sosy: 'sosyoloji', st: 'sıfat terkibi',
+    ter: 'terkip', tic: 'ticaret', top: 'topografya', trig: 'trigonometri',
+    vak: 'vakıf', vet: 'veteriner', zir: 'ziraat', dey: 'deyim',
+    d: 'doğum', bkz: 'bakınız',
+};
+const ABBR_SPECIAL2 = {
+    'h.i': 'has isim', 'd.huk': 'devlet hukuku',
+    'c.c': "cem'inin cem'i", 'g.s': 'güzel sanatlar',
+    'v.b': 've başkaları/ve benzerleri',
+};
+
+function expandAbbrCode(rawToken) {
+    const tok = rawToken.replace(/\.+$/, '');
+    if (!tok) return null;
+    const parts = tok.split('.');
+    if (parts.some(p => !p)) return null;
+    const out = [];
+    let i = 0;
+    while (i < parts.length) {
+        const pair = i + 1 < parts.length ? (parts[i] + '.' + parts[i + 1]).toLowerCase() : null;
+        if (pair && ABBR_SPECIAL2[pair]) {
+            out.push(ABBR_SPECIAL2[pair]);
+            i += 2;
+        } else {
+            const key = parts[i].toLowerCase();
+            if (!(key in ABBR_MAP)) return null;
+            out.push(ABBR_MAP[key]);
+            i += 1;
+        }
+    }
+    return out.join(', ');
+}
+
+// Sadece tanımın en başındaki "(...)" bloğunu genişletir — metin içindeki
+// "(bkz : X)" gibi sonraki parantezlere dokunmaz.
+function expandLeadingTag(definition) {
+    const m = definition.match(/^\(([^)]*)\)/);
+    if (!m) return definition;
+    const tokens = m[1].split(' ');
+    const newTokens = tokens.map(t => {
+        const trailing = (t.match(/[,;]+$/) || [''])[0];
+        const core = trailing ? t.slice(0, -trailing.length) : t;
+        const expanded = expandAbbrCode(core);
+        return expanded !== null ? expanded + trailing : t;
+    });
+    return '(' + newTokens.join(' ') + ')' + definition.slice(m[0].length);
+}
+
+// Günümüz Türkçesiyle arama yapılıp tanım metninde bulunduğunda ("gemi"
+// yazınca "sefine" gibi), eşleşen kısmı vurgulamak için kullanılıyor.
+// escapeHtml zaten kaçışlanmış metin üzerinde çalışır, yalnızca görünümü
+// etkiler.
+let currentSearchQuery = null;
+
+function highlightAndEscape(text) {
+    const escaped = escapeHtml(text);
+    if (!currentSearchQuery) return escaped;
+    const re = new RegExp('(' + escapeRegExp(currentSearchQuery) + ')', 'gi');
+    return escaped.replace(re, '<mark class="sozluk-highlight">$1</mark>');
+}
+
 function renderSensesHtml(word, definition) {
+    definition = expandLeadingTag(definition);
     const senses = splitSenses(definition);
     if (senses.length === 1 && senses[0].num === null) {
         const parts = splitCompoundParts(word, senses[0].text);
         return parts.map(p => `
             <div class="sozluk-sense">
                 ${p.lead ? `<span class="sozluk-sense-lead">${escapeHtml(p.lead)}</span>` : ''}
-                <span>${escapeHtml(p.text)}</span>
+                <span>${highlightAndEscape(p.text)}</span>
             </div>
         `).join('');
     }
     return senses.map(s => `
         <div class="sozluk-sense">
             ${s.num ? `<span class="sozluk-sense-num">${s.num}.</span>` : ''}
-            <span>${escapeHtml(s.text)}</span>
+            <span>${highlightAndEscape(s.text)}</span>
         </div>
     `).join('');
 }
 
-function renderEntries(entries) {
-    sozlukResults.innerHTML = entries.map(e => `
+function entryToHtml(e) {
+    return `
         <div class="sozluk-entry">
             <div class="sozluk-entry-word">${escapeHtml(e.word)}</div>
             <div class="sozluk-entry-def">${renderSensesHtml(e.word, e.definition)}</div>
         </div>
-    `).join('');
+    `;
+}
+
+function renderEntries(entries) {
+    sozlukResults.innerHTML = entries.map(entryToHtml).join('');
 }
 
 let searchTimer = null;
 let requestId = 0;
-let currentMode = 'browse'; // 'browse' (arama yapılmadan gösterilen rastgele kelimeler) | 'search'
+let currentMode = 'browse'; // 'browse' | 'search' | 'letter'
+
+// --- Harf harf gezinme ---
+const sozlukLetterBar = document.getElementById('sozlukLetterBar');
+const sozlukLoadMoreBtn = document.getElementById('sozlukLoadMoreBtn');
+const TR_ALPHABET = ['A','B','C','Ç','D','E','F','G','Ğ','H','I','İ','J','K','L','M','N','O','Ö','P','R','S','Ş','T','U','Ü','V','Y','Z'];
+const LETTER_PAGE_SIZE = 40;
+let currentLetter = null;
+let letterOffset = 0;
+let letterTotal = 0;
+
+function buildLetterBar() {
+    sozlukLetterBar.innerHTML = TR_ALPHABET.map(l => `<button type="button" class="sozluk-letter-btn" data-letter="${l}">${l}</button>`).join('');
+}
+buildLetterBar();
+
+function setActiveLetterBtn(letter) {
+    sozlukLetterBar.querySelectorAll('.sozluk-letter-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.letter === letter);
+    });
+}
+
+async function loadLetterPage(letter, { append = false } = {}) {
+    currentMode = 'letter';
+    currentSearchQuery = null;
+    currentLetter = letter;
+    setActiveLetterBtn(letter);
+    if (!append) {
+        letterOffset = 0;
+        sozlukResults.innerHTML = '';
+    }
+    const thisRequestId = ++requestId;
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/dictionary/letter?letter=${encodeURIComponent(letter)}&offset=${letterOffset}&limit=${LETTER_PAGE_SIZE}`);
+        if (thisRequestId !== requestId) return;
+        if (!res.ok) throw new Error('letter failed');
+        const data = await res.json();
+        letterTotal = data.total || 0;
+        if (!data.results || !data.results.length) {
+            if (!append) {
+                sozlukResults.innerHTML = `<p class="sozluk-empty">"${escapeHtml(letter)}" ile başlayan kelime bulunamadı.</p>`;
+                sozlukCount.textContent = '';
+            }
+            sozlukLoadMoreBtn.hidden = true;
+            return;
+        }
+        if (append) {
+            sozlukResults.insertAdjacentHTML('beforeend', data.results.map(entryToHtml).join(''));
+        } else {
+            renderEntries(data.results);
+        }
+        letterOffset += data.results.length;
+        sozlukCount.textContent = `"${letter}" ile başlayan ${letterTotal} kelimeden ${Math.min(letterOffset, letterTotal)} tanesi gösteriliyor`;
+        sozlukLoadMoreBtn.hidden = letterOffset >= letterTotal;
+    } catch (err) {
+        if (!append) {
+            sozlukResults.innerHTML = '<p class="sozluk-empty">Sözlük şu an yüklenemedi, lütfen tekrar deneyin.</p>';
+            sozlukCount.textContent = '';
+        }
+        sozlukLoadMoreBtn.hidden = true;
+    }
+}
+
+sozlukLetterBar.addEventListener('click', (e) => {
+    const btn = e.target.closest('.sozluk-letter-btn');
+    if (!btn) return;
+    const letter = btn.dataset.letter;
+    if (currentMode === 'letter' && currentLetter === letter) {
+        // aynı harfe tekrar tıklamak: harf gezintisinden çık, göz atmaya dön
+        setActiveLetterBtn(null);
+        sozlukLoadMoreBtn.hidden = true;
+        sozlukSearchInput.value = '';
+        loadRandomBatch();
+        return;
+    }
+    sozlukSearchInput.value = '';
+    loadLetterPage(letter);
+});
+
+sozlukLoadMoreBtn.addEventListener('click', () => {
+    if (currentMode === 'letter' && currentLetter) {
+        loadLetterPage(currentLetter, { append: true });
+    }
+});
 
 async function loadRandomBatch() {
     currentMode = 'browse';
+    currentSearchQuery = null;
+    setActiveLetterBtn(null);
+    sozlukLoadMoreBtn.hidden = true;
     const thisRequestId = ++requestId;
     try {
         const res = await fetch(`${API_BASE_URL}/api/dictionary/random?count=24`);
@@ -220,6 +394,8 @@ function runSearch(query) {
     }
 
     currentMode = 'search';
+    setActiveLetterBtn(null);
+    sozlukLoadMoreBtn.hidden = true;
     searchTimer = setTimeout(async () => {
         const thisRequestId = ++requestId;
         try {
@@ -232,6 +408,7 @@ function runSearch(query) {
                 sozlukCount.textContent = '';
                 return;
             }
+            currentSearchQuery = query;
             renderEntries(data.results);
             sozlukCount.textContent = data.total_matches > data.results.length
                 ? `${data.results.length} / ${data.total_matches} sonuç gösteriliyor`
@@ -248,6 +425,8 @@ sozlukSearchInput.addEventListener('input', () => runSearch(sozlukSearchInput.va
 sozlukRefreshBtn.addEventListener('click', () => {
     if (currentMode === 'search' && sozlukSearchInput.value.trim().length >= 2) {
         runSearch(sozlukSearchInput.value);
+    } else if (currentMode === 'letter' && currentLetter) {
+        loadLetterPage(currentLetter);
     } else {
         sozlukSearchInput.value = '';
         loadRandomBatch();

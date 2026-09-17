@@ -93,6 +93,53 @@
             border-color: var(--color-gold);
             color: var(--color-gold);
         }
+        .sozluk-letter-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+            max-width: 760px;
+            margin-bottom: 1.3rem;
+        }
+        .sozluk-letter-btn {
+            min-width: 2.1rem;
+            padding: 0.3rem 0;
+            text-align: center;
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            font-family: var(--font-heading);
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--color-text-main);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+        .sozluk-letter-btn:hover {
+            border-color: var(--color-gold);
+            color: var(--color-gold);
+        }
+        .sozluk-letter-btn.active {
+            background: var(--color-gold);
+            border-color: var(--color-gold);
+            color: var(--bg-header);
+        }
+        .sozluk-loadmore-btn {
+            display: block;
+            margin: 1.2rem auto 0;
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-full);
+            padding: 0.55rem 1.4rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--color-text-main);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+        .sozluk-loadmore-btn:hover {
+            border-color: var(--color-gold);
+            color: var(--color-gold);
+        }
         /* Basit, tek sütun liste — her giriş kendi kartında, tanımın
            birden çok numaralı anlamı varsa (bkz. sozluk.js'teki
            splitSenses()) alt alta ayrı satırlar olarak gösterilir. */
@@ -147,6 +194,16 @@
             color: var(--color-text-main);
             font-weight: 700;
             font-style: italic;
+        }
+        /* Günümüz Türkçesiyle arama yapılıp tanım içinde bulunduğunda
+           (örn. "gemi" yazınca "sefine" maddesinde geçen "gemi") eşleşen
+           kısmı vurgular. */
+        .sozluk-highlight {
+            background: var(--color-gold-bg);
+            color: var(--color-gold);
+            font-weight: 700;
+            border-radius: 3px;
+            padding: 0 0.15em;
         }
         .sozluk-empty {
             color: var(--color-text-muted);
@@ -263,9 +320,11 @@
     <main class="page-wrapper" style="padding-top: 2.5rem;">
         <h1 style="font-family: var(--font-heading); font-size: 1.8rem; margin: 0 0 0.6rem; color: var(--color-gold);">❖ <span style="color: var(--color-text-main);">Osmanlıca Sözlük</span></h1>
         <p class="sozluk-intro">
-            42.000'den fazla Osmanlıca kelime ve tabirin anlamını içeren bir sözlük. Aramak
-            istediğiniz kelimeyi Osmanlı Türkçesinin Latin harfli yazımıyla yazmanız yeterli — hiçbir şey
-            yazmadan da aşağıda rastgele kelimelere göz atabilirsiniz.
+            42.000'den fazla Osmanlıca kelime ve tabirin anlamını içeren, Ferit Devellioğlu'nun
+            Osmanlıca-Türkçe Ansiklopedik Lûgat'ine dayanan bir sözlük. Aramak istediğiniz kelimeyi
+            Osmanlı Türkçesinin Latin harfli yazımıyla yazabilir, aşağıdaki harflere tıklayarak o
+            harfle başlayan kelimeleri sırayla gezebilir, ya da hiçbir şey yazmadan rastgele
+            kelimelere göz atabilirsiniz.
         </p>
 
         <details class="sozluk-abbr">
@@ -285,6 +344,8 @@
             <input type="text" id="sozlukSearchInput" class="sozluk-search-input" placeholder="Bir kelime yazın, örn. devlet, mektup, ferman..." autocomplete="off">
         </div>
 
+        <div id="sozlukLetterBar" class="sozluk-letter-bar"></div>
+
         <div class="sozluk-toolbar">
             <div id="sozlukCount" class="sozluk-count"></div>
             <button type="button" class="sozluk-refresh-btn" id="sozlukRefreshBtn">
@@ -293,10 +354,11 @@
             </button>
         </div>
         <div id="sozlukResults" class="sozluk-results"></div>
+        <button type="button" class="sozluk-loadmore-btn" id="sozlukLoadMoreBtn" hidden>Daha fazla göster</button>
 
         <img src="assets/ornament-flourish.png" alt="" aria-hidden="true" class="map-divider">
     </main>
 
-    <script src="sozluk.js?v=20260917-4"></script>
+    <script src="sozluk.js?v=20260917-7"></script>
 </body>
 </html>
