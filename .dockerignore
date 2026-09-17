@@ -12,4 +12,10 @@ __pycache__
 *.pyo
 *.pyd
 
-data/processed
+# data/processed/ türetilmiş eğitim dosyalarını tutar ve imaja girmez —
+# ama osmanlica_sozluk.json backend.py'nin çalışma zamanında okuduğu bir
+# veri (bkz. /api/dictionary/search), o yüzden istisna tutuluyor. Docker'da
+# da git'teki gibi: dizin tamamen hariç tutulursa negation çalışmaz, bu
+# yüzden dizin yerine dizin/* deseni kullanılıyor.
+data/processed/*
+!data/processed/osmanlica_sozluk.json
