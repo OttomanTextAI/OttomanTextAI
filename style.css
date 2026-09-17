@@ -95,12 +95,15 @@
    (unchanged), which is now the deliberate counterpart to light mode's
    umber + gold palette rather than just a darkened copy of it. */
 body.dark-theme {
-    --bg-main: #0A0F1A;
-    --bg-header: #060A12;
-    --bg-header-translucent: rgba(6, 10, 18, 0.96);
-    --bg-card: #111A2E;
-    --bg-card-subtle: #162138;
-    --bg-input: #1B2945;
+    /* Önceki tonlar (#0A0F1A/#060A12/...) "çok koyu" geri bildirimi
+       üzerine ~7-8 puan aydınlatıldı — aynı lacivert tonu, ton/doygunluk
+       korunarak (bkz. proje notları). */
+    --bg-main: #151F36;
+    --bg-header: #101A2F;
+    --bg-header-translucent: rgba(16, 26, 47, 0.96);
+    --bg-card: #1B2A4A;
+    --bg-card-subtle: #213153;
+    --bg-input: #263960;
     /* Koyu temada mevcut görünüm bilinçli olarak korunuyor — ana kartlar
        zaten sayfadan (bg-main) farklı ve daha açık bir tonda (bg-card).
        Bu token light temadaki gibi ayrı bir "orta katman" değil, doğrudan
@@ -129,9 +132,9 @@ body.dark-theme {
     --color-accent-purple: #93677E;
     --color-accent-teal: #4A9494;
 
-    --hero-bg-start: #0D1627;
-    --hero-bg-mid: #141F36;
-    --hero-bg-end: #0D1627;
+    --hero-bg-start: #172644;
+    --hero-bg-mid: #1E2F52;
+    --hero-bg-end: #172644;
     --hero-heading-color: #F3EBDD;
     --hero-subtitle-color: #D9CEBC;
     --hero-outline-color: #F3EBDD;
