@@ -46,91 +46,87 @@
             border-color: var(--color-gold);
             box-shadow: 0 0 0 3px var(--color-gold-bg);
         }
+        .sozluk-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            margin-bottom: 1.1rem;
+        }
         .sozluk-count {
             font-size: 0.82rem;
             color: var(--color-text-muted);
-            margin-bottom: 1.2rem;
         }
-        /* Sonuçlar artık tek sütun düz bir liste değil, haritadaki şehir
-           dizinine benzer çok sütunlu bir "sözlük sayfası" görünümü —
-           kısa/uzun tanımlar karışık olduğunda daha derli toplu duruyor. */
+        .sozluk-refresh-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-full);
+            padding: 0.4rem 0.9rem;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--color-text-main);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+        .sozluk-refresh-btn:hover {
+            border-color: var(--color-gold);
+            color: var(--color-gold);
+        }
+        /* Basit, tek sütun liste — her giriş kendi kartında, tanımın
+           birden çok numaralı anlamı varsa (bkz. sozluk.js'teki
+           splitSenses()) alt alta ayrı satırlar olarak gösterilir. */
         .sozluk-results {
-            columns: 340px;
-            column-gap: 1.3rem;
+            max-width: 760px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
         }
         .sozluk-entry {
-            position: relative;
-            break-inside: avoid;
-            margin-bottom: 1.1rem;
             background: var(--bg-card);
             border: 1px solid var(--color-border);
             border-radius: var(--radius-md);
-            padding: 1rem 1.2rem 1.1rem 1.4rem;
+            padding: 1rem 1.25rem;
             box-shadow: var(--shadow-sm);
-            overflow: hidden;
-            transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
-        }
-        /* Sol kenardaki altın şerit — el yazması bir fişten/lugat
-           sayfasından bir madde gibi görünsün diye (bkz. notes.html'deki
-           aynı fikir, .notes-document-title::before). */
-        .sozluk-entry::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            left: 0;
-            width: 4px;
-            background: linear-gradient(to bottom, var(--color-gold), var(--color-gold-light));
-        }
-        .sozluk-entry:hover {
-            border-color: var(--color-gold);
-            box-shadow: var(--shadow-md);
         }
         .sozluk-entry-word {
             font-family: var(--font-heading);
             font-weight: 700;
-            font-style: italic;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             color: var(--color-gold);
-            padding-bottom: 0.5rem;
-            margin-bottom: 0.6rem;
-            border-bottom: 1px solid var(--color-border);
+            margin-bottom: 0.5rem;
         }
         .sozluk-entry-def {
-            font-size: 0.88rem;
-            line-height: 1.7;
+            font-size: 0.92rem;
+            line-height: 1.6;
             color: var(--color-text-main);
+        }
+        /* Numaralı anlamlar (örn. "1.devlet. 2.talih. 3.mevki.") artık tek
+           satırda yan yana akmıyor, her biri kendi satırında. */
+        .sozluk-sense {
+            display: flex;
+            gap: 0.5rem;
+            padding: 0.15rem 0;
+        }
+        .sozluk-sense + .sozluk-sense {
+            border-top: 1px dashed var(--color-border);
+            padding-top: 0.4rem;
+            margin-top: 0.15rem;
+        }
+        .sozluk-sense-num {
+            flex-shrink: 0;
+            color: var(--color-gold);
+            font-weight: 700;
+            font-size: 0.82rem;
+            min-width: 1.2em;
         }
         .sozluk-empty {
             color: var(--color-text-muted);
             font-size: 0.92rem;
             padding: 2rem 0;
             text-align: center;
-        }
-        .sozluk-placeholder {
-            max-width: 640px;
-            padding: 1.4rem 1.6rem;
-            border: 1px dashed var(--color-border);
-            border-radius: var(--radius-md);
-            color: var(--color-text-muted);
-            font-size: 0.9rem;
-            line-height: 1.7;
-        }
-        .sozluk-placeholder strong {
-            color: var(--color-text-main);
-        }
-        .sozluk-random-btn {
-            background: none;
-            border: none;
-            color: var(--color-gold);
-            font-weight: 600;
-            font-size: 0.85rem;
-            cursor: pointer;
-            padding: 0;
-            margin-top: 0.6rem;
-        }
-        .sozluk-random-btn:hover {
-            color: var(--color-gold-light);
         }
         .map-divider {
             display: block;
@@ -242,7 +238,8 @@
         <h1 style="font-family: var(--font-heading); font-size: 1.8rem; margin: 0 0 0.6rem; color: var(--color-gold);">❖ <span style="color: var(--color-text-main);">Osmanlıca Sözlük</span></h1>
         <p class="sozluk-intro">
             29.000'den fazla Osmanlıca kelime ve tabirin sadeleştirilmiş anlamını içeren bir sözlük. Aramak
-            istediğiniz kelimeyi Osmanlı Türkçesinin Latin harfli yazımıyla yazmanız yeterli.
+            istediğiniz kelimeyi Osmanlı Türkçesinin Latin harfli yazımıyla yazmanız yeterli — hiçbir şey
+            yazmadan da aşağıda rastgele kelimelere göz atabilirsiniz.
         </p>
 
         <div class="sozluk-search-box">
@@ -250,16 +247,18 @@
             <input type="text" id="sozlukSearchInput" class="sozluk-search-input" placeholder="Bir kelime yazın, örn. devlet, mektup, ferman..." autocomplete="off">
         </div>
 
-        <div id="sozlukCount" class="sozluk-count" hidden></div>
-        <div id="sozlukResults" class="sozluk-results"></div>
-        <div id="sozlukPlaceholder" class="sozluk-placeholder">
-            Yazmaya başlayınca sonuçlar burada görünecek. Rastgele bir kelimeyle göz atmak isterseniz:
-            <div><button type="button" class="sozluk-random-btn" id="sozlukRandomBtn">Rastgele bir kelime göster →</button></div>
+        <div class="sozluk-toolbar">
+            <div id="sozlukCount" class="sozluk-count"></div>
+            <button type="button" class="sozluk-refresh-btn" id="sozlukRefreshBtn">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.64-6.36"></path><path d="M21 4v5h-5"></path></svg>
+                Yenile
+            </button>
         </div>
+        <div id="sozlukResults" class="sozluk-results"></div>
 
         <img src="assets/ornament-flourish.png" alt="" aria-hidden="true" class="map-divider">
     </main>
 
-    <script src="sozluk.js?v=20260917-1"></script>
+    <script src="sozluk.js?v=20260917-2"></script>
 </body>
 </html>

@@ -91,8 +91,7 @@ document.addEventListener('keydown', (e) => {
 const sozlukSearchInput = document.getElementById('sozlukSearchInput');
 const sozlukResults = document.getElementById('sozlukResults');
 const sozlukCount = document.getElementById('sozlukCount');
-const sozlukPlaceholder = document.getElementById('sozlukPlaceholder');
-const sozlukRandomBtn = document.getElementById('sozlukRandomBtn');
+const sozlukRefreshBtn = document.getElementById('sozlukRefreshBtn');
 
 function escapeHtml(str) {
     const div = document.createElement('div');
@@ -100,36 +99,84 @@ function escapeHtml(str) {
     return div.innerHTML;
 }
 
+// Bazı tanımlar "1.devlet. 2.talih. 3.mevki." gibi birden fazla numaralı
+// anlamı tek satırda art arda veriyor — bunları ayrı satırlara bölüyoruz.
+// Numarasız/tek anlamlı tanımlarda hiçbir şey değişmez (tek parça döner).
+function splitSenses(definition) {
+    const re = /(?:^|\s)(\d{1,2})\.(?=\S)/g;
+    const matches = [...definition.matchAll(re)];
+    if (matches.length < 2) return [{ num: null, text: definition }];
+
+    const senses = [];
+    const firstStart = matches[0].index + matches[0][0].indexOf(matches[0][1]);
+    if (firstStart > 0) {
+        const prefix = definition.slice(0, firstStart).trim();
+        if (prefix) senses.push({ num: null, text: prefix });
+    }
+    for (let i = 0; i < matches.length; i++) {
+        const num = matches[i][1];
+        const start = matches[i].index + matches[i][0].indexOf(num) + num.length + 1; // "N." sonrası
+        const end = i + 1 < matches.length ? matches[i + 1].index + matches[i + 1][0].indexOf(matches[i + 1][1]) : definition.length;
+        const text = definition.slice(start, end).trim();
+        if (text) senses.push({ num, text });
+    }
+    return senses;
+}
+
+function renderSensesHtml(definition) {
+    const senses = splitSenses(definition);
+    return senses.map(s => `
+        <div class="sozluk-sense">
+            ${s.num ? `<span class="sozluk-sense-num">${s.num}.</span>` : ''}
+            <span>${escapeHtml(s.text)}</span>
+        </div>
+    `).join('');
+}
+
 function renderEntries(entries) {
     sozlukResults.innerHTML = entries.map(e => `
         <div class="sozluk-entry">
             <div class="sozluk-entry-word">${escapeHtml(e.word)}</div>
-            <div class="sozluk-entry-def">${escapeHtml(e.definition)}</div>
+            <div class="sozluk-entry-def">${renderSensesHtml(e.definition)}</div>
         </div>
     `).join('');
 }
 
 let searchTimer = null;
 let requestId = 0;
+let currentMode = 'browse'; // 'browse' (arama yapılmadan gösterilen rastgele kelimeler) | 'search'
+
+async function loadRandomBatch() {
+    currentMode = 'browse';
+    const thisRequestId = ++requestId;
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/dictionary/random?count=24`);
+        if (thisRequestId !== requestId) return;
+        if (!res.ok) throw new Error('random failed');
+        const data = await res.json();
+        if (!data.results || !data.results.length) {
+            sozlukResults.innerHTML = '<p class="sozluk-empty">Sözlük şu an yüklenemedi, lütfen tekrar deneyin.</p>';
+            sozlukCount.textContent = '';
+            return;
+        }
+        renderEntries(data.results);
+        sozlukCount.textContent = 'Aramadan önce göz atabileceğiniz rastgele kelimeler';
+    } catch (err) {
+        sozlukResults.innerHTML = '<p class="sozluk-empty">Sözlük şu an yüklenemedi, lütfen tekrar deneyin.</p>';
+        sozlukCount.textContent = '';
+    }
+}
 
 function runSearch(query) {
     clearTimeout(searchTimer);
     query = query.trim();
 
-    if (!query) {
-        sozlukResults.innerHTML = '';
-        sozlukCount.hidden = true;
-        sozlukPlaceholder.hidden = false;
+    if (!query || query.length < 2) {
+        loadRandomBatch();
         return;
     }
 
-    if (query.length < 2) {
-        sozlukResults.innerHTML = '';
-        sozlukCount.hidden = true;
-        sozlukPlaceholder.hidden = true;
-        return;
-    }
-
+    currentMode = 'search';
     searchTimer = setTimeout(async () => {
         const thisRequestId = ++requestId;
         try {
@@ -137,44 +184,40 @@ function runSearch(query) {
             if (thisRequestId !== requestId) return;
             if (!res.ok) throw new Error('search failed');
             const data = await res.json();
-            sozlukPlaceholder.hidden = true;
             if (!data.results.length) {
                 sozlukResults.innerHTML = '<p class="sozluk-empty">Eşleşen kelime bulunamadı.</p>';
-                sozlukCount.hidden = true;
+                sozlukCount.textContent = '';
                 return;
             }
             renderEntries(data.results);
-            sozlukCount.hidden = false;
             sozlukCount.textContent = data.total_matches > data.results.length
                 ? `${data.results.length} / ${data.total_matches} sonuç gösteriliyor`
                 : `${data.total_matches} sonuç`;
         } catch (err) {
             sozlukResults.innerHTML = '<p class="sozluk-empty">Sözlük şu an yüklenemedi, lütfen tekrar deneyin.</p>';
-            sozlukCount.hidden = true;
+            sozlukCount.textContent = '';
         }
     }, 300);
 }
 
 sozlukSearchInput.addEventListener('input', () => runSearch(sozlukSearchInput.value));
 
+sozlukRefreshBtn.addEventListener('click', () => {
+    if (currentMode === 'search' && sozlukSearchInput.value.trim().length >= 2) {
+        runSearch(sozlukSearchInput.value);
+    } else {
+        sozlukSearchInput.value = '';
+        loadRandomBatch();
+    }
+});
+
 // URL'de ?q= varsa (navbar aramasından "Sözlükte ara" ile gelinmiş olabilir)
-// otomatik doldurup arasın.
+// otomatik doldurup arasın; yoksa sayfa açılır açılmaz rastgele kelimelerle
+// (arama yapmadan da göz atılabilsin diye) başlar.
 const initialQuery = new URLSearchParams(window.location.search).get('q');
 if (initialQuery) {
     sozlukSearchInput.value = initialQuery;
     runSearch(initialQuery);
-}
-
-if (sozlukRandomBtn) {
-    sozlukRandomBtn.addEventListener('click', async () => {
-        try {
-            const res = await fetch(`${API_BASE_URL}/api/dictionary/random`);
-            if (!res.ok) return;
-            const entry = await res.json();
-            sozlukSearchInput.value = entry.word;
-            runSearch(entry.word);
-        } catch (err) {
-            // sessizce geç
-        }
-    });
+} else {
+    loadRandomBatch();
 }

@@ -2679,7 +2679,19 @@ def search_dictionary():
 def random_dictionary_entry():
     if not DICTIONARY_ENTRIES:
         return jsonify({"error": "Sözlük verisi yüklenemedi."}), 503
-    return jsonify(random.choice(DICTIONARY_ENTRIES))
+
+    count_param = request.args.get("count")
+    if count_param is None:
+        # count verilmezse eski davranış: tek bir giriş, düz obje olarak
+        # (geriye dönük uyumluluk — navbar aramasındaki "rastgele kelime"
+        # düğmesi bunu bekliyor).
+        return jsonify(random.choice(DICTIONARY_ENTRIES))
+
+    try:
+        count = min(max(int(count_param), 1), 50)
+    except (TypeError, ValueError):
+        count = 24
+    return jsonify({"results": random.sample(DICTIONARY_ENTRIES, min(count, len(DICTIONARY_ENTRIES)))})
 
 
 @app.route("/api/contact", methods=["POST"])
