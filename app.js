@@ -26,11 +26,7 @@ const state = {
     engine: localStorage.getItem('translation_engine') || 'gemini-flash',
 
     authToken: localStorage.getItem('auth_token') || null,
-    authEmail: localStorage.getItem('auth_email') || null,
-    // Kayıt formunda alınan ad soyad — backend'deki 'users' tablosuna bu
-    // alan için sütun eklenene kadar (bkz. proje notları) sadece burada,
-    // yerelde tutuluyor; profile.html bunu geri okuyup gösteriyor.
-    authFullName: localStorage.getItem('auth_full_name') || null
+    authEmail: localStorage.getItem('auth_email') || null
 };
 function restoreTranslationState() {
     const params = new URLSearchParams(window.location.search);
@@ -4889,23 +4885,11 @@ ${transTextDisplay.textContent}
         }
     }
 
-    function setAuthSession(token, email, fullName) {
+    function setAuthSession(token, email) {
         state.authToken = token;
         state.authEmail = email;
         localStorage.setItem('auth_token', token);
         localStorage.setItem('auth_email', email);
-
-        if (fullName) {
-            state.authFullName = fullName;
-            localStorage.setItem('auth_full_name', fullName);
-            localStorage.setItem('auth_full_name_email', email);
-        } else if (localStorage.getItem('auth_full_name_email') !== email) {
-            // Bu tarayicida baska bir hesabin adi kalmis olabilir (paylasilan
-            // cihaz) — e-posta eslesmiyorsa yanlislikla gosterilmesin.
-            state.authFullName = null;
-            localStorage.removeItem('auth_full_name');
-            localStorage.removeItem('auth_full_name_email');
-        }
 
         updateAuthUI();
     }
@@ -4983,10 +4967,6 @@ ${transTextDisplay.textContent}
         registerSubmitBtn.textContent = 'Kayıt olunuyor...';
 
         try {
-            // full_name backend'e de gönderiliyor (ileride veritabanına
-            // eklenince otomatik kaydedilsin diye) ama şu an backend bu
-            // alanı henüz işlemiyor/saklamıyor — bu yüzden ayrıca yerelde
-            // (setAuthSession'a 3. parametre olarak) de tutuluyor.
             const res = await fetchWithTimeout(`${API_BASE_URL}/api/auth/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -5009,7 +4989,7 @@ ${transTextDisplay.textContent}
             const loginData = await loginRes.json().catch(() => ({}));
 
             if (loginRes.ok) {
-                setAuthSession(loginData.token, loginData.email, fullName);
+                setAuthSession(loginData.token, loginData.email);
                 registerForm.reset();
                 authModal.classList.add('hidden');
                 promptProfileCompletion();

@@ -83,18 +83,8 @@ const profileAvatarImg = document.getElementById('profileAvatarImg');
 const avatarFileInput = document.getElementById('avatarFileInput');
 const avatarEditBtn = document.getElementById('avatarEditBtn');
 
-// Kayıt formunda alınan ad soyad, backend'de henüz bir sütunu olmadığı için
-// (bkz. proje notları — DB migrasyonu bekleniyor) index.html/app.js
-// tarafından sadece localStorage'a yazılıyor. Backend bir full_name
-// döndürene kadar buradan, sadece aynı hesaba (e-posta eşleşmesi) aitse
-// okunuyor.
-function localFullNameFallback(email) {
-    if (localStorage.getItem('auth_full_name_email') !== email) return '';
-    return localStorage.getItem('auth_full_name') || '';
-}
-
 function fillFormFromProfile(profile) {
-    profileFullName.value = profile.full_name || localFullNameFallback(profile.email) || '';
+    profileFullName.value = profile.full_name || '';
     profileTitleInput.value = profile.title || '';
     profileEmail.value = profile.email || '';
     profileSpecialty.value = profile.specialty || '';
@@ -104,7 +94,7 @@ function fillFormFromProfile(profile) {
 }
 
 function renderProfileSummary(profile) {
-    profileSummaryName.textContent = profile.full_name || localFullNameFallback(profile.email) || profile.email || '—';
+    profileSummaryName.textContent = profile.full_name || profile.email || '—';
     profileSummaryTitle.textContent = profile.title || '';
     profileAvatarImg.src = profile.avatar_url || 'assets/icon.png';
 }
@@ -116,7 +106,7 @@ function renderSidebarProfileCard(profile) {
     const titleEl = document.getElementById('sidebarProfileTitle');
     const avatarEl = document.getElementById('sidebarProfileAvatar');
     if (!nameEl || !profile) return;
-    nameEl.textContent = profile.full_name || localFullNameFallback(profile.email) || (profile.email ? profile.email.split('@')[0] : '') || 'Profilim';
+    nameEl.textContent = profile.full_name || (profile.email ? profile.email.split('@')[0] : '') || 'Profilim';
     if (profile.title) {
         titleEl.textContent = profile.title;
         titleEl.hidden = false;
@@ -328,13 +318,9 @@ profileForm.addEventListener('submit', async (e) => {
             }),
         });
 
-        // Yeni profil alanları veritabanına henüz eklenmediyse (bkz. proje
-        // notu) backend bu uçta 404 döner ve gövde JSON olmaz — bunu ayırt
-        // edip anlamlı bir mesaj göstermek için res.json() öncesi res.ok
-        // kontrol ediliyor.
         if (!res.ok) {
             const data = await res.json().catch(() => null);
-            throw new Error((data && data.error) || 'Kaydedilemedi (bu özellik henüz sunucuda etkin değil).');
+            throw new Error((data && data.error) || 'Kaydedilemedi. Lütfen tekrar deneyin.');
         }
 
         const data = await res.json();
@@ -366,7 +352,7 @@ avatarFileInput.addEventListener('change', async () => {
 
         if (!res.ok) {
             const data = await res.json().catch(() => null);
-            throw new Error((data && data.error) || 'Fotoğraf yüklenemedi (bu özellik henüz sunucuda etkin değil).');
+            throw new Error((data && data.error) || 'Fotoğraf yüklenemedi. Lütfen tekrar deneyin.');
         }
 
         const data = await res.json();
@@ -379,9 +365,7 @@ avatarFileInput.addEventListener('change', async () => {
     }
 });
 
-// --- Şifre Değiştirme (backend'deki mevcut password_hash sütununu
-// kullandığı için, diğer profil alanlarının aksine DB migrasyonu
-// beklemeden şu an tam çalışıyor). ---
+// --- Şifre Değiştirme ---
 const passwordForm = document.getElementById('passwordForm');
 const currentPasswordInput = document.getElementById('currentPassword');
 const newPasswordInput = document.getElementById('newPassword');

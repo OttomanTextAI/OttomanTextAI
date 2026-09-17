@@ -23,6 +23,10 @@ class User(db.Model):
     full_name = db.Column(db.String(150))
     title = db.Column(db.String(150))
     avatar_storage_path = db.Column(db.String(500))
+    specialty = db.Column(db.String(150))
+    phone = db.Column(db.String(50))
+    bio = db.Column(db.Text)
+    institution = db.Column(db.String(200))
 
 
 class Document(db.Model):

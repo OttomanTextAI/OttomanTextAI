@@ -222,12 +222,12 @@ document.addEventListener('DOMContentLoaded', () => {
             id: 'edirne', name: 'Edirne', lat: 41.6771, lng: 26.5557,
             cover: 'assets/sehirler/edirne.jpg',
             era: 'Başkent (1365–1453)',
-            blurb: 'İstanbul\'un fethinden önce imparatorluğun başkentiydi; Selimiye Camii gibi başyapıtlara ev sahipliği yapar.',
+            blurb: 'Roma ve Bizans döneminde Hadrianopolis adıyla bilinen şehir, 1361 civarında Osmanlı topraklarına katıldı ve 1453\'te İstanbul fethedilene kadar imparatorluğun başkenti oldu. Başkent İstanbul\'a taşındıktan sonra da önemini kaybetmedi: 17. yüzyılda IV. Mehmed döneminde sultanların av ve dinlenme mevsimlerini geçirdiği âdeta "ikinci başkent" hâline geldi ve 1575\'te Mimar Sinan\'ın "ustalık eserim" dediği Selimiye Camii burada tamamlandı. 19. ve 20. yüzyıllarda ise sınır şehri olmanın bedelini ödedi; 1829, 1878 ve Balkan Savaşları\'nda birkaç kez kısa süreliğine elden çıktı ve geri alındı.',
         },
         {
             id: 'istanbul', name: 'İstanbul', lat: 41.0082, lng: 28.9784,
             era: 'Başkent (1453–1922)',
-            blurb: '1453\'te fethedilerek İmparatorluğun başkenti oldu; siyasi, kültürel ve ticari hayatın merkeziydi.',
+            blurb: 'Bizans İmparatorluğu\'nun bin yılı aşkın başkenti Konstantinopolis, 29 Mayıs 1453\'te II. Mehmed tarafından fethedilerek Osmanlı\'nın yeni başkenti oldu. 16. yüzyılda Kanuni Sultan Süleyman döneminde nüfusu ve imarı doruğa çıktı; Süleymaniye Camii ve çevresindeki külliye bu "altın çağın" simgelerinden biridir. 19. yüzyılda Tanzimat reformlarıyla birlikte Pera ve Galata modern bir Avrupa şehri gibi dönüşürken, Birinci Dünya Savaşı sonunda 1918-1923 arasında İtilaf devletlerince işgal edildi. Cumhuriyet\'in ilanıyla başkentlik unvanını Ankara\'ya bıraksa da, imparatorluğun 470 yıllık siyasi, kültürel ve ticari kalbi olmaya devam etti.',
             cover: 'assets/3-suleymaniye-camii-ve-cevresi-gouffier.jpg',
             documents: [
                 { key: 'tah', file: 'assets/tah.png', title: 'Tercüman-ı Ahval Gazetesi\'nin 25. Sayısı' },
@@ -237,13 +237,13 @@ document.addEventListener('DOMContentLoaded', () => {
             id: 'bursa', name: 'Bursa', lat: 40.1826, lng: 29.0665,
             cover: 'assets/sehirler/bursa.jpg',
             era: 'Başkent (1326–1365)',
-            blurb: 'Osmanlı Beyliği\'nin ilk başkentiydi; erken dönem cami ve külliyeleriyle tanınır.',
+            blurb: 'Roma dönemindeki adıyla Prusa, 1326\'da Orhan Gazi tarafından fethedilerek genç Osmanlı Beyliği\'nin ilk başkenti oldu ve bu unvanı 1365\'e, başkentin Edirne\'ye taşınmasına kadar taşıdı. Başkent olmaktan çıktıktan sonra da imparatorluğun en zengin şehirlerinden biri olarak kaldı; İran ve Uzakdoğu\'dan gelen ipeğin Avrupa\'ya açılan kapısı hâline geldi ve yüzyıllar boyunca Osmanlı ipekli dokumacılığının merkezi oldu. Yıldırım Bayezid ve Çelebi Mehmed dönemlerinde inşa edilen Ulu Cami ile Yeşil Cami ve Türbe, erken Osmanlı mimarisinin en önemli örnekleri arasında sayılır.',
         },
         {
             id: 'ankara', name: 'Ankara', lat: 39.9334, lng: 32.8597,
             cover: 'assets/sehirler/ankara.jpg',
             era: 'Osmanlı Anadolusu / Kurtuluş Savaşı Başkenti',
-            blurb: 'Anadolu ticaret yollarının kesiştiği önemli bir merkezdi; Hacı Bayram Veli\'nin vakfı burada kuruldu. 23 Nisan 1920\'de Büyük Millet Meclisi burada açıldı ve şehir Kurtuluş Savaşı\'nın fiilî başkenti oldu.',
+            blurb: 'Roma ve Bizans döneminde Ankyra adıyla bilinen, Selçuklu ve beylikler devrinden sonra 14. yüzyılda Osmanlı topraklarına katılan şehir, yüzyıllarca tiftik keçisinden elde edilen "sof" (Ankara yünü) ticaretiyle tanınan mütevazı bir Anadolu kasabası olarak kaldı. Bu sakin taşra hayatı 1919-1920\'de kökten değişti: Mustafa Kemal Paşa\'nın Millî Mücadele\'yi örgütlemek için merkez seçmesiyle 23 Nisan 1920\'de Büyük Millet Meclisi burada açıldı ve şehir savaşın fiilî başkenti oldu. 1923\'te Cumhuriyet\'in ilanıyla birlikte resmî başkent unvanını alarak İstanbul\'un yerini aldı.',
             documents: [
                 { key: 'hbv', file: 'assets/hbv.png', title: 'Hacı Bayram Veli Vakfı Tevliyet ve Meşihat Beratı' },
                 { key: '1', file: 'assets/im.png', title: 'İstiklâl Marşı' },
@@ -253,13 +253,13 @@ document.addEventListener('DOMContentLoaded', () => {
             id: 'konya', name: 'Konya', lat: 37.8746, lng: 32.4932,
             cover: 'assets/sehirler/konya.jpg',
             era: 'Anadolu Beylikleri – Osmanlı',
-            blurb: 'Selçuklu mirasının ve Mevlevîlik kültürünün merkezi; Osmanlı döneminde de önemli bir ilim şehri oldu.',
+            blurb: 'Bizans döneminde Ikonion adıyla bilinen şehir, 12. ve 13. yüzyıllarda Anadolu Selçuklu Devleti\'nin başkenti olarak altın çağını yaşadı; Mevlânâ Celâleddîn-i Rûmî 1228\'de buraya yerleşerek şehri tasavvuf düşüncesinin merkezi hâline getirdi. Selçuklu Devleti\'nin dağılmasının ardından bölge önce Karamanoğulları Beyliği\'nin elinde kaldı, 15. yüzyılın ikinci yarısında Fatih Sultan Mehmed ve II. Bayezid dönemlerinde kesin olarak Osmanlı topraklarına katıldı. Osmanlı asırları boyunca Mevlevî tarikatının merkezi ve önemli bir ilim şehri olma özelliğini korudu.',
         },
         {
             id: 'sivas', name: 'Sivas', lat: 39.7477, lng: 37.0179,
             cover: 'assets/sehirler/sivas.jpg',
             era: 'Osmanlı Anadolusu / Sivas Kongresi (Eylül 1919)',
-            blurb: 'Anadolu\'nun doğusunda önemli bir vakıf ve idare merkeziydi. Eylül 1919\'da toplanan Sivas Kongresi, Erzurum Kongresi kararlarını tüm ülke için genişleterek Millî Mücadele\'nin tek elden yürütülmesini sağladı.',
+            blurb: 'Roma-Bizans döneminde Sebasteia olarak bilinen şehir, Selçuklu ve Danişmendli devirlerinde İpek Yolu\'nun Anadolu\'daki önemli konaklarından biriydi; Gök Medrese ve Çifte Minareli Medrese gibi 13. yüzyıl yapıları bu döneme tanıklık eder. Osmanlı idaresi altında doğu Anadolu\'nun idari ve vakıf merkezlerinden biri olarak varlığını sürdürdü. Yüzyıllar sonra, Eylül 1919\'da burada toplanan Sivas Kongresi, Erzurum Kongresi kararlarını tüm ülkeyi kapsayacak şekilde genişleterek Millî Mücadele\'nin tek elden yürütülmesini sağladı ve Türkiye tarihinin dönüm noktalarından biri oldu.',
             documents: [
                 { key: 'svf', file: 'assets/svf.png', title: 'Sivas\'taki Vakıf Şartlarına Dair Ferman' },
                 { key: 'tah', file: 'assets/tah.png', title: 'Tercüman-ı Ahval Gazetesi\'nin 25. Sayısı' },
@@ -269,7 +269,7 @@ document.addEventListener('DOMContentLoaded', () => {
             id: 'halep', name: 'Halep', lat: 36.2021, lng: 37.1343,
             cover: 'assets/sehirler/halep.jpg',
             era: 'Osmanlı Suriyesi',
-            blurb: 'Ticaret yollarının kesiştiği kadim bir şehir; Osmanlı idaresinde önemli bir eyalet merkeziydi.',
+            blurb: 'Kadim bir ticaret şehri olan Halep, 1516\'da Yavuz Sultan Selim\'in Mercidabık Zaferi\'yle Memlük topraklarından Osmanlı\'ya katıldı. 16. ve 17. yüzyıllarda Venedik, İngiliz ve Fransız tüccarların açtığı konsolosluklar ve hanlarla İpek Yolu\'nun Akdeniz\'e açılan en zengin uğrak noktalarından biri hâline geldi; bu dönemde İstanbul ve Kahire\'den sonra imparatorluğun üçüncü büyük şehri sayılırdı. Birinci Dünya Savaşı\'nın ardından 1918\'de İngiliz-Arap kuvvetlerinin eline geçti ve Fransız Suriye mandası sınırları içinde kaldı.',
             documents: [
                 { key: 'sbh', file: 'assets/sbh.png', title: 'Şam, Baalbek ve Halep Mühimme Hükümleri' },
                 { key: 'tah', file: 'assets/tah.png', title: 'Tercüman-ı Ahval Gazetesi\'nin 25. Sayısı' },
@@ -280,7 +280,7 @@ document.addEventListener('DOMContentLoaded', () => {
             cover: 'assets/sehirler/sam.jpg',
             coverPosition: 'center bottom',
             era: 'Osmanlı Suriyesi',
-            blurb: 'Osmanlı Suriyesi\'nin idari merkezlerinden biri ve hac yolunun önemli bir durağıydı.',
+            blurb: 'Emevi Camii gibi İslam\'ın en eski anıtlarına ev sahipliği yapan Şam, 1516\'da Halep ile aynı sefer sırasında Osmanlı topraklarına katıldı. Yüzyıllar boyunca Şam Eyaleti\'nin idari merkezi olmasının yanında, her yıl Mekke ve Medine\'ye giden büyük hac kervanının toplanma noktası olarak da özel bir öneme sahipti; bu görev şehre "Şam-ı Şerif" unvanını kazandırdı. Birinci Dünya Savaşı sonunda, 1918\'de Arap ayaklanması ve İngiliz kuvvetlerinin ilerleyişiyle Osmanlı idaresinden çıktı.',
             documents: [
                 { key: 'sbh', file: 'assets/sbh.png', title: 'Şam, Baalbek ve Halep Mühimme Hükümleri' },
             ],
@@ -289,7 +289,7 @@ document.addEventListener('DOMContentLoaded', () => {
             id: 'bagdat', name: 'Bağdat', lat: 33.3152, lng: 44.3661,
             cover: 'assets/sehirler/bagdat.jpg',
             era: 'Osmanlı Irak\'ı',
-            blurb: 'Fuzûlî gibi büyük divan şairlerinin yaşadığı, Osmanlı Irak\'ının kültürel merkeziydi.',
+            blurb: 'Abbasi halifeliğinin eski başkenti Bağdat, 16. yüzyılda Osmanlı ve Safevi İran arasında defalarca el değiştirdi; Kanuni Sultan Süleyman 1534\'te şehri aldı, IV. Murad ise 1638\'deki kesin fetihle Osmanlı hâkimiyetini kalıcı hâle getirdi ve bunu 1639 Kasr-ı Şirin Antlaşması pekiştirdi. Bu yüzyıllar boyunca Fuzûlî gibi büyük divan şairlerinin yaşadığı, Osmanlı Irak\'ının en önemli kültür ve ilim merkezi olma özelliğini korudu. Birinci Dünya Savaşı\'nda Mezopotamya Cephesi\'nin odağı hâline geldi ve Mart 1917\'de İngiliz kuvvetlerinin eline geçti.',
             documents: [
                 { key: 'hero', file: 'assets/sk.png', title: 'Fuzûlî\'nin Su Kasidesi' },
             ],
@@ -298,13 +298,13 @@ document.addEventListener('DOMContentLoaded', () => {
             id: 'kahire', name: 'Kahire', lat: 30.0444, lng: 31.2357,
             cover: 'assets/sehirler/kahire.jpg',
             era: 'Osmanlı Mısır\'ı (1517–1914)',
-            blurb: '1517\'de Osmanlı topraklarına katıldı; Mısır eyaletinin başkenti ve önemli bir İslam ilim merkeziydi.',
+            blurb: '1517\'de Yavuz Sultan Selim\'in Ridaniye Zaferi\'yle Memlük Sultanlığı\'na son vererek Osmanlı topraklarına kattığı Kahire, halifelik unvanının da sembolik olarak İstanbul\'a taşınmasına vesile oldu. Yüzyıllarca Mısır Eyaleti\'nin başkenti ve imparatorluğun en zengin tahıl ambarlarından biri olarak kaldı. 1805\'ten itibaren Kavalalı Mehmed Ali Paşa ve hanedanı altında giderek özerkleşti; 1882\'de İngiliz işgaline uğrayan şehir, resmî olarak Birinci Dünya Savaşı sırasında Osmanlı\'dan tamamen koptu.',
         },
         {
             id: 'selanik', name: 'Selanik', lat: 40.6401, lng: 22.9444,
             cover: 'assets/sehirler/selanik.jpg',
             era: 'Osmanlı Rumelisi (1430–1912)',
-            blurb: 'Balkanlar\'ın en kalabalık liman şehirlerinden biriydi; canlı bir Yahudi cemaatine ve tütün ticaretine ev sahipliği yaptı.',
+            blurb: '1430\'da II. Murad tarafından fethedilen Selanik, 1492\'de İspanya\'dan sürülen Sefarad Yahudilerinin büyük kitleler hâlinde yerleşmesiyle imparatorluğun en kozmopolit liman şehirlerinden birine dönüştü. 19. yüzyılda tütün ve tekstil ticaretiyle büyüyen şehir, aynı zamanda 1881\'de Mustafa Kemal\'in doğduğu yer ve 1889\'da kurulan İttihat ve Terakki Cemiyeti\'nin doğum yeri olarak yakın tarihte kritik bir rol oynadı. Birinci Balkan Savaşı sırasında, Kasım 1912\'de Yunan kuvvetlerinin eline geçerek beş asırlık Osmanlı idaresi sona erdi.',
             documents: [
                 { key: 'hmg', file: 'assets/hmg.png', title: 'Hanımlara Mahsus Gazete Eki' },
             ],
@@ -313,37 +313,37 @@ document.addEventListener('DOMContentLoaded', () => {
             id: 'izmir', name: 'İzmir', lat: 38.4237, lng: 27.1428,
             cover: 'assets/sehirler/izmir.jpg',
             era: 'Osmanlı Ege Limanı / Kurtuluşu (9 Eylül 1922)',
-            blurb: 'Ege kıyısının en işlek ticaret limanıydı; Levanten tüccarların ve çok dilli bir nüfusun buluşma noktasıydı. 15 Mayıs 1919\'da Yunan işgaline uğradı, 9 Eylül 1922\'de Türk ordusunca kurtarılarak Kurtuluş Savaşı fiilen sona erdi.',
+            blurb: 'Osmanlı döneminde nispeten mütevazı bir liman kasabası olan İzmir, özellikle 17. yüzyıldan itibaren Avrupa ile Levant ticaretinin merkezi hâline gelerek hızla büyüdü; kalabalık Rum, Ermeni, Yahudi ve Levanten nüfusuyla "Gâvur İzmir" lakabını kazandı. 15 Mayıs 1919\'da Yunan kuvvetlerince işgal edilmesi Millî Mücadele\'nin fiilî tetikleyicilerinden biri oldu. 9 Eylül 1922\'de Türk ordusunca kurtarılan şehir, ardından çıkan büyük yangınla eski çok kültürlü dokusunun önemli bir bölümünü kaybetti; bu tarih bugün de Kurtuluş Savaşı\'nın zaferle noktalandığı gün olarak anılır.',
         },
         {
             id: 'kudus', name: 'Kudüs', lat: 31.7683, lng: 35.2137,
             cover: 'assets/sehirler/kudus.jpg',
             era: 'Osmanlı Filistini (1517–1917)',
-            blurb: 'Üç semavi din için kutsal kabul edilen şehir; surları Kanuni Sultan Süleyman döneminde yeniden inşa edildi.',
+            blurb: 'Üç semavi din için de kutsal kabul edilen Kudüs, 1517\'de Yavuz Sultan Selim döneminde Osmanlı topraklarına katıldı. Kanuni Sultan Süleyman 1530\'larda ve 1540\'larda şehrin surlarını baştan inşa ettirdi; bugün görülen sur hattı büyük ölçüde bu döneme aittir. Yaklaşık dört asır süren görece istikrarlı Osmanlı idaresi, Birinci Dünya Savaşı\'nda Aralık 1917\'de General Allenby komutasındaki İngiliz kuvvetlerinin şehre girmesiyle sona erdi.',
         },
         {
             id: 'mekke', name: 'Mekke', lat: 21.3891, lng: 39.8579,
             cover: 'assets/sehirler/mekke.jpg',
             era: 'Hicaz Eyaleti — Haremeyn',
-            blurb: 'İslam\'ın en kutsal şehri; Osmanlı padişahları bu yüzden "Haremeyn\'in Hizmetkârı" unvanını taşıdı.',
+            blurb: 'İslam\'ın en kutsal şehri olan Mekke, doğrudan bir eyalet merkezi olarak değil, 1517\'den itibaren Osmanlı himayesindeki yerel Mekke Şerifleri eliyle yönetildi; bu sorumluluk Osmanlı padişahlarına "Haremeyn\'in Hizmetkârı" (Hâdimü\'l-Haremeyn) unvanını kazandırdı. 20. yüzyılın başında hac yolculuğunu kolaylaştırmak için inşa edilen Hicaz Demiryolu, Şam\'ı Medine\'ye bağlayarak bölgeyi imparatorluğun geri kalanına yakınlaştırdı. 1916\'da Şerif Hüseyin önderliğindeki Arap İsyanı\'yla birlikte Osmanlı idaresi sona erdi.',
         },
         {
             id: 'medine', name: 'Medine', lat: 24.5247, lng: 39.5692,
             cover: 'assets/sehirler/medine.jpg',
             era: 'Hicaz Eyaleti — Haremeyn',
-            blurb: 'Hz. Muhammed\'in kabrini barındırır; Hicaz Demiryolu ile İstanbul\'a bağlanan hac güzergâhının son durağıydı.',
+            blurb: 'Hz. Muhammed\'in kabrini ve Mescid-i Nebevî\'yi barındıran Medine, Mekke gibi 1517\'den itibaren Osmanlı himayesi altına girdi ve hac güzergâhının en kutsal duraklarından biri olarak özel bir statüde yönetildi. 1908\'de tamamlanan Hicaz Demiryolu\'nun son durağı olan şehir, Birinci Dünya Savaşı\'nda Fahreddin Paşa komutasındaki Osmanlı garnizonunun efsanevi savunmasına sahne oldu; Osmanlı Mondros Mütarekesi\'ni imzaladıktan sonra bile aylarca kuşatma altında direnen şehir ancak 1919\'da teslim oldu.',
         },
         {
             id: 'belgrad', name: 'Belgrad', lat: 44.7866, lng: 20.4489,
             cover: 'assets/sehirler/belgrad.jpg',
             era: 'Osmanlı Sınır Kalesi (1521–1867)',
-            blurb: 'Balkanlar\'a açılan kapı ve stratejik bir serhad kalesiydi; Kanuni\'nin 1521\'deki fethiyle imparatorluğa katıldı.',
+            blurb: 'Kanuni Sultan Süleyman\'ın 1521\'de fethettiği Belgrad, bundan önce 1456\'da II. Mehmed\'in kuşatmasına direnmiş stratejik bir Tuna kalesiydi. Yüzyıllar boyunca Osmanlı\'nın Orta Avrupa\'ya açılan kapısı ve Habsburglarla girişilen savaşların en önemli cephe kalesi oldu; 17. ve 18. yüzyıllarda birkaç kez Avusturya kuvvetlerince alınıp (1688, 1717) yeniden Osmanlı\'ya geri kazanıldı (1739). Sırp özerklik hareketleri sonucunda 1867\'de son Osmanlı garnizonu da kaleyi terk ederek bölgedeki 346 yıllık hâkimiyet sona erdi.',
         },
         {
             id: 'saraybosna', name: 'Saraybosna', lat: 43.8563, lng: 18.4131,
             cover: 'assets/sehirler/saraybosna.jpg',
             era: 'Bosna Eyaleti',
-            blurb: 'Bosna Eyaleti\'nin idari merkeziydi; cami, bedesten ve hanlarıyla Osmanlı şehirciliğinin Balkanlar\'daki örneklerinden biri oldu.',
+            blurb: '1461\'de Osmanlı fethinin ardından İsa Bey İshakoviç tarafından adeta sıfırdan kurulup geliştirilen Saraybosna, kısa sürede Bosna Eyaleti\'nin idari ve ticari merkezi hâline geldi; 15. ve 16. yüzyıllarda inşa edilen camiler, bedesten ve hanlarla Osmanlı şehirciliğinin Balkanlar\'daki en güzel örneklerinden biri oldu. 1878 Berlin Kongresi\'yle fiilî yönetim Avusturya-Macaristan\'a geçse de şehir hukuken 1908\'e, resmî ilhaka kadar Osmanlı toprağı sayıldı.',
             documents: [
                 { key: '2', file: 'assets/fsma.png', title: 'Fatih Sultan Mehmed\'in Ahidnamesi' },
             ],
@@ -352,7 +352,7 @@ document.addEventListener('DOMContentLoaded', () => {
             id: 'trabzon', name: 'Trabzon', lat: 41.0027, lng: 39.7168,
             cover: 'assets/sehirler/trabzon.jpg',
             era: 'Osmanlı Karadeniz Limanı (1461–)',
-            blurb: 'Trabzon Rum İmparatorluğu\'nun fethiyle Osmanlı\'ya katıldı; Karadeniz ticaretinin ve İpek Yolu\'nun önemli bir durağıydı.',
+            blurb: 'Bizans\'ın son büyük artığı olan bağımsız Trabzon Rum İmparatorluğu\'nun başkenti olan şehir, 1461\'de Fatih Sultan Mehmed tarafından fethedilerek Osmanlı topraklarına katıldı; bu, Bizans mirasının Anadolu\'daki son kalıntısının da sonu oldu. Yüzyıllar boyunca İran ve Kafkasya ticaretini Karadeniz üzerinden Avrupa\'ya bağlayan önemli bir liman kenti olarak kaldı. Birinci Dünya Savaşı\'nda 1916-1918 arasında Rus kuvvetlerince işgal edildi, savaş sonunda geri alındı.',
             documents: [
                 { key: 'gkt', file: 'assets/gkt.png', title: 'Gümüşhanevî Kütüphanelerindeki Kitapların Tiflis\'ten Geri Getirilmesi Talebi' },
             ],
@@ -361,26 +361,26 @@ document.addEventListener('DOMContentLoaded', () => {
             id: 'diyarbakir', name: 'Diyarbakır', lat: 37.9144, lng: 40.2306,
             cover: 'assets/sehirler/diyarbakir.jpg',
             era: 'Osmanlı Doğu Anadolusu',
-            blurb: 'Yukarı Mezopotamya\'nın idari ve ticari merkeziydi; kara bazalt surlarıyla tanınır.',
+            blurb: 'Roma ve Bizans döneminden kalma kara bazalt surlarıyla tanınan Diyarbakır (eski adıyla Amid), 1515\'te Yavuz Sultan Selim\'in seferi ve İdris-i Bitlisî\'nin diplomatik çabalarıyla, bölgedeki Kürt beyliklerinin gönüllü katılımı sağlanarak Osmanlı topraklarına katıldı. Bu barışçıl ilhak modeli, imparatorluğun doğu sınırının Safevi İran\'a karşı güvence altına alınmasında kritik rol oynadı. Sonraki yüzyıllarda Yukarı Mezopotamya\'nın idari ve ticari merkezi olarak önemini korudu.',
         },
         {
             id: 'musul', name: 'Musul', lat: 36.3489, lng: 43.1189,
             cover: 'assets/sehirler/musul.jpg',
             era: 'Osmanlı Irak\'ı — Musul Eyaleti',
-            blurb: 'Dicle kıyısında ticaret ve dokumacılıkla öne çıktı; "muslin" kumaşı adını bu şehirden alır.',
+            blurb: '16. yüzyılda Osmanlı-Safevi mücadeleleri sırasında el değiştirerek nihayetinde Osmanlı topraklarına katılan Musul, Dicle kıyısındaki konumu sayesinde ticaret ve özellikle ince pamuklu dokuma üretimiyle tanındı; Avrupa dillerine geçen "muslin" kumaş adı buradan gelir. 20. yüzyıl başında bölgedeki petrol yataklarının fark edilmesiyle stratejik önemi arttı. Birinci Dünya Savaşı\'nın hemen sonrasında İngiliz kuvvetlerince işgal edildi ve 1926\'da Milletler Cemiyeti kararıyla yeni kurulan Irak Krallığı\'na bırakıldı — Türkiye Cumhuriyeti\'nin sınır iddiasına rağmen.',
         },
         {
             id: 'basra', name: 'Basra', lat: 30.5085, lng: 47.7835,
             cover: 'assets/sehirler/basra.jpg',
             era: 'Osmanlı Irak\'ı — Basra Eyaleti',
-            blurb: 'Basra Körfezi\'ne açılan liman şehri; Hindistan ve Uzakdoğu ile deniz ticaretinin batıya açılan kapısıydı.',
+            blurb: 'Basra Körfezi\'ne açılan konumu sayesinde Hindistan ve Uzakdoğu ile deniz ticaretinin Osmanlı topraklarına açılan kapısı olan Basra, 16. yüzyıldan itibaren zaman zaman doğrudan, zaman zaman yerel hanedanlar eliyle Osmanlı idaresinde kaldı. 19. yüzyılın ikinci yarısından itibaren artan İngiliz nüfuzu, Birinci Dünya Savaşı\'nın başında, Kasım 1914\'te şehrin İngiliz kuvvetlerince işgaliyle sonuçlandı ve Mezopotamya Cephesi böylece açılmış oldu.',
         },
         {
             id: 'tiflis', name: 'Tiflis', lat: 41.7151, lng: 44.8271,
             cover: 'assets/sehirler/tiflis.jpg',
             coverPosition: 'center bottom',
             era: 'Kafkasya — Osmanlı-Safevi Sınır Bölgesi',
-            blurb: 'Kafkasya\'nın önemli bir merkeziydi; Osmanlı orduları tarafından zaman zaman ele geçirildi ve idare edildi.',
+            blurb: 'Kafkasya\'nın önemli bir merkezi olan Tiflis, Osmanlı-Safevi (ve sonrasında Osmanlı-İran) mücadeleleri sırasında birkaç kez Osmanlı ordularınca ele geçirilip idare edildi; özellikle 1578-1580\'ler ve 1723-1735 yılları arasındaki dönemlerde şehir doğrudan Osmanlı kontrolündeydi. Ancak bu hâkimiyet hiçbir zaman kalıcı olmadı ve 1801\'de Rusya İmparatorluğu\'nun ilhakıyla birlikte bölge tamamen Osmanlı nüfuz alanının dışına çıktı.',
             documents: [
                 { key: 'gkt', file: 'assets/gkt.png', title: 'Gümüşhanevî Kütüphanelerindeki Kitapların Tiflis\'ten Geri Getirilmesi Talebi' },
             ],
@@ -389,13 +389,13 @@ document.addEventListener('DOMContentLoaded', () => {
             id: 'cezayir', name: 'Cezayir', lat: 36.7538, lng: 3.0588,
             cover: 'assets/sehirler/cezayir.jpg',
             era: 'Cezayir Ocağı (1516–1830)',
-            blurb: 'Osmanlı\'ya bağlı yarı özerk bir ocak/eyalet olarak Akdeniz\'de deniz gücünün merkeziydi.',
+            blurb: '1516\'da Barbaros Kardeşler\'in (Oruç ve Hızır Hayreddin Reis) bölgeye hâkim olmasıyla Osmanlı himayesine giren Cezayir, sultana bağlı ancak geniş özerkliğe sahip bir ocak/eyalet olarak yönetildi. Yüzyıllar boyunca Barbaros Hayreddin Paşa\'nın da mirasını taşıyan güçlü bir donanmayla Akdeniz\'de Osmanlı deniz gücünün ve korsanlık faaliyetlerinin en önemli üssü oldu. 1830\'da Fransa\'nın işgaliyle üç asırlık Osmanlı bağı sona erdi.',
         },
         {
             id: 'tunus', name: 'Tunus', lat: 36.8065, lng: 10.1815,
             cover: 'assets/sehirler/tunus.jpg',
             era: 'Tunus Eyaleti (1574–1881)',
-            blurb: 'Kuzey Afrika\'daki Osmanlı eyaletlerinden biriydi; Hafsî mirası üzerine kurulan canlı bir liman şehriydi.',
+            blurb: '1574\'te Kaptan-ı Derya Sinan Paşa\'nın seferiyle İspanya destekli son Hafsî kalıntılarına son verilerek Osmanlı topraklarına katılan Tunus, 1705\'ten itibaren Hüseynî hanedanının Bey unvanıyla yönettiği, pratikte giderek özerkleşen bir eyalet hâline geldi. Hafsî mirası üzerine kurulan canlı bir Akdeniz liman şehri olarak ticari önemini korudu. 1881\'de Fransız işgaliyle protektora statüsüne geçerek fiilî Osmanlı bağı kopmuş oldu.',
         },
 
         // --- Trablusgarp Savaşı ve Birinci Dünya Savaşı (1911–1918) ---
@@ -406,49 +406,49 @@ document.addEventListener('DOMContentLoaded', () => {
             cover: 'assets/sehirler/trablusgarp.jpg',
             coverPosition: 'center top',
             era: 'Trablusgarp Savaşı (1911–1912)',
-            blurb: 'İtalya\'nın işgaline karşı verilen savunma savaşı burada yaşandı; Mustafa Kemal ve Enver Bey gibi subaylar gönüllü olarak burada görev aldı.',
+            blurb: '1551\'de Turgut Reis\'in fethiyle Osmanlı topraklarına katılan Trablusgarp, 18. ve 19. yüzyıllarda Karamanlı hanedanının özerk yönetiminden geçerek yüzyılın ortasında yeniden doğrudan Osmanlı idaresine döndü. 1911-1912 Trablusgarp Savaşı\'nda İtalyan işgaline karşı verilen savunmaya, aralarında Mustafa Kemal ve Enver Bey\'in de bulunduğu genç subaylar gönüllü olarak katıldı; savaş, yerel direnişe rağmen bölgenin İtalya\'ya bırakılmasıyla sonuçlandı ve imparatorluğun Kuzey Afrika\'daki son toprağının kaybı anlamına geldi.',
             category: 'wwi',
         },
         {
             id: 'canakkale', name: 'Çanakkale', lat: 40.1553, lng: 26.4142,
             cover: 'assets/sehirler/canakkale.jpg',
             era: 'Birinci Dünya Savaşı — Çanakkale Savaşı (1915)',
-            blurb: 'İtilaf donanmasının Boğaz\'ı geçme girişimi ve ardından aylar süren kara savaşı burada yaşandı; Osmanlı ordusu için büyük bir savunma zaferiydi.',
+            blurb: 'Antik çağlardan beri stratejik önemi bilinen Çanakkale Boğazı, II. Mehmed döneminden itibaren kıyı kaleleriyle tahkim edilmişti. Birinci Dünya Savaşı\'nda, 1915\'te İtilaf donanmasının Boğaz\'ı zorlayarak İstanbul\'a ulaşma girişimi önce deniz muharebelerinde, ardından aylar süren ve on binlerce kayıpla sonuçlanan kara savaşında durduruldu. Bu büyük savunma zaferi, hem imparatorluğun çöküşünü geciktirdi hem de Mustafa Kemal\'in millî bir lider olarak öne çıkmasını sağladı.',
             category: 'wwi',
         },
         {
             id: 'kanal', name: 'Kanal Cephesi', lat: 30.5852, lng: 32.2654,
             cover: 'assets/sehirler/kanal.jpg',
             era: 'Sina Cephesi — Kanal Harekâtı (1915)',
-            blurb: 'Osmanlı kuvvetleri, İngiliz kontrolündeki Süveyş Kanalı\'nı geçmeyi denedi; bu harekât Sina-Filistin Cephesi\'nin başlangıcı oldu.',
+            blurb: '1915\'te Cemal Paşa ve Alman danışmanların planladığı harekâtla Osmanlı kuvvetleri, İngiliz kontrolündeki Süveyş Kanalı\'nı Sina Çölü\'nü aşarak geçmeyi denedi. Harekât askerî olarak başarısız olsa da, İngilizlerin Filistin\'e yönelik karşı taarruzunu tetikleyerek savaşın sonraki yıllarında imparatorluğu ağır kayıplara uğratacak Sina-Filistin Cephesi\'nin fiilen açılmasına yol açtı.',
             category: 'wwi',
         },
         {
             id: 'kutulamare', name: 'Kûtülamâre', lat: 32.5122, lng: 45.8235,
             cover: 'assets/sehirler/kutulamare.jpg',
             era: 'Irak Cephesi — Kûtülamâre Kuşatması ve Zaferi (1915–1916)',
-            blurb: 'Osmanlı kuvvetleri, İngiliz General Townshend komutasındaki orduyu kuşatarak teslim aldı; dönemin en büyük İngiliz yenilgilerinden biriydi.',
+            blurb: '1915 sonunda Bağdat\'a ilerleyen General Townshend komutasındaki İngiliz-Hint kuvvetleri, Osmanlı ordusunca Kûtülamâre\'de kuşatma altına alındı. Aylar süren kuşatmanın ardından Nisan 1916\'da yaklaşık 13 bin kişilik İngiliz garnizonu teslim oldu; bu, İkinci Dünya Savaşı\'ndaki Singapur\'a kadar İngiliz tarihinin en büyük teslimiyetlerinden biri olarak kaldı ve Osmanlı ordusuna Mezopotamya Cephesi\'nde parlak bir zafer kazandırdı.',
             category: 'wwi',
         },
         {
             id: 'gazze', name: 'Gazze', lat: 31.5017, lng: 34.4668,
             cover: 'assets/sehirler/gazze.jpg',
             era: 'Filistin Cephesi — Gazze Muharebeleri (1917)',
-            blurb: 'İngiliz ilerleyişine karşı üç kez savunulan cephe hattıydı; sonunda Kudüs\'ün kaybına giden sürecin başlangıcı oldu.',
+            blurb: '1917 yılında üç kez sahne olduğu Gazze Muharebeleri, Filistin Cephesi\'nin kaderini belirledi. Mart ve Nisan 1917\'deki ilk iki çarpışmada Osmanlı savunması İngiliz ilerleyişini durdurmayı başarsa da, General Allenby komutasındaki üçüncü taarruzda (Ekim-Kasım 1917) cephe yarıldı; bu gelişme birkaç hafta sonra Kudüs\'ün kaybına giden sürecin başlangıcı oldu.',
             category: 'wwi',
         },
         {
             id: 'yemen', name: 'Yemen Cephesi', lat: 15.3694, lng: 44.1910,
             cover: 'assets/sehirler/yemen.jpg',
             era: 'Birinci Dünya Savaşı — Yemen Cephesi',
-            blurb: 'İmparatorluğun en uzak ve izole cephelerinden biriydi; Osmanlı birlikleri burada savaş boyunca zor koşullar altında görev yaptı.',
+            blurb: 'İmparatorluğun en uzak ve zorlu coğrafyalarından biri olan Yemen, ilk kez 1538\'de Osmanlı topraklarına katıldı, ancak dağlık iç kesimlerdeki Zeydî direnişi yüzünden 1636\'da büyük ölçüde terk edildi. 1872\'de yeniden ve daha kalıcı biçimde ilhak edilen bölge, Birinci Dünya Savaşı boyunca İstanbul\'la bağlantısı kesilmiş, izole bir garnizon tarafından savunuldu; Osmanlı ordusu burada Mondros Mütarekesi\'nden aylar sonra, 1918\'in sonunda resmen teslim oldu.',
             category: 'wwi',
         },
         {
             id: 'hatay', name: 'Hatay', lat: 36.2023, lng: 36.1613,
             cover: 'assets/sehirler/hatay.jpg',
             era: 'Fransız Mandası ve Hatay Sorunu (1918–1939)',
-            blurb: 'Savaş sonrası Fransız mandası altına girdi; halkın direnişi ve uzun bir diplomatik mücadele sonunda 1939\'da Türkiye\'ye katıldı.',
+            blurb: 'Yüzyıllarca Halep vilayetinin bir parçası olan bu bölge, Birinci Dünya Savaşı sonrasında yeni Türkiye sınırlarının dışında kalarak Fransız Suriye mandasına bağlı İskenderun Sancağı adını aldı. Yerel halkın uzun süren direnişi ve Atatürk\'ün yakından takip ettiği diplomatik mücadele sonucunda 1938\'de önce özerk Hatay Devleti kuruldu, ardından yapılan halk oylamasıyla 1939\'da Türkiye Cumhuriyeti\'ne katıldı.',
             category: 'wwi',
         },
 
@@ -459,21 +459,21 @@ document.addEventListener('DOMContentLoaded', () => {
             id: 'samsun', name: 'Samsun', lat: 41.2867, lng: 36.3300,
             cover: 'assets/sehirler/samsun.jpg',
             era: 'Kurtuluş Savaşı — Millî Mücadele\'nin Başlangıcı (19 Mayıs 1919)',
-            blurb: 'Mustafa Kemal Paşa\'nın 19 Mayıs 1919\'da çıktığı liman şehri; bu tarih Millî Mücadele\'nin sembolik başlangıcı kabul edilir.',
+            blurb: 'Antik çağda Amisos adıyla bilinen, Osmanlı döneminde mütevazı bir Karadeniz limanı olan Samsun, Mustafa Kemal Paşa\'nın 19 Mayıs 1919\'da buraya çıkmasıyla Türk tarihinde eşsiz bir sembolik öneme kavuştu. Bu tarih, işgal altındaki imparatorluğun enkazından yeni bir millî direnişin doğuşu olarak kabul edilir ve bugün Gençlik ve Spor Bayramı olarak kutlanır.',
             category: 'independence',
         },
         {
             id: 'amasya', name: 'Amasya', lat: 40.6499, lng: 35.8353,
             cover: 'assets/sehirler/amasya.jpg',
             era: 'Kurtuluş Savaşı — Amasya Genelgesi (Haziran 1919)',
-            blurb: 'Millî Mücadele\'nin gerekçesinin ve örgütlenme kararının ilan edildiği Amasya Genelgesi burada yayımlandı.',
+            blurb: 'Yeşilırmak vadisindeki bu kadim şehir, Osmanlı döneminde özellikle şehzadelerin sancak eğitimi gördüğü önemli merkezlerden biriydi; genç yaşta Fatih Sultan Mehmed ve Kanuni Sultan Süleyman gibi gelecekteki padişahlar burada valilik yaptı. 1555\'te imzalanan Amasya Antlaşması, Osmanlı-Safevi savaşlarına ilk kez resmî bir son vermişti. Yüzyıllar sonra, Haziran 1919\'da yayımlanan Amasya Genelgesi ile Millî Mücadele\'nin gerekçesi ve örgütlenme kararı ilan edildi.',
             category: 'independence',
         },
         {
             id: 'erzurum', name: 'Erzurum', lat: 39.9000, lng: 41.2700,
             cover: 'assets/sehirler/erzurum.jpg',
             era: 'Kurtuluş Savaşı — Erzurum Kongresi (Temmuz–Ağustos 1919)',
-            blurb: 'Doğu vilayetlerinin temsilcilerinin toplandığı, millî iradeyi esas alan ilk kongrelerden biri burada yapıldı.',
+            blurb: 'Yüzyıllar boyunca doğuda Safevi İran\'a, sonraları Rusya\'ya karşı imparatorluğun en önemli sınır kalelerinden biri olan Erzurum, bu konumu nedeniyle 1829, 1878 ve 1916-1918\'de birkaç kez Rus işgaline uğradı ve her defasında geri alındı. Temmuz-Ağustos 1919\'da burada toplanan Erzurum Kongresi, doğu vilayetlerinin temsilcilerini bir araya getirerek millî iradeyi esas alan ilk büyük kongrelerden biri oldu ve Sivas Kongresi\'nin de zeminini hazırladı.',
             category: 'independence',
         },
         {
@@ -481,14 +481,14 @@ document.addEventListener('DOMContentLoaded', () => {
             cover: 'assets/sehirler/inonu.jpg',
             coverPosition: 'center bottom',
             era: 'Kurtuluş Savaşı — İnönü Muharebeleri (1921)',
-            blurb: 'Birinci ve İkinci İnönü Muharebeleri\'nin yapıldığı, düzenli ordunun ilk büyük zaferlerini kazandığı cephe.',
+            blurb: 'Eskişehir yakınlarındaki bu küçük yerleşim, 1921\'de gerçekleşen Birinci ve İkinci İnönü Muharebeleri\'ne sahne oldu; henüz yeni kurulmakta olan düzenli Türk ordusunun Yunan kuvvetlerine karşı kazandığı bu ilk zaferler, Millî Mücadele\'nin moral açıdan dönüm noktalarından biri oldu. Zaferi yöneten İsmet Paşa, yıllar sonra bu zaferin anısına "İnönü" soyadını aldı.',
             category: 'independence',
         },
         {
             id: 'sakarya', name: 'Sakarya', lat: 39.5836, lng: 32.1462,
             cover: 'assets/sehirler/sakarya.jpg',
             era: 'Kurtuluş Savaşı — Sakarya Meydan Muharebesi (Ağustos–Eylül 1921)',
-            blurb: 'Ankara\'ya en yakın cephe hattıydı; savaşın dönüm noktalarından Sakarya Meydan Muharebesi burada kazanıldı.',
+            blurb: 'Ankara\'ya en yakın cephe hattı olan Sakarya, Ağustos-Eylül 1921\'de yirmi iki gün süren Sakarya Meydan Muharebesi\'ne sahne oldu; Mustafa Kemal Paşa\'nın bizzat cephede kaldığı bu çarpışma, Yunan ilerleyişinin durdurulduğu ve savaşın stratejik üstünlüğünün Türk tarafına geçtiği dönüm noktası oldu. Zaferin ardından Mustafa Kemal\'e TBMM tarafından mareşallik rütbesi ve gazilik unvanı verildi.',
             category: 'independence',
         },
         {
@@ -496,42 +496,42 @@ document.addEventListener('DOMContentLoaded', () => {
             cover: 'assets/sehirler/afyonkarahisar.jpg',
             coverPosition: 'center bottom',
             era: 'Kurtuluş Savaşı — Büyük Taarruz\'un Başlangıcı (26 Ağustos 1922)',
-            blurb: 'Büyük Taarruz, Mustafa Kemal\'in karargâh kurduğu Kocatepe\'den, buradan başlatıldı.',
+            blurb: 'Frigya ve Bizans döneminden kalma kayalık kalesiyle bilinen bu Osmanlı taşra şehri, haşhaş (afyon) yetiştiriciliğiyle tanınırdı. 26 Ağustos 1922\'de, yakınındaki Kocatepe\'de karargâh kuran Mustafa Kemal\'in komutasında başlatılan Büyük Taarruz, burada Yunan cephesini yararak Kurtuluş Savaşı\'nın son ve kesin safhasını başlattı.',
             category: 'independence',
         },
         {
             id: 'dumlupinar', name: 'Dumlupınar', lat: 39.1667, lng: 29.8500,
             cover: 'assets/sehirler/dumlupinar.jpg',
             era: 'Kurtuluş Savaşı — Başkumandanlık Meydan Muharebesi (30 Ağustos 1922)',
-            blurb: 'Savaşın kesin sonucunu belirleyen meydan muharebesi burada kazanıldı; 30 Ağustos bugün Zafer Bayramı olarak kutlanır.',
+            blurb: 'Kütahya yakınlarındaki bu küçük yerleşim, 30 Ağustos 1922\'de gerçekleşen ve Yunan ana ordusunun büyük ölçüde imha edildiği Başkumandanlık Meydan Muharebesi\'ne sahne oldu. Savaşın kesin sonucunu belirleyen bu zafer sayesinde Türk ordusu birkaç hafta içinde İzmir\'e ulaştı; 30 Ağustos bugün de Türkiye\'de Zafer Bayramı olarak kutlanmaktadır.',
             category: 'independence',
         },
         {
             id: 'mudanya', name: 'Mudanya', lat: 40.3756, lng: 28.8828,
             cover: 'assets/sehirler/mudanya.jpg',
             era: 'Kurtuluş Savaşı — Mudanya Ateşkesi (Ekim 1922)',
-            blurb: 'Savaşı fiilen sona erdiren Mudanya Ateşkes Antlaşması burada imzalandı.',
+            blurb: 'Marmara kıyısındaki bu küçük liman kasabası, Büyük Taarruz\'un ardından Ekim 1922\'de yapılan görüşmelere ev sahipliği yaptı; imzalanan Mudanya Ateşkes Antlaşması, Kurtuluş Savaşı\'nın fiilî sona erişini ve Lozan Barış Konferansı\'na giden sürecin başlangıcını simgeler.',
             category: 'independence',
         },
         {
             id: 'gaziantep', name: 'Gaziantep', lat: 37.0662, lng: 37.3833,
             cover: 'assets/sehirler/gaziantep.jpg',
             era: 'Kurtuluş Savaşı — Antep Savunması',
-            blurb: 'Fransız işgaline karşı direnişiyle "Gazi" unvanını aldı; şehrin bugünkü adı buradan gelir.',
+            blurb: 'Osmanlı döneminde Ayıntab adıyla bilinen şehir, Birinci Dünya Savaşı sonrasında Fransız işgaline uğradı; halkın yaklaşık on ay süren direnişi 1921\'de Fransız kuvvetlerinin çekilmesiyle sonuçlandı. TBMM bu kahramanlık karşısında şehre "Gazi" unvanını verdi ve kentin bugünkü adı buradan gelir.',
             category: 'independence',
         },
         {
             id: 'maras', name: 'Kahramanmaraş', lat: 37.5753, lng: 36.9228,
             cover: 'assets/sehirler/maras.jpg',
             era: 'Kurtuluş Savaşı — Maraş Savunması',
-            blurb: 'Fransız ve müttefik kuvvetlere karşı direnişiyle "Kahraman" unvanını aldı.',
+            blurb: 'Osmanlı döneminde önemli bir Anadolu şehri olan Maraş, Birinci Dünya Savaşı sonrasında Fransız ve onlara bağlı Ermeni lejyoner kuvvetlerinin işgaline uğradı. Ocak-Şubat 1920\'de halkın örgütlediği direniş sonucunda işgalciler şehri terk etmek zorunda kaldı; bu direniş anısına kente sonradan "Kahraman" unvanı verilerek adı Kahramanmaraş oldu.',
             category: 'independence',
         },
         {
             id: 'urfa', name: 'Şanlıurfa', lat: 37.1591, lng: 38.7969,
             cover: 'assets/sehirler/urfa.jpg',
             era: 'Kurtuluş Savaşı — Urfa Savunması',
-            blurb: 'İşgale karşı direnişiyle "Şanlı" unvanını aldı.',
+            blurb: 'Kadim bir Yukarı Mezopotamya şehri olan Urfa, Birinci Dünya Savaşı sonrasında kısa süreli Fransız işgaline uğradı; 1920\'de halkın direnişi sonucunda işgalciler şehri terk etti. Bu direnişin anısına kente sonradan "Şanlı" unvanı verilerek adı Şanlıurfa oldu.',
             category: 'independence',
         },
     ];
@@ -847,12 +847,15 @@ document.addEventListener('DOMContentLoaded', () => {
             .addTo(map);
 
         // Üzerine gelince (tıklamadan önce) hafif bir önizleme — büyük
-        // pencere (openCityModal) sadece tıklanınca açılır. Belgeler de
-        // burada (varsa) küçük kartlar olarak gösterilir.
+        // pencere (openCityModal) sadece tıklanınca açılır. Blurb'lar artık
+        // birkaç cümlelik ayrıntılı metinler olduğu için ("hafif" önizleme
+        // olarak kalsın diye) burada sadece ilk cümle gösteriliyor; tamamı
+        // tıklanınca açılan büyük pencerede.
+        const teaser = (city.blurb.match(/^[^.]+\./) || [city.blurb])[0];
         marker.bindTooltip(`
             <span class="map-city-popover-era">${city.era}</span>
             <div class="entity-popover-text">${city.name}</div>
-            <div class="entity-popover-context">${city.blurb}</div>
+            <div class="entity-popover-context">${teaser}</div>
             ${renderDocsHtml(city.documents || [])}
         `, { className: 'map-city-hover', direction: 'top', offset: [0, -12] });
 

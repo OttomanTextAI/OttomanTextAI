@@ -2699,6 +2699,7 @@ def register():
     data = request.get_json(silent=True) or {}
     email = (data.get("email") or "").strip().lower()
     password = data.get("password") or ""
+    full_name = (data.get("full_name") or "").strip()
 
     if not email or not password:
         return jsonify({"error": "E-posta ve şifre zorunludur."}), 400
@@ -2710,7 +2711,7 @@ def register():
         return jsonify({"error": "Bu e-posta ile zaten bir hesap var."}), 409
 
     password_hash = bcrypt.generate_password_hash(password).decode("utf-8")
-    new_user = User(email=email, password_hash=password_hash)
+    new_user = User(email=email, password_hash=password_hash, full_name=full_name or None)
 
     db.session.add(new_user)
     db.session.commit()
@@ -2806,8 +2807,94 @@ def get_current_user(current_user):
         "created_at": current_user.created_at.isoformat() + "Z",
         "full_name": current_user.full_name,
         "title": current_user.title,
+        "specialty": current_user.specialty,
+        "phone": current_user.phone,
+        "bio": current_user.bio,
+        "institution": current_user.institution,
         "avatar_url": avatar_url,
     })
+
+
+@app.route("/api/profile", methods=["PUT"])
+@token_required
+def update_profile(current_user):
+    data = request.get_json(silent=True) or {}
+
+    # Hepsi opsiyonel — sadece gönderilen alanlar güncellenir (kısmi
+    # güncelleme). Boş string None'a çevrilmiyor; kullanıcı bir alanı
+    # bilerek boşaltmak isteyebilir (örn. unvanını silmek).
+    for field in ("full_name", "title", "specialty", "phone", "bio", "institution"):
+        if field in data:
+            setattr(current_user, field, (data.get(field) or "").strip() or None)
+
+    db.session.commit()
+
+    return jsonify({
+        "message": "Profil güncellendi.",
+        "full_name": current_user.full_name,
+        "title": current_user.title,
+        "specialty": current_user.specialty,
+        "phone": current_user.phone,
+        "bio": current_user.bio,
+        "institution": current_user.institution,
+    })
+
+
+ALLOWED_AVATAR_EXTENSIONS = {"jpg", "jpeg", "png", "webp"}
+
+
+@app.route("/api/profile/avatar", methods=["POST"])
+@token_required
+def upload_avatar(current_user):
+    if supabase_client is None:
+        return jsonify({"error": "Dosya depolama servisi şu anda yapılandırılmamış."}), 503
+    if "file" not in request.files:
+        return jsonify({"error": "Dosya bulunamadı."}), 400
+
+    uploaded_file = request.files["file"]
+
+    if uploaded_file.filename == "":
+        return jsonify({"error": "Dosya seçilmedi."}), 400
+
+    original_filename = secure_filename(uploaded_file.filename)
+    extension = original_filename.rsplit(".", 1)[-1].lower() if "." in original_filename else ""
+
+    if extension not in ALLOWED_AVATAR_EXTENSIONS:
+        return jsonify({"error": "Sadece JPG, PNG ve WEBP görselleri yüklenebilir."}), 400
+
+    file_bytes = uploaded_file.read()
+    old_storage_path = current_user.avatar_storage_path
+    storage_path = f"{current_user.id}/{uuid.uuid4()}.{extension}"
+
+    try:
+        supabase_client.storage.from_(AVATARS_BUCKET).upload(
+            storage_path,
+            file_bytes,
+            {"content-type": uploaded_file.mimetype},
+        )
+    except Exception as error:
+        return jsonify({"error": f"Görsel depolamaya yüklenemedi: {error}"}), 502
+
+    current_user.avatar_storage_path = storage_path
+    db.session.commit()
+
+    if old_storage_path:
+        try:
+            supabase_client.storage.from_(AVATARS_BUCKET).remove([old_storage_path])
+        except Exception:
+            pass
+
+    avatar_url = None
+    try:
+        signed_results = supabase_client.storage.from_(AVATARS_BUCKET).create_signed_urls(
+            [storage_path], 300
+        )
+        if signed_results:
+            avatar_url = signed_results[0].get("signedURL") or signed_results[0].get("signedUrl")
+    except Exception:
+        pass
+
+    return jsonify({"message": "Profil fotoğrafı güncellendi.", "avatar_url": avatar_url})
 
 
 @app.route("/api/auth/password", methods=["PUT"])
