@@ -648,6 +648,37 @@ body {
     color: var(--color-gold-light);
 }
 
+/* Sözlük sonuçları (bkz. app.js/notes.js/profile.js/map.js'teki
+   initNavSearch() içindeki renderDictSectionHtml()) — belge sonuçlarıyla
+   aynı .nav-search-result-item satırını kullanır, sadece başlık iki
+   satıra (kelime + kısa tanım) izin verecek şekilde genişletilir. */
+.nav-search-section-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    padding: 0.3rem 0.4rem 0.15rem;
+}
+.nav-search-dict-item .nav-search-result-title {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+}
+.nav-search-dict-icon {
+    color: var(--color-gold);
+    font-size: 1rem;
+}
+.nav-search-dict-def {
+    font-size: 0.76rem;
+    font-weight: 400;
+    color: var(--color-text-muted);
+    white-space: normal;
+}
+
 .icon-btn {
     background: var(--on-header-icon-bg);
     border: 1px solid var(--on-header-icon-border);

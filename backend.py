@@ -81,6 +81,28 @@ AVATARS_BUCKET = "avatars"
 document_retriever = None
 document_qa = None
 
+# Osmanlıca sözlük (bkz. /api/dictionary/search) — 29k kelime, uygulama
+# başlarken bir kez belleğe okunuyor; her istekte diskten okunmuyor. Basit
+# bir liste taraması (word.lower() üzerinde başta-eşleşme/içerir) 29k satır
+# için de tek istekte birkaç milisaniyeyi geçmiyor, ayrı bir indeks
+# yapısına (trie vb.) gerek duyulmadı.
+DICTIONARY_PATH = Path(__file__).resolve().parent / "data" / "processed" / "osmanlica_sozluk.json"
+try:
+    with open(DICTIONARY_PATH, encoding="utf-8") as f:
+        DICTIONARY_ENTRIES = json.load(f)
+except Exception:
+    DICTIONARY_ENTRIES = []
+    print(f"[startup] UYARI: Sözlük verisi yüklenemedi ({DICTIONARY_PATH}) — /api/dictionary/search boş sonuç dönecek.", flush=True)
+
+# Türkçe'ye özgü büyük/küçük harf kuralları (İ/i, I/ı) standart .lower()'da
+# yanlış eşleşir (örn. "İstanbul".lower() -> "i̇stanbul", noktalı i kalır);
+# arama karşılaştırması için burada elle çeviriliyor.
+_TR_LOWER_MAP = str.maketrans("İIÇĞÖŞÜ", "iıçğöşü")
+
+
+def turkish_lower(text):
+    return text.translate(_TR_LOWER_MAP).lower()
+
 # All /api/* routes (enhance, translate, assistant, health) share this one
 # allowlist so a route can never end up with looser or stricter CORS than
 # the others.
@@ -2618,6 +2640,46 @@ def health():
             "status": "ok"
         }
     )
+
+
+@app.route("/api/dictionary/search", methods=["GET"])
+def search_dictionary():
+    query = (request.args.get("q") or "").strip()
+    try:
+        limit = min(int(request.args.get("limit", 20)), 100)
+    except (TypeError, ValueError):
+        limit = 20
+
+    if not query or len(query) < 2:
+        return jsonify({"results": [], "total_matches": 0})
+
+    query_lower = turkish_lower(query)
+
+    exact, prefix, contains = [], [], []
+    for entry in DICTIONARY_ENTRIES:
+        word_lower = turkish_lower(entry["word"])
+        if word_lower == query_lower:
+            exact.append(entry)
+        elif word_lower.startswith(query_lower):
+            prefix.append(entry)
+        elif query_lower in word_lower:
+            contains.append(entry)
+
+    prefix.sort(key=lambda e: turkish_lower(e["word"]))
+    contains.sort(key=lambda e: turkish_lower(e["word"]))
+    ordered = exact + prefix + contains
+
+    return jsonify({
+        "results": ordered[:limit],
+        "total_matches": len(ordered),
+    })
+
+
+@app.route("/api/dictionary/random", methods=["GET"])
+def random_dictionary_entry():
+    if not DICTIONARY_ENTRIES:
+        return jsonify({"error": "Sözlük verisi yüklenemedi."}), 503
+    return jsonify(random.choice(DICTIONARY_ENTRIES))
 
 
 @app.route("/api/contact", methods=["POST"])

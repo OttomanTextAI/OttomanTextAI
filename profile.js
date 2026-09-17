@@ -182,10 +182,36 @@ function requireLogin() {
         window.location.href = `search.html?q=${encodeURIComponent(query)}`;
     }
 
-    function renderNavSearchResults(docs, query) {
+    // Sözlük sonuçları giriş yapmadan da çalışır (bkz. aşağıdaki input
+    // handler) — belge araması gibi kimlik doğrulama gerektirmez.
+    function renderDictSectionHtml(entries) {
+        if (!entries.length) return '';
+        const itemsHtml = entries.slice(0, 3).map(entry => `
+            <a href="sozluk.html?q=${encodeURIComponent(entry.word)}" class="nav-search-result-item nav-search-dict-item">
+                <span class="nav-search-result-thumb nav-search-dict-icon">❖</span>
+                <span class="nav-search-result-title">
+                    <strong>${escapeHtml(entry.word)}</strong>
+                    <span class="nav-search-dict-def">${escapeHtml(entry.definition.length > 70 ? entry.definition.slice(0, 70) + '…' : entry.definition)}</span>
+                </span>
+            </a>
+        `).join('');
+        return `<div class="nav-search-section-label">Sözlük</div>${itemsHtml}`;
+    }
+
+    async function fetchDictResults(query) {
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/dictionary/search?q=${encodeURIComponent(query)}&limit=3`);
+            if (!res.ok) return [];
+            const data = await res.json();
+            return data.results || [];
+        } catch (err) {
+            return [];
+        }
+    }
+
+    function renderDocsSectionHtml(docs, query) {
         if (!docs.length) {
-            navSearchResults.innerHTML = `<p class="nav-search-empty">Eşleşen belge bulunamadı.</p>`;
-            return;
+            return `<p class="nav-search-empty">Eşleşen belge bulunamadı.</p>`;
         }
         const itemsHtml = docs.slice(0, 4).map(doc => `
             <button type="button" class="nav-search-result-item" data-doc-id="${doc.id}">
@@ -193,7 +219,7 @@ function requireLogin() {
                 <span class="nav-search-result-title">${escapeHtml(doc.title || doc.filename || '')}</span>
             </button>
         `).join('');
-        navSearchResults.innerHTML = itemsHtml + `<a href="#" class="nav-search-more" data-query="${escapeHtml(query)}">Daha fazlası →</a>`;
+        return `<div class="nav-search-section-label">Belgelerim</div>${itemsHtml}<a href="#" class="nav-search-more" data-query="${escapeHtml(query)}">Daha fazlası →</a>`;
     }
 
     let navSearchTimer = null;
@@ -205,24 +231,27 @@ function requireLogin() {
             navSearchResults.innerHTML = '';
             return;
         }
-        if (!authToken) {
-            navSearchResults.innerHTML = `<p class="nav-search-empty">Arama için giriş yapmalısınız.</p>`;
-            return;
-        }
         navSearchTimer = setTimeout(async () => {
             const requestId = ++navSearchRequestId;
+            const dictEntries = await fetchDictResults(query);
+            if (requestId !== navSearchRequestId) return;
+            const dictHtml = renderDictSectionHtml(dictEntries);
+
+            if (!authToken) {
+                navSearchResults.innerHTML = dictHtml || `<p class="nav-search-empty">Eşleşen kelime bulunamadı. Belgelerinizde aramak için giriş yapmalısınız.</p>`;
+                return;
+            }
             try {
                 const res = await fetch(`${API_BASE_URL}/api/documents?per_page=4&q=${encodeURIComponent(query)}`, {
                     headers: { 'Authorization': `Bearer ${authToken}` }
                 });
                 if (requestId !== navSearchRequestId) return;
-                if (!res.ok) { navSearchResults.innerHTML = ''; return; }
-                const data = await res.json();
-                renderNavSearchResults(data.documents || [], query);
+                const docsHtml = res.ok ? renderDocsSectionHtml((await res.json()).documents || [], query) : '';
+                navSearchResults.innerHTML = dictHtml + docsHtml;
             } catch (err) {
-                navSearchResults.innerHTML = '';
+                navSearchResults.innerHTML = dictHtml;
             }
-        }, 350);
+        }, 300);
     });
 
     navSearchInput.addEventListener('keydown', (e) => {
@@ -240,7 +269,7 @@ function requireLogin() {
             goToSearchPage(more.getAttribute('data-query'));
             return;
         }
-        const item = e.target.closest('.nav-search-result-item');
+        const item = e.target.closest('.nav-search-result-item[data-doc-id]');
         if (item) {
             goToDocument(navSearchInput.value.trim(), item.getAttribute('data-doc-id'));
         }

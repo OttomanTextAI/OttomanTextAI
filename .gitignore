@@ -20,8 +20,15 @@ __pycache__/
 
 # Veri ve model dosyaları
 data/raw/
-data/processed/
 data/ground_truth/
+
+# data/processed/ genelde eğitim ardılı türetilmiş dosyaları tutar ve repo'ya
+# girmez — ama osmanlica_sozluk.json çalışan uygulamanın kendisinin (backend.py
+# /api/dictionary/search) okuduğu bir çalışma zamanı verisi, o yüzden
+# istisna tutuluyor (bkz. dizin yerine dizin/* deseni, aksi hâlde negation
+# çalışmaz).
+data/processed/*
+!data/processed/osmanlica_sozluk.json
 
 # Harici veri setleri
 data/raw/transliteration/external/

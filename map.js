@@ -145,10 +145,36 @@ document.addEventListener('DOMContentLoaded', () => {
             window.location.href = `search.html?q=${encodeURIComponent(query)}`;
         }
 
-        function renderNavSearchResults(docs, query) {
+        // Sözlük sonuçları giriş yapmadan da çalışır (bkz. aşağıdaki input
+        // handler) — belge araması gibi kimlik doğrulama gerektirmez.
+        function renderDictSectionHtml(entries) {
+            if (!entries.length) return '';
+            const itemsHtml = entries.slice(0, 3).map(entry => `
+                <a href="sozluk.html?q=${encodeURIComponent(entry.word)}" class="nav-search-result-item nav-search-dict-item">
+                    <span class="nav-search-result-thumb nav-search-dict-icon">❖</span>
+                    <span class="nav-search-result-title">
+                        <strong>${escapeHtml(entry.word)}</strong>
+                        <span class="nav-search-dict-def">${escapeHtml(entry.definition.length > 70 ? entry.definition.slice(0, 70) + '…' : entry.definition)}</span>
+                    </span>
+                </a>
+            `).join('');
+            return `<div class="nav-search-section-label">Sözlük</div>${itemsHtml}`;
+        }
+
+        async function fetchDictResults(query) {
+            try {
+                const res = await fetch(`https://ottoman-text-ai.onrender.com/api/dictionary/search?q=${encodeURIComponent(query)}&limit=3`);
+                if (!res.ok) return [];
+                const data = await res.json();
+                return data.results || [];
+            } catch (err) {
+                return [];
+            }
+        }
+
+        function renderDocsSectionHtml(docs, query) {
             if (!docs.length) {
-                navSearchResults.innerHTML = `<p class="nav-search-empty">Eşleşen belge bulunamadı.</p>`;
-                return;
+                return `<p class="nav-search-empty">Eşleşen belge bulunamadı.</p>`;
             }
             const itemsHtml = docs.slice(0, 4).map(doc => `
                 <button type="button" class="nav-search-result-item" data-doc-id="${doc.id}">
@@ -156,7 +182,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span class="nav-search-result-title">${escapeHtml(doc.title || doc.filename || '')}</span>
                 </button>
             `).join('');
-            navSearchResults.innerHTML = itemsHtml + `<a href="#" class="nav-search-more" data-query="${escapeHtml(query)}">Daha fazlası →</a>`;
+            return `<div class="nav-search-section-label">Belgelerim</div>${itemsHtml}<a href="#" class="nav-search-more" data-query="${escapeHtml(query)}">Daha fazlası →</a>`;
         }
 
         let navSearchTimer = null;
@@ -168,24 +194,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 navSearchResults.innerHTML = '';
                 return;
             }
-            if (!authToken) {
-                navSearchResults.innerHTML = `<p class="nav-search-empty">Arama için giriş yapmalısınız.</p>`;
-                return;
-            }
             navSearchTimer = setTimeout(async () => {
                 const requestId = ++navSearchRequestId;
+                const dictEntries = await fetchDictResults(query);
+                if (requestId !== navSearchRequestId) return;
+                const dictHtml = renderDictSectionHtml(dictEntries);
+
+                if (!authToken) {
+                    navSearchResults.innerHTML = dictHtml || `<p class="nav-search-empty">Eşleşen kelime bulunamadı. Belgelerinizde aramak için giriş yapmalısınız.</p>`;
+                    return;
+                }
                 try {
                     const res = await fetch(`https://ottoman-text-ai.onrender.com/api/documents?per_page=4&q=${encodeURIComponent(query)}`, {
                         headers: { 'Authorization': `Bearer ${authToken}` }
                     });
                     if (requestId !== navSearchRequestId) return;
-                    if (!res.ok) { navSearchResults.innerHTML = ''; return; }
-                    const data = await res.json();
-                    renderNavSearchResults(data.documents || [], query);
+                    const docsHtml = res.ok ? renderDocsSectionHtml((await res.json()).documents || [], query) : '';
+                    navSearchResults.innerHTML = dictHtml + docsHtml;
                 } catch (err) {
-                    navSearchResults.innerHTML = '';
+                    navSearchResults.innerHTML = dictHtml;
                 }
-            }, 350);
+            }, 300);
         });
 
         navSearchInput.addEventListener('keydown', (e) => {
@@ -203,7 +232,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 goToSearchPage(more.getAttribute('data-query'));
                 return;
             }
-            const item = e.target.closest('.nav-search-result-item');
+            const item = e.target.closest('.nav-search-result-item[data-doc-id]');
             if (item) {
                 goToDocument(navSearchInput.value.trim(), item.getAttribute('data-doc-id'));
             }
@@ -534,7 +563,144 @@ document.addEventListener('DOMContentLoaded', () => {
             blurb: 'Kadim bir Yukarı Mezopotamya şehri olan Urfa, Birinci Dünya Savaşı sonrasında kısa süreli Fransız işgaline uğradı; 1920\'de halkın direnişi sonucunda işgalciler şehri terk etti. Bu direnişin anısına kente sonradan "Şanlı" unvanı verilerek adı Şanlıurfa oldu.',
             category: 'independence',
         },
+        {
+            id: 'kayseri', name: 'Kayseri', lat: 38.7312, lng: 35.4787,
+            era: 'Osmanlı Anadolusu',
+            blurb: 'Roma döneminde Caesarea, Selçuklu asrında önemli bir ilim ve mimari merkezi olan Kayseri, 1515\'te Yavuz Sultan Selim\'in Dulkadiroğulları Beyliği\'ne son vermesiyle Osmanlı topraklarına katıldı. Erciyes Dağı eteklerindeki konumu sayesinde yüzyıllar boyunca dokumacılık ve kervan ticaretinin önemli duraklarından biri oldu.',
+        },
+        {
+            id: 'malatya', name: 'Malatya', lat: 38.3552, lng: 38.3095,
+            era: 'Osmanlı Anadolusu',
+            blurb: 'Bizans-Arap sınır mücadelelerine sahne olan kadim Melitene, Dulkadiroğulları Beyliği\'nin bir parçası olarak 1515-1516\'da Yavuz Sultan Selim döneminde Osmanlı topraklarına katıldı. Fırat havzasındaki bereketli toprakları, özellikle kayısı yetiştiriciliğiyle tanınmasını sağladı.',
+        },
+        {
+            id: 'adana', name: 'Adana', lat: 37.0000, lng: 35.3213,
+            era: 'Osmanlı Anadolusu',
+            blurb: 'Çukurova\'nın merkezi olan Adana, 1517\'den itibaren Ramazanoğulları Beyliği üzerinden Osmanlı\'ya bağlandı, 1608\'de ise doğrudan idareye alındı. 19. yüzyılda pamuk tarımı ve dokumacılığın hızla gelişmesiyle imparatorluğun önemli bir tarım ve sanayi merkezine dönüştü.',
+        },
+        {
+            id: 'antalya', name: 'Antalya', lat: 36.8969, lng: 30.7133,
+            era: 'Osmanlı Akdeniz Limanı',
+            blurb: 'Selçuklu döneminde önemli bir Akdeniz limanı olan Antalya (Attaleia), bölgedeki Teke Beyliği\'nin 1390\'larda Osmanlı\'ya katılmasıyla imparatorluk topraklarına girdi. Yüzyıllar boyunca Akdeniz ticaretinin ve hac yoluna deniz bağlantısının önemli bir limanı olarak kaldı.',
+        },
+        {
+            id: 'manisa', name: 'Manisa', lat: 38.6191, lng: 27.4289,
+            era: 'Osmanlı Anadolusu — Şehzade Sancağı',
+            blurb: 'Saruhanoğulları Beyliği\'nin 1390\'da Osmanlı\'ya katılmasıyla imparatorluk topraklarına giren Manisa, Amasya gibi Osmanlı şehzadelerinin sancak eğitimi gördüğü önemli merkezlerden biri oldu. 16. yüzyıldan bu yana her yıl düzenlenen Mesir Macunu şenliği, şehrin bu döneme uzanan bir geleneğidir.',
+        },
+        {
+            id: 'kutahya', name: 'Kütahya', lat: 39.4242, lng: 29.9833,
+            era: 'Osmanlı Anadolusu',
+            blurb: 'Germiyanoğulları Beyliği\'nin 1429\'da II. Murad döneminde barışçıl biçimde Osmanlı\'ya katılmasıyla imparatorluk topraklarına giren Kütahya, 17. yüzyıldan itibaren İznik geleneğini sürdüren çini ve seramik üretimiyle tanındı.',
+        },
+        {
+            id: 'kastamonu', name: 'Kastamonu', lat: 41.3887, lng: 33.7827,
+            era: 'Osmanlı Anadolusu',
+            blurb: 'Candaroğulları (İsfendiyaroğulları) Beyliği\'nin merkezi olan Kastamonu, 15. yüzyılın ikinci yarısında Fatih Sultan Mehmed döneminde Osmanlı topraklarına katıldı. Karadeniz\'in iç kesimlere açılan ticaret yollarının kesişim noktalarından biri oldu.',
+        },
+        {
+            id: 'tokat', name: 'Tokat', lat: 40.3167, lng: 36.5500,
+            era: 'Osmanlı Anadolusu',
+            blurb: 'İpek Yolu\'nun Anadolu\'daki önemli konaklarından olan Tokat, Yıldırım Bayezid döneminde Osmanlı topraklarına katıldı. Bakırcılık zanaatıyla ve 18. yüzyılda kurulan erken dönem Osmanlı matbaalarından biriyle tanındı.',
+        },
+        {
+            id: 'van', name: 'Van', lat: 38.4891, lng: 43.4089,
+            era: 'Osmanlı Doğu Anadolusu',
+            blurb: 'Urartu döneminden kalma kalesiyle bilinen Van, 16. yüzyılda Osmanlı-Safevi mücadelelerinde defalarca el değiştirdi; Kanuni Sultan Süleyman\'ın 1548 seferiyle kalıcı olarak Osmanlı topraklarına katıldı. Doğu sınırının en önemli kale şehirlerinden biri olarak kaldı.',
+        },
+        {
+            id: 'mardin', name: 'Mardin', lat: 37.3212, lng: 40.7245,
+            era: 'Osmanlı Doğu Anadolusu',
+            blurb: 'Artuklu ve Akkoyunlu mirasının sarı taş mimarisiyle bezediği Mardin, 1515\'te Diyarbakır ile aynı sefer sırasında, İdris-i Bitlisî\'nin diplomatik çabalarıyla Osmanlı topraklarına katıldı. Yüzyıllar boyunca farklı din ve dillerden toplulukların bir arada yaşadığı bir Yukarı Mezopotamya şehri oldu.',
+        },
+        {
+            id: 'kars', name: 'Kars', lat: 40.6013, lng: 43.0975,
+            era: 'Osmanlı Doğu Sınırı',
+            blurb: 'Osmanlı-Safevi ve sonrasında Osmanlı-Rus mücadelelerinin odağındaki bu sınır kalesi, 16. yüzyılda Osmanlı topraklarına katıldı. 1877-78 Osmanlı-Rus Savaşı sonunda Kars, Ardahan ve Batum ile birlikte Rusya\'ya bırakıldı (\"Elviye-i Selâse\"); Birinci Dünya Savaşı\'nın ardından 1921 Kars Antlaşması\'yla yeniden Türkiye\'ye katıldı.',
+        },
+        {
+            id: 'uskup', name: 'Üsküp', lat: 41.9981, lng: 21.4254,
+            era: 'Osmanlı Rumelisi (1392–1912)',
+            blurb: 'I. Bayezid döneminde 1392\'de fethedilen Üsküp, Rumeli\'nin idari ve askeri merkezlerinden biri olarak beş asra yakın Osmanlı idaresinde kaldı. Balkan Savaşları sırasında, 1912\'de Sırp kuvvetlerinin eline geçti.',
+        },
+        {
+            id: 'manastir', name: 'Manastır', lat: 41.0297, lng: 21.3347,
+            era: 'Osmanlı Rumelisi',
+            blurb: 'Rumeli\'nin önemli bir idari ve askeri merkezi olan Manastır (bugünkü Bitola), 20. yüzyıl başında Jön Türk hareketinin de canlı olduğu şehirlerden biriydi. Balkan Savaşları sırasında, 1912\'de Sırp kuvvetlerinin eline geçerek beş asırlık Osmanlı idaresi sona erdi.',
+        },
+        {
+            id: 'yanya', name: 'Yanya', lat: 39.6650, lng: 20.8537,
+            era: 'Osmanlı Rumelisi (1430–1913)',
+            blurb: 'II. Murad döneminde 1430\'da Osmanlı topraklarına katılan Yanya (Ioannina), 18. ve 19. yüzyıl başında Tepedelenli Ali Paşa\'nın merkezî otoriteye rağmen kurduğu yarı bağımsız yönetimle özel bir döneme sahne oldu. Balkan Savaşları sırasında, 1913\'te Yunanistan\'ın eline geçti.',
+        },
+        {
+            id: 'filibe', name: 'Filibe', lat: 42.1354, lng: 24.7453,
+            era: 'Osmanlı Rumelisi (1364–1878)',
+            blurb: 'Balkanlar\'daki en erken Osmanlı fetihlerinden biri olan Filibe (Plovdiv), I. Murad döneminde 1360\'ların sonunda imparatorluk topraklarına katıldı ve Rumeli\'nin başlıca idari merkezlerinden biri oldu. 1878\'de Bulgaristan\'a özerklik verilmesiyle fiilî Osmanlı idaresi sona erdi.',
+        },
+        {
+            id: 'vidin', name: 'Vidin', lat: 43.9910, lng: 22.8749,
+            era: 'Osmanlı Tuna Sınırı (1396–1878)',
+            blurb: 'Niğbolu Zaferi\'nin ardından 1396\'da Osmanlı topraklarına katılan bu Tuna kalesi, 18. yüzyılın sonunda Pasvanoğlu Osman Paşa\'nın merkeze başkaldıran yarı bağımsız yönetimine sahne oldu. 1878\'de Bulgaristan\'ın özerkliğiyle Osmanlı idaresinden çıktı.',
+        },
+        {
+            id: 'silistre', name: 'Silistre', lat: 44.1167, lng: 27.2667,
+            era: 'Osmanlı Tuna Sınırı (1878\'e kadar)',
+            blurb: '\"Tuna\'nın anahtarı\" olarak anılan Silistre, erken Osmanlı döneminden itibaren imparatorluğun kuzey sınırındaki en önemli kalelerinden biriydi. 1809, 1828 ve özellikle Kırım Savaşı sırasındaki 1854 kuşatmasında Rus ordularına karşı direnerek nam saldı; 1878\'de Osmanlı idaresinden çıktı.',
+        },
+        {
+            id: 'kandiye', name: 'Kandiye', lat: 35.3387, lng: 25.1442,
+            era: 'Girit Eyaleti (1669–1898)',
+            blurb: 'Girit\'in başkenti olan Kandiye (bugünkü Iraklio), tarihin en uzun kuşatmalarından birine, 1648-1669 arasında tam yirmi bir yıl süren Osmanlı kuşatmasına sahne oldu; kuşatmanın sonunda Venedik idaresi burada da sona erdi. Ada, 1898\'de özerklik kazanana, 1913\'te ise resmen Yunanistan\'a katılana kadar Osmanlı toprağı olarak kaldı.',
+        },
+        {
+            id: 'rodos', name: 'Rodos', lat: 36.4341, lng: 28.2176,
+            era: 'Osmanlı Ege Adası (1522–1912)',
+            blurb: 'Yüzyıllarca Ege\'de Osmanlı deniz ticaretini tehdit eden Rodos Şövalyeleri\'nin kalesi olan ada, Kanuni Sultan Süleyman\'ın 1522\'deki ünlü kuşatmasıyla fethedildi; şövalyeler adayı terk ederek sonradan Malta\'ya yerleşti. Rodos, 1912\'de Trablusgarp Savaşı sırasında İtalya\'nın eline geçene kadar dört asra yakın Osmanlı toprağı olarak kaldı.',
+        },
+        {
+            id: 'kerkuk', name: 'Kerkük', lat: 35.4681, lng: 44.3922,
+            era: 'Osmanlı Irak\'ı — Musul Eyaleti',
+            blurb: 'Musul Eyaleti\'nin bir parçası olan Kerkük, kalabalık Türkmen nüfusuyla tanınan bir Yukarı Mezopotamya şehriydi. 20. yüzyıl başında bölgedeki petrol yataklarının keşfiyle stratejik önemi arttı; Birinci Dünya Savaşı sonrası Musul ile birlikte 1926\'da Irak Krallığı\'na bırakıldı.',
+        },
+        {
+            id: 'akka', name: 'Akka', lat: 32.9281, lng: 35.0818,
+            era: 'Osmanlı Filistini',
+            blurb: 'Doğu Akdeniz\'in müstahkem limanlarından olan Akka, 1799\'da Napolyon Bonapart\'ın kuşatmasına Cezzar Ahmed Paşa komutasında direnerek Fransız ordusunun Orta Doğu seferini durduran tarihî bir zafere sahne oldu.',
+        },
+        {
+            id: 'beyrut', name: 'Beyrut', lat: 33.8938, lng: 35.5018,
+            era: 'Osmanlı Suriyesi — Beyrut Sancağı',
+            blurb: 'Osmanlı döneminde mütevazı bir liman kasabası olan Beyrut, özellikle 19. yüzyılda Fransa ile gelişen ipek ticareti sayesinde hızla büyüdü ve zamanla ayrı bir sancak merkezi hâline geldi. Birinci Dünya Savaşı sonrasında Fransız Suriye mandası sınırları içinde kaldı.',
+        },
+        {
+            id: 'amman', name: 'Amman', lat: 31.9454, lng: 35.9284,
+            era: 'Osmanlı Suriyesi',
+            blurb: 'Osmanlı döneminin büyük bölümünde küçük bir yerleşim olan Amman, 1878\'de Osmanlı-Rus Savaşı sonrası Kafkasya\'dan göç eden Çerkeslerin buraya iskân edilmesiyle yeniden canlandı. 1900\'lerin başında Hicaz Demiryolu\'nun bir durağı olarak önem kazandı; Osmanlı sonrasında Ürdün\'ün başkenti oldu.',
+        },
+        {
+            id: 'batum', name: 'Batum', lat: 41.6168, lng: 41.6367,
+            era: 'Osmanlı Karadeniz Sınırı (1878\'e kadar)',
+            blurb: 'Gürcistan kıyısındaki bu Karadeniz limanı, 16. yüzyıldan itibaren Osmanlı topraklarındaydı. 1878 Berlin Antlaşması\'yla Kars ve Ardahan\'la birlikte Rusya\'ya bırakıldı; 1918\'de Brest-Litovsk Antlaşması\'yla kısa süreliğine yeniden Osmanlı idaresine girse de, savaşın kaybedilmesiyle bu kalıcı olmadı.',
+        },
     ];
+
+    // Osmanlı sınırları DIŞINDAki önemli merkezler (rakip/komşu güçlerin
+    // başkentleri) — coğrafi bağlam için işaretlenir, ama tıklanınca bilgi
+    // penceresi AÇILMAZ ve alttaki dizinde YER ALMAZ (bkz. aşağıdaki
+    // landmarkIcon()/LANDMARKS.forEach()). Osmanlı sınırları İÇİNDEKİ
+    // merkezler zaten yukarıdaki CITIES'te tam bilgiyle yer alıyor.
+    const LANDMARKS = [
+        { id: 'vienna', name: 'Viyana', lat: 48.2082, lng: 16.3738 },
+        { id: 'venice', name: 'Venedik', lat: 45.4408, lng: 12.3155 },
+        { id: 'moscow', name: 'Moskova', lat: 55.7558, lng: 37.6173 },
+        { id: 'paris', name: 'Paris', lat: 48.8566, lng: 2.3522 },
+        { id: 'madrid', name: 'Madrid', lat: 40.4168, lng: -3.7038 },
+        { id: 'isfahan', name: 'İsfahan', lat: 32.6546, lng: 51.6680 },
+        { id: 'warsaw', name: 'Varşova', lat: 52.2297, lng: 21.0122 },
+        { id: 'london', name: 'Londra', lat: 51.5074, lng: -0.1278 },
+    ];
+
 
     // Osmanlı coğrafyasını ve yakın komşularını kapsayan "kör harita" —
     // Natural Earth sınır verisinden (world-atlas npm paketi, jsDelivr CDN
@@ -577,6 +743,66 @@ document.addEventListener('DOMContentLoaded', () => {
     L.control.attribution({ prefix: false, position: 'bottomright' })
         .addAttribution('Sınır verisi: <a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener">Natural Earth</a>')
         .addTo(map);
+
+    // --- Tarihî rotalar (İpek Yolu, Baharat Yolu, Hac Yolu) ---
+    // CITIES'teki gerçek koordinatları kullanır (ayrı bir koordinat listesi
+    // tutmuyor ki şehir konumları değişirse rotalar da otomatik güncellensin).
+    // Sağ üstteki düğmeyle açılıp kapanır, varsayılan olarak gizli.
+    const cityById = {};
+    CITIES.forEach(city => { cityById[city.id] = city; });
+
+    const ROUTES = [
+        { id: 'ipek-yolu', name: 'İpek Yolu', cityIds: ['van', 'erzurum', 'sivas', 'kayseri', 'ankara', 'bursa', 'istanbul'] },
+        { id: 'baharat-yolu', name: 'Baharat Yolu', cityIds: ['basra', 'bagdat', 'halep', 'istanbul'] },
+        { id: 'hac-yolu', name: 'Hac Yolu (Şam Yolu)', cityIds: ['istanbul', 'sam', 'medine', 'mekke'] },
+    ];
+
+    const routeLayer = L.layerGroup();
+    ROUTES.forEach(route => {
+        const latlngs = route.cityIds
+            .map(id => cityById[id])
+            .filter(Boolean)
+            .map(city => [city.lat, city.lng]);
+        if (latlngs.length < 2) return;
+        const line = L.polyline(latlngs, {
+            className: 'map-route-line',
+            weight: 2.5,
+            opacity: 0.85,
+            dashArray: '7 7',
+            lineJoin: 'round',
+        });
+        line.bindTooltip(route.name, { sticky: true, className: 'map-route-tooltip' });
+        routeLayer.addLayer(line);
+    });
+
+    const RouteToggleControl = L.Control.extend({
+        options: { position: 'topright' },
+        onAdd: function () {
+            const container = L.DomUtil.create('div', 'leaflet-bar map-route-control');
+            const button = L.DomUtil.create('button', 'map-route-toggle', container);
+            button.type = 'button';
+            button.title = 'Tarihî rotaları göster/gizle';
+            button.setAttribute('aria-label', 'Tarihî rotaları göster/gizle');
+            button.innerHTML = `
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="6" cy="6" r="2.5"></circle>
+                    <circle cx="18" cy="18" r="2.5"></circle>
+                    <path d="M8 7.5C12 10 12 14 16 16.5" stroke-dasharray="3 3"></path>
+                </svg>`;
+            L.DomEvent.disableClickPropagation(container);
+            L.DomEvent.on(button, 'click', () => {
+                if (map.hasLayer(routeLayer)) {
+                    map.removeLayer(routeLayer);
+                    button.classList.remove('active');
+                } else {
+                    routeLayer.addTo(map);
+                    button.classList.add('active');
+                }
+            });
+            return container;
+        },
+    });
+    map.addControl(new RouteToggleControl());
 
     // Ülke sınırları — jsDelivr üzerinden TopoJSON olarak çekilip
     // topojson-client ile GeoJSON'a çevriliyor, sonra yukarıdaki bölge
@@ -767,6 +993,325 @@ document.addEventListener('DOMContentLoaded', () => {
         setActive(null, null);
     }
 
+    // Şehir modallerindeki belgelere tıklanınca içerik penceresi/sayfaya
+    // gitmeden gösterilebilsin diye, haritada kullanılan 9 örnek belgenin
+    // gerçek çevirisi/özeti burada — app.js'teki sampleDatabase'in (index.html
+    // tarafından yüklenen ayrı script) küçük bir alt kümesi elle kopyalanmış
+    // hâli (map.js kendi başına, app.js'siz çalışıyor). ** işaretleri (AI
+    // belirsizlik vurgusu) index.html'deki özel render mantığı için;
+    // buradaki düz metin önizlemede kaldırıldı.
+    const DOCUMENT_CONTENT = {
+        '1': {
+            documentType: 'Şiir / Millî Marş (Edebî Eser)',
+            date: '12 Mart 1921',
+            summary: 'Mehmet Âkif Ersoy\'un Millî Mücadele döneminde yazdığı İstiklâl Marşı\'dır. Şiirde Türk milletinin bağımsızlığı, vatan sevgisi, bayrak, şehitlik, iman ve özgürlük temaları işlenmektedir. Marş, TBMM tarafından 12 Mart 1921\'de kabul edilmiştir.',
+            text: `Korkma, sönmez bu şafaklarda yüzen al sancak;
+Sönmeden yurdumun üstünde tüten en son ocak.
+O benim milletimin yıldızıdır, parlayacak;
+O benimdir, o benim milletimindir ancak.
+
+Çatma, kurban olayım, çehreni ey nazlı hilâl!
+Kahraman ırkıma bir gül; ne bu şiddet, bu celâl?
+Sana olmaz dökülen kanlarımız sonra helâl.
+Hakkıdır, Hakk'a tapan milletimin istiklâl!
+
+Ben ezelden beridir hür yaşadım, hür yaşarım.
+Hangi çılgın bana zincir vuracakmış? Şaşarım!
+Kükremiş sel gibiyim, bendimi çiğner, aşarım.
+Yırtarım dağları, enginlere sığmam, taşarım.
+
+Garbın âfâkını sarmışsa çelik zırhlı duvar,
+Benim iman dolu göğsüm gibi serhaddim var.
+Ulusun, korkma! Nasıl böyle bir îmânı boğar,
+"Medeniyet!" dediğin tek dişi kalmış canavar?
+
+Arkadaş! Yurduma alçakları uğratma, sakın.
+Siper et gövdeni, dursun bu hayâsızca akın.
+Doğacaktır sana va'dettiği günler Hakk'ın...
+Kim bilir, belki yarın, belki yarından da yakın.
+
+Bastığın yerleri "toprak!" diyerek geçme, tanı!
+Düşün altındaki binlerce kefensiz yatanı.
+Sen şehid oğlusun, incitme, yazıktır atanı;
+Verme, dünyaları alsan da, bu cennet vatanı.
+
+Kim bu cennet vatanın uğruna olmaz ki fedâ?
+Şühedâ fışkıracak toprağı sıksan, şühedâ!
+Cânı, cânânı, bütün varımı alsın da Huda,
+Etmesin tek vatanımdan beni dünyada cüdâ.
+
+Ruhumun senden, İlâhî, şudur ancak emeli:
+Değmesin mabedimin göğsüne nâ-mahrem eli.
+Bu ezanlar -ki şehadetleri dînin temeli-
+Ebedî yurdumun üstünde benim inlemeli.
+
+O zaman vecd ile bin secde eder -varsa- taşım;
+Her cerîhamdan, İlâhî, boşanıp kanlı yaşım,
+Fışkırır ruh-ı mücerret gibi yerden na'şım;
+O zaman yükselerek Arş'a değer, belki başım.
+
+Dalgalan sen de şafaklar gibi ey şanlı hilâl!
+Olsun artık dökülen kanlarımın hepsi helâl.
+Ebediyen sana yok, ırkıma yok izmihlâl:
+Hakkıdır, hür yaşamış, bayrağımın hürriyet;
+Hakkıdır, Hakk'a tapan milletimin istiklâl!`,
+        },
+        '2': {
+            documentType: 'Ahidnâme (Ferman niteliğinde)',
+            date: '28 Mayıs 1463',
+            summary: 'Fatih Sultan Mehmed\'in 1463 yılında Bosna\'daki ruhbanlara (Fransiskenler) verdiği ahidnâmedir. Belgede ruhbanların ve kiliselerinin korunacağı, güven içinde yaşamalarına ve dinî faaliyetlerini sürdürmelerine izin verileceği güvence altına alınmaktadır.',
+            text: `Ben Sultan Mehmed Han'ım.
+Herkes bilsin ki, bu padişah fermanını taşıyan Bosnalı ruhbanlara özel bir lütufta bulunarak emrediyorum:
+Kimse onlara ve kiliselerine engel olmayacak, onları rahatsız etmeyecektir. Ülkemde güven içinde yaşayacaklardır.
+Kaçıp gitmiş olanlar da güvenlik içinde olacaklardır.
+Ülkeme gelip korkusuzca yaşayabilecek ve kiliselerinde ibadet edebileceklerdir.
+Benim makamımdan, vezirlerimden, askerlerimden, halkımdan ve ülkemdeki hiç kimseden onlara zarar gelmeyecek, kimse onları incitmeyecektir.
+Canlarına, mallarına ve kiliselerine dokunulmayacaktır.
+Dışarıdan ülkeye insan getirmelerine de engel olunmayacaktır.
+Yeri ve göğü yaratan Allah adına, Kur'an adına, Peygamber adına, bütün peygamberler adına ve kuşandığım kılıç adına yemin ederim ki bu hükümlere kimse karşı gelmeyecektir.
+Onlar benim emrime bağlı kaldıkları sürece bu güvence devam edecektir.
+Böyle bilinsin.`,
+        },
+        'hero': {
+            documentType: 'Kaside (Na\'t-ı Nebevî)',
+            date: 'Belirtilmemiş',
+            summary: 'Fuzûlî\'nin Su Kasidesi, Hz. Muhammed\'i övmek ve ona duyulan sevgi ile bağlılığı dile getirmek amacıyla yazılmış 32 beyitlik bir na\'ttır. Şair; su, ateş, gül, gözyaşı, Kevser ve rahmet gibi unsurlar üzerinden Hz. Peygamber\'in güzelliğini, üstünlüğünü ve mucizelerini anlatır.',
+            text: `Ey göz! Gönlümdeki ateşlere gözyaşından su saçma; çünkü böylesine tutuşmuş ateşlere su çare olmaz.
+
+Dönen gök kubbenin rengi su renginde midir, yoksa gözümden akan gözyaşları mı gök kubbeyi kaplamıştır, bilmiyorum.
+
+Senin kılıca benzeyen keskin bakışlarının etkisiyle gönlüm parça parça olsa buna şaşılmaz. Çünkü akarsu da akıp geçerken duvarlarda yarıklar oluşturur.
+
+Yaralı gönül, senin oka benzeyen kirpiklerinden korkarak söz eder. Çünkü yarası olan kişi suyu bile dikkat ederek içer.
+
+Bahçıvan binlerce gül bahçesini sulasa bile senin yüzün gibi bir gül açılmaz. Bu yüzden boşuna zahmet çekmesin, gül bahçesini suya bıraksın.
+
+Kâtip, kalem gibi sürekli yazıya bakmaktan gözlerine kara su inse bile senin yüzündeki ayva tüylerine benzeyen ince çizgileri taklit edemez.
+
+Senin yanağını hatırladığım için kirpiklerim gözyaşlarıyla ıslansa ne olur? Gülü elde etme ümidiyle dikene su vermek boşa değildir.
+
+Gam gününde kılıcını hasta gönlümden esirgeme. Çünkü karanlık bir gecede hastaya su vermek hayırlı ve sevaptır.
+
+Ey gönül! Sevgiliden ayrı kaldığımda onun oka benzeyen kirpiklerini iste ve kavuşma arzumu dindir. Bu çölde susuzum; bir kez olsun benim için su ara.
+
+Ben senin dudağının özlemini çekiyorum, zahitler ise Kevser'i istiyor. Nitekim sarhoş olana şarap, ayık olana ise su hoş gelir.
+
+Su, galiba o güzel yürüyüşlü serviye âşık olmuş; bir an bile durmadan onun bulunduğu cennet bahçesine doğru akıp gidiyor.
+
+Sevgilinin bulunduğu yere gitmesini engellemek için suyun yolunu toprak olup kapatmalıyım. Çünkü su benim rakibimdir ve onun bulunduğu yere ulaşmasına izin vermek istemem.
+
+Dostlar! Eğer sevgilinin elini öpme arzusu yüzünden ölürsem, toprağımdan bir testi yapın ve onunla sevgiliye su sunun.
+
+Servi, kumrunun yalvarışlarına karşı dik başlılık ediyor. Öyleyse su onun eteğini tutup ayaklarına kapanarak yalvarsın.
+
+Gül, bir hileyle bülbülün kanını içmek istiyor. Su ise gül dalının damarlarına girerek bülbülü kurtarsın.
+
+Su, Hz. Ahmed-i Muhtâr'ın yoluna uymakla temiz yaradılışını bütün insanlara açıkça göstermiştir.
+
+İnsanların efendisi, seçilmiş ve temizlenmiş inciler denizi olan Hz. Muhammed'in mucizeleri, kötülük sahiplerinin ateşlerine su serpmiştir; yani onların kötülüklerini ve zulümlerini söndürmüştür.
+
+Peygamberlik gül bahçesinin güzelliğini ve canlılığını yeniden ortaya çıkarmak için Hz. Peygamber mucizesiyle sert taştan su çıkarmıştır.
+
+Onun mucizesi dünyada uçsuz bucaksız bir deniz gibidir; bu mucizeden binlerce kâfirin ateş yanan tapınağına su ulaşmıştır.
+
+Hz. Peygamber'in şiddetli bir susuzluk gününde parmaklarından Ensâr'a su verdiğini kim işitse hayretinden parmağını ısırır.
+
+Hz. Peygamber'in dostu yılan zehri içse, o zehir onun için ölümsüzlük suyuna dönüşür. Düşmanı ise su içse, o su elbette yılan zehrine dönüşür.
+
+Hz. Peygamber abdest almak için suyu gül gibi güzel yüzüne sürdüğünde, suyun her damlasından binlerce rahmet denizi dalgalanmıştır.
+
+Su, onun ayağının bastığı toprağa ulaşabilmek için ömürler boyunca durmadan başını taştan taşa vurup avare bir şekilde dolaşmaktadır.
+
+Su, onun dergâhının toprağına zerre zerre ışık saçmak ister. Parçalara ayrılsa bile o dergâhtan geri dönmez.
+
+Günahkâr insanlar, senin na'tını ve övgünü tekrar tekrar söylemeyi bir çare olarak görürler. Tıpkı sarhoşların baş ağrılarını gidermek için su içmeleri gibi.
+
+Ey Allah'ın sevgilisi! Ey insanların en hayırlısı! Susuzluktan dudakları kuruyan insanların sürekli su istemeleri gibi ben de sana büyük bir özlem duyuyorum.
+
+Sen, Miraç gecesinde feyzinin çiy damlalarıyla sabit ve hareketli yıldızlara bile su ulaştırmış olan keramet denizisin.
+
+Senin kabrini yenileyen mimarın suya ihtiyacı olsa, güneş çeşmesinden her an temiz ve tatlı bir feyiz suyu iner.
+
+Cehennem korkusu, yanmakta olan gönlüme bir gam ateşi salmıştır. Fakat senin bağışlama ve iyilik bulutunun bu ateşe su serpeceğine dair umudum vardır.
+
+Fuzûlî'nin sözleri, senin övgünü söylemenin uğuru sayesinde inciye dönüşmüştür. Nasıl ki nisan yağmurundan düşen bir su damlası değerli bir inciye dönüşürse, onun sözleri de inci gibi değer kazanmıştır.
+
+Mahşer günü gaflet uykusundan uyanıp, sana duyulan hasretin gözyaşlarını uyanık gözlerden döktüğümde...
+
+Umudum şudur ki kıyamet gününde senin yüzünü görmekten mahrum kalmayayım. Ben, senin güzel yüzünü görmeye susamış biriyim; kavuşma çeşmen bana su versin, yani bana vuslatını ve şefaatini nasip etsin.`,
+        },
+        'svf': {
+            documentType: 'Ferman',
+            date: 'Haziran 1688',
+            summary: 'Sivas Beylerbeyi ve Sivas Kadısı\'na hitaben gönderilen bu ferman, Sivas\'ta bulunan bir vakfın tevliyet, nezaret ve vakıf şartlarına dair yaşanan ihtilafların çözülmesini konu almaktadır. Belgede, vakıf kayıtlarının ve yeni defterlerin incelenerek vakfiyedeki şartlara titizlikle uyulması emredilmektedir.',
+            text: `1 Emirlerin emiri, kerem ve kadir sahibi büyüklerin en büyüğü, izzet ve celal madeni
+2 Sivas beylerbeyi olan seçkinlerin örneği
+3 Sivas kadısı -fazileti artsın- yüce padişah fermanı ulaştığında malum ola ki
+4 Yüce padişah fermanı ulaştığında malum ola ki padişah hükmünün içeriği
+5 Tevliyet ve nezaret işlerinin vakfiye gereğince yerine getirilmesi
+6 Sivas'ta Süleyman Paşa vakfı şartları gereğince
+7 Zapt ve idare olunup aksine hareket olunmaması
+8 Vakfiye gereğince amel olunması talep olundukta
+9 Gereğince amel oluna diye padişah hükmü
+10 Mühr-i şerif gereğince amel oluna
+11 Vakıf şartları gereğince amel oluna
+12 Gereğince amel oluna muhalefet hakkında
+13 Yeni vakfiye gereğince amel oluna
+14 Padişah hükmünün içeriği gereğince amel oluna
+15 Gereğince amel oluna diye padişah hükmü
+16 Yerine getirilip aksine hareket olunmaması
+17 Şaban ayının ortalarında sene doksan dokuz`,
+        },
+        'sbh': {
+            documentType: 'Resmî Yazı',
+            date: 'Ekim 1572',
+            summary: 'Belge, Şam, Baalbek ve Halep bölgelerindeki idari, mali ve asayiş konularına ilişkin divan kararlarını içermektedir. Özellikle Şam\'da asayişi bozan eşkıyalık faaliyetlerinin önlenmesi, vakıf gelirlerinin denetlenmesi ve bölgedeki şer\'i davaların adilce çözülmesi emredilmektedir.',
+            text: `42 Şam beylerbeyi ve defterdarına mektup: Şam askerinin yarısından yerinde vazgeçilen vakıfların yeterli sahibi...
+yerinde defalarca uzaklaştırılmış olan Hafız Sinan, geçen Şihab oğlu Kasım adlı kimsenin fesat ve eşkıyalığı...
+defter başında teftiş edilip geri kalan miktarın üzerine tahsil ettirilip...
+Sinan naibi Sinan Atban adlı kimseye imar ettirilip...
+tahsil ettirilip geriye kalan isimlerin teftiş olunup...
+ve Rumi sınırının yarısı ile Rumi adamları ve Dedekenderli yerlerindeki tabi reaya...
+ve kalesinin yarısına tabi hasıl olan vakıflar...
+hazinedar olan ve nöbet ehli gibi fesadından dolayı katil...
+tamamen katle muktedir olan beyler, şah ve kuzgun olan cerimeler...
+durumları vaki olur ki zikredilen eşkıyaya merhamet edilmeyip...
+terbiye edilerek kafirlere gönderilip fitnenin ortadan kaldırılması...
+üzerinde olan şer'i miktar, kayıp olanlar yok olup...
+ve geriye kalanı olmayan şer'i süresi dolmuş olanlar adil olup...
+980 yılı Cemaziyelahir ayının ortalarında yazılmıştır.
+
+43 Baalbek kadısına ve vakıf durumlarına dair padişahın fermanı uyarınca yazılan mektup...
+Maslahat gereği kontrol altına alınması ve arazinin ölçülerek değerinin belirlenmesi...
+ve arazisi uygun olup cömertliğinden olup...
+buyurdum ki: ulaştığında adı geçen vakıf...
+hak üzere ve en iyi şekilde işleriyle ilgilenip...
+hak sahiplerine verip ve kontrolünü sağlamak...
+tasarruflu talep eden ve tahsil edip...
+yıldızların düğümü ve şerefi...
+yüce ve şerefli görüşümün iradesi...
+ulaşıp kimin fikir yürütmesi...
+
+44 Halep beylerbeyine mektup: bende gereklilik görülüp belge hakim olup...
+hüküm giyenler, askerler ve kaleler teftiş edilip...
+talep edilmiş olan mevcut yerinde teftiş...
+bir teftiş yöntemi ve bir emir gönderilmelidir...
+adı geçen yılın Rebiülahir ayında gönderilmelidir...
+dört üzerine uzak teftiş...
+adı geçen kişiye mektup...`,
+        },
+        'hbv': {
+            documentType: 'Berat',
+            date: '31 Ağustos 1808',
+            summary: 'Ankara\'da bulunan Hacı Bayram Veli Vakfı\'nın tevliyet, meşihat ve zaviyedarlık görevlerinin, haksız yere elinden alınan es-Seyyid Muhammed Said Baba\'ya Şeyhülislam Ahmed Esad Efendi\'nin işareti ve padişahın iradesiyle iade edildiğine dair berattır.',
+            text: `Hacı Bayram Veli yolunda, bu yüce padişahlık nişanını taşıyan, salihlerin ve süluk edenlerin örneği, müteveffa Tayyib Baba'nın oğlu es-Seyyid Muhammed Said Baba, zamanımızda en layık ve olgun olanlardan olup, takvasının temizliğiyle Divan-ı Hümayun'a dilekçe sunup Ankara'da bulunan Hacı Bayram Veli Vakfı'nın belirlenmiş vazife ile tevliyet ve meşihatına ve belirlenmiş vazife ile zaviyedarlığına önceden beri şart koşulduğu üzere babasının gelirinden tasarruf etmekte iken ve görevden alınmasını gerektirecek hiçbir hareketi yokken, garaz sahiplerinden es-Seyyid Halil Baba'nın oğlu es-Seyyid Kasım Baba en layık evlat ve akraba olduğunu iddia ederek bir yolunu bulup berat ve fetva ile hatt-ı hümayun çıkarttırıp tarafından tamamen görevden alınmasına ve ailesiyle perişan olmasına sebep olduğundan, tevliyet, meşihat ve zaviyedarlığın tarafından önceden olduğu gibi kendisine ve babasının naiplerine verilmesi ricasıyla lütuf talep etmiştir. Adı geçenin talebi üzerine müsamaha gösterilmesi hususunda padişahın iradesi çıktığından, dilekçesi doğrultusunda işlem yapılmak üzere, derin alimlerin en bilgini, takva sahiplerinin en faziletlisi olan fiilen Şeyhülislam Mevlana Ahmed Esad (Allah faziletlerini daim etsin) işaret ettiğinden, bu işaret uyarınca görevin iade edilmesi fermanım olmuştur. Kendisine padişahlık lütfumun bir nişanesi olarak bin iki yüz yirmi üç senesi Receb ayının dokuzuncu günü tarihiyle tarihlenen ve rûs-ı hümayunum gereğince bu berat-ı hümayunumu verdim ve buyurdum ki: Adı geçenin evlatlarından en olgun ve layık olan müteveffa Tayyib Baba oğlu es-Seyyid Muhammed Said Baba gidip adı geçen vakfın dörtte bir ve yarım hisselerinin tevliyet, meşihat ve zaviyedarlığına şart koşulduğu üzere tasarruf edip hizmetini yerine getirdikten sonra, bundan önce söz konusu görevlerin belirlenmiş maaşlarını alarak tasarruf ettiği gibi yine aynı şekilde belirlenmiş maaşlarını adı geçen vakıfların gelirinden alıp tasarruf ede ve bu yüce beratıma aykırı olarak görevden el çektirilmeye, başkaları tarafından hiçbir müdahale olunmaya...`,
+        },
+        'hmg': {
+            documentType: 'Gazete / Dergi',
+            date: '17 Mart 1898',
+            summary: 'Hanımlara Mahsus Gazete\'nin bu ekinde genç kızlar ve anneler için eğitici ve edebi yazılar sunulmaktadır. Sayfada Leman Hanım\'ın ahlaki ve felsefi çıkarımlar içeren \'Menekşe\' başlıklı yazısı ile Hatice Hanım ve Semiha Hanım arasındaki edebi söyleşi yer almaktadır.',
+            text: `Hatunlara mahsus gazetenin
+Hanımlara Mahsus
+Kısmı
+Numara 3     5 Mart sene 1313
+Gazetemizin bu kısmı "genç kızlar ve anneler"e özel hizmet etmek üzere oluşturulmuştur.
+Milletin yükselmesinin sermayesi, marifet eserleri gösteren kızlardır.
+Şehir mecmuası el-İkad'dır mankizik fezaili erat
+
+Menekşe
+Ey baharın yüzünün rengi olan menekşe!
+Budur fazilet ve mahcubiyet.
+Hüzünlü bir kalbin etkileyici ve tatlı bir hayali gibi
+Beklersin!!.. Şu çimenler arasından
+Yaydığın o hoş koku insana taze,
+Tatlı bir hayat bahşediyor. Yeşil bir
+Meşe ağacının safa veren gölgesinde,
+Beğeni dolu bakışlardan gizlenmek için gözleri süsleyen
+Sık çimenler arasına
+Sokulursun! Fakat yaydığın
+Güzel kokularla bezenmiş rüzgarın havası,
+Bana bulunduğun yeri hemen haber veriyor
+Ve anlatıyor!.
+Korkma! Korkma! Ben senin yalnızca
+Güzelliğine ve alçakgönüllülüğüne hayranım; çimenler
+Üzerindeki doğal manzaralar beni daha
+Çok büyüleyebilir. Ben senin
+Değerini takdir ettiğim için, hayatının baharına
+Haksızlık elini uzatmayı asla uygun
+Görmem. Pek zayıf olan bedeninle
+İnsanların ruhuna ve fikrine aşıladığın
+O hoş duygular gerçekten pek fevkalade,
+Pek şairanedir.
+Senin meziyetin ve hizmetin, hakkı görenler
+Nezdinde hayatının korunmasını temin
+Eder. Doğal ömründen istifade edemeyenler
+Hiçbir meziyete, bu değere sahip
+Olmayanlardır.
+Bütün canlıların bitkilerden hiçbir
+Farkı yoktur. Kendi türüne hizmet etmek
+İçin küçüklüğünde çalışarak erdem ve olgunluk
+Süsüyle kendi zatını ve sıfatlarını süsleyen
+İnsanların, senin gibi kokulu ve
+Hoş çiçeklerden farkı yoktur. Cahil
+Ve bilgi nasibinden mahrum kalanlar ise,
+Bakmaya bile tenezzül edilmeyen diken
+Ve çer çöp gibidir.
+Sirozlu Recai Halil Halvi
+Efendi'nin kızı
+Leman
+
+İki Kadın Yazar Arasında Konuşma
+Hatice Hanım ile Semiha Hanım
+H — Hemşehrim, geçen hafta galiba
+Dizgi hatası olarak sözlerimiz birbirine
+Karıştı.
+S — Öyle olmuş ama zararı
+Yok, amacına ulaştı. Hem de bendeniz
+Annenizin o güzel sözüne karşı`,
+        },
+        'tah': {
+            documentType: 'Gazete',
+            date: '21 Nisan 1861',
+            summary: 'Tercüman-ı Ahval gazetesinin 11 Şevval 1277 tarihli 25. sayısıdır. Gazetenin yayın periyodunun haftada birden haftada üçe (Pazar, Salı, Perşembe) çıkarıldığı ilan edilmektedir. Ayrıca iç haberler (Havadis-i Dahiliye) kısmında çeşitli devlet görevlerine yapılan yeni atamalar ve tayinler (tevcihat) listelenmektedir.',
+            text: `Tercüman-ı Ahval
+11 Şevval Pazar 1277 Sayı 25
+İşbu gazete iç ve dış her türlü haberler ile fen ve sanayiye dair konuları içerecek şekilde iki günde bir pazar, salı ve perşembe günleri çıkar. Abonelik isteyenler İstanbul'da Bahçekapısı üzerinde bulunan matbaasına müracaat etsinler. İstanbul için üç aylığı (150) ve altı aylığı (80) kuruştur. Taşra için postahane ücreti de eklenir. Bir nüshası (40) paradır.
+
+İç Haberler
+Tercüman-ı Ahval şimdiye kadar haftada bir kere olarak çıkarılmış ise de bu gazetenin ortaya çıkışından beri diğer yerel gazetelerde görülen ilerleme eserlerine bakılarak bundan sonra bizim bu durumda devam etmemiz uygun görülmez. Haftada bir kere yayınlanması yeterli olamayacağından daha sık çıkarılması gerekmiştir. Çünkü medeniyet eserlerini en yüksek dereceye ulaştırarak geçmiş asırlara her bakımdan üstünlüğü açık olan zamanımızda, telgraf odası vasıtasıyla dünyanın her tarafından alınan önemli siyasi haberlerin yayınlanmasının hafta başına kadar geciktirilmesi faydalı işler hakkında bir haksızlık olmaktadır. İşte bu genel faydaya dayanarak bundan böyle Tercüman-ı Ahval'in de haftada üç kere yani pazar, salı ve perşembe günleri çıkarılması ve bazı dostlarımızın yardımıyla yazım ve düzenlenmesine eskisinden daha fazla dikkat edilmesi bir görev sayılmıştır. Bu şekilde basılarak okunmasına ilgi gösteren kişilerin memnuniyetinin kazanılması en büyük amacımızdır.
+
+Atamalar
+Devletli İsmail Paşa hazretlerinin rahatsız olduğuna dayanarak bu sene İpek Teftiş Komisyonu başkanlığı ek göreviyle Rumeli ve Balkan ve Ordu-yı Hümayun müşirliği yüksek meclislerine memur devletli refetli Ömer Paşa hazretlerine
+Hazine-i Hassa-i Şahane bakanlığı devletli Hasib Paşa hazretlerine
+Erzurum valisi devletli Edhem Paşa hazretlerinin görevden ayrılması üzerine adı geçen eyalete ve tamamen eski Sivas valisi devletli Hayreddin Paşa hazretlerine
+Maliye Meclisi Tanzimat üyeliği eski Hazine-i Hassa bakanı atufetli Rıza Efendi hazretlerine
+Kapı kâtipliği Murtaza Ali Efendi tarafından vekaleten yürütüldüğünden, söz konusu muhasebeciliğe eski Rumeli muhasebecisi izzetli Emin Efendi'ye
+Halep muhasebecisi izzetli Hertin Efendi'nin görevden ayrılmasıyla adı geçen muhasebeciliğe eski Rufe muhasebecisi rıfatlı Seyfi Efendi'ye
+
+(Bazı yerlere memur edilen naipler)
+Direli Debdebe Azmi Efendi - Noveberde'ye
+Kavala müftüsü Lebib Mehmed Emin Efendi - Sultan Selim Debre-i Kefe ambarına
+Menufak Ahmed Şakir Efendi - Travnik'e
+Ergirili Ahmed Şahin Efendi - Sjenica'ya
+İstanbul mahkemesi kâtiplerinden Abdülkerim Şemi Efendi - Budaközü'ne`,
+        },
+        'gkt': {
+            documentType: 'Dilekçe / Resmî Mektup',
+            date: '5 Kasım 1921',
+            summary: 'Of kazası müderrislerinden Hoca Ferşad İbrahim, Doğu Ordusu Komutanı Kazım Karabekir Paşa\'ya başvurarak Gümüşhanevî Ahmed Ziyâeddin Efendi\'nin Of, Rize ve Bayburt\'taki kütüphanelerinden Ruslar tarafından Tiflis\'e kaçırılan dinî kitapların geri getirilmesini talep etmektedir. Dilekçe sahibi, bu kutsal eserlerin kurtarılması için gerekli girişimlerin başlatılmasını rica etmektedir.',
+            text: `Şark Ordusu Kumandanı Devletlü Kazım Karabekir Paşa Hazretlerine
+
+Devletlü Efendim Hazretleri,
+'İnsanların hayırlısı, Cenâb-ı Hakk'ın kendisini ümmetin ihtiyaçlarında istihdam ettiği kimsedir' mealindeki hadîs-i şerîfi yüksek hatırınıza getirmek suretiyle arz-ı hâl ve içimdeki istirhamı sunmaya başlarım.
+Gümüşhanevî Ahmed Ziyâeddin Efendi (kuddise sırruhû) hazretlerinin Of, Rize ve Bayburt memleketlerinde bulunan üç adet kütüphanesinin başmütevellîsi olan duacınız, son işgal sırasında bu kasabaların Bayburt tarafında bulunan Ruslar tarafından tahrip edildiğini ve kitapların tamamen Tiflis'e nakledildiğini son araştırmalarımla ortaya çıkarmış bulunmaktayım. Bu kitaplar dinî kitaplar olduğundan ve Müslümanlarca kutsal/saygın kabul edildiğinden, geri getirilerek yeniden istifadeye sunulması ve adı geçen Şeyh Hazretlerinin kitaplarının her hâlükârda büyük gayretlere muhtaç olduğu görülmüştür.
+Allah'ın yardımının, O'nun dinine yardım edeceklerle beraber olduğu herkesçe bilinen bir gerçektir. Bu arz edilen meselenin hayırla sonuçlanması, yüce gayretlerin en çok hak ettiği bir durum olduğu duacınızca bilindiğinden, söz konusu kitapların Tiflis'ten geri getirilmesi için gerekli girişimlerin tamamlanmasını rica ve niyaz ederim. Fermân [efendimindir].
+5 Teşrîn-i Sânî 1336
+5 Kasım 1921
+Of kazası müderrislerinden
+Hoca Ferşad İbrahim`,
+        },
+    };
+
     // Hem büyük pencerenin "Belgeler" sekmesinde hem de hover önizlemesinde
     // kullanılan ortak belge listesi — bkz. openCityModal() ve
     // marker.bindTooltip() aşağıda.
@@ -781,6 +1326,58 @@ document.addEventListener('DOMContentLoaded', () => {
                 </span>
             </a>`).join('');
     }
+
+    // Büyük penceredeki "Belgeler" sekmesi — kartlara tıklanınca sayfadan
+    // ayrılmadan içerik burada, aynı sekmenin içinde gösterilir (bkz.
+    // renderDocDetailHtml() ve cityModalDocs'daki click delegasyonu).
+    // Hover önizlemesindeki renderDocsHtml() (yukarıda) kasıtlı olarak ayrı
+    // tutuldu — o sadece statik bir kart, tıklama davranışı gerekmiyor.
+    let currentModalDocs = [];
+
+    function renderModalDocsList(docs, emptyMessage) {
+        if (!docs.length) return `<p class="map-city-modal-empty">${emptyMessage}</p>`;
+        return docs.map(doc => `
+            <button type="button" class="map-city-popover-sample" data-doc-key="${doc.key}">
+                <img src="${doc.file}" alt="">
+                <span>
+                    <span class="map-city-popover-sample-label" style="display:block;">İlgili Eser</span>
+                    <span class="map-city-popover-sample-title">${doc.title}</span>
+                </span>
+            </button>`).join('');
+    }
+
+    function renderDocDetailHtml(doc) {
+        const content = DOCUMENT_CONTENT[doc.key];
+        if (!content) {
+            return `
+                <button type="button" class="map-doc-back" data-doc-back>← Listeye dön</button>
+                <p class="map-city-modal-empty">Bu belgenin içeriği şu an burada gösterilemiyor.</p>
+                <a class="map-doc-fulllink" href="index.html?sample=${encodeURIComponent(doc.key)}">Tam sayfada aç →</a>`;
+        }
+        const paragraphs = content.text.split(/\n\s*\n/).map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
+        return `
+            <button type="button" class="map-doc-back" data-doc-back>← Listeye dön</button>
+            <div class="map-doc-detail-header">
+                <span class="map-city-popover-era">${content.documentType}${content.date && content.date !== 'Belirtilmemiş' ? ' · ' + content.date : ''}</span>
+                <h3>${doc.title}</h3>
+            </div>
+            <p class="map-doc-summary">${content.summary}</p>
+            <div class="map-doc-text">${paragraphs}</div>
+            <a class="map-doc-fulllink" href="index.html?sample=${encodeURIComponent(doc.key)}">Tam sayfada aç (Osmanlıca aslı, harf çevirisi ve daha fazlası) →</a>`;
+    }
+
+    cityModalDocs.addEventListener('click', (e) => {
+        const backBtn = e.target.closest('[data-doc-back]');
+        if (backBtn) {
+            cityModalDocs.innerHTML = renderModalDocsList(currentModalDocs, 'Bu şehirle ilişkilendirilmiş bir örnek belge henüz yok.');
+            return;
+        }
+        const docBtn = e.target.closest('[data-doc-key]');
+        if (docBtn) {
+            const doc = currentModalDocs.find(d => d.key === docBtn.getAttribute('data-doc-key'));
+            if (doc) cityModalDocs.innerHTML = renderDocDetailHtml(doc);
+        }
+    });
 
     function openCityModal(city, chip, markerEl) {
         cityModalTitle.textContent = city.name;
@@ -820,7 +1417,8 @@ document.addEventListener('DOMContentLoaded', () => {
             cityModalCard.classList.remove('has-cover');
         }
 
-        cityModalDocs.innerHTML = renderDocsHtml(docs, 'Bu şehirle ilişkilendirilmiş bir örnek belge henüz yok.');
+        currentModalDocs = docs;
+        cityModalDocs.innerHTML = renderModalDocsList(docs, 'Bu şehirle ilişkilendirilmiş bir örnek belge henüz yok.');
 
         setCityModalTab('info');
         cityModal.classList.remove('hidden');
@@ -919,5 +1517,26 @@ document.addEventListener('DOMContentLoaded', () => {
         markersById[city.id].on('click', () => {
             openCityModal(city, itemsById[city.id], markersById[city.id].getElement());
         });
+    });
+
+    // --- Osmanlı sınırları dışındaki merkezler (LANDMARKS) ---
+    // interactive:false ile tıklama/hover tamamen kapalı — bu noktaların
+    // tek amacı Osmanlı coğrafyasının rakip/komşu güçlerle bağlamını
+    // göstermek, bilgi penceresi ya da dizin girdisi yok.
+    function landmarkIcon(name) {
+        return L.divIcon({
+            className: 'map-landmark-marker',
+            html: `<span class="map-landmark-dot"></span><span class="map-landmark-label">${name}</span>`,
+            iconSize: [0, 0],
+            iconAnchor: [0, 0],
+        });
+    }
+
+    LANDMARKS.forEach(landmark => {
+        L.marker([landmark.lat, landmark.lng], {
+            icon: landmarkIcon(landmark.name),
+            interactive: false,
+            keyboard: false,
+        }).addTo(map);
     });
 });

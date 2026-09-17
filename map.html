@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=Noto+Naskh+Arabic:wght@400;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="style.css?v=20260916-17">
+    <link rel="stylesheet" href="style.css?v=20260917-1">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
     <style>
         .map-intro {
@@ -51,6 +51,45 @@
         }
         .leaflet-bar {
             border-color: var(--color-border) !important;
+        }
+
+        /* Sağ üstteki "rotaları göster/gizle" düğmesi — .leaflet-control-zoom
+           ile aynı kart dili, ayrıca tıklanınca .active ile vurgulanır. */
+        .map-route-control {
+            border-color: var(--color-border) !important;
+        }
+        .map-route-toggle {
+            background: var(--bg-card);
+            color: var(--color-text-main);
+            border: none;
+            width: 34px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+        .map-route-toggle:hover {
+            background: var(--color-gold-bg);
+            color: var(--color-gold);
+        }
+        .map-route-toggle.active {
+            background: var(--color-gold);
+            color: #FFFFFF;
+        }
+        /* Rota çizgisi — ülke şekillerindeki aynı sebeple (bkz. aşağıdaki not)
+           renk burada, JS'teki style seçeneklerinde değil, veriliyor. */
+        .map-route-line {
+            stroke: var(--color-accent-blue);
+        }
+        .map-route-tooltip.leaflet-tooltip {
+            background: var(--bg-card);
+            color: var(--color-text-main);
+            border: 1px solid var(--color-border);
+            font-weight: 600;
+            font-size: 0.78rem;
+            padding: 0.3rem 0.6rem;
         }
 
         /* Ülke şekilleri — Leaflet renk/kalınlığı SVG "fill"/"stroke"
@@ -211,6 +250,37 @@
                 -2px  0   0 var(--bg-header), 2px  0   0 var(--bg-header);
         }
 
+        /* Osmanlı sınırları dışındaki merkezler (rakip/komşu başkentler) —
+           tıklanamaz, bilgi penceresi yok, dizinde listelenmiyor (bkz.
+           map.js'teki LANDMARKS). Sadece coğrafi bağlam için soluk/küçük bir
+           nokta + isim; şehir işaretlerinden (.map-city-marker) belirgin
+           biçimde daha az göze çarpsın diye küçük, düşük opasiteli ve
+           inceltilmiş font ağırlığıyla ayrılıyor. */
+        .map-landmark-marker { position: relative; }
+        .map-landmark-dot {
+            position: absolute;
+            left: -3px;
+            top: -3px;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--color-gold);
+            opacity: 0.55;
+        }
+        .map-landmark-label {
+            position: absolute;
+            left: 8px;
+            top: -8px;
+            font-weight: 500;
+            font-size: 11px;
+            white-space: nowrap;
+            pointer-events: none;
+            color: var(--color-text-muted);
+            text-shadow:
+                -1px -1px 0 var(--bg-header), 1px -1px 0 var(--bg-header),
+                -1px  1px 0 var(--bg-header), 1px  1px 0 var(--bg-header);
+        }
+
         /* Şehir bilgi penceresi — sitenin genel .modal-overlay/.modal-card/
            .results-tabs bileşenlerini kullanıyor (bkz. style.css), burada
            sadece içerik-özel küçük dokunuşlar var. */
@@ -244,9 +314,76 @@
             border-color: var(--color-gold);
             background: var(--color-gold-bg);
         }
+        /* Belge kartları artık <a> değil <button> — tıklanınca sayfadan
+           ayrılmadan aynı sekmede içerik gösteriliyor (bkz. map.js'teki
+           renderModalDocsList()/renderDocDetailHtml()). Varsayılan buton
+           görünümü sıfırlanıp .map-city-popover-sample ile aynı stile
+           getiriliyor. */
+        button.map-city-popover-sample {
+            width: 100%;
+            text-align: left;
+            font: inherit;
+        }
         .map-city-modal-empty {
             color: var(--color-text-muted);
             font-size: 0.9rem;
+        }
+        .map-doc-back {
+            display: inline-flex;
+            align-items: center;
+            background: none;
+            border: none;
+            padding: 0;
+            margin-bottom: 0.8rem;
+            color: var(--color-text-muted);
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: color var(--transition-fast);
+        }
+        .map-doc-back:hover {
+            color: var(--color-gold);
+        }
+        .map-doc-detail-header h3 {
+            font-family: var(--font-heading);
+            font-size: 1.1rem;
+            color: var(--color-text-main);
+            margin: 0.3rem 0 0.8rem;
+        }
+        .map-doc-summary {
+            color: var(--color-text-muted);
+            font-size: 0.86rem;
+            line-height: 1.6;
+            font-style: italic;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--color-border);
+        }
+        .map-doc-text {
+            max-height: 320px;
+            overflow-y: auto;
+            font-size: 0.92rem;
+            line-height: 1.75;
+            color: var(--color-text-main);
+        }
+        .map-doc-text p {
+            margin-bottom: 0.9rem;
+        }
+        .map-doc-text p:last-child {
+            margin-bottom: 0;
+        }
+        .map-doc-fulllink {
+            display: block;
+            margin-top: 1.1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--color-border);
+            color: var(--color-gold);
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .map-doc-fulllink:hover {
+            color: var(--color-gold-light);
         }
 
         /* Modal'ın üstündeki görsel — ilgili belgenin görseli (varsa),
@@ -504,6 +641,10 @@
                 <span class="side-drawer-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s7-7.5 7-12a7 7 0 1 0-14 0c0 4.5 7 12 7 12z"></path><circle cx="12" cy="9" r="2.5"></circle></svg></span>
                 <span>Harita</span>
             </a>
+            <a href="sozluk.html" class="side-drawer-item">
+                <span class="side-drawer-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 6c-1.5-1.5-4-2-7-2v14c3 0 5.5 0.5 7 2 1.5-1.5 4-2 7-2V4c-3 0-5.5 0.5-7 2z"></path><line x1="12" y1="6" x2="12" y2="20"></line></svg></span>
+                <span>Sözlük</span>
+            </a>
 
             <span class="side-drawer-section-label">Site</span>
             <a href="index.html#about" class="side-drawer-item">
@@ -579,6 +720,6 @@
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
-    <script src="map.js?v=20260916-20"></script>
+    <script src="map.js?v=20260917-4"></script>
 </body>
 </html>
