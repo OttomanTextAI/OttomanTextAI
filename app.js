@@ -3393,6 +3393,33 @@ diqqat idiñ didi. www.osmanlicaogren.com`,
         }
     });
 
+    // Cmd/Ctrl+A varsayılan olarak tüm sayfayı seçiyor — kullanıcı OCR/çeviri
+    // sütunlarından birinde metin seçiliyken "tümünü seç" yapmak istediğinde
+    // bunun yerine sadece içinde bulunduğu metin kutusunu (sütunu) seçelim,
+    // sayfanın geri kalanını (menü, başlıklar vb.) değil.
+    document.addEventListener('keydown', (e) => {
+        if (!(e.metaKey || e.ctrlKey) || e.key.toLowerCase() !== 'a') return;
+
+        // Bir input/textarea'da yazıyorsa (arama kutusu, profil formu vb.)
+        // karışma — tarayıcının o alana özgü normal "tümünü seç" davranışı
+        // zaten doğru olanı yapıyor.
+        const active = document.activeElement;
+        if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable)) return;
+
+        const selection = window.getSelection();
+        const anchor = selection && selection.anchorNode;
+        if (!anchor) return;
+        const anchorEl = anchor.nodeType === Node.TEXT_NODE ? anchor.parentElement : anchor;
+        const scope = anchorEl && anchorEl.closest('.text-display, #infoAnalysisCard');
+        if (!scope) return;
+
+        e.preventDefault();
+        const range = document.createRange();
+        range.selectNodeContents(scope);
+        selection.removeAllRanges();
+        selection.addRange(range);
+    });
+
     // --- Kategoriye Göre Filtrele (entity filter) ---
     // "Filtrele ▾" (entityFilterTrigger/entityFilterMenu), ortak
     // .lang-dropdown/.lang-dropdown-trigger/.lang-dropdown-menu HTML/CSS

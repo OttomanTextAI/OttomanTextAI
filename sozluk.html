@@ -12,14 +12,12 @@
     <link rel="stylesheet" href="style.css?v=20260918-1">
     <style>
         .sozluk-intro {
-            max-width: 720px;
             color: var(--color-text-muted);
             font-size: 0.92rem;
             line-height: 1.6;
             margin: 0 0 1.6rem;
         }
         .sozluk-abbr {
-            max-width: 720px;
             margin: 0 0 1.4rem;
             font-size: 0.85rem;
             color: var(--color-text-muted);
@@ -38,7 +36,6 @@
         }
         .sozluk-search-box {
             position: relative;
-            max-width: 560px;
             margin-bottom: 1.6rem;
         }
         .sozluk-search-box svg {
@@ -97,7 +94,6 @@
             display: flex;
             flex-wrap: wrap;
             gap: 0.35rem;
-            max-width: 760px;
             margin-bottom: 1.3rem;
         }
         .sozluk-letter-btn {
@@ -140,30 +136,26 @@
             border-color: var(--color-gold);
             color: var(--color-gold);
         }
-        /* İki sütunlu ızgara — her giriş kendi kartında, tanımın birden
-           çok numaralı anlamı varsa (bkz. sozluk.js'teki splitSenses())
-           kartın içinde alt alta ayrı satırlar olarak gösterilir. */
+        /* Tek sütun, tam sayfa genişliğinde liste — her giriş kendi
+           kartında, tanımın birden çok numaralı anlamı varsa (bkz.
+           sozluk.js'teki splitSenses()) alt alta ayrı satırlar olarak
+           gösterilir. */
         .sozluk-results {
-            max-width: 1180px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+            display: flex;
+            flex-direction: column;
             gap: 0.8rem;
-            align-items: start;
-        }
-        @media (max-width: 760px) {
-            .sozluk-results { grid-template-columns: 1fr; }
         }
         .sozluk-entry {
             background: var(--bg-card);
             border: 1px solid var(--color-border);
             border-radius: var(--radius-md);
-            padding: 1rem 1.25rem;
+            padding: 1.1rem 1.4rem;
             box-shadow: var(--shadow-sm);
         }
         .sozluk-entry-word {
             font-family: var(--font-heading);
             font-weight: 700;
-            font-size: 1.1rem;
+            font-size: 1.4rem;
             color: var(--color-gold);
             margin-bottom: 0.5rem;
         }
