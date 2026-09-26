@@ -197,6 +197,38 @@
             flex-wrap: wrap;
             margin-bottom: 1.4rem;
         }
+        .docs-pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1.8rem;
+        }
+        .docs-pagination-btn {
+            min-width: 34px;
+            height: 34px;
+            padding: 0 0.6rem;
+            background: var(--bg-card-subtle);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            color: var(--color-text-main);
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+        .docs-pagination-btn:hover {
+            border-color: var(--color-border-hover);
+        }
+        .docs-pagination-btn.active {
+            background: var(--color-gold);
+            border-color: var(--color-gold);
+            color: #FFFFFF;
+            font-weight: 700;
+            cursor: default;
+        }
+        .docs-pagination-btn:disabled {
+            opacity: 0.4;
+            cursor: default;
+        }
         .doc-card {
             background: var(--bg-card-subtle);
             border: 1px solid var(--color-border);
@@ -418,6 +450,7 @@
                 </div>
             </div>
             <div id="documentsList"></div>
+            <div id="docsPagination" class="docs-pagination"></div>
         </div>
 
         <div id="detailView" class="hidden">
@@ -426,6 +459,6 @@
         </div>
     </main>
 
-    <script src="documents.js?v=20260916-3"></script>
+    <script src="documents.js?v=20260916-4"></script>
 </body>
 </html>

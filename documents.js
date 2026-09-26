@@ -163,6 +163,34 @@ function requireLogin() {
 }
 
 let allDocs = [];
+const docsPagination = document.getElementById('docsPagination');
+const DOCS_PER_PAGE = 16;
+let currentPage = 1;
+
+function renderPagination(totalDocs) {
+    const totalPages = Math.ceil(totalDocs / DOCS_PER_PAGE);
+
+    if (totalPages <= 1) {
+        docsPagination.innerHTML = '';
+        return;
+    }
+
+    let buttonsHtml = `<button type="button" class="docs-pagination-btn" data-page="${currentPage - 1}" ${currentPage === 1 ? 'disabled' : ''}>‹</button>`;
+    for (let page = 1; page <= totalPages; page++) {
+        buttonsHtml += `<button type="button" class="docs-pagination-btn${page === currentPage ? ' active' : ''}" data-page="${page}">${page}</button>`;
+    }
+    buttonsHtml += `<button type="button" class="docs-pagination-btn" data-page="${currentPage + 1}" ${currentPage === totalPages ? 'disabled' : ''}>›</button>`;
+
+    docsPagination.innerHTML = buttonsHtml;
+}
+
+docsPagination.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-page]');
+    if (!btn || btn.disabled) return;
+    currentPage = parseInt(btn.getAttribute('data-page'), 10);
+    renderDocumentsList();
+    documentsList.scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
 
 function renderDocumentsList() {
     // Arama artık backend'de (belge içeriği dahil) yapılıyor — allDocs
@@ -192,14 +220,21 @@ function renderDocumentsList() {
             ? `"${currentTypeFilter}" türünde bir belge bulunamadı.`
             : (query ? 'Aramanızla eşleşen bir belge bulunamadı.' : 'Henüz kaydedilmiş bir belge bulunmuyor. Ana sayfada bir çeviri yapıp kaydettiğinizde burada listelenecektir.');
         documentsList.innerHTML = `<p style="color: var(--color-text-muted);">${emptyMessage}</p>`;
+        docsPagination.innerHTML = '';
         return;
     }
+
+    const totalPages = Math.ceil(docs.length / DOCS_PER_PAGE);
+    if (currentPage > totalPages) currentPage = totalPages;
+    if (currentPage < 1) currentPage = 1;
+
+    const pageDocs = docs.slice((currentPage - 1) * DOCS_PER_PAGE, currentPage * DOCS_PER_PAGE);
 
     documentsList.style.display = 'grid';
     documentsList.style.gridTemplateColumns = 'repeat(auto-fill, minmax(150px, 1fr))';
     documentsList.style.gap = '1.4rem';
 
-    documentsList.innerHTML = docs.map(doc => `
+    documentsList.innerHTML = pageDocs.map(doc => `
         <div class="doc-card" data-doc-id="${doc.id}" title="${escapeHtml(doc.summary || doc.filename)}">
             <div class="doc-card-thumb-wrap" style="position:relative; width:100%; aspect-ratio:3/4; border-radius:var(--radius-sm); overflow:hidden; background:var(--bg-input); border:1px solid var(--color-border); display:flex; align-items:center; justify-content:center;">
                 ${doc.document_type ? `<span class="doc-card-type-badge">${escapeHtml(doc.document_type)}</span>` : ''}
@@ -217,6 +252,8 @@ function renderDocumentsList() {
             </div>
         </div>
     `).join('');
+
+    renderPagination(docs.length);
 }
 
 async function loadDocuments() {
@@ -664,7 +701,10 @@ documentsList.addEventListener('click', async (e) => {
 let docSearchDebounceTimer = null;
 docSearchInput.addEventListener('input', () => {
     clearTimeout(docSearchDebounceTimer);
-    docSearchDebounceTimer = setTimeout(loadDocuments, 350);
+    docSearchDebounceTimer = setTimeout(() => {
+        currentPage = 1;
+        loadDocuments();
+    }, 350);
 });
 // "Filtrele" açılır menüsü: Sırala seçenekleri sabit (HTML'de), Belge
 // Türü listesi ise kayıtlı belgelerde gerçekten geçen türlere göre
@@ -717,6 +757,7 @@ function handleFilterMenuClick(e) {
     const sortBtn = e.target.closest('[data-sort]');
     if (sortBtn) {
         currentSort = sortBtn.getAttribute('data-sort');
+        currentPage = 1;
         updateSortActiveState();
         closeFilterMenu();
         renderDocumentsList();
@@ -728,6 +769,7 @@ function handleFilterMenuClick(e) {
         const type = typeBtn.getAttribute('data-type');
         // Aynı türe tekrar tıklamak filtreyi kaldırır (tümünü göster).
         currentTypeFilter = currentTypeFilter === type ? null : type;
+        currentPage = 1;
         closeFilterMenu();
         buildTypeFilterMenu();
         renderDocumentsList();
