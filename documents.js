@@ -178,6 +178,11 @@ function renderDocumentsList() {
         : allDocs.slice();
 
     docs.sort((a, b) => {
+        if (currentSort === 'name-asc') {
+            const nameA = a.title || a.filename || '';
+            const nameB = b.title || b.filename || '';
+            return nameA.localeCompare(nameB, 'tr');
+        }
         const diff = new Date(a.uploaded_at) - new Date(b.uploaded_at);
         return currentSort === 'date-asc' ? diff : -diff;
     });
