@@ -567,121 +567,145 @@ document.addEventListener('DOMContentLoaded', () => {
             id: 'kayseri', name: 'Kayseri', lat: 38.7312, lng: 35.4787,
             era: 'Osmanlı Anadolusu',
             blurb: 'Roma döneminde Caesarea, Selçuklu asrında önemli bir ilim ve mimari merkezi olan Kayseri, 1515\'te Yavuz Sultan Selim\'in Dulkadiroğulları Beyliği\'ne son vermesiyle Osmanlı topraklarına katıldı. Erciyes Dağı eteklerindeki konumu sayesinde yüzyıllar boyunca dokumacılık ve kervan ticaretinin önemli duraklarından biri oldu.',
+            cover: 'assets/sehirler/kayseri.jpg',
         },
         {
             id: 'malatya', name: 'Malatya', lat: 38.3552, lng: 38.3095,
             era: 'Osmanlı Anadolusu',
             blurb: 'Bizans-Arap sınır mücadelelerine sahne olan kadim Melitene, Dulkadiroğulları Beyliği\'nin bir parçası olarak 1515-1516\'da Yavuz Sultan Selim döneminde Osmanlı topraklarına katıldı. Fırat havzasındaki bereketli toprakları, özellikle kayısı yetiştiriciliğiyle tanınmasını sağladı.',
+            cover: 'assets/sehirler/malatya.jpg',
         },
         {
             id: 'adana', name: 'Adana', lat: 37.0000, lng: 35.3213,
             era: 'Osmanlı Anadolusu',
             blurb: 'Çukurova\'nın merkezi olan Adana, 1517\'den itibaren Ramazanoğulları Beyliği üzerinden Osmanlı\'ya bağlandı, 1608\'de ise doğrudan idareye alındı. 19. yüzyılda pamuk tarımı ve dokumacılığın hızla gelişmesiyle imparatorluğun önemli bir tarım ve sanayi merkezine dönüştü.',
+            cover: 'assets/sehirler/adana.jpg',
         },
         {
             id: 'antalya', name: 'Antalya', lat: 36.8969, lng: 30.7133,
             era: 'Osmanlı Akdeniz Limanı',
             blurb: 'Selçuklu döneminde önemli bir Akdeniz limanı olan Antalya (Attaleia), bölgedeki Teke Beyliği\'nin 1390\'larda Osmanlı\'ya katılmasıyla imparatorluk topraklarına girdi. Yüzyıllar boyunca Akdeniz ticaretinin ve hac yoluna deniz bağlantısının önemli bir limanı olarak kaldı.',
+            cover: 'assets/sehirler/antalya.jpg',
         },
         {
             id: 'manisa', name: 'Manisa', lat: 38.6191, lng: 27.4289,
             era: 'Osmanlı Anadolusu — Şehzade Sancağı',
             blurb: 'Saruhanoğulları Beyliği\'nin 1390\'da Osmanlı\'ya katılmasıyla imparatorluk topraklarına giren Manisa, Amasya gibi Osmanlı şehzadelerinin sancak eğitimi gördüğü önemli merkezlerden biri oldu. 16. yüzyıldan bu yana her yıl düzenlenen Mesir Macunu şenliği, şehrin bu döneme uzanan bir geleneğidir.',
+            cover: 'assets/sehirler/manisa.jpg',
         },
         {
             id: 'kutahya', name: 'Kütahya', lat: 39.4242, lng: 29.9833,
             era: 'Osmanlı Anadolusu',
             blurb: 'Germiyanoğulları Beyliği\'nin 1429\'da II. Murad döneminde barışçıl biçimde Osmanlı\'ya katılmasıyla imparatorluk topraklarına giren Kütahya, 17. yüzyıldan itibaren İznik geleneğini sürdüren çini ve seramik üretimiyle tanındı.',
+            cover: 'assets/sehirler/kutahya.jpg',
         },
         {
             id: 'kastamonu', name: 'Kastamonu', lat: 41.3887, lng: 33.7827,
             era: 'Osmanlı Anadolusu',
             blurb: 'Candaroğulları (İsfendiyaroğulları) Beyliği\'nin merkezi olan Kastamonu, 15. yüzyılın ikinci yarısında Fatih Sultan Mehmed döneminde Osmanlı topraklarına katıldı. Karadeniz\'in iç kesimlere açılan ticaret yollarının kesişim noktalarından biri oldu.',
+            cover: 'assets/sehirler/kastamonu.jpg',
         },
         {
             id: 'tokat', name: 'Tokat', lat: 40.3167, lng: 36.5500,
             era: 'Osmanlı Anadolusu',
             blurb: 'İpek Yolu\'nun Anadolu\'daki önemli konaklarından olan Tokat, Yıldırım Bayezid döneminde Osmanlı topraklarına katıldı. Bakırcılık zanaatıyla ve 18. yüzyılda kurulan erken dönem Osmanlı matbaalarından biriyle tanındı.',
+            cover: 'assets/sehirler/tokat.jpg',
         },
         {
             id: 'van', name: 'Van', lat: 38.4891, lng: 43.4089,
             era: 'Osmanlı Doğu Anadolusu',
             blurb: 'Urartu döneminden kalma kalesiyle bilinen Van, 16. yüzyılda Osmanlı-Safevi mücadelelerinde defalarca el değiştirdi; Kanuni Sultan Süleyman\'ın 1548 seferiyle kalıcı olarak Osmanlı topraklarına katıldı. Doğu sınırının en önemli kale şehirlerinden biri olarak kaldı.',
+            cover: 'assets/sehirler/van.jpg',
         },
         {
             id: 'mardin', name: 'Mardin', lat: 37.3212, lng: 40.7245,
             era: 'Osmanlı Doğu Anadolusu',
             blurb: 'Artuklu ve Akkoyunlu mirasının sarı taş mimarisiyle bezediği Mardin, 1515\'te Diyarbakır ile aynı sefer sırasında, İdris-i Bitlisî\'nin diplomatik çabalarıyla Osmanlı topraklarına katıldı. Yüzyıllar boyunca farklı din ve dillerden toplulukların bir arada yaşadığı bir Yukarı Mezopotamya şehri oldu.',
+            cover: 'assets/sehirler/mardin.jpg',
         },
         {
             id: 'kars', name: 'Kars', lat: 40.6013, lng: 43.0975,
             era: 'Osmanlı Doğu Sınırı',
             blurb: 'Osmanlı-Safevi ve sonrasında Osmanlı-Rus mücadelelerinin odağındaki bu sınır kalesi, 16. yüzyılda Osmanlı topraklarına katıldı. 1877-78 Osmanlı-Rus Savaşı sonunda Kars, Ardahan ve Batum ile birlikte Rusya\'ya bırakıldı (\"Elviye-i Selâse\"); Birinci Dünya Savaşı\'nın ardından 1921 Kars Antlaşması\'yla yeniden Türkiye\'ye katıldı.',
+            cover: 'assets/sehirler/kars.jpg',
         },
         {
             id: 'uskup', name: 'Üsküp', lat: 41.9981, lng: 21.4254,
             era: 'Osmanlı Rumelisi (1392–1912)',
             blurb: 'I. Bayezid döneminde 1392\'de fethedilen Üsküp, Rumeli\'nin idari ve askeri merkezlerinden biri olarak beş asra yakın Osmanlı idaresinde kaldı. Balkan Savaşları sırasında, 1912\'de Sırp kuvvetlerinin eline geçti.',
+            cover: 'assets/sehirler/uskup.jpg',
         },
         {
             id: 'manastir', name: 'Manastır', lat: 41.0297, lng: 21.3347,
             era: 'Osmanlı Rumelisi',
             blurb: 'Rumeli\'nin önemli bir idari ve askeri merkezi olan Manastır (bugünkü Bitola), 20. yüzyıl başında Jön Türk hareketinin de canlı olduğu şehirlerden biriydi. Balkan Savaşları sırasında, 1912\'de Sırp kuvvetlerinin eline geçerek beş asırlık Osmanlı idaresi sona erdi.',
+            cover: 'assets/sehirler/manastir.jpg',
         },
         {
             id: 'yanya', name: 'Yanya', lat: 39.6650, lng: 20.8537,
             era: 'Osmanlı Rumelisi (1430–1913)',
             blurb: 'II. Murad döneminde 1430\'da Osmanlı topraklarına katılan Yanya (Ioannina), 18. ve 19. yüzyıl başında Tepedelenli Ali Paşa\'nın merkezî otoriteye rağmen kurduğu yarı bağımsız yönetimle özel bir döneme sahne oldu. Balkan Savaşları sırasında, 1913\'te Yunanistan\'ın eline geçti.',
+            cover: 'assets/sehirler/yanya.jpg',
         },
         {
             id: 'filibe', name: 'Filibe', lat: 42.1354, lng: 24.7453,
             era: 'Osmanlı Rumelisi (1364–1878)',
             blurb: 'Balkanlar\'daki en erken Osmanlı fetihlerinden biri olan Filibe (Plovdiv), I. Murad döneminde 1360\'ların sonunda imparatorluk topraklarına katıldı ve Rumeli\'nin başlıca idari merkezlerinden biri oldu. 1878\'de Bulgaristan\'a özerklik verilmesiyle fiilî Osmanlı idaresi sona erdi.',
+            cover: 'assets/sehirler/filibe.jpg',
         },
         {
             id: 'vidin', name: 'Vidin', lat: 43.9910, lng: 22.8749,
             era: 'Osmanlı Tuna Sınırı (1396–1878)',
             blurb: 'Niğbolu Zaferi\'nin ardından 1396\'da Osmanlı topraklarına katılan bu Tuna kalesi, 18. yüzyılın sonunda Pasvanoğlu Osman Paşa\'nın merkeze başkaldıran yarı bağımsız yönetimine sahne oldu. 1878\'de Bulgaristan\'ın özerkliğiyle Osmanlı idaresinden çıktı.',
+            cover: 'assets/sehirler/vidin.jpg',
         },
         {
             id: 'silistre', name: 'Silistre', lat: 44.1167, lng: 27.2667,
             era: 'Osmanlı Tuna Sınırı (1878\'e kadar)',
             blurb: '\"Tuna\'nın anahtarı\" olarak anılan Silistre, erken Osmanlı döneminden itibaren imparatorluğun kuzey sınırındaki en önemli kalelerinden biriydi. 1809, 1828 ve özellikle Kırım Savaşı sırasındaki 1854 kuşatmasında Rus ordularına karşı direnerek nam saldı; 1878\'de Osmanlı idaresinden çıktı.',
+            cover: 'assets/sehirler/silistre.jpg',
         },
         {
             id: 'kandiye', name: 'Kandiye', lat: 35.3387, lng: 25.1442,
             era: 'Girit Eyaleti (1669–1898)',
             blurb: 'Girit\'in başkenti olan Kandiye (bugünkü Iraklio), tarihin en uzun kuşatmalarından birine, 1648-1669 arasında tam yirmi bir yıl süren Osmanlı kuşatmasına sahne oldu; kuşatmanın sonunda Venedik idaresi burada da sona erdi. Ada, 1898\'de özerklik kazanana, 1913\'te ise resmen Yunanistan\'a katılana kadar Osmanlı toprağı olarak kaldı.',
+            cover: 'assets/sehirler/kandiye.jpg',
         },
         {
             id: 'rodos', name: 'Rodos', lat: 36.4341, lng: 28.2176,
             era: 'Osmanlı Ege Adası (1522–1912)',
             blurb: 'Yüzyıllarca Ege\'de Osmanlı deniz ticaretini tehdit eden Rodos Şövalyeleri\'nin kalesi olan ada, Kanuni Sultan Süleyman\'ın 1522\'deki ünlü kuşatmasıyla fethedildi; şövalyeler adayı terk ederek sonradan Malta\'ya yerleşti. Rodos, 1912\'de Trablusgarp Savaşı sırasında İtalya\'nın eline geçene kadar dört asra yakın Osmanlı toprağı olarak kaldı.',
+            cover: 'assets/sehirler/rodos.jpg',
         },
         {
             id: 'kerkuk', name: 'Kerkük', lat: 35.4681, lng: 44.3922,
             era: 'Osmanlı Irak\'ı — Musul Eyaleti',
             blurb: 'Musul Eyaleti\'nin bir parçası olan Kerkük, kalabalık Türkmen nüfusuyla tanınan bir Yukarı Mezopotamya şehriydi. 20. yüzyıl başında bölgedeki petrol yataklarının keşfiyle stratejik önemi arttı; Birinci Dünya Savaşı sonrası Musul ile birlikte 1926\'da Irak Krallığı\'na bırakıldı.',
+            cover: 'assets/sehirler/kerkuk.jpg',
         },
         {
             id: 'akka', name: 'Akka', lat: 32.9281, lng: 35.0818,
             era: 'Osmanlı Filistini',
             blurb: 'Doğu Akdeniz\'in müstahkem limanlarından olan Akka, 1799\'da Napolyon Bonapart\'ın kuşatmasına Cezzar Ahmed Paşa komutasında direnerek Fransız ordusunun Orta Doğu seferini durduran tarihî bir zafere sahne oldu.',
+            cover: 'assets/sehirler/akka.jpg',
         },
         {
             id: 'beyrut', name: 'Beyrut', lat: 33.8938, lng: 35.5018,
             era: 'Osmanlı Suriyesi — Beyrut Sancağı',
             blurb: 'Osmanlı döneminde mütevazı bir liman kasabası olan Beyrut, özellikle 19. yüzyılda Fransa ile gelişen ipek ticareti sayesinde hızla büyüdü ve zamanla ayrı bir sancak merkezi hâline geldi. Birinci Dünya Savaşı sonrasında Fransız Suriye mandası sınırları içinde kaldı.',
+            cover: 'assets/sehirler/beyrut.jpg',
         },
         {
             id: 'amman', name: 'Amman', lat: 31.9454, lng: 35.9284,
             era: 'Osmanlı Suriyesi',
             blurb: 'Osmanlı döneminin büyük bölümünde küçük bir yerleşim olan Amman, 1878\'de Osmanlı-Rus Savaşı sonrası Kafkasya\'dan göç eden Çerkeslerin buraya iskân edilmesiyle yeniden canlandı. 1900\'lerin başında Hicaz Demiryolu\'nun bir durağı olarak önem kazandı; Osmanlı sonrasında Ürdün\'ün başkenti oldu.',
+            cover: 'assets/sehirler/amman.jpg',
         },
         {
             id: 'batum', name: 'Batum', lat: 41.6168, lng: 41.6367,
             era: 'Osmanlı Karadeniz Sınırı (1878\'e kadar)',
             blurb: 'Gürcistan kıyısındaki bu Karadeniz limanı, 16. yüzyıldan itibaren Osmanlı topraklarındaydı. 1878 Berlin Antlaşması\'yla Kars ve Ardahan\'la birlikte Rusya\'ya bırakıldı; 1918\'de Brest-Litovsk Antlaşması\'yla kısa süreliğine yeniden Osmanlı idaresine girse de, savaşın kaybedilmesiyle bu kalıcı olmadı.',
+            cover: 'assets/sehirler/batum.jpg',
         },
     ];
 
@@ -724,9 +748,14 @@ document.addEventListener('DOMContentLoaded', () => {
         'Turkmenistan', 'Kazakhstan', 'Uzbekistan', 'Afghanistan', 'Pakistan',
     ]);
 
-    // Haritanın kapsadığı sabit bölge — kullanıcı bunun dışına sürüklenip
-    // boş dünyaya çıkamasın diye maxBounds burada da kullanılıyor.
+    // Haritanın kapsadığı sabit bölge — ilk açılışta gösterilen ve şehir
+    // işaretlerinin/sınır boyamasının odaklandığı Osmanlı çekirdek alanı.
     const REGION_BOUNDS = L.latLngBounds([[8, -14], [51, 66]]);
+    // Rotalar (İpek Yolu Çin'e, Baharat Yolu Hindistan'a kadar) bu alanın
+    // dışına taşıyor — kullanıcı sürükleyerek oraya kadar takip edebilsin
+    // diye gezinme sınırı ayrıca genişletildi; ilk açılış görünümü
+    // (fitBounds/minZoom) yine de Osmanlı çekirdek alanına odaklı kalıyor.
+    const MAP_PAN_BOUNDS = L.latLngBounds([[3, -14], [51, 112]]);
 
     const mapLegend = document.getElementById('mapLegend');
 
@@ -738,7 +767,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     map.fitBounds(REGION_BOUNDS);
     map.setMinZoom(map.getZoom());
-    map.setMaxBounds(REGION_BOUNDS.pad(0.15));
+    map.setMaxBounds(MAP_PAN_BOUNDS.pad(0.05));
 
     L.control.attribution({ prefix: false, position: 'bottomright' })
         .addAttribution('Sınır verisi: <a href="https://www.naturalearthdata.com/" target="_blank" rel="noopener">Natural Earth</a>')
@@ -756,11 +785,72 @@ document.addEventListener('DOMContentLoaded', () => {
     const cityById = {};
     CITIES.forEach(city => { cityById[city.id] = city; });
 
+    // Rota noktaları ya mevcut CITIES listesindeki bir id (string) ya da
+    // sadece çizgiyi gerçek kara yolu güzergâhına oturtmak için eklenmiş,
+    // kendi başına bir şehir kartı olmayan ham koordinatlar ({lat,lng}).
+    // Önceden şehirler arasında düz çizgiyle birleştiriliyordu — bu da
+    // örneğin Bursa-İstanbul arasında Marmara'nın, ya da Osmanlı sınırı
+    // dışına hiç uzanmadığı için gerçek güzergâhın çok kısaltılmış hallerini
+    // gösteriyordu. Şimdi her rota, tarihte gerçekten kullanılan kara
+    // güzergâhındaki ara durakları takip ediyor ve Osmanlı sınırları
+    // dışına (İpek Yolu Çin'e, Baharat Yolu Hindistan'a kadar) uzanıyor.
     const ROUTES = [
-        { id: 'ipek-yolu', name: 'İpek Yolu', colorKey: 'ipek', cityIds: ['van', 'erzurum', 'sivas', 'kayseri', 'ankara', 'bursa', 'istanbul'] },
-        { id: 'baharat-yolu', name: 'Baharat Yolu', colorKey: 'baharat', cityIds: ['basra', 'bagdat', 'halep', 'istanbul'] },
-        { id: 'hac-yolu', name: 'Hac Yolu (Şam Yolu)', colorKey: 'hac', cityIds: ['istanbul', 'sam', 'medine', 'mekke'] },
+        {
+            id: 'ipek-yolu', name: 'İpek Yolu', colorKey: 'ipek',
+            path: [
+                { lat: 34.27, lng: 108.94, label: "Xi'an (Çin)" },
+                { lat: 40.14, lng: 94.66, label: 'Dunhuang' },
+                { lat: 39.47, lng: 75.99, label: 'Kaşgar' },
+                { lat: 39.65, lng: 66.97, label: 'Semerkand' },
+                { lat: 39.77, lng: 64.42, label: 'Buhara' },
+                { lat: 37.60, lng: 61.83, label: 'Merv' },
+                { lat: 36.30, lng: 59.61, label: 'Meşhed' },
+                { lat: 38.08, lng: 46.29, label: 'Tebriz' },
+                'van', 'erzurum', 'sivas', 'kayseri', 'ankara', 'bursa',
+                { lat: 40.77, lng: 29.94, label: 'İzmit' },
+                'istanbul',
+            ],
+        },
+        {
+            id: 'baharat-yolu', name: 'Baharat Yolu', colorKey: 'baharat',
+            path: [
+                { lat: 11.25, lng: 75.78, label: 'Kalikut (Hindistan)' },
+                { lat: 27.09, lng: 56.45, label: 'Hürmüz' },
+                'basra', 'bagdat', 'halep', 'hatay', 'adana', 'konya',
+                { lat: 39.77, lng: 30.52, label: 'Eskişehir' },
+                'bursa',
+                { lat: 40.77, lng: 29.94, label: 'İzmit' },
+                'istanbul',
+            ],
+        },
+        {
+            id: 'hac-yolu', name: 'Hac Yolu (Şam Yolu)', colorKey: 'hac',
+            path: [
+                'istanbul',
+                { lat: 40.77, lng: 29.94, label: 'İzmit' },
+                { lat: 39.77, lng: 30.52, label: 'Eskişehir' },
+                'konya', 'adana', 'hatay', 'sam',
+                { lat: 32.55, lng: 36.10, label: "Dera'a" },
+                { lat: 31.95, lng: 35.93, label: 'Amman' },
+                { lat: 30.19, lng: 35.73, label: "Ma'an" },
+                { lat: 28.39, lng: 36.58, label: 'Tebük' },
+                'medine', 'mekke',
+            ],
+        },
     ];
+
+    // String id'ler zaten kendi haritada işaretlenmiş/bilgi kartlı gerçek
+    // şehirlere karşılık geliyor — bu yüzden sadece ham {lat,lng,label}
+    // noktaları (haritada başka hiçbir işareti olmayan ara duraklar) kendi
+    // etiketini taşır; şehir id'lerinden gelenlere ayrıca tekrar tooltip
+    // eklenmiyor.
+    function resolveRoutePoint(p) {
+        if (typeof p === 'string') {
+            const city = cityById[p];
+            return city ? { lat: city.lat, lng: city.lng } : null;
+        }
+        return p;
+    }
 
     function routeLabelIcon(name, colorKey) {
         return L.divIcon({
@@ -773,8 +863,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const routeLayers = {};
     ROUTES.forEach(route => {
-        const points = route.cityIds.map(id => cityById[id]).filter(Boolean);
-        const latlngs = points.map(city => [city.lat, city.lng]);
+        const points = route.path.map(resolveRoutePoint).filter(Boolean);
+        const latlngs = points.map(p => [p.lat, p.lng]);
         if (latlngs.length < 2) return;
 
         const group = L.layerGroup();
@@ -800,13 +890,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Ara şehirlerde küçük "konak" noktaları — başlangıç/bitiş hariç,
         // yol üzerindeki duraklar.
-        points.slice(1, -1).forEach(city => {
-            L.circleMarker([city.lat, city.lng], {
+        points.slice(1, -1).forEach(point => {
+            const marker = L.circleMarker([point.lat, point.lng], {
                 className: `map-route-waypoint map-route-waypoint--${route.colorKey}`,
                 radius: 3,
                 weight: 1,
-                interactive: false,
+                interactive: !!point.label,
             }).addTo(group);
+            if (point.label) {
+                marker.bindTooltip(point.label, { direction: 'top', offset: [0, -4] });
+            }
         });
 
         // İsim etiketi — güzergâhın orta noktasındaki şehre yerleştirilir.

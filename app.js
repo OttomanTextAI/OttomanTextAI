@@ -312,14 +312,8 @@ function renderRestoredTranslation() {
 
         transTools.classList.add('tools-ready');
 
-        // Entity / AI Belirsizliği filtresi
-        const hasFilterableEntities =
-            getEntityFilterCategories().length > 0;
-
-        entityFilterDropdown.classList.toggle(
-            'hidden',
-            !hasFilterableEntities
-        );
+        // "Filtrele ▾" kaldırıldı (bkz. renderResultsPanel'daki aynı not).
+        entityFilterDropdown.classList.add('hidden');
     }
 
     // =========================
@@ -2843,12 +2837,10 @@ diqqat idiñ didi. www.osmanlicaogren.com`,
         applyStoredWordCorrections(state.documentId, 'trans', transTextDisplay);
         transTools.classList.add('tools-ready');
 
-        // "Filtrele ▾" sekme çubuğunda sadece gerçekten filtrelenecek bir
-        // şey varsa görünsün — backend'in people/places/concepts dediğine
-        // değil, ekranda (SADECE trans kolonunda) fiilen render edilmiş
-        // .entity-tag sayısına bak.
-        const hasFilterableEntities = transTextDisplay.querySelector('.entity-tag') !== null;
-        entityFilterDropdown.classList.toggle('hidden', !hasFilterableEntities);
+        // "Filtrele ▾" kaldırıldı (Windows'ta zaten görünmüyordu ve üçüncü
+        // sütunun araç çubuğunu diğer ikisiyle hizasız bırakıyordu) — öğe
+        // kodda duruyor ama artık hiç gösterilmiyor.
+        entityFilterDropdown.classList.add('hidden');
 
         if (finalTransEn) {
             enEmptyState.classList.add('hidden');
