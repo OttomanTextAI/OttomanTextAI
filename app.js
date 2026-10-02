@@ -5155,15 +5155,21 @@ ${transTextDisplay.textContent}
 
                 let displayedReply = reply;
 
-                if (
-                    data.answer_type === 'related' &&
-                    data.related_information &&
-                    data.related_information.trim()
-                ) {
-                    displayedReply +=
-                        '\n\nBelgedeki ilgili bilgiler:\n' +
-                        data.related_information.trim();
-                }
+               let relatedInfo = '';
+
+            if (Array.isArray(data.related_information)) {
+                relatedInfo = data.related_information
+                    .filter(Boolean)
+                    .join('\n');
+            } else if (typeof data.related_information === 'string') {
+                relatedInfo = data.related_information.trim();
+            }
+
+            if (data.answer_type === 'related' && relatedInfo) {
+                displayedReply +=
+                    '\n\nBelgedeki ilgili bilgiler:\n' +
+                    relatedInfo;
+            }
 
                 appendAssistantMessage('bot', displayedReply);
 
