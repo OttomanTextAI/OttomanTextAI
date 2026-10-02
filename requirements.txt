@@ -24,3 +24,4 @@ psycopg2-binary
 pyjwt
 flask-bcrypt
 supabase
+psycopg[binary]
