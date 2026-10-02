@@ -35,19 +35,30 @@ bir kart gösterilmemeli:
    olmalıdır (boş değil). Bu alanı boş bırakmak KABUL EDİLEMEZ; emin
    olamadığın durumda bile en olası kökeni yaz, boş string yazma.
 
-3. alternatives (ZORUNLU, EN AZ 1 ÖĞE): en fazla 3 alternatif okuma/
-   yorum öner. Eğer kelimenin tek, net ve doğru bir okuması olduğunu
-   düşünüyorsan (başka makul bir alternatif göremiyorsan), yine de
-   TAMAMEN BOŞ liste döndürme — bu durumda mevcut/doğru okumanın
-   KENDİSİNİ, confidence değeri 0.95 veya üzeri olacak şekilde TEK öğe
-   olarak listele. Böylece kullanıcı en azından "model buna emin,
-   başka alternatif yok" bilgisini görür. Her öğe {"text": "...",
-   "confidence": 0.0-1.0} biçiminde bir obje olmalı.
+3. alternatives:
+- Alternatif üretmek ZORUNLU DEĞİLDİR.
+- En fazla 3 alternatif okuma öner.
+- Mevcut word okuması sentence ve ocr_context ile açıkça uyumluysa
+  alternatives alanını boş liste [] olarak döndür.
+- Mevcut doğru okumayı sırf liste boş kalmasın diye alternatif olarak
+  tekrar yazma.
+- Yalnızca ocr_context içindeki gerçek harf biçimleri birden fazla
+  okumayı makul biçimde destekliyorsa alternatif üret.
+- OCR'da görülmeyen harfleri ekleyerek, çıkararak veya değiştirerek
+  hayali alternatif oluşturma.
+- Sadece anlam bakımından benzer olduğu için başka bir kelimeyi
+  alternatif okuma olarak sunma.
+- Her alternatif {"text": "...", "confidence": 0.0-1.0}
+  biçiminde olmalı.
+- Güçlü OCR/dilsel kanıt yoksa alternatives mutlaka [] olsun.
 
 Diğer kurallar:
-- Yalnızca verilen kelime/cümle/OCR bağlamına dayan, belgede olmayan
-  bilgi uydurma (ama yukarıdaki 3 alan için de ASLA boş bırakma kuralı
-  geçerli — en azından en olası/mevcut değeri yaz).
+- Yalnızca verilen kelime/cümle/OCR bağlamına dayan.
+- Belgede veya OCR bağlamında olmayan bilgi uydurma.
+- alternatives alanının boş olması geçerli ve beklenen bir sonuçtur.
+- Alternatif üretmemek, zayıf veya hayali alternatif üretmekten daha iyidir.
+- Yazı türü, harf benzerliği, Rika özellikleri veya paleografik nedenler
+  yalnızca verilen girdiden gerçekten destekleniyorsa belirtilmelidir.
 - SADECE geçerli JSON döndür, öncesinde/sonrasında açıklama yazma,
   markdown veya ```json kod bloğu kullanma.
 
@@ -175,22 +186,7 @@ class WordAlternativesGenerator:
             if not isinstance(alternatives, list):
                 return False
 
-            has_alternative = any(
-                (
-                    isinstance(item, dict)
-                    and str(item.get("text", "")).strip()
-                )
-                or (
-                    not isinstance(item, dict)
-                    and str(item).strip()
-                )
-                for item in alternatives
-            )
-
-            return bool(
-                origin
-                and has_alternative
-            )
+            return bool(origin)
 
 
         if not has_usable_result(result):
@@ -212,7 +208,7 @@ class WordAlternativesGenerator:
                             f"{user_content}\n\n"
                             "Önceki cevap geçerli veya eksiksiz JSON değildi. "
                             "Bu kez kısa ve tamamlanmış JSON döndür. "
-                            "origin boş olmasın ve alternatives en az 1 öğe içersin."
+                            "origin boş olmasın. Gerçek bir alternatif yoksa alternatives [] olabilir."
                         ),
                     },
                 ],
@@ -301,20 +297,7 @@ class WordAlternativesGenerator:
         # tamamen boş bir kartla karşılaşmaması için, model yine de boş
         # liste döndürürse tıklanan kelimenin kendisini tek seçenek olarak
         # kullan — bu, "model başka alternatif görmüyor" durumuna eşdeğer.
-        if not alternatives:
-            fallback_text = word.strip()
-
-            alternatives = [
-                fallback_text
-            ]
-
-            alternative_details = [
-                {
-                    "text": fallback_text,
-                    "confidence": 0.95,
-                    "confidence_percent": 95,
-                }
-            ]
+        
 
         # origin de aynı şekilde ASLA boş dönmemeli (bkz. prompt kural 2);
         # model buna uymazsa bile kullanıcı boş bir alan yerine en azından

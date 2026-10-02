@@ -14,6 +14,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const notesInput =
         document.getElementById('notesInput');
+    
+    const notesDocumentSelect =
+        document.getElementById('notesDocumentSelect');
 
     const notesList =
         document.getElementById('notesList');
@@ -348,6 +351,49 @@ if (authToken) {
         return data;
     }
 
+    async function loadDocumentOptions() {
+        if (!authToken || !notesDocumentSelect) {
+            return;
+        }
+
+        try {
+            const data = await apiRequest(
+                '/api/documents?per_page=100'
+            );
+
+            const documents = Array.isArray(data.documents)
+                ? data.documents
+                : [];
+
+            notesDocumentSelect.innerHTML =
+                '<option value="">Belge seçin...</option>';
+
+            documents.forEach(doc => {
+                const option = document.createElement('option');
+
+                option.value = String(doc.id);
+                option.textContent =
+                    doc.title ||
+                    doc.filename ||
+                    'İsimsiz Belge';
+
+                if (
+                    documentId &&
+                    String(doc.id) === String(documentId)
+                ) {
+                    option.selected = true;
+                }
+
+                notesDocumentSelect.appendChild(option);
+            });
+
+        } catch (error) {
+            console.error(
+                'Belgeler yüklenemedi:',
+                error
+            );
+        }
+    }
 
     function formatSourceType(sourceType) {
         const labels = {
@@ -792,9 +838,18 @@ renderDocumentGroups(groups);
             submitBtn.textContent =
                 'Ekleniyor...';
 
+            const selectedDocumentId =
+                notesDocumentSelect?.value;
+
+            if (!selectedDocumentId) {
+                alert(
+                    'Notu eklemek istediğiniz belgeyi seçin.'
+                );
+                return;
+            }
             try {
                 await apiRequest(
-                    `/api/documents/${documentId}/notes`,
+                    `/api/documents/${selectedDocumentId}/notes`,
                     {
                         method: 'POST',
                         body: JSON.stringify({
@@ -824,6 +879,7 @@ renderDocumentGroups(groups);
     );
 
 
+    loadDocumentOptions();
     loadNotes();
 
 });

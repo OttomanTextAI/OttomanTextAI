@@ -5152,10 +5152,24 @@ ${transTextDisplay.textContent}
             } else {
                 const data = await res.json();
                 const reply = data.reply || 'Bir yanıt alınamadı.';
-                appendAssistantMessage('bot', reply);
+
+                let displayedReply = reply;
+
+                if (
+                    data.answer_type === 'related' &&
+                    data.related_information &&
+                    data.related_information.trim()
+                ) {
+                    displayedReply +=
+                        '\n\nBelgedeki ilgili bilgiler:\n' +
+                        data.related_information.trim();
+                }
+
+                appendAssistantMessage('bot', displayedReply);
+
                 assistantHistory.push({
                     role: 'assistant',
-                    content: reply
+                    content: displayedReply
                 });
             }
         } catch (err) {

@@ -421,6 +421,28 @@
             display: none;
         }
     }
+
+    .notes-document-select {
+    min-width: 220px;
+    padding: 0.85rem 1rem;
+
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+
+    background: var(--bg-input);
+    color: var(--color-text-main);
+
+    font-family: var(--font-sans);
+    font-size: 0.9rem;
+
+    outline: none;
+    cursor: pointer;
+}
+
+.notes-document-select:focus {
+    border-color: var(--color-gold);
+    box-shadow: 0 0 0 3px var(--color-gold-bg);
+}
     </style>
 </head>
 
@@ -535,6 +557,13 @@
         </div>
 
         <form id="notesForm" class="notes-form">
+            <select
+                id="notesDocumentSelect"
+                class="notes-document-select"
+                aria-label="Notun ekleneceği belge"
+            >
+                <option value="">Belge seçin...</option>
+            </select>
             <textarea
                 id="notesInput"
                 class="notes-input"

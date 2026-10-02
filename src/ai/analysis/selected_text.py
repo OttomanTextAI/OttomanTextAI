@@ -30,10 +30,21 @@ analiz etmektir.
 - Zaten güncel Türkçeyse aynı veya daha anlaşılır karşılığını ver.
 
 3. context
-- Seçili bölümün yalnızca kendi içeriğinden anlaşılabilecek
+- Yalnızca seçili metnin kendi içinde açıkça desteklenen
   bağlamını açıkla.
-- Metin çok kısaysa veya tek kelimeyse bağlamın sınırlı olduğunu
-  açıkça belirt.
+- Seçili metnin ait olduğu belgenin türü, dönemi, tarihi,
+  resmî olup olmadığı, edebî niteliği, yazarı, amacı veya
+  kaynağı hakkında çıkarım yapma.
+- Bu özelliklerin seçili metinde bulunmadığını söylemek için bile
+  "tarihî değildir", "resmî belge değildir", "belirli bir dönem
+  bağlamı taşımamaktadır" gibi hükümler kurma.
+- Tek kelime veya çok kısa bir ifade seçilmişse kişi, olay,
+  sosyal statü, anlatıcı, muhatap veya daha geniş konu hakkında
+  tahminde bulunma.
+- Metin çok kısaysa yalnızca
+  "Seçili metin tek başına daha geniş bağlamı belirlemek için
+  yeterli değildir."
+  gibi tarafsız bir açıklama yap.
 - Belgenin seçili olmayan bölümleri hakkında varsayım yapma.
 
 4. people
@@ -61,6 +72,11 @@ kuşatmalar, antlaşmalar veya tarihsel gelişmeler.
 
 Kurallar:
 - Analizin merkezinde yalnızca kullanıcının seçtiği metin olsun.
+- Seçili metinde açıkça desteklenmeyen hiçbir bağlamsal özellik
+  çıkarma; bir şeyin metinde bulunmaması, onun belge için geçerli
+  olmadığı anlamına gelmez.
+- Özellikle belge türü, tarihsel dönem, resmîlik, yazarlık,
+  toplumsal statü ve kişi kimliği hakkında tahmin yürütme.
 - Seçili metinde bulunmayan kişi, tarih, yer veya tarihsel olay ekleme.
 - Ancak kelime anlamını ve güncel Türkçe karşılığını açıklamak için
   genel dil bilgisini kullanabilirsin.
