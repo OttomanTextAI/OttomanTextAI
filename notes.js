@@ -17,7 +17,10 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const notesDocumentSelect =
         document.getElementById('notesDocumentSelect');
-
+    
+        if (notesDocumentSelect && !authToken) {
+        notesDocumentSelect.style.display = 'none';
+        }
     const notesList =
         document.getElementById('notesList');
 
