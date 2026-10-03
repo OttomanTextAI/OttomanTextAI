@@ -1,0 +1,37 @@
+DİVANE — Osmanlıca Çeviri Platformu
+Proje Özeti
+
+Divane, Osmanlı Türkçesiyle yazılmış belgeleri (matbu veya el yazması) yapay zekâ
+destekli OCR ve çeviri teknolojileriyle günümüz Türkçesine ve İngilizceye aktaran
+bir web platformudur. Kullanıcılar belge görselini yükler; sistem Arap harfli
+metni okur, Latin harflerine çevirir, günümüz Türkçesine ve isteğe bağlı olarak
+İngilizceye çevirir ve belge hakkında otomatik bir analiz (belge türü, dönem,
+tarih, bahsi geçen kişi/yer/kavramlar, yazı tipi vb.) sunar.
+
+Temel Özellikler
+- Görselden Osmanlıca OCR + çok dilli çeviri (Türkçe / İngilizce)
+- Belge analizi: tür, tahmini dönem, güven skoru, kişi/yer/kavram etiketleri
+- 20 hazır örnek belge ile (ferman, ahidname, divan şiiri, vakfiye, seyahatname,
+  gazete, dilekçe vb.) kayıt olmadan anında deneme imkânı
+- Belgelerim: kullanıcıların çevirdiği belgelerin kaydı ve yönetimi
+- Notlarım: belgeler üzerine not alma
+- İnteraktif Osmanlı Haritası: 60'tan fazla şehir, tarihi sınır zaman çizelgesi
+  (1400–1920), İpek/Baharat/Hac yolları gibi tarihi ticaret güzergâhları
+- Osmanlıca Sözlük: Ferit Devellioğlu'nun Ansiklopedik Lûgat'ine dayanan,
+  42.000'den fazla kelimelik aranabilir ve harf harf gezilebilir sözlük;
+  günümüz Türkçesi kelimeyle arayıp Osmanlıca karşılığını bulma özelliği dahil
+- Kullanıcı profili ve kimlik doğrulama sistemi
+
+Teknik Altyapı
+- Backend: Python / Flask, SQLAlchemy, Supabase (dosya depolama), JWT kimlik
+  doğrulama; Render üzerinde Docker konteyneri olarak barındırılıyor
+- Frontend: Vanilla JavaScript, çok sayfalı yapı (ana sayfa, belgeler, notlar,
+  harita, sözlük, profil); Leaflet.js ile interaktif harita
+- Veri: Osmanlıca sözlük verisi, tarihi harita sınırları (aourednik/
+  historical-basemaps), şehir görselleri ve örnek belge görselleri açık
+  lisanslı kaynaklardan (Wikimedia Commons) derlendi
+
+Proje, sürekli geliştirilmekte olup son dönemde harita üzerindeki tarihi
+ticaret yollarının gerçek kara güzergâhlarını izlemesi, sözlük verisinin
+kalitesinin artırılması ve örnek belge kütüphanesinin genişletilmesi gibi
+iyileştirmeler yapılmıştır.

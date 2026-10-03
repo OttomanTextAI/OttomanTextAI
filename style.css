@@ -1821,12 +1821,30 @@ body.dark-theme .empty-state {
     background: var(--color-gold-light);
 }
 
-/* "Filtrele ▾" dropdown'ının içeriği (bkz. renderEntityFilterMenu()
-   app.js'te) — #entityFilterMenu'nün kendisi zaten .lang-dropdown-menu
-   class'ını taşıyor (scriptDropdown/langDropdown menüleriyle birebir aynı
-   konumlandırma/kart görünümü: position:absolute; top:100%; vb.), burada
-   sadece İÇİNDEKİ kategori butonlarının/"Tümünü Göster" butonunun kendine
-   özgü stilleri var. */
+/* "Kategoriye Göre Filtrele" menüsü artık <body>'nin doğrudan altında bir
+   "portal" olarak duruyor (bkz. index.html) — herhangi bir sütunun
+   overflow:hidden/sabit yükseklikli .col-header'ı İÇİNDE değil, bu yüzden
+   position:absolute yerine position:fixed kullanıp konumunu app.js'teki
+   toggleEntityFilterMenu() tetikleyici butonun ekrandaki konumuna göre
+   hesaplıyor. Önceki tasarımda menü .col-header'ın İÇİNDE olduğundan,
+   o kutunun overflow:hidden kuralı menüyü (açıldığında başlığın sınırlarının
+   dışına taştığı için) bazı tarayıcı/ekran kombinasyonlarında tamamen
+   görünmez kılıyordu — bu, Windows'ta hiç görünmeme şikayetinin sebebiydi. */
+.entity-filter-menu-portal {
+    position: fixed;
+    z-index: 2000;
+    display: flex;
+    flex-direction: column;
+    min-width: 200px;
+    max-width: 260px;
+    background: var(--bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-lg);
+    padding: 0.4rem;
+    gap: 0.1rem;
+}
+
 .entity-filter-empty {
     color: var(--color-text-muted);
     padding: 0.3rem 0.5rem;

@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
 
     <!-- Custom Stylesheet -->
-    <link rel="stylesheet" href="style.css?v=20260918-1">
+    <link rel="stylesheet" href="style.css?v=20261002-1">
 </head>
 <body class="dark-theme">
     <!-- Header Navigation Bar -->
@@ -319,14 +319,10 @@
                             <button type="button" class="trans-lang-btn output-select-btn active" id="transTabBtn" data-output-tab="trans">Türkçe</button>
                             <button type="button" class="trans-lang-btn output-select-btn" id="enTabBtn" data-output-tab="en">English</button>
                         </div>
-                        <div class="lang-dropdown hidden" id="entityFilterDropdown">
-                            <button class="lang-dropdown-trigger" id="entityFilterTrigger" aria-haspopup="true" aria-expanded="false">
-                                <span>Filtrele</span>
-                                <span class="lang-dropdown-caret">▾</span>
-                            </button>
-                            <div class="lang-dropdown-menu hidden" id="entityFilterMenu"></div>
-                        </div>
                         <div class="output-tab-tools box-tools" id="transTools" data-tools-for="trans">
+                            <button class="tool-btn" id="entityFilterTrigger" title="Kategoriye Göre Filtrele" aria-haspopup="true" aria-expanded="false">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                            </button>
                             <button class="tool-btn" id="copyTransBtn" title="Çeviriyi Kopyala">📋</button>
                             <button class="tool-btn" id="ttsBtn" title="Sesli Oku">🔊</button>
                             <button class="tool-btn" id="transStopTtsBtn" title="Sesi Durdur">⏹</button>
@@ -676,6 +672,61 @@
                     </div>
                     <img src="assets/ornament-frame.png" alt="" aria-hidden="true" class="sample-card-frame">
                 </div>
+                <div class="sample-card" data-sample="tfh">
+                    <div class="sample-img-container">
+                        <img src="assets/tfh.jpg" alt="Gülhane Hatt-ı Hümâyûnu">
+                        <span class="sample-try-overlay">Bu belgeyi dene</span>
+                    </div>
+                    <div class="sample-details">
+                        <h4>Gülhane Hatt-ı Hümâyûnu</h4>
+                        <span class="sample-tag">Ferman / Reform Fermanı</span>
+                    </div>
+                    <img src="assets/ornament-frame.png" alt="" aria-hidden="true" class="sample-card-frame">
+                </div>
+                <div class="sample-card" data-sample="bkm">
+                    <div class="sample-img-container">
+                        <img src="assets/bkm.jpg" alt="Bâkî'nin Kanuni Mersiyesi">
+                        <span class="sample-try-overlay">Bu belgeyi dene</span>
+                    </div>
+                    <div class="sample-details">
+                        <h4>Bâkî'nin Kanuni Mersiyesi</h4>
+                        <span class="sample-tag">Mersiye / Divan Şiiri</span>
+                    </div>
+                    <img src="assets/ornament-frame.png" alt="" aria-hidden="true" class="sample-card-frame">
+                </div>
+                <div class="sample-card" data-sample="nkh">
+                    <div class="sample-img-container">
+                        <img src="assets/nkh.jpg" alt="Namık Kemal'in Hürriyet Kasidesi">
+                        <span class="sample-try-overlay">Bu belgeyi dene</span>
+                    </div>
+                    <div class="sample-details">
+                        <h4>Namık Kemal'in Hürriyet Kasidesi</h4>
+                        <span class="sample-tag">Kaside / Divan Şiiri</span>
+                    </div>
+                    <img src="assets/ornament-frame.png" alt="" aria-hidden="true" class="sample-card-frame">
+                </div>
+                <div class="sample-card" data-sample="ecs">
+                    <div class="sample-img-container">
+                        <img src="assets/ecs.jpg" alt="Evliya Çelebi Seyahatnâmesi">
+                        <span class="sample-try-overlay">Bu belgeyi dene</span>
+                    </div>
+                    <div class="sample-details">
+                        <h4>Evliya Çelebi Seyahatnâmesi</h4>
+                        <span class="sample-tag">Kitap Kapağı / Seyahatname</span>
+                    </div>
+                    <img src="assets/ornament-frame.png" alt="" aria-hidden="true" class="sample-card-frame">
+                </div>
+                <div class="sample-card" data-sample="svs">
+                    <div class="sample-img-container">
+                        <img src="assets/svs.jpg" alt="Delâilü'l-Hayrât Şerhi — Salavat Tefsiri">
+                        <span class="sample-try-overlay">Bu belgeyi dene</span>
+                    </div>
+                    <div class="sample-details">
+                        <h4>Delâilü'l-Hayrât Şerhi — Salavat Tefsiri</h4>
+                        <span class="sample-tag">Dini Metin / Şerh</span>
+                    </div>
+                    <img src="assets/ornament-frame.png" alt="" aria-hidden="true" class="sample-card-frame">
+                </div>
             </div>
         </section>
 
@@ -904,11 +955,18 @@
         </div>
     </div>
 
+    <!-- "Kategoriye Göre Filtrele" menüsü, body'nin doğrudan altında —
+         herhangi bir sütunun overflow:hidden/sabit yükseklikli başlığının
+         İÇİNDE olmadığı için hiçbir ebeveynin taşma kesmesine takılmaz; açık
+         olduğunda app.js tetikleyici butonun konumuna göre position:fixed
+         ile konumlandırır (bkz. renderEntityFilterMenu/toggleEntityFilterMenu). -->
+    <div class="entity-filter-menu-portal hidden" id="entityFilterMenu"></div>
+
     <!-- Cropper.js (görsel kırpma arayüzü için) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 
     <!-- Custom JavaScript -->
-   <script src="app.js?v=20260917-1"></script>
+   <script src="app.js?v=20261003-1"></script>
 
 </body>
 </html>

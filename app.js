@@ -209,7 +209,6 @@ function restoreTranslationState() {
     // görünen ayrı sütunlar; Günümüz Türkçesi sütunu içindeki küçük
     // Türkçe/İngilizce geçişi ve "Bilgi" (belge analizi) aç/kapa bölümü.
     const transLangToggle = document.getElementById('transLangToggle');
-    const entityFilterDropdown = document.getElementById('entityFilterDropdown');
     const entityFilterTrigger = document.getElementById('entityFilterTrigger');
     const entityFilterMenu = document.getElementById('entityFilterMenu');
 
@@ -312,8 +311,9 @@ function renderRestoredTranslation() {
 
         transTools.classList.add('tools-ready');
 
-        // "Filtrele ▾" kaldırıldı (bkz. renderResultsPanel'daki aynı not).
-        entityFilterDropdown.classList.add('hidden');
+        // Kaydedilmiş bir belge geri yüklendiğinde de "Filtrele" menüsü o
+        // belgenin kategorileriyle güncel kalsın diye yeniden kuruluyor.
+        renderEntityFilterMenu();
     }
 
     // =========================
@@ -1902,6 +1902,272 @@ diqqat idiñ didi. www.osmanlicaogren.com`,
                 date_gregorian: "Belirtilmemiş",
                 notes: "Metin, modern dönemde basılmış bir Osmanlıca okuma kitabından alınmış son derece net ve okunaklı bir matbu metindir."
             }
+        },
+        'tfh': {
+            file: 'assets/tfh.jpg',
+            name: 'gulhane_hatti_humayunu.jpg',
+            size: '1.02 MB',
+            ocr: `نشان همايون اولدر كه
+جمله عالمه معلومدر كه دولت عليه مزك ابتدای ظهوریندن بری
+احكام جليله قرآنیه و قوانين شرعیه كمالیله رعایت اولندیغندن
+دولتمزك قوت و شوكتی و جمله رعایاسنك رفاه و مأموریتی
+نهایت درجه یی بولمش ایكن، یوز ایللی سنه دن بری
+بر طاقم حوادث و اسباب متنوعه تأثيریله نه شرع شریفه
+و نه قوانین منیفه یه ریعایت اولنمیوب، اولكی قوت و
+مأموریت یرینه ضعف و فقر حاصل اولمشدر.
+بوندن بویله دولت علیه و ممالك محروسه مزك حسن
+اداره سی بعض قوانین جدیده ایله قابل اولاجغی ظاهردر.
+بنابرین جان و مال و ناموس امنیتی و وركینك موزون
+صورتده طرحی و تحصیلی و عسكرلك مادسنك اصوله
+وضعی كبی مهم مقاصد ایچون یكیدن قوانین وضع و
+ایجاد اولنمه سی مقرردر.`,
+            tr: `Hümâyun fermandır ki,
+Herkesçe bilinmektedir ki, yüce devletimizin ortaya çıkışından beri Kur'an'ın yüce hükümlerine ve şer'î kanunlara eksiksiz uyulduğu için devletimizin gücü ve haşmeti, bütün tebaasının refahı ve bayındırlığı en üst noktasına ulaşmışken; yüz elli yıldan beri çeşitli olayların ve sebeplerin etkisiyle ne şeriata ne de yüce kanunlara uyulmaz olmuş, eski güç ve bayındırlık yerini zayıflık ve yoksulluğa bırakmıştır.
+Bundan böyle yüce devletimizin ve korunan topraklarımızın iyi yönetilmesinin bazı yeni kanunlarla mümkün olacağı açıktır. Bu sebeple can, mal ve namus güvenliğinin sağlanması, verginin düzenli bir biçimde belirlenip toplanması ve askerlik işinin usule bağlanması gibi önemli amaçlar için yeni kanunlar konulması kararlaştırılmıştır.`,
+            translit: `Nişân-ı hümâyûn oldur ki,
+Cümle-i âleme ma'lûmdur ki, devlet-i aliyyemizin ibtidâ-i zuhûrundan beri ahkâm-ı celîle-i Kur'âniyye ve kavânîn-i şer'iyyeye kemâliyle riâyet olunduğundan devletimizin kuvvet ü şevketi ve cümle re'âyâsının refâh u me'mûriyyeti nihâyet derecesini bulmuş iken, yüz elli seneden beri bir tâkım havâdis ü esbâb-ı mütenevvia te'sîriyle ne şer'-i şerîfe ve ne kavânîn-i münîfeye riâyet olunmayub, evvelki kuvvet ü me'mûriyyet yerine za'f u fakr hâsıl olmuşdur.
+Bundan böyle devlet-i aliyye ve memâlik-i mahrûsamızın hüsn-i idâresi ba'zı kavânîn-i cedîde ile kâbil olacağı zâhirdir. Binâberîn cân u mâl u nâmûs emniyyeti ve verginin mevzûn sûretde tarh u tahsîli ve askerlik maddesinin usûlü vaz'ı gibi mühim makâsıd içün yeniden kavânîn vaz' u îcâd olunması mukarrerdir.`,
+            analysis: {
+                document_type: "Ferman / Reform Fermanı",
+                confidence: 95,
+                style: "Resmî, ağır ve nizamnâme üslubunda, gerekçeli bir devlet fermanı dili",
+                summary: "3 Kasım 1839'da Mustafa Reşid Paşa tarafından Gülhane Parkı'nda okunan bu ferman, Tanzimat reformlarının başlangıcını ilan eder. Belge, devletin eski gücünü yitirmesinin nedenlerini özetledikten sonra, tüm tebaa için can, mal ve namus güvenliğinin garanti altına alınacağını, vergilerin düzenli ve adil toplanacağını ve askerlik hizmetinin usule bağlanacağını duyurur.",
+                key_points: [
+                    "Ferman, 3 Kasım 1839'da Gülhane'de Sadrazam Mustafa Reşid Paşa tarafından okunmuştur.",
+                    "Devletin gücünü kaybetmesinin sebebi olarak şer'î ve kanunî düzenlemelere uyulmaması gösterilmektedir.",
+                    "Tüm tebaa için can, mal ve namus güvenliğinin sağlanacağı vaat edilmektedir.",
+                    "Vergilerin keyfî değil, düzenli ve ölçülü biçimde toplanacağı belirtilmektedir.",
+                    "Askerlik hizmetinin belirli bir usule bağlanacağı ilan edilmektedir.",
+                    "Bu ferman, Tanzimat Dönemi'nin (1839-1876) resmî başlangıcı kabul edilir."
+                ],
+                people: ["Sultan Abdülmecid", "Mustafa Reşid Paşa"],
+                places: ["Gülhane", "İstanbul"],
+                concepts: ["Tanzimat", "kanun", "eşitlik", "vergi", "askerlik", "can mal namus güvenliği"],
+                script_type: "Matbu / Divanî",
+                script_purpose: "Resmî devlet fermanı, siyasi reform ilanı",
+                period_estimate: "Tanzimat Dönemi Başlangıcı",
+                date_hijri: "26 Şaban 1255",
+                date_gregorian: "3 Kasım 1839",
+                notes: "Metin, Tanzimat Fermanı'nın en çok alıntılanan giriş ve gerekçe bölümünden bir özettir; belgenin tamamı çok daha uzundur."
+            }
+        },
+        'bkm': {
+            file: 'assets/bkm.jpg',
+            name: 'baki_kanuni_mersiyesi.jpg',
+            size: '0.22 MB',
+            ocr: `ای پای بند دامگه قید نام و ننگ
+تا كی هوای مشغله دهر بی درنك
+
+قانده سن ای نور چشمم قانده سن
+قانده سن شاه جهان قانده سن`,
+            tr: `Ey ad ve şan kaygısının tuzağına bağlanmış kişi,
+Bu durmadan dönen dünyanın meşgalesine ne zamana dek tutkun kalacaksın?
+
+Neredesin ey gözümün nuru, neredesin,
+Neredesin ey cihanın padişahı, neredesin?`,
+            translit: `Ey pây-bend-i dâm-geh-i kayd-ı nâm u neng
+Tâ key hevâ-yı meşgale-i dehr-i bî-direng
+
+Kandasın ey nûr-ı çeşmim kandasın
+Kandasın şâh-ı cihân kandasın`,
+            analysis: {
+                document_type: "Mersiye / Divan Şiiri",
+                confidence: 90,
+                style: "Klasik divan şiiri; terkib-bend nazım şekliyle yazılmış, hüzünlü ve yüksek ahenkli bir mersiye üslubu",
+                summary: "Bâkî'nin, 1566'da vefat eden Kanuni Sultan Süleyman için yazdığı ve Osmanlı edebiyatının en meşhur mersiyelerinden sayılan 'Kanuni Mersiyesi'nin (Terkib-i Bend) açılış beyitleri ile şiir boyunca tekrarlanan ve padişahın yokluğuna duyulan özlemi dile getiren ünlü nakarat beyitidir.",
+                key_points: [
+                    "Şiir, Bâkî tarafından Kanuni Sultan Süleyman'ın 1566'daki ölümü üzerine yazılmıştır.",
+                    "Terkib-i bend nazım şekliyle kaleme alınmış, yedi bendden oluşan bir mersiyedir.",
+                    "'Kandasın şâh-ı cihân kandasın' mısraı, şiirin en meşhur ve en sık alıntılanan dizelerindendir.",
+                    "Eser, Osmanlı divan edebiyatında mersiye türünün en başarılı örneklerinden biri kabul edilir."
+                ],
+                people: ["Bâkî", "Kanuni Sultan Süleyman"],
+                places: [],
+                concepts: ["mersiye", "terkib-i bend", "divan edebiyatı", "ölüm", "hükümdarlık"],
+                script_type: "Nesih",
+                script_purpose: "Klasik divan şiiri / mersiye",
+                period_estimate: "16. Yüzyıl, Kanuni Sonrası",
+                date_hijri: "974",
+                date_gregorian: "1566-1567",
+                notes: "Metin, şiirin tamamından (yedi bendden) açılış beyti ve en meşhur nakarat beyti olmak üzere kısa bir seçkidir."
+            }
+        },
+        'nkh': {
+            file: 'assets/nkh.jpg',
+            name: 'namik_kemal_hurriyet_kasidesi.jpg',
+            size: '1.12 MB',
+            ocr: `گورپ احكام عصری منحرف صدق و سلامتدن
+چكلدك عزت و اقبال ايله باب حكومتدن
+
+اوسانماز كندينی انسان بیلنلر خلقه خدمتدن
+مروت مند اولان مظلومه ال چكمز اعانتدن
+
+حقیر اولدیسه ملت شانینه نقصان كلمز صانما
+یره دوشمكله جوهر ساقط اولماز قدر و قیمتدن`,
+            tr: `Çağın kurallarının doğruluk ve esenlikten saptığını görüp,
+Onurumuzla, itibarımızla hükümet kapısından çekildik.
+
+Kendini insan bilenler halka hizmetten usanmaz;
+Mürüvvet sahibi olan, zulme uğrayana yardım etmekten vazgeçmez.
+
+Millet güçsüz düştüyse, şanına eksiklik geldiğini sanma;
+Mücevher yere düşmekle değerinden ve kıymetinden hiçbir şey kaybetmez.`,
+            translit: `Görüp ahkâm-ı asrı münharif sıdk u selâmetten
+Çekildik izzet ü ikbal ile bâb-ı hükûmetten
+
+Usanmaz kendini insan bilenler halka hizmetten
+Mürüvvet-mend olan mazluma el çekmez iânetten
+
+Hakîr olduysa millet şânına noksan gelir sanma
+Yere düşmekle cevher sâkıt olmaz kadr ü kıymetten`,
+            analysis: {
+                document_type: "Kaside / Divan Şiiri",
+                confidence: 90,
+                style: "Tanzimat dönemi kaside geleneğinde, vatan ve hürriyet temalı, yüksek retorikli bir şiir üslubu",
+                summary: "Namık Kemal'in, 1873'te yazdığı ve Yeni Osmanlılar hareketinin vatan, hürriyet ve adalet idealini en açık biçimde yansıtan şiiri 'Hürriyet Kasidesi'nin (asıl adıyla 'Besâlet-i Osmâniyye ve Hamiyyet-i İnsâniyye') en meşhur açılış ve ara beyitleri.",
+                key_points: [
+                    "Şiir, Namık Kemal tarafından 1873 yılı civarında kaleme alınmıştır.",
+                    "Yeni Osmanlılar hareketinin hürriyet, vatan ve adalet idealini yansıtan en tanınmış manzum eserlerden biridir.",
+                    "Şiirin açılış beyti, dönemin yönetim anlayışına yöneltilen eleştiriyi dile getirir.",
+                    "Eser, Tanzimat sonrası Osmanlı aydınları arasında hürriyet kavramının edebiyata yansımasının en güçlü örneklerinden sayılır."
+                ],
+                people: ["Namık Kemal"],
+                places: [],
+                concepts: ["hürriyet", "vatan", "kaside", "Yeni Osmanlılar", "adalet"],
+                script_type: "Matbu",
+                script_purpose: "Siyasi/vatani içerikli divan şiiri",
+                period_estimate: "Tanzimat Sonrası Dönem",
+                date_hijri: "Belirtilmemiş",
+                date_gregorian: "1873 (tahmini)",
+                notes: "Metin, uzun kasideden üç beyitlik meşhur bir seçkidir; görseldeki fotoğraf şairin kendisini göstermektedir, el yazması belgenin kendisi değildir."
+            }
+        },
+        'ecs': {
+            file: 'assets/ecs.jpg',
+            name: 'evliya_celebi_seyahatnamesi_cilt1_kapak.jpg',
+            size: '0.33 MB',
+            ocr: `اولیا چلبی سیاحتنامه سی
+
+مؤلفی:
+اولیا چلبی محمد ظلی ابن درویش
+
+برنجی جلد
+
+طابعی: احمد جودت
+
+درسعادتده «اقدام» مطبعه سی
+
+١٣١٤`,
+            tr: `Evliya Çelebi Seyahatnâmesi
+
+Yazarı:
+Evliya Çelebi Mehmed Zıllî, Derviş'in oğlu
+
+Birinci Cilt
+
+Basan: Ahmed Cevdet
+
+İstanbul'da "İkdam" Matbaası
+
+1314 (Hicrî, yaklaşık 1896-1897)`,
+            translit: `Evliyâ Çelebi Seyâhatnâmesi
+
+Müellifi:
+Evliyâ Çelebi Mehmed Zıllî İbn Dervîş
+
+Birinci Cild
+
+Tâbi'i: Ahmed Cevdet
+
+Dersaâdet'de "İkdâm" Matba'ası
+
+1314`,
+            analysis: {
+                document_type: "Kitap Kapağı / Cilt Başlık Sayfası",
+                confidence: 96,
+                style: "Matbu, sade ve bibliyografik bir başlık sayfası düzeni",
+                summary: "17. yüzyıl Osmanlı seyyahı Evliya Çelebi'nin dünyaca ünlü on ciltlik seyahat eseri Seyahatnâme'nin, 1896-97 (1314 H.) yılında İstanbul'da 'İkdam' Matbaası'nda basılan ilk baskısının birinci cildine ait kapak/başlık sayfasıdır.",
+                key_points: [
+                    "Seyahatnâme, Evliya Çelebi Mehmed Zıllî tarafından 17. yüzyılda kaleme alınmıştır.",
+                    "Bu görseldeki baskı, eserin 1896-97'de İstanbul'da yapılan ilk matbu baskısının birinci cildidir.",
+                    "Baskıyı gerçekleştiren matbaa 'İkdam Matbaası', dönemin tanınmış yayın kuruluşlarındandı.",
+                    "Seyahatnâme, Osmanlı coğrafyası ve komşu ülkeler hakkında en kapsamlı seyahat eserlerinden biri olarak kabul edilir."
+                ],
+                people: ["Evliya Çelebi", "Ahmed Cevdet"],
+                places: ["İstanbul"],
+                concepts: ["seyahatname", "matbaa", "ilk baskı", "coğrafya"],
+                script_type: "Matbu / Celî Sülüs (başlık)",
+                script_purpose: "Kitap kapağı / cilt başlık sayfası",
+                period_estimate: "Geç Osmanlı Dönemi (II. Abdülhamid)",
+                date_hijri: "1314",
+                date_gregorian: "1896-1897",
+                notes: "Görsel, eserin içeriğinden bir sayfa değil, birinci cildin kapak/başlık sayfasıdır; üzerindeki kütüphane mühür ve kaşeleri eserin sonradan kamu kütüphanelerinde dolaşımda olduğunu göstermektedir."
+            }
+        },
+        'svs': {
+            file: 'assets/svs.jpg',
+            name: 'salavat_serhi_sayfasi.jpg',
+            size: '0.11 MB',
+            ocr: `جل شانه معبود راضی اولور أن يُصلي صلوة اولمدن عليه
+محمد عليه الصلوة والسلام اوزرینه صلوة اولمدن داهی
+اولديغی صلوة مثللو صلوة ایله محمد عليه الصلوة والسلام
+والتحيينك اوزرینه صلوة تعظيم وتحية تكريم انزاليله
+معزز ومحترم ایده بعض نسخهٔ معتمده لرده **كأنه جيم**
+ایله واقع اولمشدر اللهم ای ذو الجلال والاكرام اولان
+الله جل شانه وعم نواله صلّ من صلاة ایله علی محمد محمد عليه
+الصلوة والسلام اوزرینه وعلی ال محمد دخی حضرت محمد عليه
+الصلوة والسلامك ال اولان اتباع امت لری اوزرینه صلوة
+ایله كما ينبغی **لعميم** شأن عالیسنه لایق علو قدرنه مناسب
+اولور صلوة ایده صلوة ایله أن يُصلي صلوة اولنمق معناده
+محمد عليه الصلوة والسلام اوزرینه لایق ومناسب اولنور
+صلوة مثللو صلوة ایله سرور عالم وزين بني ادم محمد
+عليه السلام والتحيينك اوزرینه موافق صلوة تحيه انزاليله
+اكرام واجلال ایده اللهم ای قاضی الحاجات وای مجيب الدعوات
+اولان الله جل شانه صلّ من صلوة ایله علی محمد محمد عليه
+الصلوة والسلام اوزرینه وعلی ال محمد دخی محمد عليه الصلوة
+والسلامك آل لری اوزرینه صلوة ایده حتی لا يبقى **نعم** باقی
+قالميه`,
+            tr: `Şanı yüce olan Allah, Hz. Muhammed (s.a.v.) üzerine henüz salavat getirilmeden önce yapılmış olan salavatlar gibi bir salavatla, Hz. Muhammed ve selam sahiplerinin üzerine yüceltme salavatı ve ağırlama selamı indirerek onu değerli ve saygın kılar. Bazı güvenilir nüshalarda bu kısım **"sanki cîm harfi gibi"** şeklinde geçmektedir. "Allah'ım! Ey celal ve ikram sahibi olan Allah!" -şanı yüce ve lütfu bol olsun- "Hz. Muhammed'e ve onun ailesine, ayrıca Hz. Muhammed'in ailesinden sayılan ümmetinin takipçilerine, onun yüce şanına layık ve yüksek değerine uygun olacak şekilde **geniş kapsamlı** bir salavatla salat eyle." "En yusallî" (salavat getirmek) ifadesi, salavat getirilmek anlamında olup, Hz. Muhammed'e layık ve uygun olan salavat gibi bir salavatla, alemin neşesi ve Âdemoğlunun süsü olan Hz. Muhammed'in ve selam sahiplerinin üzerine uygun bir salavat ve selam indirerek ikram ve yücelik ihsan eyle. "Allah'ım! Ey ihtiyaçları karşılayan ve duaları kabul eden Allah!" -şanı yüce olsun- "Hz. Muhammed'e, onun ailesine ve takipçilerine öyle bir salavat eyle ki, geriye hiçbir **nimet** eksik kalmasın.`,
+            trans_en: `The Almighty God is pleased to make Muhammed (peace be upon him) honored and respected by sending down a prayer of glorification and a greeting of honor upon him and the recipients of greetings, just like the prayers offered before. In some reliable copies, this part appears as **"as if it were the letter Jeem"**. "O Allah! O Owner of Majesty and Honor!" -may His glory be exalted and His bounty be abundant- "send blessings upon Muhammed, upon the family of Muhammed, and upon the followers of his Ummah who are of his family, with a **comprehensive** blessing that is worthy of his exalted status and suitable for his high value." The phrase "an yusallî" means to be blessed, and by sending down a suitable blessing and greeting upon Muhammed, who is the joy of the universe and the ornament of the children of Adam, and upon the recipients of greetings, may He bestow honor and glory. "O Allah! O Fulfiller of needs and O Answerer of prayers!" -may His glory be exalted- "send blessings upon Muhammed, upon the family of Muhammed, and upon his followers so that no **bounty** remains ungranted.`,
+            translit: `Celle şânühü ma'bûd râzî olur en yusallî salâten olmadan aleyhi
+Muhammed aleyhi's-salâtü ve's-selâm üzerine salât olmadan dahî
+olduğı salât misillü salât ile Muhammed aleyhi's-salâtü ve's-selâm
+ve't-tahiyyînüñ üzerine salât ta'zîm ve tahiyyet-i tekrîm inzâliyle
+mu'azzez ve muhterem ide ba'zı nüsha-i mu'temedelerde **kâ-ennehu cîm**
+ile vâki' olmışdur Allâhümme ey zü'l-celâli ve'l-ikrâm olan
+Allâh celle şânühü ve amme nevâlühü salli min salâtin ile alâ Muhammed Muhammed aleyhi
+ve's-salâtü ve's-selâm üzerine ve alâ âli Muhammed dahî Hazret-i Muhammed aleyhi
+ve's-salâtü ve's-selâmıñ âli olan etbâ'-ı ümmetleri üzerine salât
+ile kemâ yenbeğî **li-amîmi** şe'n-i âlîsine lâyık uluvv-i kadrine münâsib
+olur salât ide salât ile en yusallî salât olunmak ma'nâda
+Muhammed aleyhi's-salâtü ve's-selâm üzerine lâyık ve münâsib olunur
+salât misillü salât ile sürûr-ı âlem ve zeyn-i benî Âdem Muhammed
+aleyhi's-selâm ve't-tahiyyînüñ üzerine muvâfık salât tahiyye inzâliyle
+ikrâm ve iclâl ide Allâhümme ey kâdiye'l-hâcât ve ey mucîbe'd-da'avât
+olan Allâh celle şânühü salli min salâtin ile alâ Muhammed Muhammed aleyhi
+ve's-salâtü ve's-selâm üzerine ve alâ âli Muhammed dahî Muhammed aleyhi's-salâtü
+ve's-selâmıñ âlleri üzerine salât ide hattâ lâ yebkâ **na'm** bâkî
+kalmaya`,
+            analysis: {
+                document_type: "Dini Metin / Şerh",
+                confidence: 95,
+                style: "Nesir, Dini-Açıklayıcı (Şerh)",
+                summary: "Belge, Hz. Muhammed'e ve onun ailesine (âline) getirilecek salavatların mahiyetini, faziletini ve bu duaların nasıl yapılması gerektiğini açıklayan dini bir şerh metnidir. Metinde duaların kabulü, Allah'ın sıfatları ve salavatın lafzi tahlilleri üzerinde durulmaktadır.",
+                key_points: [
+                    "Hz. Muhammed'e ve onun ailesine (âline) getirilen salavatların önemi ve fazileti açıklanmaktadır.",
+                    "Bazı nüshalardaki yazım farklılıklarına ve 'kâ-ennehu cîm' gibi ibarelere değinilerek metin tenkidi yapılmaktadır.",
+                    "Allah'ın 'Zü'l-Celâli ve'l-İkrâm', 'Kâdiye'l-Hâcât' ve 'Mucîbe'd-Da'avât' gibi esmaları anılarak dualar edilmektedir."
+                ],
+                people: ["Muhammed", "Hazret-i Muhammed"],
+                places: [],
+                concepts: ["salât", "tahiyye", "ümmet", "Zü'l-Celâli ve'l-İkrâm", "Kâdiye'l-Hâcât", "Mucîbe'd-Da'avât"],
+                script_type: "Nesih",
+                script_purpose: "Dini eğitim ve ibadet (Şerh kitabı sayfası)",
+                period_estimate: "Osmanlı Dönemi (18-19. Yüzyıl)",
+                date_hijri: "Belirtilmemiş",
+                date_gregorian: "Belirtilmemiş",
+                notes: "Metin, Delâilü'l-Hayrât veya benzeri bir salavat mecmuasının Türkçe şerhine ait bir sayfadır. Arapça ibarelerin Türkçe açıklamaları yapılmıştır. Bu örnek, kullanıcının kendi fotoğrafladığı bir belge üzerinde sistemin gerçek OCR/çeviri motoru çalıştırılarak eklenmiştir."
+            }
         }
     };
 
@@ -2009,25 +2275,55 @@ diqqat idiñ didi. www.osmanlicaogren.com`,
         setOutputTab(btn.getAttribute('data-output-tab'));
     });
 
-    // entityFilterTrigger/entityFilterMenu ("Filtrele ▾") kendi aç/kapa ve
-    // dış-tıklama mantığını kullanır — menü içeriği sabit olmayıp her
-    // açılışta renderEntityFilterMenu() ile yeniden kurulur (bkz. aşağıdaki
-    // "Kategoriye Göre Filtrele" bölümü), çünkü kategori listesi belgeye
-    // göre değişiyor. setOutputTab() ÇAĞIRMAZ — panel içindeki bir
+    // entityFilterTrigger/entityFilterMenu ("Kategoriye Göre Filtrele") kendi
+    // aç/kapa ve dış-tıklama mantığını kullanır — menü içeriği sabit olmayıp
+    // her açılışta renderEntityFilterMenu() ile yeniden kurulur (bkz.
+    // aşağıdaki "Kategoriye Göre Filtrele" bölümü), çünkü kategori listesi
+    // belgeye göre değişiyor. setOutputTab() ÇAĞIRMAZ — panel içindeki bir
     // kategoriye tıklamak sekme değiştirmez, sadece transTextDisplay'e bir
     // filtre attribute'u uygular.
+    // Menü artık <body>'nin altında bir "portal" (bkz. index.html) — hiçbir
+    // sütunun overflow:hidden/sabit yükseklikli başlığının içinde değil,
+    // position:fixed ile açıldığı anda tetikleyici butonun ekrandaki gerçek
+    // konumuna göre yerleştiriliyor. Önceki tasarımda menü .col-header'ın
+    // içindeydi ve o kutunun overflow:hidden'ı menüyü bazı tarayıcı/ekran
+    // kombinasyonlarında (Windows'ta bildirilen "hiç görünmüyor" sorunu)
+    // tamamen görünmez kılabiliyordu.
+    function positionEntityFilterMenu() {
+        const rect = entityFilterTrigger.getBoundingClientRect();
+        const menuWidth = entityFilterMenu.offsetWidth || 200;
+        let left = rect.right - menuWidth;
+        left = Math.max(8, Math.min(left, window.innerWidth - menuWidth - 8));
+        entityFilterMenu.style.top = `${rect.bottom + 6}px`;
+        entityFilterMenu.style.left = `${left}px`;
+    }
+
     entityFilterTrigger.addEventListener('click', (e) => {
         e.stopPropagation();
         closeEntityPopover();
         closeWordAlternativesPopover();
         const isOpen = !entityFilterMenu.classList.contains('hidden');
-        if (!isOpen) renderEntityFilterMenu();
-        entityFilterMenu.classList.toggle('hidden', isOpen);
-        entityFilterTrigger.setAttribute('aria-expanded', String(!isOpen));
+        if (isOpen) {
+            closeEntityFilterDropdown();
+            return;
+        }
+        renderEntityFilterMenu();
+        entityFilterMenu.classList.remove('hidden');
+        positionEntityFilterMenu();
+        entityFilterTrigger.setAttribute('aria-expanded', 'true');
     });
 
+    window.addEventListener('resize', () => {
+        if (!entityFilterMenu.classList.contains('hidden')) positionEntityFilterMenu();
+    });
+    window.addEventListener('scroll', () => {
+        if (!entityFilterMenu.classList.contains('hidden')) positionEntityFilterMenu();
+    }, true);
+
     document.addEventListener('click', (e) => {
-        if (!entityFilterDropdown.contains(e.target)) closeEntityFilterDropdown();
+        if (!entityFilterTrigger.contains(e.target) && !entityFilterMenu.contains(e.target)) {
+            closeEntityFilterDropdown();
+        }
     });
 
     selectFileBtn.addEventListener('click', (e) => {
@@ -2461,14 +2757,15 @@ diqqat idiñ didi. www.osmanlicaogren.com`,
         infoEmptyState.classList.remove('hidden');
         infoContentWrapper.classList.add('hidden');
         infoTabBtn.classList.add('hidden');
-        // "Filtrele ▾" de aynı "henüz gösterecek bir şey yok" anlarında
-        // (yeni belge seçildi/sıfırlandı/işlem başarısız oldu) gizlenmeli
+        // "Filtrele" menüsü de aynı "henüz gösterecek bir şey yok" anlarında
+        // (yeni belge seçildi/sıfırlandı/işlem başarısız oldu) sıfırlanmalı
         // — clearInfoTab() zaten tam bu 4 noktada çağrıldığı için buraya
         // eklemek, ayrı bir fonksiyonu aynı 4 yerde çağırmayı unutma
-        // riskinden kaçınıyor. Gösterme kararı processTranslation'da,
+        // riskinden kaçınıyor. Menü içeriği processTranslation'da,
         // transTextDisplay'de gerçekten entity-tag var mı diye bakılarak
-        // ayrıca veriliyor (bkz. aşağısı).
-        entityFilterDropdown.classList.add('hidden');
+        // yeniden kuruluyor (bkz. aşağısı).
+        resetEntityFilter();
+        entityFilterMenu.innerHTML = '';
         closeEntityFilterDropdown();
         // AI Belge Araçları da Bilgi ile aynı anlarda gizlenir — araçların
         // dayandığı state.transText artık geçersiz.
@@ -2837,10 +3134,12 @@ diqqat idiñ didi. www.osmanlicaogren.com`,
         applyStoredWordCorrections(state.documentId, 'trans', transTextDisplay);
         transTools.classList.add('tools-ready');
 
-        // "Filtrele ▾" kaldırıldı (Windows'ta zaten görünmüyordu ve üçüncü
-        // sütunun araç çubuğunu diğer ikisiyle hizasız bırakıyordu) — öğe
-        // kodda duruyor ama artık hiç gösterilmiyor.
-        entityFilterDropdown.classList.add('hidden');
+        // "Filtrele" menüsü bu belgedeki gerçek kategorilerle (kaç kişi,
+        // kaç yer vb.) yeniden kuruluyor — menü kapalıyken sadece içeriği
+        // tazeleniyor, bir sonraki açılışta renderEntityFilterMenu() zaten
+        // tekrar çağrılacak ama burada da güncel tutmak buton metninin/sayaç
+        // ihtiyacı olursa diye zararsız bir ön-yükleme.
+        renderEntityFilterMenu();
 
         if (finalTransEn) {
             enEmptyState.classList.add('hidden');
