@@ -1951,163 +1951,11 @@ Bundan böyle devlet-i aliyye ve memâlik-i mahrûsamızın hüsn-i idâresi ba'
                 notes: "Metin, Tanzimat Fermanı'nın en çok alıntılanan giriş ve gerekçe bölümünden bir özettir; belgenin tamamı çok daha uzundur."
             }
         },
-        'bkm': {
-            file: 'assets/bkm.jpg',
-            name: 'baki_kanuni_mersiyesi.jpg',
-            size: '0.22 MB',
-            ocr: `ای پای بند دامگه قید نام و ننگ
-تا كی هوای مشغله دهر بی درنك
-
-قانده سن ای نور چشمم قانده سن
-قانده سن شاه جهان قانده سن`,
-            tr: `Ey ad ve şan kaygısının tuzağına bağlanmış kişi,
-Bu durmadan dönen dünyanın meşgalesine ne zamana dek tutkun kalacaksın?
-
-Neredesin ey gözümün nuru, neredesin,
-Neredesin ey cihanın padişahı, neredesin?`,
-            translit: `Ey pây-bend-i dâm-geh-i kayd-ı nâm u neng
-Tâ key hevâ-yı meşgale-i dehr-i bî-direng
-
-Kandasın ey nûr-ı çeşmim kandasın
-Kandasın şâh-ı cihân kandasın`,
-            analysis: {
-                document_type: "Mersiye / Divan Şiiri",
-                confidence: 90,
-                style: "Klasik divan şiiri; terkib-bend nazım şekliyle yazılmış, hüzünlü ve yüksek ahenkli bir mersiye üslubu",
-                summary: "Bâkî'nin, 1566'da vefat eden Kanuni Sultan Süleyman için yazdığı ve Osmanlı edebiyatının en meşhur mersiyelerinden sayılan 'Kanuni Mersiyesi'nin (Terkib-i Bend) açılış beyitleri ile şiir boyunca tekrarlanan ve padişahın yokluğuna duyulan özlemi dile getiren ünlü nakarat beyitidir.",
-                key_points: [
-                    "Şiir, Bâkî tarafından Kanuni Sultan Süleyman'ın 1566'daki ölümü üzerine yazılmıştır.",
-                    "Terkib-i bend nazım şekliyle kaleme alınmış, yedi bendden oluşan bir mersiyedir.",
-                    "'Kandasın şâh-ı cihân kandasın' mısraı, şiirin en meşhur ve en sık alıntılanan dizelerindendir.",
-                    "Eser, Osmanlı divan edebiyatında mersiye türünün en başarılı örneklerinden biri kabul edilir."
-                ],
-                people: ["Bâkî", "Kanuni Sultan Süleyman"],
-                places: [],
-                concepts: ["mersiye", "terkib-i bend", "divan edebiyatı", "ölüm", "hükümdarlık"],
-                script_type: "Nesih",
-                script_purpose: "Klasik divan şiiri / mersiye",
-                period_estimate: "16. Yüzyıl, Kanuni Sonrası",
-                date_hijri: "974",
-                date_gregorian: "1566-1567",
-                notes: "Metin, şiirin tamamından (yedi bendden) açılış beyti ve en meşhur nakarat beyti olmak üzere kısa bir seçkidir."
-            }
-        },
-        'nkh': {
-            file: 'assets/nkh.jpg',
-            name: 'namik_kemal_hurriyet_kasidesi.jpg',
-            size: '1.12 MB',
-            ocr: `گورپ احكام عصری منحرف صدق و سلامتدن
-چكلدك عزت و اقبال ايله باب حكومتدن
-
-اوسانماز كندينی انسان بیلنلر خلقه خدمتدن
-مروت مند اولان مظلومه ال چكمز اعانتدن
-
-حقیر اولدیسه ملت شانینه نقصان كلمز صانما
-یره دوشمكله جوهر ساقط اولماز قدر و قیمتدن`,
-            tr: `Çağın kurallarının doğruluk ve esenlikten saptığını görüp,
-Onurumuzla, itibarımızla hükümet kapısından çekildik.
-
-Kendini insan bilenler halka hizmetten usanmaz;
-Mürüvvet sahibi olan, zulme uğrayana yardım etmekten vazgeçmez.
-
-Millet güçsüz düştüyse, şanına eksiklik geldiğini sanma;
-Mücevher yere düşmekle değerinden ve kıymetinden hiçbir şey kaybetmez.`,
-            translit: `Görüp ahkâm-ı asrı münharif sıdk u selâmetten
-Çekildik izzet ü ikbal ile bâb-ı hükûmetten
-
-Usanmaz kendini insan bilenler halka hizmetten
-Mürüvvet-mend olan mazluma el çekmez iânetten
-
-Hakîr olduysa millet şânına noksan gelir sanma
-Yere düşmekle cevher sâkıt olmaz kadr ü kıymetten`,
-            analysis: {
-                document_type: "Kaside / Divan Şiiri",
-                confidence: 90,
-                style: "Tanzimat dönemi kaside geleneğinde, vatan ve hürriyet temalı, yüksek retorikli bir şiir üslubu",
-                summary: "Namık Kemal'in, 1873'te yazdığı ve Yeni Osmanlılar hareketinin vatan, hürriyet ve adalet idealini en açık biçimde yansıtan şiiri 'Hürriyet Kasidesi'nin (asıl adıyla 'Besâlet-i Osmâniyye ve Hamiyyet-i İnsâniyye') en meşhur açılış ve ara beyitleri.",
-                key_points: [
-                    "Şiir, Namık Kemal tarafından 1873 yılı civarında kaleme alınmıştır.",
-                    "Yeni Osmanlılar hareketinin hürriyet, vatan ve adalet idealini yansıtan en tanınmış manzum eserlerden biridir.",
-                    "Şiirin açılış beyti, dönemin yönetim anlayışına yöneltilen eleştiriyi dile getirir.",
-                    "Eser, Tanzimat sonrası Osmanlı aydınları arasında hürriyet kavramının edebiyata yansımasının en güçlü örneklerinden sayılır."
-                ],
-                people: ["Namık Kemal"],
-                places: [],
-                concepts: ["hürriyet", "vatan", "kaside", "Yeni Osmanlılar", "adalet"],
-                script_type: "Matbu",
-                script_purpose: "Siyasi/vatani içerikli divan şiiri",
-                period_estimate: "Tanzimat Sonrası Dönem",
-                date_hijri: "Belirtilmemiş",
-                date_gregorian: "1873 (tahmini)",
-                notes: "Metin, uzun kasideden üç beyitlik meşhur bir seçkidir; görseldeki fotoğraf şairin kendisini göstermektedir, el yazması belgenin kendisi değildir."
-            }
-        },
-        'ecs': {
-            file: 'assets/ecs.jpg',
-            name: 'evliya_celebi_seyahatnamesi_cilt1_kapak.jpg',
-            size: '0.33 MB',
-            ocr: `اولیا چلبی سیاحتنامه سی
-
-مؤلفی:
-اولیا چلبی محمد ظلی ابن درویش
-
-برنجی جلد
-
-طابعی: احمد جودت
-
-درسعادتده «اقدام» مطبعه سی
-
-١٣١٤`,
-            tr: `Evliya Çelebi Seyahatnâmesi
-
-Yazarı:
-Evliya Çelebi Mehmed Zıllî, Derviş'in oğlu
-
-Birinci Cilt
-
-Basan: Ahmed Cevdet
-
-İstanbul'da "İkdam" Matbaası
-
-1314 (Hicrî, yaklaşık 1896-1897)`,
-            translit: `Evliyâ Çelebi Seyâhatnâmesi
-
-Müellifi:
-Evliyâ Çelebi Mehmed Zıllî İbn Dervîş
-
-Birinci Cild
-
-Tâbi'i: Ahmed Cevdet
-
-Dersaâdet'de "İkdâm" Matba'ası
-
-1314`,
-            analysis: {
-                document_type: "Kitap Kapağı / Cilt Başlık Sayfası",
-                confidence: 96,
-                style: "Matbu, sade ve bibliyografik bir başlık sayfası düzeni",
-                summary: "17. yüzyıl Osmanlı seyyahı Evliya Çelebi'nin dünyaca ünlü on ciltlik seyahat eseri Seyahatnâme'nin, 1896-97 (1314 H.) yılında İstanbul'da 'İkdam' Matbaası'nda basılan ilk baskısının birinci cildine ait kapak/başlık sayfasıdır.",
-                key_points: [
-                    "Seyahatnâme, Evliya Çelebi Mehmed Zıllî tarafından 17. yüzyılda kaleme alınmıştır.",
-                    "Bu görseldeki baskı, eserin 1896-97'de İstanbul'da yapılan ilk matbu baskısının birinci cildidir.",
-                    "Baskıyı gerçekleştiren matbaa 'İkdam Matbaası', dönemin tanınmış yayın kuruluşlarındandı.",
-                    "Seyahatnâme, Osmanlı coğrafyası ve komşu ülkeler hakkında en kapsamlı seyahat eserlerinden biri olarak kabul edilir."
-                ],
-                people: ["Evliya Çelebi", "Ahmed Cevdet"],
-                places: ["İstanbul"],
-                concepts: ["seyahatname", "matbaa", "ilk baskı", "coğrafya"],
-                script_type: "Matbu / Celî Sülüs (başlık)",
-                script_purpose: "Kitap kapağı / cilt başlık sayfası",
-                period_estimate: "Geç Osmanlı Dönemi (II. Abdülhamid)",
-                date_hijri: "1314",
-                date_gregorian: "1896-1897",
-                notes: "Görsel, eserin içeriğinden bir sayfa değil, birinci cildin kapak/başlık sayfasıdır; üzerindeki kütüphane mühür ve kaşeleri eserin sonradan kamu kütüphanelerinde dolaşımda olduğunu göstermektedir."
-            }
-        },
         'svs': {
             file: 'assets/svs.jpg',
+            enhancedFile: 'assets/svs-enhanced.jpg',
             name: 'salavat_serhi_sayfasi.jpg',
-            size: '0.11 MB',
+            size: '0.05 MB',
             ocr: `جل شانه معبود راضی اولور أن يُصلي صلوة اولمدن عليه
 محمد عليه الصلوة والسلام اوزرینه صلوة اولمدن داهی
 اولديغی صلوة مثللو صلوة ایله محمد عليه الصلوة والسلام
@@ -2667,7 +2515,11 @@ kalmaya`,
                 assistantMessages.innerHTML = '';
                 state.selectedFile = { name: sample.name };
                 state.imageDataUrl = sample.file;
-                state.enhancedImageUrl = sample.file;
+                // Çoğu örnekte tek görsel var (file iyileştirilmiş hâliyle
+                // aynı); bazı örnekler (örn. "svs") gerçek bir önce/sonra
+                // farkı göstersin diye ayrı bir enhancedFile taşıyabilir —
+                // "İyileştirilmiş Görüntüyü Göster" açılınca o görünür.
+                state.enhancedImageUrl = sample.enhancedFile || sample.file;
                 fileName.textContent = sample.name;
                 fileSize.textContent = sample.size;
                 previewImage.src = sample.file;
