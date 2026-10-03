@@ -379,6 +379,7 @@ function renderRestoredTranslation() {
     const sampleDatabase = {
         '2': {
             file: 'assets/fsma.png',
+            enhancedFile: 'assets/fsma-enhanced.jpg',
             name: 'fatihin_ahidnamesi.png',
             size: '0.15 MB',
             ocr: `نشـان همايون اولدر كه بن كه سلطان محمد خانم
@@ -449,6 +450,7 @@ Mâdâm ki bunlar benim emrime mutî' ü munkâd olalar.
         },
         '1': {
             file: 'assets/im.png',
+            enhancedFile: 'assets/im-enhanced.jpg',
             name: 'istiklal_marsi.png',
             size: '0.4 MB',
             ocr: `قورقما سونمز بو شفقلرده یوزن آل سنجاق
@@ -629,6 +631,7 @@ Hakkıdır, Hakk'a tapan milletimin istiklâl!`,
         },
         'hero': {
             file: 'assets/sk.png',
+            enhancedFile: 'assets/sk-enhanced.jpg',
             name: 'su_kasidesi.png',
             size: '0.15 MB',
             ocr: `صاچمه ای كوز اشكدن كوكلمدەكي اودلاره صو
@@ -909,6 +912,7 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
         },
         'mdo': {
             file: 'assets/mdo.png',
+            enhancedFile: 'assets/mdo-enhanced.jpg',
             name: 'mekanik_duzenek_oluk.png',
             size: '0.06 MB',
             ocr: `کله که نازل اولدقدن بر مقدار تکرار ایده بعده قصرك ایچنه **بونجاب** وضع
@@ -984,6 +988,7 @@ el-ḥaḳ`,
         },
         'svf': {
             file: 'assets/svf.png',
+            enhancedFile: 'assets/svf-enhanced.jpg',
             name: 'sivas_vakif_fermani.png',
             size: '1.93 MB',
             ocr: `۱ امير الامراء الكرام الكبار ذوي الاقدار **والاحترام** **معدن العز والاجلال**
@@ -1061,6 +1066,7 @@ el-ḥaḳ`,
         },
         'sbh': {
             file: 'assets/sbh.png',
+            enhancedFile: 'assets/sbh-enhanced.jpg',
             name: 'sam_baalbek_halep_muhimme.png',
             size: '0.20 MB',
             ocr: `٤٢ شام بگلربگیسی و دفتدارنه مکتوب : حالیا صددینی عسکر **نصفندن** **محلنده** **قصر** **موقوفات** **صاحب** **کفایت**...
@@ -1186,6 +1192,7 @@ zeyd kadre **mektub**...`,
         },
         'hbv': {
             file: 'assets/hbv.png',
+            enhancedFile: 'assets/hbv-enhanced.jpg',
             name: 'haci_bayram_veli_berati.png',
             size: '0.18 MB',
             ocr: `حاجی بیرام ولی سلکنده اشبو رافع توقيع رفیع الشأن خاقانی قدوة الصلحاء **السالكين**
@@ -1257,6 +1264,7 @@ işbu berât-ı âlî-şânım mugâyir-i ref' olunmamak takaddüm ve taraf-ı �
         },
         'hmg': {
             file: 'assets/hmg.png',
+            enhancedFile: 'assets/hmg-enhanced.jpg',
             name: 'hanimlara_mahsus_gazete.png',
             size: '0.04 MB',
             ocr: `خاتونلره مخصوص غزته‌نك
@@ -1457,6 +1465,7 @@ Validenizin o güzel sözüne karşı`,
         },
         'tah': {
             file: 'assets/tah.png',
+            enhancedFile: 'assets/tah-enhanced.jpg',
             name: 'tercuman_i_ahval_25.png',
             size: '0.04 MB',
             ocr: `ترجمان احوال
@@ -1547,6 +1556,7 @@ Ergirili Ahmed Şâhîn Efendi - Sjenica'ya
         },
         'ssp': {
             file: 'assets/ssp.png',
+            enhancedFile: 'assets/ssp-enhanced.jpg',
             name: 'su_saati_pengah_risalesi.png',
             size: '0.03 MB',
             ocr: `ليلده تمام اون ايكى جام ضيا بولوب منور اولور و جمله اشكال مذكوره
@@ -1596,6 +1606,7 @@ ve nehār`,
         },
         'sya': {
             file: 'assets/sya.png',
+            enhancedFile: 'assets/sya-enhanced.jpg',
             name: 'sehir_ici_silah_yasagi_ilani.png',
             size: '0.01 MB',
             ocr: `إعلان
@@ -1666,6 +1677,7 @@ tenbîh olunur`,
         },
         'gkt': {
             file: 'assets/gkt.png',
+            enhancedFile: 'assets/gkt-enhanced.jpg',
             name: 'gumushanevi_kutuphaneleri_dilekce.png',
             size: '0.03 MB',
             ocr: `شرق اوردوسی قوماندانی دولتو کاظم قره بکر پاشا
@@ -1752,6 +1764,7 @@ Hoca Ferşad İbrahim`,
         },
         'ase': {
             file: 'assets/ase.png',
+            enhancedFile: 'assets/ase-enhanced.jpg',
             name: 'askeri_sevkiyat_serif_emirler_arz.png',
             size: '0.01 MB',
             ocr: `موجبجه عمل اولنه
@@ -1823,6 +1836,7 @@ mehâbetlü efendim veliyy-i ni'metim efendim pâdişâhım hazretlerinindir.`,
         },
         'phd': {
             file: 'assets/phd.png',
+            enhancedFile: 'assets/phd-enhanced.jpg',
             name: 'profesorun_hayat_dersi.png',
             size: '0.01 MB',
             ocr: `پروفیسورك حیات درسی: بر كون بر فلسفه پروفیسوری، كرسی یه چیقدی و اوكنده بر قاچ اشیا
@@ -1905,6 +1919,7 @@ diqqat idiñ didi. www.osmanlicaogren.com`,
         },
         'tfh': {
             file: 'assets/tfh.jpg',
+            enhancedFile: 'assets/tfh-enhanced.jpg',
             name: 'gulhane_hatti_humayunu.jpg',
             size: '1.02 MB',
             ocr: `نشان همايون اولدر كه
@@ -2015,6 +2030,387 @@ kalmaya`,
                 date_hijri: "Belirtilmemiş",
                 date_gregorian: "Belirtilmemiş",
                 notes: "Metin, Delâilü'l-Hayrât veya benzeri bir salavat mecmuasının Türkçe şerhine ait bir sayfadır. Arapça ibarelerin Türkçe açıklamaları yapılmıştır. Bu örnek, kullanıcının kendi fotoğrafladığı bir belge üzerinde sistemin gerçek OCR/çeviri motoru çalıştırılarak eklenmiştir."
+            }
+        },
+        'rzk': {
+            file: 'assets/rzk.jpg',
+            enhancedFile: 'assets/rzk-enhanced.jpg',
+            name: 'gulzar_i_sufiyye_rizik_manzumesi.jpg',
+            size: '0.07 MB',
+            ocr: `هو
+رزق ایچون ایلمه دور ابواب - در احسان خدا نعم الباب
+یوزیکی سور اولو درگاهه - قیل خشوعیله نیاز الله
+دائماً حقه توکل ایله - کیمسه **یاره** توسل ایله
+غیردن اومما وار ایسه لطف خدا - آکا محتاج بتون شاه و گدا
+بیله سن جمله یی عبد عاجz - اوله ماز رزقله کیمسه حاجز
+ظاهراً غیریسی ده اولسه سبب - لطف و احسان خدانکدر هب
+کریم اسمایه توسل لازم - اعتقادک اوله اما جازم
+که حقیقتده مدار رزق - او ایدر عالمی انچق **ارزاق**
+غیری یی مانع و معطی صانما - ظاهر هر حاله باقوب المدام
+گلزار صوفیه ص ١١٠`,
+            tr: `O (Allah)
+Rızık elde etmek için kapı kapı dolaşma; Allah'ın lütuf kapısı en güzel kapıdır.
+Yüzünü o yüce dergaha sür ve gönülden bir saygıyla Allah'a yalvar.
+Her zaman Allah'a güvenip dayan; **başkasına** yönelip sığınma.
+Eğer bir iyilik gelecekse bu Allah'ın lütfudur, başkasından bekleme; çünkü hükümdarlar da dilenciler de O'na muhtaçtır.
+Herkesin aciz birer kul olduğunu bil; rızık vermeye kimse engel olamaz.
+Görünüşte rızkına başkaları aracı veya sebep olsa bile, iyilik ve lütuf her zaman Allah'ındır.
+Allah'ın güzel isimlerine sığınarak dua etmek gerekir; ancak bu konudaki inancın tam ve kesin olmalıdır.
+Çünkü gerçekte rızkın kaynağı O'dur; bütün dünyayı ancak O **rızıklandırır**.
+Başkalarını rızka engel olan veya rızkı veren olarak görme; her olayın sadece dış görünüşüne bakıp aldanma.
+Gülzâr-ı Sûfiyye, sayfa 110.`,
+            trans_en: `He (God)
+Do not wander from door to door for sustenance; the door of God's bounty is the best of doors.
+Rub your face against that great threshold and pray to God with deep humility.
+Always trust in God; do not make recourse to **anyone else**.
+Do not expect from others if there is God's grace; all kings and beggars are in need of Him.
+Know everyone as a helpless servant; no one can prevent sustenance.
+Even if outwardly someone else seems to be the cause, grace and bounty belong entirely to God.
+It is necessary to resort to the Generous Names (of God); but your belief must be firm.
+For in reality, the source of sustenance is Him; He alone **provides** for the universe.
+Do not think of anyone else as the preventer or the giver; do not constantly look at the outward appearance of every situation.
+Gülzâr-ı Sûfiyye, page 110.`,
+            translit: `Hû
+Rızk içün eyleme devr-i ebvâb - der-i ihsân-ı Hudâ ni'me'l-bâb
+Yüzüñi sür ulu dergâha - kıl huşû'ıla niyâz Allâh
+Dâ'imâ Hakka tevekkül eyle - kimse **yâre** tevessül eyle
+Gayrdan umma var ise lutf-ı Hudâ - aña muhtâc bütün şâh u gedâ
+Bilesin cümleyi 'abd-i 'âciz - olamaz rızkla kimse hâciz
+Zâhiren gayrisi de olsa sebeb - lutf u ihsân Hudânıñdır hep
+Kerîm esmâya tevessül lâzım - i'tikâdıñ ola ammâ câzim
+Ki hakîkatde medâr-ı rızk - o eder 'âlemi ancak **erzâk**
+Gayrıyı mâni' ve mu'tî ṣanma - zâhir her hâle bakup el-mudâm
+Gülzâr-ı Sûfiyye ṣ. 110`,
+            analysis: {
+                document_type: "Şiir / Manzume",
+                confidence: 95,
+                style: "Tasavvufi, didaktik, manzum",
+                summary: "Belge, Gülzâr-ı Sûfiyye adlı eserden alıntılanmış, rızık ve tevekkül konularını işleyen tasavvufi bir şiirdir. İnsanın rızık arayışında yalnızca Allah'a yönelmesi, O'na güvenmesi ve başkalarından beklentiye girmemesi gerektiği öğütlenmektedir.",
+                key_points: [
+                    "Rızık arayışında kapı kapı dolaşmak yerine yalnızca Allah'ın dergahına sığınılmalıdır.",
+                    "Dünyadaki tüm varlıklar, hükümdarlar ve dilenciler dahil olmak üzere Allah'a muhtaçtır.",
+                    "Görünüşte rızka başkaları vesile olsa bile, gerçek lütuf ve ihsan yalnızca Allah'tan gelir.",
+                    "Allah'ın güzel isimlerine sığınarak dua edilmeli ve bu konudaki inanç tam olmalıdır."
+                ],
+                people: [],
+                places: [],
+                concepts: ["tevekkül", "rızık", "ihsan", "dergah", "esma", "itikat"],
+                script_type: "Rik'a",
+                script_purpose: "Edebi/Tasavvufi Metin Kaydı",
+                period_estimate: "Geç Osmanlı Dönemi",
+                date_hijri: "Belirtilmemiş",
+                date_gregorian: "Belirtilmemiş",
+                notes: "Metin, Gülzâr-ı Sûfiyye isimli tasavvufi bir eserin 110. sayfasından alıntılanmış manzum bir nasihatnamedir."
+            }
+        },
+        'srg': {
+            file: 'assets/srg.jpg',
+            enhancedFile: 'assets/srg-enhanced.jpg',
+            name: 'serguzest_acilis_sahnesi.jpg',
+            size: '0.19 MB',
+            ocr: `روسیا کومپانیاسین باتومدن گیلن بر وپورو توپخانە‌نین اونونه یاناشدیغی زمان دنیزین اوزرینده صابرسزلقله بکلینن برکچ کیشی سندللردن وپوروڭ ایچینه آتمشلردی.
+
+بونلردن بریسی اوزون بویلی، گنیش اوموزلی، بر سی سیاه بیولی، اتکلری آیاقلارنه قدر اوزون، بلی غایت دار بر چرکز پالتوسو گیمیش...
+
+یاننده کَندی قَوْمِنین قلپاغی، الینده بر گوموشلی قِرْباچی اولان چرکزه:
+
+— صفا گلدیز. جاریەلر نرده؟
+— ایشتە بوردە...
+— قاچ تانە؟
+— اوچ...
+— گوزل می؟
+
+چرکز، اسیرلردن برینی گوستردەرک: شو مائی گوزلره باق! بر پاشا بونا بر خزینە ویرر.
+
+چرکزله بو هرِف بر سندلە، جاریەلر ده دیگرینە بینەرک توپخانە اسکلسنه دوغرو وپوردن آچلدیلر.`,
+            tr: `Rusya Kumpanyası'nın Batum'dan gelen bir vapuru Tophane'nin önüne yanaştığı sırada, denizin üzerinde sabırsızlıkla bekleyen birkaç kişi sandallardan vapurun içine atılmışlardı.
+
+Bunlardan biri uzun boylu, geniş omuzlu, seyrek siyah bıyıklıydı; etekleri ayaklarına kadar uzun, beli oldukça dar bir Çerkes paltosu giymişti.
+
+Yanında kendi kavminin kalpağı, elinde gümüşlü bir kırbaç bulunan Çerkes'e:
+
+— Hoş geldiniz. Cariyeler nerede?
+— İşte burada...
+— Kaç tane?
+— Üç...
+— Güzel mi?
+
+Çerkes, esirlerden birini göstererek: Şu mavi gözlere bak! Bir paşa bunun için bir hazine verir.
+
+Çerkes'le bu adam bir sandala, cariyeler de diğerine binerek Tophane İskelesi'ne doğru vapurdan ayrıldılar.`,
+            translit: `Rusya kumpanyasının Batum'dan gelen bir vapuru Tophane'nin önüne yanaştığı zaman denizin üzerinde sabırsızlıkla bekleyen birkaç kişi sandallardan vapurun içine atılmışlardı.
+
+Bunlardan birisi uzun boylu, geniş omuzlu, seyrek siyah bıyıklı, etekleri ayaklarına kadar uzun, beli gayet dar bir Çerkez paltosu giymiş...
+
+Yanında kendi kavminin kalpağı, elinde bir gümüşlü kırbacı olan Çerkez'e:
+
+— Safa geldiniz. Cariyeler nerede?
+— İşte burada...
+— Kaç tane?
+— Üç...
+— Güzel mi?
+
+Çerkez, esirlerden birini göstererek: Şu mâî gözlere bak! Bir paşa buna bir hazine verir.
+
+Çerkez'le bu herif bir sandala, cariyeler de diğerine binerek Tophane İskelesi'ne doğru vapurdan açıldılar.`,
+            analysis: {
+                document_type: "Roman (Matbu Sayfa)",
+                confidence: 90,
+                style: "Realist/natüralist anlatım, diyalog ağırlıklı roman nesri",
+                summary: "Samipaşazade Sezai'nin 1888'de yayımlanan 'Sergüzeşt' adlı romanının açılış sahnesi. Rusya Kumpanyası'na ait bir vapur Batum'dan Tophane'ye yanaşır; güvertede bekleyen bir Çerkez tüccar, beraberindeki cariyeleri sandallarla karaya çıkarır ve onların güzelliği üzerine kısa bir diyalog geçer. Sahne, romanın konusu olan cariyelik/kölelik meselesini daha ilk sayfada okura tanıtır.",
+                key_points: [
+                    "Eser, Samipaşazade Sezai'nin 1888'de yayımlanan ve Türk edebiyatının ilk realist/natüralist romanlarından sayılan 'Sergüzeşt' adlı romanının açılış sahnesidir.",
+                    "Sahne, Kafkasya'dan (Batum üzerinden) İstanbul'a getirilen cariyelerin Tophane'de bir vapurdan indirilip bir Çerkez tüccar tarafından teslim alınışını anlatır.",
+                    "Roman, dönemin kölelik/cariyelik kurumunu eleştirel bir gözle ele alması bakımından Tanzimat sonrası Türk edebiyatında önemli bir dönüm noktasıdır.",
+                    "Sahnedeki diyalog, cariyelerin bir mal gibi alınıp satılmasını ve güzelliklerinin bir pazarlık unsuru olarak konuşulmasını doğrudan okura aktarır."
+                ],
+                people: ["Samipaşazade Sezai"],
+                places: ["Tophane", "Batum", "İstanbul"],
+                concepts: ["cariyelik", "kölelik", "realizm", "Tanzimat edebiyatı", "roman"],
+                script_type: "Matbu",
+                script_purpose: "Edebî eser / roman",
+                period_estimate: "Tanzimat Sonrası Dönem (1888)",
+                date_hijri: "Belirtilmemiş",
+                date_gregorian: "1888",
+                notes: "Metin, kullanıcı tarafından sağlanan okuma esas alınarak eklenmiştir; www.bendelimiyim.com filigranlı bir matbu baskıdan alınmıştır. 'Sergüzeşt', Dilber adlı bir cariyenin trajik hikâyesini anlatır ve Türk edebiyatında kölelik karşıtı ilk eserlerden biri olarak kabul edilir."
+            }
+        },
+        'sbm': {
+            file: 'assets/sbm.jpg',
+            enhancedFile: 'assets/sbm-enhanced.jpg',
+            name: 'sehzade_bayezid_siiri_tarih_ve_edebiyat.jpg',
+            size: '0.26 MB',
+            ocr: `تاریخ و ادبیات
+مجموعه‌سی
+سنه : ١ — ٣٠ نیسان ١٣٣٤ — عدد : ٢
+
+شهزاده بایزیدك پدرلری قانونی سلطان سلیمان خان حضرتلرینه ارسال ایدلک نظم منظومه‌در [١]
+
+ای سراسر عالمه سلطان سلیمانم بابا
+تنده جانم جانمك ایچنده جانانم بابا
+بایزیده قییار میسك بنم جانم بابا
+بی‌گناهم حق بیلور دولتلو سلطانم بابا
+
+انبیا سر دفتری یعنی که آدم حقیچون
+هم دخی موسی ایله عیسی و مریم حقیچون
+کائناتك سروری اول روح اعظم حقیچون
+بی‌گناهم حق بیلور دولتلو سلطانم بابا
+
+سانکه مجنونم بکا داغلر باشی اولدی طوراق
+آیریلوب بالجمله مال و ملکدن دوشدم ایراق
+دوکرم گوز یاشی واحسرتا داد الفراق
+بی‌گناهم حق بیلور دولتلو سلطانم بابا
+
+[١] شهزاده بایزید، شهزاده جم و شهزاده قورقودکی شعرای شهزادگان خاندان عثمانیه‌دندر؛ مخلص نجیبانه‌لری (شاهی) در ترکی و فارسی ایکی عدد دیوان اشعار بلیغانه‌لری ومتفرق بعض آثاری وبرکتاب ظهرنده خط دست عارفانه‌لری ملت کتبخانه‌سنده موجوددر معارف‌پرور بر شهزاده اولدیغندن نامیلرینه بك چوق کتابلر تألیف وترکجه یه ترجمه اولنمشدر.`,
+            tr: `Tarih ve Edebiyat Mecmuası
+1. Yıl — 30 Nisan 1334 — Sayı: 2
+
+Şehzade Bayezid'in babası Kanûnî Sultan Süleyman Han Hazretleri'ne gönderdiği manzumedir [1]
+
+Ey baştan başa bütün âlemin sultanı olan Süleyman'ım, babam
+Bedenimde canım, canımın içindeki sevgilim (cânânım) olan babam
+Benim canım babam, Bayezid'ine kıyar mısın?
+Ben günahsızım; Allah biliyor, ey devletli sultanım, babam
+
+Peygamberlerin başı, yani Âdem hakkı için
+Hem Musa ile İsa ve Meryem hakkı için
+Kâinatın efendisi, o yüce ruh (Hz. Muhammed) hakkı için
+Ben günahsızım; Allah biliyor, ey devletli sultanım, babam
+
+Sanki Mecnun'um; dağ başları bana mesken oldu
+Bütün malımdan ve mülkümden ayrılıp uzaklara düştüm
+Gözyaşı döküyorum; "Ah hasret, ey ayrılık, imdat!" diyerek
+Ben günahsızım; Allah biliyor, ey devletli sultanım, babam
+
+[1] Şehzade Bayezid, Şehzade Cem ve Şehzade Korkud gibi Osmanlı hanedanından şehzade şairlerin asil mahlaslarından olan "Şâhî" mahlasıyla şiir yazmıştır; Türkçe ve Farsça iki divanı, çeşitli dağınık eserleri ve bir kitabın arka kapağında el yazısı Millet Kütüphanesi'nde mevcuttur. Kültüre düşkün bir şehzade olduğundan, adına pek çok kitap yazılmış ve Türkçeye çevrilmiştir.`,
+            translit: `Târîh ve Edebiyât Mecmû'ası
+Sene: 1 — 30 Nisan 1334 — Aded: 2
+
+Şehzâde Bâyezîd'in pederleri Kânûnî Sultân Süleymân Han hazretlerine irsâl eyledikleri nazm-ı manzûmedir [1]
+
+Ey serâser âleme sultân Süleymânım baba
+Tende cânım, cânımın içinde cânânım baba
+Bâyezîd'ine kıyar mısın benim cânım baba
+Bî-günâhım, Hak bilür, devletlü sultânım baba
+
+Enbiyâ ser-defteri, ya'nî ki Âdem hakkıçün
+Hem dahî Mûsâ ile Îsâ vü Meryem hakkıçün
+Kâinâtın serveri, ol rûh-ı a'zam hakkıçün
+Bî-günâhım, Hak bilür, devletlü sultânım baba
+
+Sanki Mecnûn'um, bana dağlar başı oldu durak
+Ayrılub bi'l-cümle mâl ü mülkden düştüm ırak
+Dökerüm göz yaşı, vâ-hasretâ, dâd el-firâk
+Bî-günâhım, Hak bilür, devletlü sultânım baba
+
+[1] Şehzâde Bâyezîd, Şehzâde Cem ve Şehzâde Korkud gibi şehzadegân-ı hânedân-ı Osmâniyyeden şairlerin mahlas-ı necîbâneleri (Şâhî) olup, Türkçe ve Farsça iki adet divan-ı eş'âr-ı belîğâneleri ve müteferrik ba'zı âsârı ve bir kitap zahrında hatt-ı destleri Millet Kütüphanesi'nde mevcuttur; maârif-perver bir şehzade olduğundan, nâmlarına pek çok kitaplar te'lîf ve Türkçeye tercüme olunmuştur.`,
+            analysis: {
+                document_type: "Dergi Sayfası / Tarihî Manzume",
+                confidence: 88,
+                style: "Matbu dergi sayfası; nesih hatla dizilmiş, hüzünlü ve yalvarış tonlu bir manzume",
+                summary: "Bu sayfa, 'Tarih ve Edebiyat Mecmuası'nın 30 Nisan 1334 (1918) tarihli 2. sayısından olup, Şehzade Bayezid'in (mahlası: Şâhî) 1559-1561 taht mücadelesi sırasında babası Kanuni Sultan Süleyman'a gönderdiği, masumiyetini savunan meşhur yalvarış şiirini içerir. Bayezid, bu şiirde babasına 'bî-günahım' (günahsızım) diyerek merhamet dilemektedir.",
+                key_points: [
+                    "Şehzade Bayezid, ağabeyi Şehzade Selim (sonradan II. Selim) ile giriştiği taht mücadelesini kaybedip Safevi topraklarına (İran'a) sığınmak zorunda kalmıştı.",
+                    "Bu manzume, Bayezid'in babası Kanuni Sultan Süleyman'ın merhametine sığınarak masumiyetini savunduğu duygusal bir yalvarış şiiridir.",
+                    "Bayezid, 1561-1562'de Kazvin'de (İran) babasının emriyle İran şahının eliyle idam edilmiştir; bu şiir idamından önceki umutsuz çağrılarından biridir.",
+                    "Dipnotta, Bayezid'in 'Şâhî' mahlasıyla şiirler yazdığı, Türkçe ve Farsça iki divanının bulunduğu ve el yazısının Millet Kütüphanesi'nde korunduğu belirtilmektedir.",
+                    "Sayfa, 'Tarih ve Edebiyat Mecmuası'nın 30 Nisan 1334 (1918) tarihli 2. sayısından alınmıştır; üzerinde Büyük Millet Meclisi Kütüphanesi mührü bulunmaktadır."
+                ],
+                people: ["Şehzade Bayezid", "Kanuni Sultan Süleyman"],
+                places: [],
+                concepts: ["şehzade", "taht kavgası", "manzume", "Osmanlı hanedanı", "Millet Kütüphanesi"],
+                script_type: "Matbu (nesih dizgi)",
+                script_purpose: "Tarihî belge yayını / edebiyat mecmuası",
+                period_estimate: "Yayın: 1334 (1918) — Şiirin aslı: 1559-1561 taht mücadelesi dönemi",
+                date_hijri: "Belirtilmemiş",
+                date_gregorian: "30 Nisan 1918 (1334 Rumi)",
+                notes: "Metin, kullanıcının Vikikaynak'taki yayımlanmış transkripsiyonla karşılaştırarak sağladığı okuma esas alınarak eklenmiştir. Görseldeki mühür 'Büyük Millet Meclisi Kütüphanesi'ne aittir. Şiirin tamamı üç kıta olup her kıta aynı nakarat mısraıyla ('Bî-günâhım, Hak bilür, devletlü sultânım baba') bitmektedir; bu sayfada şiirin üçü de görünmektedir."
+            }
+        },
+        'klm': {
+            file: 'assets/klm.jpg',
+            enhancedFile: 'assets/klm-enhanced.jpg',
+            name: 'sogud_kadisi_imamet_ilami_921.jpg',
+            size: '0.12 MB',
+            ocr: `هو
+
+در دست / اعلام
+
+درگاه عالیه و بارگاه اعلایه لازال عالیاً عرض بنده بی‌مقدار و خاکسار بودر کی
+
+سگود قضاسنده صوفیلر نام قریه‌ده یومی بش آقچه ایله امام اولان موسی فوت اولوب
+
+اولوب امامت مذکوره خالی قالمغله اشبو رافع رقعه عبودیت صداقت حقیقت
+
+محله و ولایته اهلیتی توجیه اولنوب در سعادته عرض اولندی که باقی فرمان
+
+درگاه سعادته معلومدر تحریراً فی اواسط المحرم الحرام سنه احدی و عشرین و تسعمائة (٩٢١)
+
+الداعی للدولة العلیة السید محمد القاضی ببقعة سگود`,
+            tr: `O (Allah)
+
+İşleme alındı / Kadı İ'lâmı (Raporu)
+
+Şanı daim olsun, yüce ve yüksek makama değersiz ve mütevazı kulunuzun sunduğu arzıdır ki:
+
+Söğüt kazasında Sofular adlı köyde günlük beş akçe ile imamlık yapan Musa vefat etmiş olup,
+
+adı geçen imamlık görevi boş kaldığından, bu kulluk dilekçesini getiren, sadakati ve dürüstlüğü sabit olan kişi,
+
+bu mahalle ve bölge için gerekli ehliyete sahip görülerek saadet kapısına (merkeze) arz edildi; geri kalanı
+
+yüce ve saadetli dergâhın bileceği bir husustur. Muharrem-i haram ayının ortalarında, dokuz yüz yirmi bir (921) senesinde yazılmıştır.
+
+Yüce devlete dua eden, Söğüt beldesinin kadısı Seyyid Mehmed.`,
+            translit: `Hû
+
+Der-dest / İ'lâm
+
+Dergâh-ı âliyye ve bârgâh-ı a'lâya lâ-zâl âliyen arz-ı bende-i bî-mikdâr ü hâksâr budur ki
+
+Söğüd kazâsında Sofular nâm karyede yevmî beş akçe ile imâm olan Mûsâ fevt olub
+
+İmâmet-i mezbûre hâlî kalmağla işbu râfi'-i rık'a-i 'ubûdiyyet sadâkat hakîkat
+
+Mahalle ve vilâyete ehliyeti tevcîh olunub der-i sa'âdete arz olundu ki bâkî fermân
+
+Dergâh-ı sa'âdete ma'lûmdur tahrîren fî evâsiti'l-Muharremi'l-harâm sene ihdâ ve 'işrîn ve tis'a-mi'e (921)
+
+Ed-dâ'î li'd-devleti'l-'aliyye es-Seyyid Muhammed el-kâdî bi-buk'ati Söğüd`,
+            analysis: {
+                document_type: "Kadı İlâmı (Arz)",
+                confidence: 85,
+                style: "Resmî, hukukî-dinî arz/ilâm üslubu",
+                summary: "1515 (H. 921) tarihli bu kadı ilâmı, Söğüt kazasına bağlı Sofular köyünde günlük 5 akçe maaşla görev yapan imam Musa'nın vefatı üzerine, yerine ehil görülen bir kişinin atanması için merkeze (dergâh-ı sa'âdete) yapılan resmî arzdır. Belgeyi Söğüt kadısı Seyyid Mehmed yazıp mühürlemiştir.",
+                key_points: [
+                    "Belge, Söğüt kazasına bağlı Sofular köyündeki imamlık makamının boşalması üzerine düzenlenmiş bir kadı ilâmıdır (arzıdır).",
+                    "Önceki imam Musa'nın vefat ettiği ve günlük 5 akçelik bir maaşla görev yaptığı belirtilmektedir.",
+                    "Yeni adayın ehliyeti ve sadakati vurgulanarak atanması için merkeze (dergâh-ı sa'âdete) arzda bulunulmuştur.",
+                    "Belge, Hicrî 921 (Milâdî 1515) yılında Söğüt kadısı Seyyid Mehmed tarafından yazılıp mühürlenmiştir.",
+                    "Söğüt, Osmanlı Devleti'nin kuruluş yeri olarak bilinir; bu belge, kuruluşun hemen ardından bölgedeki idarî-dinî teşkilatlanmanın küçük ölçekli bir örneğidir."
+                ],
+                people: ["Musa (müteveffa imam)", "Seyyid Mehmed (Söğüt Kadısı)"],
+                places: ["Söğüt", "Sofular köyü"],
+                concepts: ["kadı ilâmı", "imamet", "arz", "akçe", "göreve tayin"],
+                script_type: "Divânî/Rik'a karışımı el yazısı",
+                script_purpose: "Hukukî-idarî arz / tayin belgesi",
+                period_estimate: "Yavuz Sultan Selim Dönemi (Erken 16. Yüzyıl)",
+                date_hijri: "921 (evâsıt-ı Muharrem)",
+                date_gregorian: "Şubat-Mart 1515 (tahminî)",
+                notes: "Metin, kullanıcı tarafından satır satır kontrol edilerek sağlanan okuma esas alınarak eklenmiştir. Belge, Osmanlı taşra idaresinde küçük ölçekli dinî görevlerin (imamet) nasıl merkeze arz edilerek dolduruldığunu gösteren tipik bir kadı ilâmı örneğidir."
+            }
+        },
+        'smt': {
+            file: "assets/smt.jpg",
+            enhancedFile: "assets/smt-enhanced.jpg",
+            name: "mabeyn_sinematograf_arzi_1328.jpg",
+            size: "0.15 MB",
+            ocr: `مابين همايون باشكتابت جليله‌سنه
+
+عطوفتلو افندم حضرتلری
+
+سینماتوغراف ماكینه‌سی واسطه‌سيله صحنه‌ی تماشایه وضع **ایدیلمکده اولان** رسملرڭ بلده‌ی مذکوره‌ده و عظیمه‌ی جمعیه احوال و مخابراتی
+
+مناظر مختلفه‌سی صور و فوطوغرافلرندن **برقاچی** بالنیابه تقدیم اولندوغی اراده‌ی سنیه‌ی جناب خلافت‌پناهی مقتضای عالیسندن
+
+اولدوغی تحریراتِ علیه‌لرینه کرم‌کارلری زیور تکریم اولارق جمیع احوال و مخابراته دائر فوطوغرافلردن برر صورتی
+
+آرانیلدیغی ایسه ده بولندیریلامامش اولدیغندن مهمچه‌سی لفاً تقدیم قلینمش اولنمغله دنیلن انتخاب اولندیغی تقدیرده
+
+همان معامله‌ی سیاره اولنمق **اوزره آلتی هفته ظرفنده اتمام ایدیلرک تقدیم اولنمق اوزره** عرض و مجبور قلینمغله اول بابده
+
+امر و اراده حضرت ولی‌الامرندر. فی ۱۲ جمادی‌الاولی سنه ۱۳۲۸
+
+یاور خاص حضرت شهریاری فریق **[imza - okunamadı]**`,
+            tr: `Mâbeyn-i Hümâyûn Yüce Başkitâbetine (Özel Kalem Müdürlüğüne),
+
+Lütufkâr Efendim Hazretleri,
+
+Sinematograf makinesi aracılığıyla seyirlik sahneye konulmakta olan görüntülerin, adı geçen şehirdeki durumlar ve toplantı haberleşmelerine dair
+
+çeşitli manzaralarının resim ve fotoğraflarından birkaçının vekâleten sunulduğu, Halife Padişah Hazretlerinin yüce iradesinin gereği
+
+olduğu bildirilip yüce yazışmalarına hürmet nişanesi olarak, bütün durum ve haberleşmelere dair fotoğraflardan birer örneğinin
+
+arandığı, fakat bulundurulamadığından önemli olanlarının ilişikte sunulduğu, bunlardan seçim yapılması durumunda
+
+derhal gerekli işlemin yapılması için altı hafta içinde tamamlanıp sunulmak üzere arz olunmakla, bu hususta
+
+emir ve ferman, buyruk sahibi Padişah Hazretlerinindir. 12 Cemâziyelevvel 1328 (Mayıs/Haziran 1910 civarı) tarihlidir.
+
+Padişahın Has Yaveri Ferik [imza - okunamadı]`,
+            translit: `Mâbeyn-i Hümâyûn Başkitâbet-i Celîlesine
+
+Âtıfetlü Efendim Hazretleri
+
+Sinematograf makinesi vasıtasıyla sahne-i temâşâya vaz' **edilmekte olan** resimlerin belde-i mezkûrede ve azîme-i cem'iyye ahvâl ve muhâberâtı
+
+menâzır-ı muhtelifesi suver ve fotoğraflarından **birkaçı** bi'n-niyâbe takdîm olunduğu irâde-i seniyye-i cenâb-ı hilâfet-penâhî muktezâ-yı 'âlîsinden
+
+olduğu tahrîrât-ı 'aliyyelerine keremkârîleri zîver-i tekrîm olarak cemî' ahvâl ve muhâberâta dâir fotoğraflardan birer sûreti
+
+arandığı ise de bulundurulamamış olduğundan mühimçesi leffen takdîm kılınmış olunmakla denilen intihâb olunduğu takdîrde
+
+hemân mu'âmele-i seyyâre olunmak **üzere altı hafta zarfında itmâm edilerek takdîm olunmak üzere** arz u mecbûr kılınmakla ol bâbda
+
+emr ü irâde hazret-i veliyyü'l-emrindir. Fî 12 Cemâziye'l-ûlâ sene 1328
+
+Yâver-i Hâs Hazret-i Şehriyârî Ferîk **[imza - okunamadı]**`,
+            analysis: {
+                document_type: "Mâbeyn-i Hümâyûn Yazışması (Arz Tezkiresi)",
+                confidence: 68,
+                style: "Resmî saray yazışma üslubu, Rık'a hattı",
+                summary: "12 Cemâziyelevvel 1328 (y. 1910) tarihli bu belge, bir şehirde sinematograf makinesiyle gösterime konan görüntülere ve toplumsal olaylara dair fotoğrafların vekâleten padişaha sunulduğunu, eksik kalanların altı hafta içinde tamamlanıp gönderilmesinin istendiğini bildiren, Mâbeyn-i Hümâyûn Başkitâbeti'ne yazılmış resmî bir arzdır. Padişahın Has Yaveri bir Ferik tarafından imzalanmıştır.",
+                key_points: ["Belge, Mâbeyn-i Hümâyûn Başkitâbeti'ne (Saray Özel Kalemi) hitaben yazılmış resmî bir arz/üst yazıdır.", "Sinematograf (sinema) makinesiyle gösterime konan görüntülerin, bir şehirdeki olaylar ve toplantılarla ilgili çeşitli fotoğraflarının vekâleten (temsilen) padişaha sunulduğu bildirilmektedir.", "Bu sunumun, halifelik makamındaki padişahın yüksek iradesi gereği yapıldığı vurgulanmaktadır.", "Tüm olaylara dair fotoğraflardan birer örneğin arandığı, bulunamayanlar yerine önemli görülenlerin ilişikte gönderildiği belirtilmektedir.", "Seçim yapılması hâlinde gerekli işlemin altı hafta içinde tamamlanarak sunulması isteniyor; belge Padişahın Has Yaveri bir Ferik (Tümgeneral) tarafından imzalanmıştır.", "Belge, 12 Cemâziyelevvel 1328 (1910 civarı) tarihli olup erken dönem sinema/fotoğraf malzemesinin saray tarafından nasıl denetlendiğine/takip edildiğine dair bir örnektir."],
+                people: ["Halife Padişah Hazretleri (dönemin sultanı — mühürden Sultan Mehmed Reşad olduğu tahmin ediliyor)", "Yâver-i Hâs, Ferik rütbeli imza sahibi (adı okunamadı)"],
+                places: ["Belde-i mezkûre (adı belirtilmeyen bir şehir)"],
+                concepts: ["sinematograf", "mâbeyn-i hümâyûn", "başkitâbet", "yâver-i hâs", "arz", "fotoğraf/suver", "irade-i seniyye"],
+                script_type: "Rık'a (saray yazışma hattı)",
+                script_purpose: "Resmî saray/mâbeyn yazışması — arz tezkiresi",
+                period_estimate: "II. Meşrutiyet Dönemi, muhtemelen Sultan Mehmed Reşad saltanatı (Erken 20. Yüzyıl)",
+                date_hijri: "12 Cemâziyelevvel 1328",
+                date_gregorian: "Mayıs/Haziran 1910 (tahminî)",
+                notes: "Bu belgenin bir kısmı (işaretli **kalın** kelimeler) kullanıcının paylaştığı okumada Latin harfleriyle bırakılmış, eksik kalan Arap harfli bölümler ise yapay zekâ tarafından bağlama ve standart Osmanlıca kalıp ifadelere dayanılarak tamamlanmıştır — bu kısımlar %100 piksel-piksel doğrulanmış değildir. Sağ üstteki oval mühürde 'Reşad' ibaresi seçilebildiğinden belge, Sultan Mehmed Reşad dönemine (1909-1918) ait olmalı; bu da '1328' tarihini (1318 değil) destekler. İmza ve mühür metinleri tam okunamamıştır."
             }
         }
     };
@@ -2503,6 +2899,23 @@ kalmaya`,
     cropModal.addEventListener('click', (e) => {
         if (e.target === cropModal) cancelCropAndReturnToChoice();
     });
+
+    // --- Örnek belgeler: ilk 14'ten sonrasını "Daha Fazla Göster" arkasına
+    // gizle — örnek sayısı arttıkça ana sayfanın altı aşırı uzamasın diye.
+    // Kart sayısı 14'ü geçmiyorsa buton zaten gösterilmez.
+    (function setupSamplesPagination() {
+        const INITIAL_VISIBLE = 14;
+        const allCards = Array.from(document.querySelectorAll('.sample-card'));
+        const moreBtn = document.getElementById('samplesMoreBtn');
+        if (!moreBtn || allCards.length <= INITIAL_VISIBLE) return;
+
+        allCards.slice(INITIAL_VISIBLE).forEach(card => card.classList.add('hidden'));
+        moreBtn.classList.remove('hidden');
+        moreBtn.addEventListener('click', () => {
+            allCards.slice(INITIAL_VISIBLE).forEach(card => card.classList.remove('hidden'));
+            moreBtn.classList.add('hidden');
+        });
+    })();
 
     // --- Sample Image Click Handlers ---
     document.querySelectorAll('.sample-card').forEach(card => {
