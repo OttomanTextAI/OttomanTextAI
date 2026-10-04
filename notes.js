@@ -17,10 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const notesDocumentSelect =
         document.getElementById('notesDocumentSelect');
-    
-    if (notesDocumentSelect && !authToken) {
-        notesDocumentSelect.remove();
-    }
+
     const notesList =
         document.getElementById('notesList');
 
@@ -29,6 +26,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const notesDocumentInfo =
         document.getElementById('notesDocumentInfo');
+
+    const notesLoginRequired =
+        document.getElementById('notesLoginRequired');
+
+    const notesContent =
+        document.getElementById('notesContent');
 
     // Üst navbar'daki tema anahtarı ve sol menü çekmecesi — index.html/app.js
     // ile birebir aynı davranış (aynı 'theme' localStorage anahtarı
@@ -268,38 +271,21 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     })();
 
-    const GUEST_NOTES_KEY = 'divane_guest_notes';
-    const MAX_GUEST_NOTES = 3;
-
-
-    function getGuestNotes() {
-            try {
-                const notes = JSON.parse(
-                    localStorage.getItem(GUEST_NOTES_KEY) || '[]'
-                );
-
-                return Array.isArray(notes)
-                    ? notes
-                    : [];
-
-            } catch (error) {
-                return [];
-            }
-        }
-
-
-    function saveGuestNotes(notes) {
-            localStorage.setItem(
-                GUEST_NOTES_KEY,
-                JSON.stringify(notes)
-            );
-        }
     function showStatus(message) {
         notesStatus.textContent = message;
     }
 
-
-if (authToken) {
+    // Not oluşturma ve eski notları görüntüleme girişle korunur — misafir
+    // modu kaldırıldı. Giriş yoksa sadece bu bilgilendirme gösterilir,
+    // notlarla ilgili hiçbir istek atılmaz (navbar/tema/yan menü yine de
+    // çalışmaya devam eder, bkz. yukarıdaki kod).
+    if (!authToken) {
+        notesLoginRequired.classList.remove('hidden');
+        notesContent.classList.add('hidden');
+        return;
+    }
+    notesLoginRequired.classList.add('hidden');
+    notesContent.classList.remove('hidden');
 
     notesDocumentInfo.textContent =
         'Belgelerinize Ait Notlar';
@@ -312,16 +298,6 @@ if (authToken) {
             'Kayıtlı notlarınızı aşağıda görüntüleyebilirsiniz.'
         );
     }
-
-} else {
-    notesDocumentInfo.textContent =
-        'Misafir Notları • 3 manuel + 1 AI notu';
-
-    showStatus(
-        'Misafir olarak 3 manuel not ve 1 AI notu oluşturabilirsiniz. ' +
-        'Kalıcı kullanım için giriş yapabilirsiniz.'
-    );
-}
 
 
     async function apiRequest(
@@ -565,38 +541,6 @@ if (authToken) {
             'change',
             async () => {
 
-                // Misafir kullanıcı
-                if (!authToken) {
-
-                    const guestNotes =
-                        getGuestNotes();
-
-                    const targetNote =
-                        guestNotes.find(
-                            item =>
-                                String(item.id) ===
-                                String(note.id)
-                        );
-
-                    if (targetNote) {
-                        targetNote.is_completed =
-                            checkbox.checked;
-
-                        saveGuestNotes(
-                            guestNotes
-                        );
-                    }
-
-                    item.classList.toggle(
-                        'completed',
-                        checkbox.checked
-                    );
-
-                    return;
-                }
-
-
-                // Giriş yapmış kullanıcı
                 checkbox.disabled = true;
 
                 try {
@@ -650,31 +594,6 @@ if (authToken) {
                     return;
                 }
 
-
-                // Misafir kullanıcı
-                if (!authToken) {
-
-                    const guestNotes =
-                        getGuestNotes()
-                            .filter(
-                                item =>
-                                    String(item.id) !==
-                                    String(note.id)
-                            );
-
-                    saveGuestNotes(
-                        guestNotes
-                    );
-
-                    renderNotes(
-                        guestNotes
-                    );
-
-                    return;
-                }
-
-
-                // Giriş yapmış kullanıcı
                 deleteBtn.disabled = true;
 
                 try {
@@ -706,21 +625,6 @@ if (authToken) {
 
 async function loadNotes() {
 
-    // Misafir
-    if (!authToken) {
-
-        const guestNotes =
-            getGuestNotes();
-
-        renderNotes(
-            guestNotes
-        );
-
-        return;
-    }
-
-
-    // Giriş yapmış kullanıcı
     showStatus(
         'Notlar yükleniyor...'
     );
@@ -780,63 +684,6 @@ renderDocumentGroups(groups);
                     'button[type="submit"]'
                 );
 
-
-                // Misafir kullanıcı
-                if (!authToken) {
-
-                    const guestNotes =
-                        getGuestNotes();
-                    const manualGuestNoteCount =
-                        guestNotes.filter(
-                            note =>
-                                note.source_type === 'manual'
-                        ).length;
-
-                    if (
-                        manualGuestNoteCount >=
-                        MAX_GUEST_NOTES
-                    ) {
-                        alert(
-                            'Misafir olarak en fazla 3 not oluşturabilirsiniz. ' +
-                            'Daha fazla not eklemek ve notlarınızı kalıcı olarak saklamak için giriş yapın.'
-                        );
-
-                        return;
-                    }
-
-
-                    guestNotes.push({
-                        id:
-                            'guest_' +
-                            Date.now(),
-
-                        content:
-                            content,
-
-                        source_type:
-                            'manual',
-
-                        is_completed:
-                            false,
-
-                        created_at:
-                            new Date()
-                                .toISOString()
-                    });
-
-
-                    saveGuestNotes(
-                        guestNotes
-                    );
-
-                    notesInput.value = '';
-
-                    renderNotes(
-                        guestNotes
-                    );
-
-                    return;
-                }
             submitBtn.disabled = true;
             submitBtn.textContent =
                 'Ekleniyor...';

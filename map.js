@@ -1487,7 +1487,7 @@ Hoca Ferşad İbrahim`,
             return `
                 <button type="button" class="map-doc-back" data-doc-back>← Listeye dön</button>
                 <p class="map-city-modal-empty">Bu belgenin içeriği şu an burada gösterilemiyor.</p>
-                <a class="map-doc-fulllink" href="index.html?sample=${encodeURIComponent(doc.key)}">Tam sayfada aç →</a>`;
+                <a class="map-doc-fulllink" href="index.html?sample=${encodeURIComponent(doc.key)}&saveToDocuments=1">Tam sayfada aç →</a>`;
         }
         const paragraphs = content.text.split(/\n\s*\n/).map(p => `<p>${p.replace(/\n/g, '<br>')}</p>`).join('');
         return `
@@ -1498,7 +1498,7 @@ Hoca Ferşad İbrahim`,
             </div>
             <p class="map-doc-summary">${content.summary}</p>
             <div class="map-doc-text">${paragraphs}</div>
-            <a class="map-doc-fulllink" href="index.html?sample=${encodeURIComponent(doc.key)}">Tam sayfada aç (Osmanlıca aslı, harf çevirisi ve daha fazlası) →</a>`;
+            <a class="map-doc-fulllink" href="index.html?sample=${encodeURIComponent(doc.key)}&saveToDocuments=1">Tam sayfada aç (Osmanlıca aslı, harf çevirisi ve daha fazlası) →</a>`;
     }
 
     cityModalDocs.addEventListener('click', (e) => {

@@ -556,42 +556,49 @@
             </a>
         </div>
 
-        <form id="notesForm" class="notes-form">
-            <select
-                id="notesDocumentSelect"
-                class="notes-document-select"
-                aria-label="Notun ekleneceği belge"
-            >
-                <option value="">Belge seçin...</option>
-            </select>
-            <textarea
-                id="notesInput"
-                class="notes-input"
-                placeholder="Yeni bir not yaz..."
-                rows="2"
-            ></textarea>
+        <div id="notesLoginRequired" class="hidden" style="background: var(--bg-card); border-radius: var(--radius-md); padding: 2rem; text-align: center;">
+            <p style="margin-bottom: 1.2rem;">Not oluşturmak ve eski notlarınızı görüntülemek için giriş yapmalısınız.</p>
+            <a href="index.html" class="btn btn-primary">Ana Sayfaya Dön ve Giriş Yap</a>
+        </div>
 
-            <button
-                type="submit"
-                class="btn btn-primary notes-add-btn"
-            >
-                Not Ekle
-            </button>
-        </form>
+        <div id="notesContent">
+            <form id="notesForm" class="notes-form">
+                <select
+                    id="notesDocumentSelect"
+                    class="notes-document-select"
+                    aria-label="Notun ekleneceği belge"
+                >
+                    <option value="">Belge seçin...</option>
+                </select>
+                <textarea
+                    id="notesInput"
+                    class="notes-input"
+                    placeholder="Yeni bir not yaz..."
+                    rows="2"
+                ></textarea>
 
-        <div
-            id="notesStatus"
-            class="notes-status"
-        ></div>
+                <button
+                    type="submit"
+                    class="btn btn-primary notes-add-btn"
+                >
+                    Not Ekle
+                </button>
+            </form>
 
-        <div
-            id="notesList"
-            class="notes-list"
-        ></div>
+            <div
+                id="notesStatus"
+                class="notes-status"
+            ></div>
+
+            <div
+                id="notesList"
+                class="notes-list"
+            ></div>
+        </div>
 
     </main>
 
-    <script src="notes.js?v=20260917-1"></script>
+    <script src="notes.js?v=20261004-1"></script>
 
 </body>
 </html>

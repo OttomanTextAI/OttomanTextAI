@@ -2947,13 +2947,83 @@ Yâver-i Hâs Hazret-i Şehriyârî Ferîk **[imza - okunamadı]**`,
         });
     });
 
-    // map.html'deki şehir kartlarındaki "İlgili Eser" linki
+    // map.html'deki şehir kartlarındaki "Tam sayfada aç" linki
     // (index.html?sample=X) buraya geldiğinde, o örnek belgeyi yukarıdaki
     // .sample-card tıklama mantığıyla birebir aynı şekilde otomatik yükler.
-    const deepLinkSampleKey = new URLSearchParams(window.location.search).get('sample');
+    const deepLinkParams = new URLSearchParams(window.location.search);
+    const deepLinkSampleKey = deepLinkParams.get('sample');
     if (deepLinkSampleKey) {
         const targetCard = document.querySelector(`.sample-card[data-sample="${CSS.escape(deepLinkSampleKey)}"]`);
         if (targetCard) targetCard.click();
+
+        // Harita, belgeyi sadece burada önizlemekle kalmayıp doğrudan
+        // "Belgelerim"de gösterip oraya kaydetmek istediğinde
+        // &saveToDocuments=1 ekliyor (bkz. map.js renderDocDetailHtml).
+        // Giriş yapılmamışsa kaydedecek bir hesap olmadığından sadece
+        // burada (demo gibi) gösterilip kullanıcı bilgilendiriliyor —
+        // diğer tüm kayıtsız-çeviri akışlarıyla aynı mesaj.
+        if (deepLinkParams.get('saveToDocuments') === '1') {
+            const sample = sampleDatabase[deepLinkSampleKey];
+            if (sample) {
+                if (!state.authToken) {
+                    alert('Bu belgeyi Belgelerim\'e kaydetmek için giriş yapmalısınız.');
+                } else {
+                    saveMapSampleToDocuments(deepLinkSampleKey, sample);
+                }
+            }
+        }
+    }
+
+    // Harita üzerinden "Tam sayfada aç"a tıklanan bir örnek belgeyi,
+    // sample kartlarının aksine (bkz. saveTranslationToBackend çağrı
+    // noktası — presetData'da hiç çağrılmaz) bilerek doğrudan
+    // "Belgelerim"e kaydeder ve kayıt biter bitmez oradaki belge
+    // görünümüne yönlendirir — kullanıcı index.html'deki demo önizlemesini
+    // hiç görmeden doğrudan kendi belgeleri arasında bu belgeyi bulur.
+    async function saveMapSampleToDocuments(key, sample) {
+        try {
+            const imgRes = await fetch(sample.enhancedFile || sample.file);
+            if (!imgRes.ok) throw new Error('Örnek görsel yüklenemedi.');
+            const imgBlob = await imgRes.blob();
+
+            const resultData = {
+                ocr: sample.ocr || '',
+                trans: sample.tr || '',
+                trans_modern: sample.tr || '',
+                translit: sample.translit || '',
+                trans_en: sample.trans_en || '',
+                title: sample.name || null,
+                ...(sample.analysis || {})
+            };
+
+            const formData = new FormData();
+            formData.append('image', imgBlob, sample.name || `${key}.jpg`);
+            formData.append('result', JSON.stringify(resultData));
+
+            const res = await fetchWithTimeout(`${API_BASE_URL}/api/translations/save`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${state.authToken}` },
+                body: formData
+            }, 30000);
+            const data = await res.json().catch(() => ({}));
+
+            if (res.status === 409 && data.duplicate && data.existing_document_id) {
+                // Bu örnek bu kullanıcı için zaten kayıtlıysa yeni bir
+                // kopya oluşturmadan doğrudan mevcut kayda gidiyoruz.
+                window.location.href = `documents.html?open=${encodeURIComponent(data.existing_document_id)}`;
+                return;
+            }
+
+            if (!res.ok || !data.document_id) {
+                alert('Belge Belgelerim\'e kaydedilemedi: ' + (data.error || 'bilinmeyen bir hata oluştu.'));
+                return;
+            }
+
+            window.location.href = `documents.html?open=${encodeURIComponent(data.document_id)}`;
+        } catch (err) {
+            console.error('[MAP SAMPLE SAVE]', err);
+            alert('Belge Belgelerim\'e kaydedilirken bir hata oluştu.');
+        }
     }
 
     function resetState() {
@@ -4947,73 +5017,11 @@ ${transTextDisplay.textContent}
     // -----------------------------
     // GİRİŞ YAPMAMIŞ KULLANICI
     // -----------------------------
+    // Not oluşturma girişle korunur (misafir modu kaldırıldı, bkz.
+    // notes.js) — burada da aynı kurala uyuluyor.
     if (!state.authToken) {
-        const GUEST_NOTES_KEY = 'divane_guest_notes';
-        const GUEST_AI_NOTE_USED_KEY =
-            'divane_guest_ai_note_used';
-
-        const aiNoteAlreadyUsed =
-            localStorage.getItem(
-                GUEST_AI_NOTE_USED_KEY
-            ) === 'true';
-
-        if (aiNoteAlreadyUsed) {
-            alert(
-                'Misafir olarak yalnızca 1 AI sonucunu ' +
-                'notlarınıza ekleyebilirsiniz. ' +
-                'Daha fazla AI notu kaydetmek için giriş yapın.'
-            );
-
-            return false;
-        }
-
-        let guestNotes = [];
-
-        try {
-            const storedNotes = JSON.parse(
-                localStorage.getItem(
-                    GUEST_NOTES_KEY
-                ) || '[]'
-            );
-
-            guestNotes =
-                Array.isArray(storedNotes)
-                    ? storedNotes
-                    : [];
-
-        } catch (error) {
-            guestNotes = [];
-        }
-
-        guestNotes.push({
-            id:
-                'guest_ai_' +
-                Date.now(),
-
-            content:
-                content,
-
-            source_type:
-                sourceType,
-
-            is_completed:
-                false,
-
-            created_at:
-                new Date().toISOString()
-        });
-
-        localStorage.setItem(
-            GUEST_NOTES_KEY,
-            JSON.stringify(guestNotes)
-        );
-
-        localStorage.setItem(
-            GUEST_AI_NOTE_USED_KEY,
-            'true'
-        );
-
-        return true;
+        alert('Not eklemek için giriş yapmalısınız.');
+        return false;
     }
 
     // -----------------------------
