@@ -152,12 +152,28 @@
             padding: 1.1rem 1.4rem;
             box-shadow: var(--shadow-sm);
         }
+        /* Başlık ve köken/tür rozeti aynı satırda ama belirgin biçimde ayrı:
+           rozet küçük ve soluk renkli, tanımın İÇİNE değil kelimenin
+           yanına konur — "(a.i.)" gibi kısaltmalar artık tanım metniyle
+           karışıp kafa karıştırmasın diye. */
+        .sozluk-entry-head {
+            display: flex;
+            align-items: baseline;
+            flex-wrap: wrap;
+            gap: 0.55rem;
+            margin-bottom: 0.5rem;
+        }
         .sozluk-entry-word {
             font-family: var(--font-heading);
             font-weight: 700;
             font-size: 1.4rem;
             color: var(--color-gold);
-            margin-bottom: 0.5rem;
+        }
+        .sozluk-entry-tag {
+            font-size: 0.72rem;
+            font-style: italic;
+            color: var(--color-text-muted);
+            font-weight: 400;
         }
         .sozluk-entry-def {
             font-size: 0.92rem;
@@ -316,7 +332,7 @@
     <main class="page-wrapper" style="padding-top: 2.5rem;">
         <h1 style="font-family: var(--font-heading); font-size: 1.8rem; margin: 0 0 0.6rem; color: var(--color-gold);">❖ <span style="color: var(--color-text-main);">Osmanlıca Sözlük</span></h1>
         <p class="sozluk-intro">
-            42.000'den fazla Osmanlıca kelime ve tabirin anlamını içeren, Ferit Devellioğlu'nun
+            52.000'den fazla Osmanlıca kelime ve tabirin anlamını içeren, Ferit Devellioğlu'nun
             Osmanlıca-Türkçe Ansiklopedik Lûgat'ine dayanan bir sözlük. Aramak istediğiniz kelimeyi
             Osmanlı Türkçesinin Latin harfli yazımıyla yazabilir, aşağıdaki harflere tıklayarak o
             harfle başlayan kelimeleri sırayla gezebilir, ya da hiçbir şey yazmadan rastgele

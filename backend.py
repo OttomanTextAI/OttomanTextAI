@@ -99,9 +99,20 @@ except Exception:
 # arama karşılaştırması için burada elle çeviriliyor.
 _TR_LOWER_MAP = str.maketrans("İIÇĞÖŞÜ", "iıçğöşü")
 
+# Sözlükteki Osmanlıca şapkalı ünlüler (â, î, û) kullanıcının düz yazdığı
+# harflerle (a, i, u) eşleşsin diye arama karşılaştırmasında bu şapkalar
+# siliniyor — ör. "ab" yazınca "âb-ı hayat" da bulunabilsin. Gösterilen
+# kelimenin kendisi (entry["word"]) hiç değişmiyor, sadece bu normalize
+# edilmiş hâli karşılaştırmada kullanılıyor.
+_ACCENT_FOLD_MAP = str.maketrans("âîûÂÎÛ", "aiuaiu")
+
 
 def turkish_lower(text):
     return text.translate(_TR_LOWER_MAP).lower()
+
+
+def normalize_for_search(text):
+    return turkish_lower(text).translate(_ACCENT_FOLD_MAP)
 
 # All /api/* routes (enhance, translate, assistant, health) share this one
 # allowlist so a route can never end up with looser or stricter CORS than
@@ -2653,7 +2664,7 @@ def search_dictionary():
     if not query or len(query) < 2:
         return jsonify({"results": [], "total_matches": 0})
 
-    query_lower = turkish_lower(query)
+    query_lower = normalize_for_search(query)
     # Günümüz Türkçesiyle arama yapılıp Osmanlıcası bulunabilsin diye tanım
     # metninde de eşleşme aranıyor — ör. "gemi" yazınca "sefine" bulunabilsin.
     # Kelime sınırında arama yapılıyor (bare "in" gibi çok kısa/ortak parçalar
@@ -2663,7 +2674,7 @@ def search_dictionary():
     exact, prefix, contains = [], [], []
     in_definition = []  # (eşleşmenin tanımdaki konumu, entry) — bkz. aşağıdaki sıralama notu
     for entry in DICTIONARY_ENTRIES:
-        word_lower = turkish_lower(entry["word"])
+        word_lower = normalize_for_search(entry["word"])
         if word_lower == query_lower:
             exact.append(entry)
         elif word_lower.startswith(query_lower):
@@ -2671,7 +2682,7 @@ def search_dictionary():
         elif query_lower in word_lower:
             contains.append(entry)
         elif def_query_re:
-            m = def_query_re.search(turkish_lower(entry["definition"]))
+            m = def_query_re.search(normalize_for_search(entry["definition"]))
             if m:
                 in_definition.append((m.start(), entry))
 
@@ -2707,7 +2718,7 @@ def browse_dictionary_by_letter():
     letter = (request.args.get("letter") or "").strip()
     if not letter:
         return jsonify({"results": [], "total": 0})
-    letter_lower = turkish_lower(letter)[:1]
+    letter_lower = normalize_for_search(letter)[:1]
 
     try:
         offset = max(int(request.args.get("offset", 0)), 0)
@@ -2718,8 +2729,13 @@ def browse_dictionary_by_letter():
     except (TypeError, ValueError):
         limit = 40
 
-    matches = [e for e in DICTIONARY_ENTRIES if turkish_lower(e["word"])[:1] == letter_lower]
-    matches.sort(key=lambda e: turkish_lower(e["word"]))
+    # "â" ile başlayan kelimeler de "A" harfinin altında görünsün diye
+    # şapka normalize edilerek filtreleniyor; sıralamada da önce bu
+    # normalize edilmiş hâl, eşitlik durumunda da orijinal (şapkalı) yazım
+    # kullanılıyor — böylece "a..." ve "â..." kelimeleri aynı listede
+    # harf sırasına göre karışık ama tutarlı biçimde dizilir.
+    matches = [e for e in DICTIONARY_ENTRIES if normalize_for_search(e["word"])[:1] == letter_lower]
+    matches.sort(key=lambda e: (normalize_for_search(e["word"]), turkish_lower(e["word"])))
 
     return jsonify({
         "results": matches[offset:offset + limit],

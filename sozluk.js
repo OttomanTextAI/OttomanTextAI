@@ -212,11 +212,15 @@ function expandAbbrCode(rawToken) {
     return out.join(', ');
 }
 
-// Sadece tanımın en başındaki "(...)" bloğunu genişletir — metin içindeki
-// "(bkz : X)" gibi sonraki parantezlere dokunmaz.
-function expandLeadingTag(definition) {
-    const m = definition.match(/^\(([^)]*)\)/);
-    if (!m) return definition;
+// Tanımın en başındaki "(...)" bloğunu (köken/tür kısaltması, ör. "(a.i.)")
+// tanım metninden ayırıp genişletilmiş hâliyle ayrıca döndürür — metin
+// içindeki "(bkz : X)" gibi sonraki parantezlere dokunmaz. Bu etiket artık
+// tanımın İÇİNDE değil, kelimenin yanında küçük bir rozet olarak
+// gösteriliyor; ikisi karışıp "tanımın bir parçası" gibi görünmesin diye
+// ayrıştırılıyor.
+function extractLeadingTag(definition) {
+    const m = definition.match(/^\(([^)]*)\)\s*/);
+    if (!m) return { tag: null, rest: definition };
     const tokens = m[1].split(' ');
     const newTokens = tokens.map(t => {
         const trailing = (t.match(/[,;]+$/) || [''])[0];
@@ -224,7 +228,7 @@ function expandLeadingTag(definition) {
         const expanded = expandAbbrCode(core);
         return expanded !== null ? expanded + trailing : t;
     });
-    return '(' + newTokens.join(' ') + ')' + definition.slice(m[0].length);
+    return { tag: newTokens.join(' '), rest: definition.slice(m[0].length) };
 }
 
 // Günümüz Türkçesiyle arama yapılıp tanım metninde bulunduğunda ("gemi"
@@ -241,7 +245,6 @@ function highlightAndEscape(text) {
 }
 
 function renderSensesHtml(word, definition) {
-    definition = expandLeadingTag(definition);
     const senses = splitSenses(definition);
     if (senses.length === 1 && senses[0].num === null) {
         const parts = splitCompoundParts(word, senses[0].text);
@@ -261,10 +264,14 @@ function renderSensesHtml(word, definition) {
 }
 
 function entryToHtml(e) {
+    const { tag, rest } = extractLeadingTag(e.definition);
     return `
         <div class="sozluk-entry">
-            <div class="sozluk-entry-word">${escapeHtml(e.word)}</div>
-            <div class="sozluk-entry-def">${renderSensesHtml(e.word, e.definition)}</div>
+            <div class="sozluk-entry-head">
+                <span class="sozluk-entry-word">${escapeHtml(e.word)}</span>
+                ${tag ? `<span class="sozluk-entry-tag">${escapeHtml(tag)}</span>` : ''}
+            </div>
+            <div class="sozluk-entry-def">${renderSensesHtml(e.word, rest)}</div>
         </div>
     `;
 }
