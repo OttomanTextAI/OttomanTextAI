@@ -4920,7 +4920,7 @@ Yâver-i Hâs Hazret-i Şehriyârî Ferîk **[imza - okunamadı]**`,
     // Osmanlı kanalında bilerek translitTextDisplay'e sabitlenir (bkz. çağrı
     // noktası), çünkü charIndex, TTS'e giden translit metnine göre hesaplanır
     // ve ocr (Arap harfli) metinle kelime sayısı/sırası birebir örtüşmez.
-    function speakText(text, { lang = 'tr-TR', displays = [], buttons = [], channelKey = null, wordHighlightDisplay = null } = {}) {
+    function speakText(text, { lang = 'tr-TR', displays = [], buttons = [], channelKey = null, wordHighlightDisplay = null, wordMap = null } = {}) {
         if (!text) return;
         if (!('speechSynthesis' in window)) {
             alert('Tarayıcınız sesli okuma özelliğini desteklemiyor.');
@@ -4938,6 +4938,21 @@ Yâver-i Hâs Hazret-i Şehriyârî Ferîk **[imza - okunamadı]**`,
         const sentences = splitIntoSentences(text);
         const wordDisplay = wordHighlightDisplay || displays[0] || null;
         let index = 0;
+
+        // sentenceWordOffsets[i] = i'inci cümleden ÖNCEKİ tüm cümlelerin
+        // toplam kelime sayısı — yani i'inci cümlenin GENİŞLETİLMİŞ METİN
+        // içindeki global kelime başlangıcı. onboundary'de cümle-lokal
+        // kelime indeksini bu haritayla global indekse, oradan da wordMap
+        // üzerinden orijinal (ekrandaki) global indekse çevirmek için
+        // kullanılır (bkz. aşağıdaki onboundary).
+        const sentenceWordOffsets = [];
+        if (wordMap) {
+            let cumulative = 0;
+            for (const s of sentences) {
+                sentenceWordOffsets.push(cumulative);
+                cumulative += (s.match(/\S+/g) || []).length;
+            }
+        }
 
         ttsState = 'speaking';
         ttsActiveChannel = channelKey;
@@ -4986,7 +5001,25 @@ Yâver-i Hâs Hazret-i Şehriyârî Ferîk **[imza - okunamadı]**`,
                 // sessizce çık.
                 const activeSpan = wordDisplay && wordDisplay.querySelector('.tts-sentence-active');
                 if (!activeSpan || activeSpan.getAttribute('data-tts-idx') !== String(currentIdx)) return;
-                const wIdx = wordIndexAtCharIndex(currentSentenceText, event.charIndex);
+                const wIdxExpanded = wordIndexAtCharIndex(currentSentenceText, event.charIndex);
+                // expandAbbreviationsForTts "Hz."/"s.a.v." gibi kısaltmaları
+                // birden çok kelimeye genişlettiği için, TTS'in seslendirdiği
+                // (genişletilmiş) metindeki kelime indeksi ile ekrandaki
+                // (orijinal) metindeki kelime indeksi bu noktadan sonra farklı
+                // sayılabilir. wordMap, genişletilmiş her kelimenin ait olduğu
+                // orijinal kelimeyi tutar (ör. "s.a.v." → 4 kelime, hepsi aynı
+                // orijinal indeksi gösterir) — bu haritayı kullanarak cümle-
+                // lokal genişletilmiş indeksi, AYNI cümledeki orijinal-lokal
+                // indekse çeviriyoruz, currentIdx (cümle indeksi) değişmeden.
+                let wIdx = wIdxExpanded;
+                if (wordMap && wIdxExpanded >= 0) {
+                    const globalExpandedIdx = sentenceWordOffsets[currentIdx] + wIdxExpanded;
+                    const globalOriginalIdx = wordMap[globalExpandedIdx];
+                    const sentenceOriginalStart = wordMap[sentenceWordOffsets[currentIdx]];
+                    if (globalOriginalIdx !== undefined && sentenceOriginalStart !== undefined) {
+                        wIdx = globalOriginalIdx - sentenceOriginalStart;
+                    }
+                }
                 highlightWordInDisplay(wordDisplay, currentIdx, wIdx);
             };
 
@@ -5050,16 +5083,19 @@ Yâver-i Hâs Hazret-i Şehriyârî Ferîk **[imza - okunamadı]**`,
             return;
         }
 
-        const text = getText();
+        const { text, wordMap } = getText();
         if (!text) {
             alert(emptyMessage);
             return;
         }
-        speakText(text, { lang, displays, buttons, channelKey, wordHighlightDisplay });
+        speakText(text, { lang, displays, buttons, channelKey, wordHighlightDisplay, wordMap });
     }
 
     ttsBtn.addEventListener('click', () => handleTtsToggle({
-        getText: () => expandAbbreviationsForTts(transTextDisplay.textContent).normalize('NFC').replace(/[\u0300-\u036f]/g, ''),
+        getText: () => {
+            const expanded = expandAbbreviationsForTts(transTextDisplay.textContent);
+            return { text: expanded.text.normalize('NFC').replace(/[\u0300-\u036f]/g, ''), wordMap: expanded.wordMap };
+        },
         lang: 'tr-TR',
         displays: [transTextDisplay],
         buttons: [ttsBtn],
@@ -5080,16 +5116,73 @@ Yâver-i Hâs Hazret-i Şehriyârî Ferîk **[imza - okunamadı]**`,
     // nokta burası — her kanalın kendi normalize/diyakritik temizliğinden
     // ÖNCE çağrılarak, nokta içeren kısaltmalar cümle bölünmeden önce
     // noktasız karşılıklarına dönüştürülmüş olur.
+    // { text, wordMap } döner: wordMap[i] = genişletilmiş metindeki i'inci
+    // kelimenin, ORİJİNAL (ekrandaki) metinde hangi kelimeye (0-tabanlı
+    // indeks) karşılık geldiği. "s.a.v." dört kelimeye genişlediğinde,
+    // o dört kelimenin hepsi wordMap'te AYNI orijinal indeksi taşır — bu
+    // sayede onboundary'deki kelime takibi, genişletilmiş kelime sayısı
+    // ekrandaki kelime sayısından farklı olsa bile doğru kelimeyi
+    // vurgulayabilir (bkz. speakText).
     function expandAbbreviationsForTts(text) {
-        if (!text) return text;
-        return text
-            .replace(/\bs\.a\.v\.\s*/gi, 'sallallahu aleyhi ve sellem ')
-            .replace(/\bHz\.\s*/gi, 'Hazreti ');
+        if (!text) return { text, wordMap: [] };
+
+        const originalWordStarts = [];
+        {
+            const wordRe = /\S+/g;
+            let m;
+            while ((m = wordRe.exec(text))) originalWordStarts.push(m.index);
+        }
+        // pos, bir orijinal kelimenin TAM başlangıcında olmayabilir (örn.
+        // "(Hz." gibi bitişik bir noktalama işareti varsa) — bu durumda
+        // pos'u İÇEREN (pos'tan önce başlayan SON) kelimeyi döndürür.
+        function originalWordIndexAtPos(pos) {
+            let result = 0;
+            for (let i = 0; i < originalWordStarts.length; i++) {
+                if (originalWordStarts[i] <= pos) result = i; else break;
+            }
+            return result;
+        }
+
+        const expandedWords = [];
+        const wordMap = [];
+        function pushPlainRange(str, rangeStartPos) {
+            const wordRe = /\S+/g;
+            let m;
+            while ((m = wordRe.exec(str))) {
+                expandedWords.push(m[0]);
+                wordMap.push(originalWordIndexAtPos(rangeStartPos + m.index));
+            }
+        }
+
+        const combinedRe = /(\bs\.a\.v\.\s*)|(\bHz\.\s*)/gi;
+        let lastIndex = 0;
+        let match;
+        while ((match = combinedRe.exec(text)) !== null) {
+            if (match.index > lastIndex) {
+                pushPlainRange(text.slice(lastIndex, match.index), lastIndex);
+            }
+            const originalIdx = originalWordIndexAtPos(match.index);
+            const replacementWords = match[1] !== undefined
+                ? ['sallallahu', 'aleyhi', 've', 'sellem']
+                : ['Hazreti'];
+            replacementWords.forEach(w => {
+                expandedWords.push(w);
+                wordMap.push(originalIdx);
+            });
+            lastIndex = combinedRe.lastIndex;
+        }
+        if (lastIndex < text.length) {
+            pushPlainRange(text.slice(lastIndex), lastIndex);
+        }
+
+        return { text: expandedWords.join(' '), wordMap };
     }
 
     function cleanTranslitForTts(text) {
-        if (!text) return text;
-        text = expandAbbreviationsForTts(text);
+        if (!text) return { text, wordMap: [] };
+        const expanded = expandAbbreviationsForTts(text);
+        const wordMap = expanded.wordMap;
+        text = expanded.text;
         // â/û/î gibi harflerin NFD (ayrışık: harf + birleştirici işaret)
         // biçiminde gelip TTS motoru tarafından sessizce atlanma
         // ihtimaline karşı önce NFC'ye normalize edilir. Ardından, modelin
@@ -5118,7 +5211,7 @@ Yâver-i Hâs Hazret-i Şehriyârî Ferîk **[imza - okunamadı]**`,
         // GEÇİCİ TEŞHİS LOGU — â/û/î sessizliği sorununu teşhis etmek için,
         // kalıcı değil, sorun bulunduktan sonra kaldırılacak.
         console.log('[TTS DEBUG] cleaned text:', JSON.stringify(text), [...text].map(c => c.codePointAt(0).toString(16)));
-        return text;
+        return { text, wordMap };
     }
 
     // Osmanlıca (Arap harfli) metin doğrudan seslendirilemediği için, hem
@@ -5153,7 +5246,10 @@ Yâver-i Hâs Hazret-i Şehriyârî Ferîk **[imza - okunamadı]**`,
     // boşsa) diğer iki dilden bağımsız, ayrı bir uyarı gösterir (bkz.
     // handleTtsToggle'daki emptyMessage kontrolü).
     enTtsBtn.addEventListener('click', () => handleTtsToggle({
-        getText: () => expandAbbreviationsForTts(enTextDisplay.textContent).normalize('NFC').replace(/[\u0300-\u036f]/g, ''),
+        getText: () => {
+            const expanded = expandAbbreviationsForTts(enTextDisplay.textContent);
+            return { text: expanded.text.normalize('NFC').replace(/[\u0300-\u036f]/g, ''), wordMap: expanded.wordMap };
+        },
         lang: 'en-US',
         displays: [enTextDisplay],
         buttons: [enTtsBtn],
