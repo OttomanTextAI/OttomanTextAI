@@ -107,7 +107,7 @@ class SuggestionReviewer:
             base_url=base_url,
         )
 
-        def _create_completion(self, **kwargs):
+    def _create_completion(self, **kwargs):
             try:
                 return self.client.chat.completions.create(
                     model=self.model,
