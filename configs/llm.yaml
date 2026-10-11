@@ -1,10 +1,10 @@
 provider: relaygpu
-model: google/gemini-3.5-flash
+model: openai/gpt-5.5
 
 # Tried once, on the full (unsplit) image, only as a last resort after
 # both the normal 2-attempt request and the split-image fallback have
 # failed due to the model looping on the same phrase.
-fallback_model: openai/gpt-5.5
+fallback_model: openai/gpt-4o-mini
 
 generation:
   temperature: 0.1
