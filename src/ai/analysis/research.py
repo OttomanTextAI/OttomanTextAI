@@ -75,7 +75,7 @@ class ResearchSuggestionGenerator:
 
         self.model = model
     
-        def _create_completion(self, **kwargs):
+    def _create_completion(self, **kwargs):
             try:
                 return self.client.chat.completions.create(
                     model=self.model,
