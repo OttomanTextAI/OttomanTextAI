@@ -1113,6 +1113,13 @@ ANALYSIS_PROMPT = (
     "çıkmak, muhtelif->çeşitli, nezdinde->gözünde). Günlük karşılığı "
     "olmayan tarihî/dinî terimleri koru, gerekirse parantezle kısaca "
     "açıkla. Tahmin edilen kısımları çift yıldızla işaretle. "
+    "Belge şiir, manzume, vezin/kafiyeli bir metin veya resmi/arkaik bir "
+    "üslupta olsa bile, trans_modern HER ZAMAN günümüzün en doğal, akıcı "
+    "konuşma diline yakın olmalı — eski cümle kalıplarını, vezin/kafiye "
+    "kaygısıyla korunmuş devrik veya eksiltili yapıları (örn. '...atam "
+    "gereklidir' yerine '...babama ihtiyacım var' gibi) sürdürme. Anlamı "
+    "ve duyguyu koru, ama cümleleri bugünün bir insanının doğal şekilde "
+    "kuracağı gibi yeniden kur. "
 
     "trans_en: OCR metninin İngilizce çevirisini yaz. trans alanındaki "
     "aynı çeviri olsun, sadece dili İngilizce olsun. Burada da tahmin "
