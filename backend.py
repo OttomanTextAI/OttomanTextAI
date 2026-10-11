@@ -2381,13 +2381,42 @@ def ai_suggested_questions():
                 }
             ), 500
 
-        generator = DocumentQuestionGenerator(
-            model=model,
-        )
+        try:
+            generator = DocumentQuestionGenerator(
+                model=model,
+            )
 
-        questions = generator.generate(
-            document_text=document_retriever.document_text,
-        )
+            questions = generator.generate(
+                document_text=document_retriever.document_text,
+            )
+
+        except Exception as primary_error:
+            error_message = str(primary_error)
+
+            if (
+                "MODEL_NOT_AVAILABLE" not in error_message
+                and "model_not_available" not in error_message.lower()
+            ):
+                raise
+
+            fallback_model = llm_config.get("fallback_model")
+
+            if not fallback_model or fallback_model == model:
+                raise
+
+            print(
+                f"[AI QUESTIONS] Primary model unavailable. "
+                f"Trying fallback: {fallback_model}",
+                flush=True,
+            )
+
+            fallback_generator = DocumentQuestionGenerator(
+                model=fallback_model,
+            )
+
+            questions = fallback_generator.generate(
+                document_text=document_retriever.document_text,
+            )
 
         return jsonify(
             {
