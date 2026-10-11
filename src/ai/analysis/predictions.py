@@ -84,6 +84,35 @@ class DocumentPredictionGenerator:
             base_url=base_url,
         )
 
+    def _create_completion(self, **kwargs):
+        try:
+            return self.client.chat.completions.create(
+                model=self.model,
+                **kwargs,
+            )
+        except Exception as error:
+            if "MODEL_NOT_AVAILABLE" not in str(error).upper():
+                raise
+
+            fallback_model = "openai/gpt-5.5"
+
+            if self.model == fallback_model:
+                raise
+
+            print(
+                f"[AI PREDICTIONS] {self.model} unavailable. "
+                f"Trying {fallback_model}.",
+                flush=True,
+            )
+
+            completion = self.client.chat.completions.create(
+                model=fallback_model,
+                **kwargs,
+            )
+
+            self.model = fallback_model
+            return completion
+        
     def generate(self, document_text: str) -> dict:
         document_text = document_text.strip()
 
@@ -95,8 +124,7 @@ class DocumentPredictionGenerator:
             max_chars=10000,
         )
 
-        response = self.client.chat.completions.create(
-            model=self.model,
+        response = self._create_completion(
             messages=[
                 {
                     "role": "system",
@@ -175,8 +203,7 @@ class DocumentPredictionGenerator:
                 flush=True,
             )
 
-            retry_response = self.client.chat.completions.create(
-                model=self.model,
+            retry_response = self._create_completion(
                 messages=[
                     {
                         "role": "system",

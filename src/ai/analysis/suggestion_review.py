@@ -107,6 +107,35 @@ class SuggestionReviewer:
             base_url=base_url,
         )
 
+        def _create_completion(self, **kwargs):
+            try:
+                return self.client.chat.completions.create(
+                    model=self.model,
+                    **kwargs,
+                )
+            except Exception as error:
+                if "MODEL_NOT_AVAILABLE" not in str(error).upper():
+                    raise
+
+                fallback_model = "openai/gpt-5.5"
+
+                if self.model == fallback_model:
+                    raise
+
+                print(
+                    f"[SUGGESTION REVIEW] {self.model} unavailable. "
+                    f"Trying {fallback_model}.",
+                    flush=True,
+                )
+
+                completion = self.client.chat.completions.create(
+                    model=fallback_model,
+                    **kwargs,
+                )
+
+                self.model = fallback_model
+                return completion
+        
     def review(
         self,
         original_text: str,
@@ -129,8 +158,7 @@ class SuggestionReviewer:
             f"KULLANICI DÜZENLEMESİ:\n{user_edit}"
         )
 
-        response = self.client.chat.completions.create(
-            model=self.model,
+        response = self._create_completion(
             messages=[
                 {
                     "role": "system",
@@ -174,8 +202,7 @@ class SuggestionReviewer:
                 flush=True,
             )
 
-            retry_response = self.client.chat.completions.create(
-                model=self.model,
+            retry_response = self._create_completion(
                 messages=[
                     {
                         "role": "system",
