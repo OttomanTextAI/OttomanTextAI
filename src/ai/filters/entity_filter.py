@@ -96,6 +96,35 @@ class EntityFilterClassifier:
 
         self.model = model
 
+        def _create_completion(self, **kwargs):
+            try:
+                return self.client.chat.completions.create(
+                    model=self.model,
+                    **kwargs,
+                )
+            except Exception as error:
+                if "MODEL_NOT_AVAILABLE" not in str(error).upper():
+                    raise
+
+                fallback_model = "openai/gpt-5.5"
+
+                if self.model == fallback_model:
+                    raise
+
+                print(
+                    f"[ENTITY FILTER] {self.model} unavailable. "
+                    f"Trying {fallback_model}.",
+                    flush=True,
+                )
+
+                completion = self.client.chat.completions.create(
+                    model=fallback_model,
+                    **kwargs,
+                )
+
+                self.model = fallback_model
+                return completion
+        
     def classify(
         self,
         document_text: str,
@@ -115,8 +144,7 @@ class EntityFilterClassifier:
             flush=True,
         )
 
-        completion = self.client.chat.completions.create(
-            model=self.model,
+        completion = self._create_completion(
             messages=[
                 {
                     "role": "system",
@@ -201,8 +229,7 @@ class EntityFilterClassifier:
                 flush=True,
             )
 
-            retry_completion = self.client.chat.completions.create(
-                model=self.model,
+            retry_completion = self._create_completion(
                 messages=[
                     {
                         "role": "system",

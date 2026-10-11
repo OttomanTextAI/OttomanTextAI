@@ -75,34 +75,35 @@ class ResearchSuggestionGenerator:
 
         self.model = model
     
-    def _create_completion(self, **kwargs):
-        try:
-            self.model = fallback_model
-            return self.client.chat.completions.create(
-                model=self.model,
-                **kwargs,
-            )
-        except Exception as error:
-            if "MODEL_NOT_AVAILABLE" not in str(error).upper():
-                raise
+        def _create_completion(self, **kwargs):
+            try:
+                return self.client.chat.completions.create(
+                    model=self.model,
+                    **kwargs,
+                )
+            except Exception as error:
+                if "MODEL_NOT_AVAILABLE" not in str(error).upper():
+                    raise
 
-            fallback_model = "openai/gpt-5.5"
+                fallback_model = "openai/gpt-5.5"
 
-            if self.model == fallback_model:
-                raise
+                if self.model == fallback_model:
+                    raise
 
-            print(
-                f"[RESEARCH SUGGESTIONS] "
-                f"{self.model} unavailable. "
-                f"Trying {fallback_model}.",
-                flush=True,
-            )
+                print(
+                    f"[RESEARCH SUGGESTIONS] "
+                    f"{self.model} unavailable. "
+                    f"Trying {fallback_model}.",
+                    flush=True,
+                )
 
-            self.model = fallback_model
-            return self.client.chat.completions.create(
-                model=fallback_model,
-                **kwargs,
-            )
+                completion = self.client.chat.completions.create(
+                    model=fallback_model,
+                    **kwargs,
+                )
+
+                self.model = fallback_model
+                return completion
     def generate(
         self,
         document_text: str,
