@@ -424,6 +424,17 @@ Dışarıdan ülkeye insan getirmelerine de engel olunmayacaktır.
 Yeri ve göğü yaratan Allah adına, Kur'an adına, Peygamber adına, bütün peygamberler adına ve kuşandığım kılıç adına yemin ederim ki bu hükümlere kimse karşı gelmeyecektir.
 Onlar benim emrime bağlı kaldıkları sürece bu güvence devam edecektir.
 Böyle bilinsin.`,
+            trans_en: `I am Sultan Mehmed Han.
+Let it be known to all that I command, granting special favor to the Bosnian monks who carry this imperial decree (ferman):
+No one shall hinder them or their churches, nor shall anyone disturb them. They shall live in safety within my realm.
+Those who have fled shall also be safe.
+They may come to my realm and live without fear, and worship freely in their churches.
+No harm shall come to them from my office, my viziers, my soldiers, my people, or anyone else in my realm; no one shall cause them injury.
+Their lives, their property, and their churches shall not be touched.
+Nor shall they be hindered from bringing people into the country from abroad.
+I swear, in the name of Allah, who created the earth and the sky, in the name of the Qur'an, in the name of the Prophet, in the name of all the prophets, and in the name of the sword I bear, that no one shall act against these decrees.
+This guarantee shall remain in force for as long as they remain loyal to my command.
+Let this be known.`,
             translit: `Nişân-ı hümâyûn oldur ki, ben ki Sultân Mehemmed Hânım.
 Cümle havâss u avâm ma'lûm ola ki, işbu dârendegân-ı fermân-ı hümâyûn Bosna râhiblerine mezîd-i inâyetim zuhûr idüp buyurdum ki, mezbûrlara ve kilîsâlarına kimesne mâni' ve müzâhim olmayup ihtiyâtsız memleketimde duralar.
 Ve kaçup gidenler dahi emn ü emânda olalar.
@@ -581,6 +592,56 @@ Olsun artık dökülen kanlarımın hepsi helâl.
 Ebediyen sana yok, ırkıma yok izmihlâl:
 Hakkıdır, hür yaşamış, bayrağımın hürriyet;
 Hakkıdır, Hakk'a tapan milletimin istiklâl!`,
+            trans_en: `Have no fear, this crimson banner drifting through the dawn will not go dark,
+Not while the last hearth still smolders over my homeland.
+It is my nation's star, and it shall shine on;
+It is mine, and it belongs to my nation alone.
+
+Do not frown, I would give my life for you, O tender crescent moon!
+Smile upon my heroic people; why such fury, such wrath?
+Otherwise the blood we shed for you would never be deserved.
+Freedom is the right of my nation, which worships God alone!
+
+I have lived free since the dawn of time, and free I shall remain.
+What madman could think to put me in chains? I am astonished!
+I am like a roaring flood; I trample my banks and overflow them.
+I tear through mountains; the open horizon cannot hold me, I spill beyond it.
+
+Even if the West's horizon is wrapped in a wall of steel armor,
+I have a frontier as strong as my faith-filled chest.
+Rise up, have no fear! How could that beast you call
+"Civilization" — a monster with but a single fang left — ever smother such faith?
+
+Friend! Do not let the vile ones set foot upon my homeland.
+Make a shield of your own body; let this shameless onslaught be stopped.
+The days that God has promised you will surely dawn...
+Who knows — perhaps tomorrow, perhaps even sooner than tomorrow.
+
+Do not walk past the ground beneath your feet merely calling it "soil" — know it!
+Think of the thousands lying shroudless beneath it.
+You are the son of martyrs — do not wound them, it would shame your forebears;
+Do not give up this paradise of a homeland, even if you were offered whole worlds in exchange.
+
+Who would not sacrifice themselves for this paradise of a homeland?
+Martyrs would gush forth if you merely pressed this soil — martyrs!
+Let God take my life, my beloved, everything I possess,
+But let Him never part me from my one homeland in this world.
+
+O my God, this alone is my soul's one desire:
+Let no unworthy hand ever touch the breast of my shrine.
+Let these calls to prayer — whose declarations are the very foundation of this faith —
+Resound forever over my eternal homeland.
+
+Then, in ecstasy, my very gravestone — if I have one — will bow in prayer a thousand times;
+From every wound of mine, O my God, my bloody tears will pour forth,
+And my corpse will burst up from the earth like a disembodied spirit;
+Then, rising higher still, perhaps my head will touch the Divine Throne.
+
+Wave on, then, like the dawn itself, O glorious crescent moon!
+Let all the blood I have shed from now on be made worthy.
+Neither you nor my race shall ever know ruin:
+Freedom is the right of my banner, which has always lived free;
+Freedom is the right of my nation, which worships God alone!`,
             // İstiklâl Marşı zaten 1921'den beri aynı sözlerle okunduğu için,
             // Arap harfli aslının Latin harfli okunuşu ile günümüz Türkçesi
             // neredeyse birebir aynıdır — ayrı bir sadeleştirme gerekmez.
@@ -840,6 +901,69 @@ Fuzûlî'nin sözleri, senin övgünü söylemenin uğuru sayesinde inciye dön�
 Mahşer günü gaflet uykusundan uyanıp, sana duyulan hasretin gözyaşlarını uyanık gözlerden döktüğümde...
 
 Umudum şudur ki kıyamet gününde senin yüzünü görmekten mahrum kalmayayım. Ben, senin güzel yüzünü görmeye susamış biriyim; kavuşma çeşmen bana su versin, yani bana vuslatını ve şefaatini nasip etsin.`,
+            trans_en: `O eye! Do not sprinkle water from your tears upon the fires within my heart; for water is no remedy for fires that have blazed so fiercely.
+
+I do not know whether the color of the turning vault of heaven is the color of water, or whether the tears flowing from my eyes have covered the vault of heaven.
+
+It is no wonder that my heart should be shattered to pieces by the effect of your sharp, sword-like glances. For even flowing water, as it runs past, carves cracks into walls.
+
+My wounded heart speaks, fearing your arrow-like eyelashes. For even one who is wounded drinks water only with the greatest care.
+
+Even if the gardener were to water a thousand rose gardens, no rose like your face would ever bloom. Let him not trouble himself in vain, then, but leave the rose garden to the water.
+
+Even if the scribe's eyes grow dim and dark from constantly staring at his writing, like the pen, he could never imitate the fine lines on your face that resemble the first down of a peach.
+
+What harm is there if my eyelashes grow wet with tears as I recall your cheek? Giving water to a thorn in the hope of obtaining a rose is not given in vain.
+
+On the day of sorrow, do not withhold your sword from my sick heart. For to give water to the sick on a dark night is a good and virtuous deed.
+
+O heart! When I am parted from my beloved, seek out her arrow-like eyelashes and quench my longing for reunion. I am thirsty in this desert; seek water for me, if only once.
+
+I yearn for your lips, while the ascetics desire Kevser (the heavenly river of Paradise). For indeed, wine pleases the drunk, while water pleases the sober.
+
+The water, it seems, has fallen in love with that beautifully-walking cypress; without pausing even for a moment, it flows on toward the garden of paradise where she dwells.
+
+To prevent the water from reaching the place where my beloved is, I must become earth and block its path. For water is my rival, and I do not wish to allow it to reach the place where she is.
+
+Friends! If I should die from the desire to kiss my beloved's hand, make a jug from my clay, and with it offer water to my beloved.
+
+The cypress remains stubborn against the dove's pleading. Let the water, then, take hold of its skirt and fall at its feet, begging.
+
+The rose wishes, through some trick, to drink the nightingale's blood. Let the water, then, enter the veins of the rose's branch and save the nightingale.
+
+By following the path of the Prophet Muhammad, Ahmed-i Muhtâr (the Chosen One), water has openly shown its pure nature to all mankind.
+
+The miracles of the Prophet Muhammad, the lord of mankind, the sea of chosen and purified pearls, have sprinkled water upon the fires of the wicked — that is, they have extinguished their evil and oppression.
+
+In order to bring forth once more the beauty and vitality of the rose garden of prophethood, the Prophet, by his miracle, brought forth water from hard stone.
+
+His miracle is like a boundless sea in this world; through this miracle, water has reached the fire-burning temples of thousands of unbelievers.
+
+Whoever hears that the Prophet, on a day of severe thirst, gave water to the Ansâr (his Medinan companions and helpers) from his own fingers, bites his finger in astonishment.
+
+Should the Prophet's friend drink serpent's venom, that venom turns for him into the water of immortality. Should his enemy drink water, that water surely turns into serpent's venom.
+
+When the Prophet, in order to perform ablution, passed water over his rose-like beautiful face, from every drop of that water a thousand seas of mercy surged forth.
+
+The water wanders restlessly, striking its head from stone to stone through the ages, in order to reach the earth upon which his foot has trodden.
+
+The water wishes to scatter light, particle by particle, upon the soil of his shrine (dergâh). Even if it is broken into pieces, it will not turn back from that shrine.
+
+Sinful men see it as a remedy to repeat your eulogy (na't) and your praise again and again — just as drunkards drink water to relieve their headaches.
+
+O beloved of Allah! O best of mankind! Just as those whose lips are parched with thirst constantly beg for water, so too do I feel a great longing for you.
+
+You are the sea of miraculous grace, who, on the night of the Ascension (Mirâc), brought water, through the dewdrops of your bounty, even to the fixed and moving stars.
+
+Should the architect who restores your tomb ever need water, a pure and sweet stream of grace descends at every moment from the fountain of the sun.
+
+The fear of Hell has cast a fire of sorrow into my burning heart. But I have hope that the cloud of your forgiveness and goodness will sprinkle water upon this fire.
+
+Fuzûlî's words have turned into pearls through the good fortune of praising you. Just as a drop of water falling from the April rain turns into a precious pearl, so too have his words gained the value of pearls.
+
+When, on the Day of Judgment, I awaken from the sleep of heedlessness and pour forth, from waking eyes, the tears of longing I feel for you...
+
+My hope is that on the Day of Resurrection I shall not be deprived of seeing your face. I am one who thirsts to see your beautiful face; let your fountain of reunion give me water — that is, let it grant me union with you and your intercession.`,
             translit: `Saçma ey göz eşkden gönlümdeki odlara su
 Kim bu denlü tutuşan odlara kılmaz çâre su
 
@@ -1023,6 +1147,8 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
 الحق`,
             tr: `Gülle indikten sonra bir miktar tekrar ede, ondan sonra köşkün içine **buncab** yerleştirile ve bazen köşkün sonunda ve bir halka **doğan şeklindeki kaldıracın** çoğuna havale edilip ve çünkü kaldıracın hareketine engel olmaya ve bu oluğun genişliği o kadar ola ki içinde yerleştirilecek gülle kolaylıkla hareket ede, ondan sonra o olukta güllelerin kesim yerini belirleyeler. Bu yolla ki bir adet gülle oluğa konulup oluğun kenarında iki işaret koyalar ki bunun mesafesi güllenin çapı kadar ola ve oluğun bir kenarında dahi o işaretlere karşılık iki işaret dahi koyup her iki karşılıklı işarette oluğun kenarlarını kıl sığacak kadar **keskin testere** enince yarasalar. Ondan sonra demirden veya bakırdan bir bıçak ağzı yani büyük bıçak yapalar, yüzünün uzunluğu oluğun eni kadar ola ve o bıçağın sapının dahi yani yüzüne bitişik olan yerinden bir delik delip mil geçireler ve o milin...
 Tabanına kadar delik açalar, sonra demirden **yapılmış** bir bıçak yani büyük bıçak üzerine, yüzünün uzunluğu oluğun eni kadar ola ve o bıçağın sapının **kuyruğu** yani yüzüne bitişik olan yerinden bir delik delip mil geçireler ve o milin iki ucunu oluğun deliklerine yerleştirip **alt kısmının** ucunu döndürüp boğaz gibi yapalar ve bu bıçağın başına bir şey yapıştıralar ve kepçe oluğun doğanından tarafa doğanın başına yakın yerde buluna. Sonra eğer oluğun başına bir fındık (bilye) konsa, yuvarlanıp doğan tarafına gider, ta gidip o kepçeye dayanır. Ve eğer bıçağın kuyruğunu aşağı çekse, kepçenin başını yutup fındık doğanın başına düşer. Sonra adı geçen şekil üzere bir bıçak daha alıp ikinci deliğe sokalar ve bu bıçağın başına bir delik delip asalar ve kuyruğuna bir **bakır** ağırlık koyalar. Birinci bıçağın başı aşağı olup **kuyruğu** yükselmiştir ve ikinci bıçağın başı yükselip kuyruğu **alçalmıştır**. Sonra...`,
+            trans_en: `After the ball descends, it should repeat a certain amount, and then a **buncab** (locking pin) should be placed inside the turret; and sometimes, at the end of the turret and at a ring, it should be entrusted mostly to the **falcon-shaped lever**, because it must not obstruct the lever's movement, and the width of this channel should be such that the ball to be placed inside it can move easily; after that, the cutting point of the balls in that channel should be determined. This is done in the following way: one ball is placed in the channel, and two marks are made on the edge of the channel at a distance equal to the diameter of the ball; and on one edge of the channel, opposite those marks, two more marks are likewise made, and at each of these four corresponding marks the edges of the channel are to be cut widthwise with a **sharp saw**, just enough to fit a hair's width. After that, a blade edge — that is, a large blade — is to be made of iron or copper, the length of its face equal to the width of the channel; and in the handle of that blade, that is, at the point adjoining its face, a hole is to be drilled and a pin passed through it, and that pin...
+A hole is to be opened all the way to its base; then, on a blade **made** of iron — that is, a large blade — whose face length equals the width of the channel, a hole is to be drilled at the **tail** of that blade's handle, that is, at the point adjoining its face, and a pin passed through it; the two ends of that pin are to be set into the holes of the channel, and the end of its **lower part** is to be turned and shaped like a throat; something is then to be fixed to the head of this blade, and the scoop is to be located on the side of the channel's falcon, near the head of the falcon. Then, if a hazelnut (a small ball) is placed at the head of the channel, it rolls toward the falcon until it reaches and rests against that scoop. And if the tail of the blade is pulled down, the scoop's head is swallowed, and the hazelnut falls onto the head of the falcon. Then, another blade of the aforementioned shape is taken and inserted into the second hole; a hole is drilled in the head of this blade and it is hung, and a **copper** weight is attached to its tail. The head of the first blade is down while its **tail** is raised, and the head of the second blade is raised while its tail has **lowered**. Then...`,
             translit: `Gülle ki nazil oldukdan bir mikdar tekrar ide ba'deh kasrın içine **buncab** vaz'
 ide ve gah kasrın ahırında ve bir tavk **toğanın** ekserisine havale olub ve çünki
 toğanın hareketine mani' olmaya ve bu mizabın vüs'ati ol kadar ola ki içinde vaz'
@@ -1187,6 +1313,23 @@ el-ḥaḳ`,
 15. Bu hükümlere uygun davranılması padişahın emridir.
 16. Emir yerine getirilsin ve aksine davranılmasın.
 17. Şaban ayının ortalarında, 99 yılında...`,
+            trans_en: `1. Commander of commanders; the greatest of the great possessed of generosity and power, the source of honor and eminence...
+2. The Beylerbeyi (provincial governor-general) of Sivas, exemplar of distinguished persons...
+3. To the Kadı (judge) of Sivas — may Allah increase his virtue.
+4. When the exalted Sultan's decree (ferman) arrives, let it be known that the content of the Sultan's order is as follows:
+5. That the administration and oversight of the waqf (pious endowment) be carried out in accordance with the provisions of its deed of endowment (vakfiye),
+6. That the Süleyman Pasha Waqf in Sivas be operated in accordance with the conditions of its deed of endowment,
+7. That the waqf be administered and overseen, and that no action contrary to these conditions be taken,
+8. When it is required that action be taken in accordance with the provisions of the deed of endowment,
+9. It has been ordered that action be taken in accordance with these provisions.
+10. Let action be taken in accordance with the Sultan's sacred seal.
+11. Let action be taken in accordance with the conditions of the waqf.
+12. Regarding the matter of not acting contrary to the conditions of the waqf...
+13. Let action be taken in accordance with the new provisions of the deed of endowment.
+14. Let action be taken in accordance with the content of the Sultan's decree.
+15. It is the Sultan's order that action be taken in accordance with these provisions.
+16. Let the order be carried out, and let no action contrary to it be taken.
+17. In the middle of the month of Şaban, in the year 99...`,
             translit: `1 Emîrü'l-ümerâi'l-kirâmi'l-kibâr zevi'l-akdâr **ve'l-ihtirâm** **ma'dinü'l-izzi ve'l-iclâl**
 2 Sivas beylerbeyisi **olan** **kudvetü'l-emâsil**
 3 Sivas kadısı **zîdet fezâilühû** **tevkî'-i refî'-i hümâyûn vâsıl olıcak ma'lûm ola ki**
@@ -1260,6 +1403,12 @@ Sorunumun bu kadar uzun süre ele alınmaması ve sonuçlandırılmaması, benim
 Bu nedenle, yüce makamınızın merhametine sığınarak daha önce sunduğum dilekçelerin yeniden ortaya çıkarılmasını, incelenmesini ve gerekli işlemlerin tamamlanmasını saygıyla arz ederim. Ayrıca, Tanzimat işleriyle ilgili daha önce yaptığım açıklamaların yerine getirilmesi için de gerekli emirlerin verilmesini ve bu konuda gereken desteğin sağlanmasını rica ederim.
 Bu dilekçem, durumumun değerlendirilmesi ve gereğinin yapılması amacıyla yüksek makamınıza sunulmuştur.
 Bu konuda karar ve emir, yetkili makamınıza aittir.`,
+            trans_en: `Although I submitted this petition to the exalted office of the Sultan on three separate occasions, in the years 1271 and 1273, I was unable to obtain any result. In 1274 I also submitted a further petition to the late former grand vizier Reşid Pasha. This petition of mine was sent to the Supreme Council (Meclis-i Vâlâ) on the ninth day of the month of Safer of that same year. Then, on the fourteenth of that month, it was ordered that the four petitions I had previously submitted be forwarded to the Privy Treasury (Hazine-i Hassa). However, to this day the necessary replies have not been written, and I have been unable to obtain any result regarding my petitions.
+How the situation I find myself in will be resolved still remains uncertain. Yet I have been struggling for three or four years to have this matter resolved, living in a wretched and miserable state in the corners of caravanserais (han).
+The fact that my problem has not been addressed and resolved for so long has caused me great injustice, and has driven both me and my family into serious hardship. The continuation of this situation will also cause a great many people to suffer.
+For this reason, placing my trust in the mercy of your exalted office, I respectfully request that the petitions I previously submitted be brought to light once more, examined, and the necessary procedures completed. I further request that the orders needed to carry out the explanations I previously gave regarding the Tanzimat matters be issued, and that the required support in this regard be provided.
+This petition of mine has been submitted to your high office for the purpose of evaluating my situation and taking the necessary action.
+The decision and order in this matter rest with your competent office.`,
             translit: `bu abd-i gümrükleri yetmiş bir ve yetmiş üç tarihlerinde rikâb-ı kudret-yâb-ı hazret-i şehinşâhîye üç kıta mahal takdim-zârlığı seniyyeleri sünûh etmiş ise bir gûne semere-i hâsılası müşahede olunamamış ve yetmiş dört tarihinde dahi sadr-ı sâbık
 müteveffâ Reşid Paşaya defa bir kıta arzuhâl takdim ile sene-i celîle mâh-ı Saferül-hayrının dokuzu tarihinde Meclis-i Vâlâya ledel-havale mâh-ı mezkûrun on dördü tarihinde mezkûr dört kıta arzuhâlin âcizânem
 Hazine-i Hassaya havale buyurulmuş ise de ile'l-ân ecvibe-i lâzımesi tahrir olunmayarak arzuhâlât-ı mezbûre ubeydânemden dest-res olunamamış ve hususât-ı vâkı'a-i çâkerânem ne suret kesb edeceği malum olarak
@@ -1356,6 +1505,16 @@ Padişahlık lütfumun bir göstergesi olarak, 1223 yılı Recep ayının dokuzu
 Merhum Tayyib Baba'nın oğlu Seyyid Muhammed Said Baba, adı geçen vakfın dörtte bir ve yarım hisselerine ilişkin mütevellilik, şeyhlik ve zaviyedarlık görevlerini, vakfın belirlenmiş şartlarına uygun biçimde yürütecektir.
 Görevlerini ve hizmetlerini yerine getirdikten sonra, daha önce bu görevleri yürütürken aldığı belirlenmiş maaşları nasıl vakıf gelirlerinden alıyorsa, bundan sonra da aynı şekilde almaya devam edecektir.
 Bu yüce beratıma aykırı olarak kendisi görevden uzaklaştırılamaz ve başkaları tarafından görevlerine herhangi bir müdahalede bulunulamaz.`,
+            trans_en: `Seyyid Muhammed Said Baba, son of the late Tayyib Baba, who follows the path of Hacı Bayram Veli, who carries this exalted imperial certificate (berat), and who is an exemplar of righteous persons advancing on the path of Sufism, is one of the most competent and accomplished men of his time.
+With his piety and integrity, he submitted a petition to the Imperial Council (Divan-ı Hümayun). He had been carrying out, in exchange for a previously fixed salary, the duties of mütevelli (trustee, i.e., administrator of the waqf), şeyh (sheikh, spiritual master), and zaviyedar (keeper of the dervish lodge, i.e., administration of the tekke) of the Hacı Bayram Veli Waqf located in Ankara. He had taken over these duties from his father in accordance with previously established conditions, and had benefited from the waqf's revenues. He had committed no act that would warrant his removal from office.
+However, Seyyid Kasım Baba, son of the ill-intentioned Seyyid Halil Baba, claiming to be the child and relative most deserving of these duties, procured by various means a berat, a fetva (religious legal ruling), and an imperial decree (ferman). As a result, Seyyid Muhammed Said Baba was completely removed from his duties and, together with his family, fell into hardship.
+Thereupon Seyyid Muhammed Said Baba requested the Sultan's favor, asking that the duties of mütevelli, şeyh, and zaviyedar of the waqf be restored, as before, to himself and to his father's deputies.
+Upon the request of the aforementioned person, the Sultan's will emerged in favor of showing him ease. For this reason, in order to carry out the matters stated in his petition, the opinion was also sought of the serving Şeyhülislam (the Grand Mufti, highest religious authority of the state) Mevlânâ Ahmed Esad — the most learned of the great scholars and the most virtuous of the pious (may Allah make his virtues everlasting).
+In accordance with his indication, it has been ordered that the duties in question be restored to Seyyid Muhammed Said Baba.
+As a sign of my imperial favor, I have given him this exalted berat of mine, bearing the date of the ninth day of the month of Recep in the year 1223 and containing my sovereign seal, and I have decreed as follows:
+Seyyid Muhammed Said Baba, son of the late Tayyib Baba, shall carry out the duties of mütevelli, şeyh, and zaviyedar relating to the quarter and half shares of the aforementioned waqf, in accordance with the waqf's established conditions.
+After fulfilling his duties and services, he shall continue to receive, in the same manner as before, the fixed salaries he previously received from the waqf's revenues while carrying out these duties.
+He may not be removed from office contrary to this exalted berat of mine, nor may anyone else interfere in any way with his duties.`,
             translit: `Hacı Bayram Veli silkinde işbu rafi'-i tevkî'-i refî'-i şân-ı hakanî kudvetü's-sulehâ **es-sâlikîn**
 es-Seyyid Muhammed Said Baba veled-i müteveffa Tayyib Baba 'an aslah ve arşad olanlar gıbbe zamânınâ ileyhi **bi-mûceb**
 zübdetü takvâh dîvân-ı hümâyûna arz-ı hâl idüb Ankara'da vâki' Hacı Bayram Veli vakfının
@@ -1436,6 +1595,14 @@ Geriye kalan on beş arabanın ise su yollarına bağlı köylerden sağlanması
 Bu nedenle, kalan on beş arabanın da yarın belirtilen yerde hazır bulundurulabilmesi için gerekli bildirimin ilgili müşire Babıâli tarafından yapılması gerekmektedir.
 Sözü edilen müşir yüksek rütbeli bir devlet adamı olduğundan, bu talebin kendisine resmî olarak iletilmesi, yüce makamınızın desteğine ve takdirine bağlıdır.
 Efendim, gereğinin yapılmasını saygılarımla arz ederim.`,
+            trans_en: `My esteemed, benevolent, and merciful lord,
+The regiment under the command of Artillery Hüseyin Bey, from the Asâkir-i Mansûre cavalry units, assigned by order of the Sultan under the command of the Governor of Rumelia, will, Allah willing, set out tomorrow.
+In order to transport the said regiment's tents and other loads from the open ground near Veliefendi Fountain to Büyükçekmece, a total of forty wagons have been allocated by order of the higher authority.
+Twenty-five of these wagons have been procured from the villages attached to the Imperial Gunpowder Works (Baruthâne-i Âmire) and kept ready at the designated place. This has been carried out through the official responsible for military ordnance affairs.
+It has been decided that the remaining fifteen wagons be supplied from the villages attached to the waterways. However, these villages are under the administration of the müşir (field marshal), who is the commander of the Sultan's private guard units.
+For this reason, it is necessary that the required notification be made by the Sublime Porte (Babıâli) to the müşir in question, so that the remaining fifteen wagons can also be made ready at the designated place tomorrow.
+Since the aforementioned müşir is a high-ranking statesman, whether this request is officially conveyed to him depends on the support and judgment of your exalted office.
+My lord, I respectfully submit that the necessary action be taken.`,
             translit: `Seniyyül-himemâ Devletlü İnâyetlü Âtufetlü Efendim
 Bâ-irâde-i seniyye devletlü Rumeli valisi hazretleri maiyetine memur timarlı süvari Asâkir-i Mansûre alaylarından Topçu Hüseyin Bey kumanda
 b ah
@@ -1570,6 +1737,37 @@ Aşağıdaki kişilerin çeşitli bölgelere naip olarak atandığı bildirilmek
 - Ahmed Şahin Efendi: Travnik'e.
 - Abdülkerim Şemi Efendi: Sjenica'ya. Kendisi İstanbul mahkemesi kâtiplerindendir.
 - Ergirili Ahmed Şahin Efendi: Budaközü'ne.`,
+            trans_en: `Tercümân-ı Ahvâl Newspaper
+11 Şevval 1277, Sunday — Issue: 25
+This newspaper will henceforth be published every two days — on Sundays, Tuesdays, and Thursdays — and will include, alongside domestic and foreign news, matters concerning science, technology, and industry.
+Those wishing to subscribe may apply to our press, located at Bahçekapısı in Istanbul.
+The three-month subscription fee for Istanbul is 150 kuruş (a subdivision of the Ottoman piastre), and the six-month subscription fee is 80 kuruş. Postage is added separately for copies sent to the provinces. A single copy of the newspaper costs 40 para (a smaller Ottoman coin, forty of which make one kuruş).
+Note: The fact that the three-month subscription fee appears higher than the six-month fee may be due to a spelling or transcription error in the source text.
+
+Domestic News
+Tercümân-ı Ahvâl has until now been published once a week. However, in light of the developments seen in other local newspapers since our newspaper began publication, it has been deemed inappropriate for us to continue being published once a week in the same manner.
+Since publication once a week is not sufficient, it has been deemed necessary to publish more frequently.
+Because, in our present age, in which civilization has reached the highest level of development and has clearly demonstrated its superiority over past centuries in every respect, delaying the publication of important political news received by telegraph from every corner of the world until the end of the week is not appropriate from the standpoint of work serving the public good.
+Taking this general benefit into consideration, it has been decided that the Tercümân-ı Ahvâl newspaper will henceforth be published three times a week, namely on Sundays, Tuesdays, and Thursdays.
+It has also been accepted as a duty, with the help of some of our friends, to devote greater care than before to the writing and arrangement of the newspaper.
+Thus, our greatest aim is for our newspaper to earn the satisfaction of those who take an interest in reading it.
+
+Appointments
+Due to the illness of His Excellency İsmail Pasha, the directorship of the Privy Treasury (Hazine-i Hassa-i Şahane) has been given, together with the additional duty of chairing the Silk Inspection Commission this year, to His Excellency Ömer Pasha, who serves on the high councils of the müşirlik (field marshal's command) of Rumelia, the Balkans, and the Imperial Army.
+His Excellency Hasib Pasha has been appointed governor of Erzurum.
+Following the departure of His Excellency Edhem Pasha from office, His Excellency Hayreddin Pasha, the former governor of Sivas, has been appointed to the aforementioned province.
+His Excellency Rıza Efendi, the former director of the Privy Treasury, has been appointed a member of the Tanzimat section of the Finance Council.
+Since the duty of Kapı kâtipliği (gate clerkship) has been carried out in deputy capacity by Murtaza Ali Efendi, İzzetli Emin Efendi, the former accountant of Rumelia, has been appointed to the accountancy post in question.
+Following the departure of İzzetli Hertin Efendi, the accountant of Aleppo, from office, Rıfatlı Seyfi Efendi, the former accountant of Rufe, has been appointed to the accountancy post in question.
+
+Naips Appointed to Certain Places
+The following persons are reported to have been appointed as naip (deputy judge) to various regions:
+- Azmi Efendi: to Direli Debdebe.
+- Lebib Mehmed Emin Efendi: to Noveberde.
+- Ahmed Şakir Efendi: from the Müftü's office of Kavala to the warehouse of Sultan Selim in Debre-i Kefe.
+- Ahmed Şahin Efendi: to Travnik.
+- Abdülkerim Şemi Efendi: to Sjenica. He is among the clerks of the Istanbul court.
+- Ergirili Ahmed Şahin Efendi: to Budaközü.`,
             translit: `Tercümân-ı Ahvâl
 11 Şevvâl Bâzâr 1277 Numara 25
 İşbu gazete dâhiliyye ve hâriciyye her dürlü havâdis ile fünûn ve sanâyi'e dâir mebâhisi şâmil olarak **iki günde bir kere** bâzâr ve salı ve pençşenbih günleri çıkar. Abonelik istemek diyenler İstanbul'da Bahçekapısı üzerinde kâin matbaasına mürâca'at ola. Der-sa'âdet içün **sülâsî** (150) ve altı aylığı (80) kuruşdur. Taşra içün postahâne ücreti dahi olunur. Bir nüshası (40) parayadır.
@@ -1646,6 +1844,10 @@ Ergirili Ahmed Şâhîn Efendi - Sjenica'ya
 İkinci bölüm: Bu bölümde, anlatılan işlemler için gerekli olan hazne, iki kap ve farklı bölgelerin özellikleri açıklanmaktadır.
 Öncelikle gerekli olan huni biçimindeki kap bakırdan yapılmıştır. Bu kabın boğaz kısmının uzunluğu altmış arşın, genişliği ise beş karıştır. Kabın alt kısmında bir delik bulunmaktadır. Kabın içinde bulunan suyun, en uzun gündüzün saatleri boyunca bu delikten tamamen akıp boşalması gerekir.
 Su saati dördüncü iklim bölgesine kurulursa, bu bölgedeki en uzun gündüz yaklaşık on dört buçuk saat sürer.`,
+            trans_en: `Throughout the night, exactly twelve lamps burn and illuminate the surroundings. All of the shapes mentioned are drawn and explained on the following page.
+Second section: This section explains the reservoir needed for the procedures described, the two vessels, and the characteristics of different regions.
+First, the required funnel-shaped vessel is made of copper. The neck of this vessel is sixty arşın (an Ottoman unit of length) long and five spans wide. There is a hole at the bottom of the vessel. The water inside the vessel must drain completely through this hole over the course of the longest day's hours.
+If the water clock is set up in the fourth climate zone, the longest day in that region lasts about fourteen and a half hours.`,
             translit: `Leylde temām on iki cām ziyā bulub münevver olur ve cümle eşkāl-i mezkūre
 bu vech üzere dir ki sahīfe-i ātiyede tasvīr ve tahrīr olundı
 
@@ -1720,6 +1922,11 @@ ve nehār`,
 Bu nedenle, bütün mahallelerin imamlarına ve muhtarlarına şimdiden gerekli uyarıların yapılmasına karar verilmiştir. Bayramlarda ve diğer günlerde eğlence amacıyla hiç kimsenin silah atmaması gerekmektedir.
 Bu yasağa uymayıp silah atan kişiler, kolluk kuvvetleri tarafından yakalanacak ve on gün hapis cezasına çarptırıldıktan sonra kendilerinden ayrıca para cezası alınacaktır. Bu karar, Vilayet İdare Meclisi tarafından bildirilmiş, kolluk kuvvetlerine de emir verilerek duyurulmuştur.
 Bu doğrultuda bütün imam ve muhtarların, mahallelerindeki gençlere hangi gün olursa olsun bundan sonra silah atmanın yasak olduğunu açıkça anlatmaları; yasağa uymayanların hapis ve para cezasıyla cezalandırılacağını bildirmeleri ve herkesin bu yasağa uymasını sağlamaları önemle duyurulur.`,
+            trans_en: `Announcement
+It is known that firing guns within the city is prohibited by law. However, on special occasions this prohibition is disregarded and guns are fired. The resulting harm is plain to see.
+For this reason, it has been decided that the necessary warnings be given in advance to the imams and headmen of all neighborhoods. No one is to fire guns for celebration on holidays or any other occasion.
+Those who violate this prohibition and fire guns will be apprehended by the police, sentenced to ten days' imprisonment, and additionally fined. This decision has been communicated by the Provincial Administrative Council, and an order has also been issued to the police accordingly.
+Accordingly, all imams and headmen are strictly instructed to clearly inform the young people in their neighborhoods that firing guns is henceforth prohibited on any day whatsoever; to make known that violators will be punished with imprisonment and a fine; and to ensure that everyone complies with this prohibition.`,
             translit: `İ'lân
 
 Şehir içinde silâh atması nizâmen memnû' olduğu ma'lûmdur
@@ -1806,6 +2013,15 @@ Allah'ın yardımının, O'nun dinine yardım edenlerle birlikte olduğu herkes�
 Emir ve takdir yüce makamınıza aittir.
 5 Teşrin-i Sânî 1336
 Of kazası müderrislerinden Hoca Ferşad İbrahim`,
+            trans_en: `To His Excellency Kazım Karabekir Pasha, Commander of the Eastern Army,
+My esteemed Pasha,
+I begin by presenting my situation and submitting my sincere request, recalling the hadith meaning: "The best of people is the one whom Allah has charged with meeting the needs of others."
+I, the chief trustee — that is, the most senior administrator — of the three libraries belonging to Gümüşhanevî Ahmed Ziyâeddin Efendi (may Allah sanctify his secret) located in Of, Rize, and Bayburt, have learned as a result of my recent inquiries that these towns were destroyed by Russian forces stationed toward Bayburt during the recent occupation, and that all of the books in the libraries were taken away to Tiflis.
+Since the books in question are religious works, they are regarded by Muslims as sacred and venerable. For this reason, it is of great importance that the books be brought back and made available once more for people's benefit. It is also clear that every effort must be made to protect and rescue the books of the aforementioned revered Sheikh.
+It is a fact known to everyone that Allah's help is with those who help His religion. Believing that bringing this matter to a favorable conclusion deserves great effort, I respectfully submit and request that the necessary steps be completed for the return of the books in question from Tiflis.
+The order and judgment in this matter rest with your exalted office.
+5 Teşrin-i Sânî (November) 1336
+Hoca Ferşad İbrahim, of the müderris (religious scholar/teacher) corps of the district of Of`,
             translit: `Şark Ordusu Kumandanı Devletlü Kazım Karabekir Paşa
 Hazretlerine
 
@@ -1913,6 +2129,14 @@ Askerî birliklerin karşılaştıkları meselelerde ortak kararlar alarak uzla�
 Bu amaçla, askerlerin bulunduğu orta kollardaki vezirlere, beylerbeylerine, askerî görevlilere, kadılara ve naiplere hitaben çıkarılan altı adet padişah emrinin, korunan ülkelerdeki şehirlerin, köylerin ve kasabalarının mahkeme kayıtlarına geçirilmesi ve sürekli olarak başvurulacak bir rehber olarak kullanılması istenmektedir.
 Söz konusu emirlerin uygulanmasını güvence altına almak amacıyla, vezirlere hitaben padişahın kendi el yazısıyla yazılmış hatt-ı hümayunlarının hazırlanması gerekmektedir.
 Bu altı adet padişah emri yüce padişahın huzuruna sunulmuştur. Padişahın bilgisine arz edildikten sonra, her bir emrin vezirlere ayrı ayrı hitaben düzenlenmesi ve üzerlerine "Gereğince hareket edilsin" anlamındaki mübarek hatt-ı hümayunların yazılması hususunda emir ve ferman, şanlı, yüce ve heybetli efendim, velinimetim ve padişahım hazretlerinindir.`,
+            trans_en: `Let action be taken in accordance with the commands given.
+My Sultan,
+My glorious, exalted, awe-inspiring and miracle-working lord; my benefactor, my Sultan!
+With Allah's help and support, the soldiers to be sent on campaign from now on will be provided with the necessary food and provisions and dispatched accordingly.
+It is intended that the military units, when faced with issues, act in agreement by making joint decisions and carry out the required tasks in full. These matters must be conducted in an orderly and reliable manner, free from disorder, disagreement, and situations that could cause problems between the parties.
+To this end, it is requested that the six imperial decrees (ferman) issued to the viziers, provincial governors (beylerbeyi), military officers, judges (kadı), and deputies (naib) stationed with the central army corps be entered into the court records of the cities, villages, and towns of the protected domains, and be used as a guide to be consulted continually.
+In order to guarantee the implementation of the decrees in question, it is necessary to prepare imperial rescripts (hatt-ı hümayun) addressed to the viziers, written in the Sultan's own hand.
+These six imperial decrees have been presented before the exalted Sultan. After being brought to the Sultan's attention, the order and command regarding the drafting of each decree separately addressed to the viziers, and the writing upon them of the blessed imperial rescripts meaning "let action be taken accordingly," belong to my glorious, exalted, and awe-inspiring lord, my benefactor and Sultan.`,
             translit: `Mûcebince amel oluna
 deyu emr olunmuşdur
 
@@ -1998,6 +2222,8 @@ mehâbetlü efendim veliyy-i ni'metim efendim pâdişâhım hazretlerinindir.`,
 دقت ایدك دیدی. www.osmanlicaogren.com`,
             tr: `Profesörün hayat dersi: Bir gün bir felsefe profesörü, kürsüye çıktı ve önünde birkaç eşya vardı. Dersi alışılmamış biçimde işleyeceği belliydi. Masanın üzerine büyük bir cam kavanoz koydu. Ardından masanın altından büyük taşlar çıkardı ve bu taşları kavanozun içine tek tek yerleştirdi. Sonra öğrencilere dönerek kavanozun dolu olup olmadığını sordu. Öğrenciler kavanoza baktılar ve dolu olduğunu söylediler. Profesör bunun üzerine masanın altından bir kutu çakıl taşı çıkardı. Çakılları kavanozun içine döktü ve salladı. Çakıllar, büyük taşların arasındaki boşluklara yerleşti. Profesör yeniden kavanozun dolu olup olmadığını sordu. Öğrenciler bu kez daha tereddütlü bir şekilde dolu olduğunu söylediler. Bununla yetinmeyen profesör, masanın altından kum çıkardı. Kumu yavaş yavaş kavanozun içine döktü. Kum, çakılların arasındaki en küçük boşluklara kadar sızdı. Profesör tekrar sınıfa döndü ve kavanozun dolu olup olmadığını sordu. Öğrenciler şaşırdılar ve dolmuş olabileceğini söylediler. Son olarak da profesör bir bardak su çıkardı ve kavanozun içine döktü.
 Kumu yavaş yavaş kavanozun içine döktü. Kum, çakılların arasındaki en küçük boşluklara kadar sızdı. Profesör tekrar sınıfa döndü ve kavanozun dolu olup olmadığını sordu. Öğrenciler şaşırdılar ve dolmuş olabileceğini söylediler. Son olarak da profesör bir bardak su çıkardı ve kavanozun içine döktü. Profesör bu deneyden ne anladıklarını sordu. Öğrencileri dinleyen profesör şöyle devam etti. Bu kavanozun hayatı temsil ettiğini söyleyerek içindekiler hayatınızdaki değerlerdir dedi. Büyük taşlar sizin için en önemlileridir. Yani aileniz, sağlığınız, eşiniz, çocuklarınız, dostlarınız ve dini hayatınızdır. Çakıl taşları ise, eviniz, arabanız gibi hayatınızdaki diğer önemli ama ikincil şeylerdir. Kavanoza **önce kumu** [koyarsanız], kum ise hayatın küçük ve önemsiz ayrıntılarıdır. Şöyle dikkat edin: " Eğer doldurursanız büyük taşlara ve çakıl taşlarına yer kalmaz. Hayat da böyledir. Zamanınızı ve enerjinizi küçük şeylere harcarsanız, gerçekten önemli olan şeyler için vaktiniz kalmayacak ve israf etmiş olacaksınızdır. Onun için zamanınızı nereye harcadığınıza dikkat edin dedi. www.osmanlicaogren.com`,
+            trans_en: `The professor's life lesson: One day a philosophy professor stepped up to the lectern, and in front of him were a few objects. It was clear he would conduct the lesson in an unusual way. He placed a large glass jar on the table. Then he took large stones out from under the table and placed them into the jar one by one. He then turned to the students and asked whether the jar was full. The students looked at the jar and said that it was full. The professor then took out a box of pebbles from under the table. He poured the pebbles into the jar and shook it. The pebbles settled into the gaps between the large stones. The professor asked once more whether the jar was full. This time the students, more hesitantly, said that it was full. Not satisfied with this, the professor brought out sand from under the table. He poured the sand slowly into the jar. The sand seeped down into even the smallest gaps between the pebbles. The professor turned back to the class again and asked whether the jar was full. The students were surprised and said it might now be full. Finally, the professor brought out a glass of water and poured it into the jar.
+He poured the sand slowly into the jar. The sand seeped down into even the smallest gaps between the pebbles. The professor turned back to the class again and asked whether the jar was full. The students were surprised and said it might now be full. Finally, the professor brought out a glass of water and poured it into the jar. The professor asked what they understood from this experiment. Having listened to the students, the professor went on to explain. He said that this jar represents life, and that its contents are the values in your life. The large stones are the most important things to you — that is, your family, your health, your spouse, your children, your friends, and your faith. The pebbles, on the other hand, are other important but secondary things in your life, such as your house and your car. If you **put the sand in first** [into the jar], the sand represents the small and unimportant details of life. Pay attention to this: " if you fill it up first, there will be no room left for the large stones or the pebbles. Life is just the same. If you spend your time and energy on small things, you will have no time left for the things that truly matter, and you will have wasted it. So pay attention to where you spend your time, he said. www.osmanlicaogren.com`,
             translit: `profesörüñ ḥayāt dersi: bir gün bir felsefe profesörü, kürsüye çıḳdı ve öñünde bir ḳaç eşyā
 vardı. dersi alışılmamış biçimde işleyecegi belliydi.
 maṣanuñ üzerine büyük bir cām ḳavānoz ḳoydu. ardından maṣanuñ altından büyük taşlar çıḳardı ve
@@ -2087,6 +2313,11 @@ Bir zamanlar dünyanın en güçlü ve en gelişmiş milletlerinden biri olan M�
 Bir zamanlar dünyaya şan ve şeref kazandıran İslam bayrağı, bugün yere düşmüştür. Yüzyıllar boyunca dünyaya hükmeden ve herkese gücünü hissettiren Müslümanlar, artık esaret ve aşağılanma içinde yaşamaktadır.
 Geçmişte her biri birer medeniyet merkezi olan İslam ülkeleri, bugün içler acısı birer harabeye dönüşmüştür. Bir zamanlar doğanın güçlerine bile meydan okuyacak kadar cesur olan Müslümanların torunları, bugün en ağır yoksulluk ve sefalet koşulları içinde yaşamaktadır. Üstelik toplum, insanları hareketsizliğe ve gelişememeye sürükleyen korkunç bir durgunluğun içine düşmüştür.
 Öyle bir noktaya gelinmiştir ki İslam ülkeleri uçsuz bucaksız bir mezarlığı, Müslümanlar ise hayatta oldukları hâlde hiçbir şey yapamayan, umudunu ve hareket gücünü kaybetmiş insanları andırmaktadır.`,
+            trans_en: `It is not possible for a sensitive person — one who sees the misery in which the people living under the name of Islam find themselves, hears their cries, and feels these sufferings in his own heart — to remain indifferent to these terrible events taking place. Nor is it conceivable that he would not feel his own being shaken by the tremors these cries create in his mind!
+The Muslims, once among the strongest and most advanced nations of the world, today live in misery, humiliated and wretched. They are being crushed under the heavy blows of contempt and bondage.
+The banner of Islam, which once brought glory and honor to the world, has today fallen to the ground. The Muslims, who for centuries ruled the world and made everyone feel their power, now live in bondage and humiliation.
+The lands of Islam, each of which was once a center of civilization, have today turned into pitiable ruins. The descendants of Muslims, who were once bold enough to defy even the forces of nature, now live under the harshest conditions of poverty and misery. Moreover, society has fallen into a terrible stagnation that drags people into inactivity and the inability to progress.
+A point has been reached where the lands of Islam resemble an endless graveyard, and the Muslims resemble people who, though alive, can do nothing, having lost their hope and their capacity to act.`,
             translit: `başla nefy
 İslâm namı altında yaşayan kitle-i beşeriyenin sefalet-i hayatiyesini
 gören, enîn ü enînini dinleyen mütehassis bir vicdân-ı tasavvur
@@ -2167,7 +2398,7 @@ Müslümanlar da canlı ve miskin birer cenazeye dolmuş!...`,
 والسلامك آل لری اوزرینه صلوة ایده حتی لا يبقى **نعم** باقی
 قالميه`,
             tr: `Şanı yüce olan Allah, Hz. Muhammed (s.a.v.) üzerine henüz salavat getirilmeden önce yapılmış olan salavatlar gibi bir salavatla, Hz. Muhammed ve selam sahiplerinin üzerine yüceltme salavatı ve ağırlama selamı indirerek onu değerli ve saygın kılar. Bazı güvenilir nüshalarda bu kısım **"sanki cîm harfi gibi"** şeklinde geçmektedir. "Allah'ım! Ey celal ve ikram sahibi olan Allah!" -şanı yüce ve lütfu bol olsun- "Hz. Muhammed'e ve onun ailesine, ayrıca Hz. Muhammed'in ailesinden sayılan ümmetinin takipçilerine, onun yüce şanına layık ve yüksek değerine uygun olacak şekilde **geniş kapsamlı** bir salavatla salat eyle." "En yusallî" (salavat getirmek) ifadesi, salavat getirilmek anlamında olup, Hz. Muhammed'e layık ve uygun olan salavat gibi bir salavatla, alemin neşesi ve Âdemoğlunun süsü olan Hz. Muhammed'in ve selam sahiplerinin üzerine uygun bir salavat ve selam indirerek ikram ve yücelik ihsan eyle. "Allah'ım! Ey ihtiyaçları karşılayan ve duaları kabul eden Allah!" -şanı yüce olsun- "Hz. Muhammed'e, onun ailesine ve takipçilerine öyle bir salavat eyle ki, geriye hiçbir **nimet** eksik kalmasın.`,
-            trans_en: `The Almighty God is pleased to make Muhammed (peace be upon him) honored and respected by sending down a prayer of glorification and a greeting of honor upon him and the recipients of greetings, just like the prayers offered before. In some reliable copies, this part appears as **"as if it were the letter Jeem"**. "O Allah! O Owner of Majesty and Honor!" -may His glory be exalted and His bounty be abundant- "send blessings upon Muhammed, upon the family of Muhammed, and upon the followers of his Ummah who are of his family, with a **comprehensive** blessing that is worthy of his exalted status and suitable for his high value." The phrase "an yusallî" means to be blessed, and by sending down a suitable blessing and greeting upon Muhammed, who is the joy of the universe and the ornament of the children of Adam, and upon the recipients of greetings, may He bestow honor and glory. "O Allah! O Fulfiller of needs and O Answerer of prayers!" -may His glory be exalted- "send blessings upon Muhammed, upon the family of Muhammed, and upon his followers so that no **bounty** remains ungranted.`,
+            trans_en: `Allah, the Almighty, is pleased to make Muhammed (peace be upon him) honored and respected by sending down a prayer of glorification and a greeting of honor upon him and the recipients of greetings, just like the prayers offered before. In some reliable copies, this part appears as **"as if it were the letter Jeem"**. "O Allah! O Owner of Majesty and Honor!" -may His glory be exalted and His bounty be abundant- "send blessings upon Muhammed, upon the family of Muhammed, and upon the followers of his Ummah who are of his family, with a **comprehensive** blessing that is worthy of his exalted status and suitable for his high value." The phrase "an yusallî" means to be blessed, and by sending down a suitable blessing and greeting upon Muhammed, who is the joy of the universe and the ornament of the children of Adam, and upon the recipients of greetings, may He bestow honor and glory. "O Allah! O Fulfiller of needs and O Answerer of prayers!" -may His glory be exalted- "send blessings upon Muhammed, upon the family of Muhammed, and upon his followers so that no **bounty** remains ungranted.`,
             translit: `Celle şânühü ma'bûd râzî olur en yusallî salâten olmadan aleyhi
 Muhammed aleyhi's-salâtü ve's-selâm üzerine salât olmadan dahî
 olduğı salât misillü salât ile Muhammed aleyhi's-salâtü ve's-selâm
@@ -2240,17 +2471,12 @@ Herkesin aciz birer kul olduğunu bil. Hiç kimse Allah'ın vereceği rızka eng
 Allah'ın güzel isimlerini anarak dua etmelisin; ancak bu konudaki inancın kesin ve sağlam olmalıdır. Çünkü rızkın gerçek kaynağı Allah'tır ve bütün dünyayı rızıklandıran O'dur.
 Başkalarını rızık veren veya rızka engel olan kişiler olarak görme. Olayların yalnızca görünen yönüne bakarak yanılgıya düşme.
 Kaynak: Gülzâr-ı Sûfiyye, s. 110.`,
-            trans_en: `He (God)
-Do not wander from door to door for sustenance; the door of God's bounty is the best of doors.
-Rub your face against that great threshold and pray to God with deep humility.
-Always trust in God; do not make recourse to **anyone else**.
-Do not expect from others if there is God's grace; all kings and beggars are in need of Him.
-Know everyone as a helpless servant; no one can prevent sustenance.
-Even if outwardly someone else seems to be the cause, grace and bounty belong entirely to God.
-It is necessary to resort to the Generous Names (of God); but your belief must be firm.
-For in reality, the source of sustenance is Him; He alone **provides** for the universe.
-Do not think of anyone else as the preventer or the giver; do not constantly look at the outward appearance of every situation.
-Gülzâr-ı Sûfiyye, page 110.`,
+            trans_en: `Do not go from door to door seeking your sustenance. The door of Allah's grace is the finest of all doors. Turn your face toward His exalted threshold and pray to Allah with a sincere heart.
+Always trust in Allah and rely on Him; do not take refuge in others or expect help from them. If any good comes to you, know that it is Allah's grace, and do not expect good from others. For both kings and beggars are in need of Allah.
+Know that everyone is but a powerless servant. No one can stand in the way of the sustenance Allah provides. Even if it seems your sustenance comes through others, never forget that the true grace and favor come from Allah.
+You should pray while invoking Allah's beautiful names; but your faith in this matter must be firm and unwavering. For the true source of sustenance is Allah, and it is He who provides for the entire world.
+Do not regard others as the givers of sustenance or as obstacles to it. Do not be misled by looking only at the outward appearance of events.
+Source: Gülzâr-ı Sûfiyye, p. 110.`,
             translit: `Hû
 Rızk içün eyleme devr-i ebvâb - der-i ihsân-ı Hudâ ni'me'l-bâb
 Yüzüñi sür ulu dergâha - kıl huşû'ıla niyâz Allâh
@@ -2323,6 +2549,17 @@ Başında kendi halkına özgü bir kalpak, elinde ise gümüş işlemeli bir k�
 Çerkes, köleleştirilmiş kadınlardan birini göstererek şöyle dedi:
 — Şu mavi gözlere bak! Bir paşa bu kadın için bir hazine verir.
 Çerkes ile diğer adam bir sandala, köleleştirilmiş kadınlar ise başka bir sandala bindiler. Ardından vapurdan ayrılarak Tophane İskelesi'ne doğru ilerlediler.`,
+            trans_en: `When a steamship belonging to the Russian Company, arriving from Batum, moored in front of Tophane, several people who had been waiting impatiently on the water leapt aboard from their rowboats.
+One of them was tall, broad-shouldered, and had a thin black moustache. He wore a Circassian-style coat with skirts reaching down to his feet and a very narrow waist.
+On his head was a fur cap typical of his people, and in his hand he held a silver-worked whip. They called out to the Circassian:
+— Welcome. Where are the enslaved women?
+— Right here...
+— How many are there?
+— Three...
+— Are they beautiful?
+The Circassian, pointing to one of the enslaved women, said:
+— Look at those blue eyes! A pasha would give a fortune for this woman.
+The Circassian and the other man got into one rowboat, while the enslaved women got into another. They then left the ship and made their way toward Tophane Pier.`,
             translit: `Rusya kumpanyasının Batum'dan gelen bir vapuru Tophane'nin önüne yanaştığı zaman denizin üzerinde sabırsızlıkla bekleyen birkaç kişi sandallardan vapurun içine atılmışlardı.
 
 Bunlardan birisi uzun boylu, geniş omuzlu, seyrek siyah bıyıklı, etekleri ayaklarına kadar uzun, beli gayet dar bir Çerkez paltosu giymiş...
@@ -2409,6 +2646,21 @@ Tıpkı Mecnun gibi, dağ başları benim yuvam oldu.
 Bütün malımdan ve mülkümden ayrılarak uzaklara düştüm.
 Gözyaşları döküyor, "Ah, özlem! Ey ayrılık, yetiş imdadıma!" diye feryat ediyorum.
 Ben suçsuzum; Allah biliyor, ey yüce sultanım, babam!`,
+            trans_en: `Journal of History and Literature
+Year 1 — April 30, 1918 — Issue: 2
+A poem sent by Şehzade Bayezid to his father, Kanuni Sultan Süleyman Han.
+O my Süleyman, ruler of the whole world, my father!
+My soul within my body, my beloved within my soul, my father!
+My dear father, could you bring yourself to harm your own son Bayezid?
+I am innocent; Allah knows it, O my exalted sultan, my father!
+For the sake of Adam, the first of the prophets,
+For the sake of Moses, Jesus, and Mary,
+For the sake of the noble spirit of Prophet Muhammad, may peace be upon him, lord of the entire universe,
+I am innocent; Allah knows it, O my exalted sultan, my father!
+Like Mecnun, the mountaintops have become my home.
+Separated from all my wealth and possessions, I have fallen into distant lands.
+Shedding tears, I cry out, "Oh, longing! O separation, come to my aid!"
+I am innocent; Allah knows it, O my exalted sultan, my father!`,
             translit: `Târîh ve Edebiyât Mecmû'ası
 Sene: 1 — 30 Nisan 1334 — Aded: 2
 
@@ -2495,6 +2747,15 @@ Bu konudaki nihai karar, yüce ve kutlu makama aittir.
 Bu belge, 921 yılı Muharrem ayının ortalarında (1515 yılı) yazılmıştır.
 Söğüt kadısı Seyyid Mehmed
 Yüce devlete dua eder.`,
+            trans_en: `(In the name of Allah)
+Processed – Qadi's Report
+May Allah's glory endure forever. It is respectfully submitted to the exalted office by your humble and unworthy servant that:
+Musa, who served as imam in the village of Sofular in the district of Söğüt for a daily wage of five akçe (silver coins), has passed away.
+As this position of imam has thus fallen vacant, the bearer of this petition, a person known for honesty and trustworthiness, has been found qualified to serve the needs of the said neighborhood and district, and is hereby submitted to the central authority.
+The final decision in this matter rests with the exalted and blessed authority.
+This document was written in the middle of the month of Muharram in the year 921 (1515).
+Seyyid Mehmed, Qadi of Söğüt
+Who prays for the exalted state.`,
             translit: `Hû
 
 Der-dest / İ'lâm
@@ -2587,6 +2848,14 @@ Sunulan fotoğraflar arasından seçim yapılması hâlinde, gerekli işlemlerin
 Bu konuda karar verme ve emir buyurma yetkisi Padişah Hazretlerine aittir.
 Tarih: 12 Cemâziyelevvel 1328 (Miladi takvimde Mayıs-Haziran 1910 civarı)
 İmzalayan: Padişahın Baş Yaveri, Ferik (korgeneral rütbesine karşılık gelen askerî rütbe)`,
+            trans_en: `To the Private Secretariat of His Imperial Majesty the Sultan,
+Esteemed Sir,
+It has been reported that, among the images shown to the public by means of the cinematograph machine, a few of the pictures and photographs depicting various scenes of the events and gatherings in the aforementioned city have been submitted on behalf of the authorities. It has been stated that this was done at the request of His Majesty the Caliph and Sultan.
+As a token of respect for the exalted office, an attempt was made to obtain one sample of each of the photographs depicting the events and news; however, not all of them could be found. For this reason, the photographs deemed significant are enclosed with this letter.
+Should a selection be made among the photographs submitted, it is respectfully reported for your information that the necessary procedures will be set in motion immediately, completed within six weeks, and the results then presented.
+The authority to decide and issue orders in this matter belongs to His Majesty the Sultan.
+Date: 12 Jumada al-Ula (Cemâziyelevvel) 1328 (around May-June 1910 in the Gregorian calendar)
+Signed: Chief Aide-de-Camp to the Sultan, Ferik (a military rank corresponding to lieutenant general)`,
             translit: `Mâbeyn-i Hümâyûn Başkitâbet-i Celîlesine
 
 Âtıfetlü Efendim Hazretleri
