@@ -18,6 +18,14 @@ const state = {
     lastAnalysis: null,
     dbDocumentId: null,
     restoredEntityFilterType: null,
+    // sampleDatabase anahtarı — SADECE sample-card tıklamasında set edilir,
+    // gerçek yükleme (handleFileSelect) başında null'a döner. entity-info/
+    // word-alternatives popover'ları bununla "şu an açık belge bir örnek mi,
+    // öyleyse hangisi" sorusunu cevaplar (bkz. showEntityPopover/
+    // showWordAlternativesPopover) — presetData-şekilli ama örnek OLMAYAN
+    // "kaydedilmiş belgeyi yeniden aç" akışı (processTranslation'a
+    // backend'den gelen veriyle çağrılan dal) bunu hiç set etmez.
+    activeSampleKey: null,
 
     originalFileHash: null,
     pendingOverwriteDocumentId: null,
@@ -378,6 +386,15 @@ function renderRestoredTranslation() {
     // Pre-set Sample Manuscript Database for Demo/Testing
     const sampleDatabase = {
         '2': {
+            entity_info: {
+            "person:sultan mehmed han": "Fatih Sultan Mehmed (II. Mehmed, 1432-1481), İstanbul'u fetheden ve Osmanlı Devleti'ni imparatorluk hâline getiren padişahtır; 'Fatih' unvanıyla anılır. Bu belgede kendisi, 'Sultan Mehmed Han' olarak, Bosna'daki ruhbanlara güvence veren ahidnâmeyi bizzat veren padişah olarak anılmaktadır.",
+            "concept:fermanını": "Ferman, padişahın bizzat verdiği, kanun hükmünde buyruk niteliğindeki resmî emirlere verilen addır. Bu belgede ferman, Fatih Sultan Mehmed'in Bosna'daki ruhbanlara verdiği, onların can, mal ve kilise güvenliğini garanti eden ahidnâmeyi/buyruğu ifade etmektedir.",
+            "place:bosnalı": "Bosna, Balkanlar'da, 1463'te Fatih Sultan Mehmed tarafından fethedilip Osmanlı topraklarına katılan bir bölgedir; günümüzde Bosna-Hersek'in bir parçasıdır. Bu belgede Bosna, ahidnâmenin muhatabı olan Fransiskan ruhbanların bulunduğu bölge olarak anılmaktadır.",
+            "concept:ruhbanlara": "Ruhban, Hıristiyanlıkta kiliseye bağlı din adamlarına (rahip, keşiş vb.) verilen genel addır. Bu belgede ruhbanlar, Fatih Sultan Mehmed'in can, mal ve ibadet özgürlüklerini güvence altına aldığı Bosna'daki Fransiskan keşişleri ifade etmektedir.",
+            "concept:kiliselerine": "Kilise, Hıristiyanlıkta ibadet edilen mabede verilen addır. Bu belgede kiliseler, Fatih Sultan Mehmed'in dokunulmazlığını ve korunmasını güvence altına aldığı, Bosna'daki ruhbanlara ait ibadet yerlerini ifade etmektedir.",
+            "concept:güvenlik": "Güvenlik, bir kişinin veya topluluğun can, mal ve haklarının tehdit veya zarardan korunması hâlidir. Bu belgede güvenlik, Fatih Sultan Mehmed'in Bosna'daki ruhbanlara ve kiliselerine yönelik olarak tüm devlet görevlilerine ve halka karşı güvence altına aldığı temel hakkı ifade etmektedir."
+            },
+            word_alternatives: {},
             file: 'assets/fsma.png',
             enhancedFile: 'assets/fsma-enhanced.jpg',
             name: 'fatihin_ahidnamesi.png',
@@ -449,6 +466,17 @@ Mâdâm ki bunlar benim emrime mutî' ü munkâd olalar.
             }
         },
         '1': {
+            entity_info: {
+            "concept:milletimin": "Millet, ortak dil, tarih, kültür ve kader birliği bilinciyle bağlı olan insan topluluğuna verilen addır. Bu şiirde millet, bağımsızlığı (istiklâli) hak eden, Allah'a inanan ve bayrağı uğruna canını vermeye hazır Türk milletini ifade etmektedir.",
+            "concept:istiklâl": "İstiklâl, bir milletin veya devletin başka bir güce bağımlı olmadan kendi kaderini özgürce belirleyebilmesi, yani bağımsızlık anlamına gelir. Bu şiirde istiklâl, hem şiirin adını oluşturan hem de her kıtanın sonunda tekrarlanan, Türk milletinin hakkı olarak vurgulanan temel kavramdır.",
+            "concept:iman": "İman, bir inanca, özellikle dinî inanca kalpten bağlanma ve güven duyma hâlidir. Bu şiirde iman, Türk milletinin göğsündeki demir bir zırh gibi tasvir edilen, milleti dış tehditlere karşı koruyan manevi güç olarak anlatılmaktadır.",
+            "concept:vatanı": "Vatan, bir milletin üzerinde yaşadığı, aidiyet duyduğu ve uğruna fedakârlık yapmaya hazır olduğu toprak parçasına verilen addır. Bu şiirde vatan, şehitlerin kanıyla sulanmış, 'cennet vatan' olarak nitelenen ve hiçbir dünya nimetine değişilmeyecek kadar kutsal sayılan topraklar olarak anlatılmaktadır.",
+            "concept:vatanın": "Vatan, bir milletin üzerinde yaşadığı, aidiyet duyduğu ve uğruna fedakârlık yapmaya hazır olduğu toprak parçasına verilen addır. Bu şiirde vatan, şehitlerin kanıyla sulanmış, 'cennet vatan' olarak nitelenen ve hiçbir dünya nimetine değişilmeyecek kadar kutsal sayılan topraklar olarak anlatılmaktadır.",
+            "concept:vatanımdan": "Vatan, bir milletin üzerinde yaşadığı, aidiyet duyduğu ve uğruna fedakârlık yapmaya hazır olduğu toprak parçasına verilen addır. Bu şiirde vatan, şehitlerin kanıyla sulanmış, 'cennet vatan' olarak nitelenen ve hiçbir dünya nimetine değişilmeyecek kadar kutsal sayılan topraklar olarak anlatılmaktadır.",
+            "concept:ezanlar": "Ezan, Müslümanları namaza çağırmak için belirli vakitlerde okunan, İslam inancının temel unsurlarından biridir. Bu şiirde ezanlar, dinin temelini oluşturan şehadet kelimelerini taşıyan, vatan toprakları üzerinde sonsuza dek yankılanması istenen kutsal sesler olarak tasvir edilmektedir.",
+            "concept:hürriyet": "Hürriyet, bir kişinin veya milletin başkalarının baskısı olmadan özgürce yaşayabilmesi hâlidir. Bu şiirde hürriyet, bayrağın hakkı olarak nitelenir; şiir, Türk milletinin ezelden beri hür yaşadığını ve bundan sonra da hür yaşayacağını vurgulamaktadır."
+            },
+            word_alternatives: {},
             file: 'assets/im.png',
             enhancedFile: 'assets/im-enhanced.jpg',
             name: 'istiklal_marsi.png',
@@ -630,6 +658,26 @@ Hakkıdır, Hakk'a tapan milletimin istiklâl!`,
             }
         },
         'hero': {
+            entity_info: {
+            "concept:gözyaşından": "Gözyaşı, divan şiirinde aşk acısının, hasretin ve duygusal yoğunluğun en yaygın simgelerinden biridir; şairin iç dünyasındaki ateşi (aşk ıstırabını) dışa vuran bir imge olarak kullanılır. Bu kasidede şair, gönlündeki ateşlere gözyaşıyla su dökmenin bile çare olmadığını söyleyerek acısının derinliğini vurgulamaktadır.",
+            "concept:gül": "Gül, divan edebiyatında sevgilinin yüzünün, güzelliğinin ve aşkın en temel simgelerinden biridir; aynı zamanda bülbül-gül ilişkisiyle âşık-maşuk temasını da çağrıştırır. Bu kasidede gül, sevgilinin yüzüne benzetilerek, hiçbir gül bahçesinin sevgilinin güzelliğine erişemeyeceği vurgulanmaktadır.",
+            "concept:gülü": "Gül, divan edebiyatında sevgilinin yüzünün, güzelliğinin ve aşkın en temel simgelerinden biridir; aynı zamanda bülbül-gül ilişkisiyle âşık-maşuk temasını da çağrıştırır. Bu kasidede gül, sevgilinin yüzüne benzetilerek, hiçbir gül bahçesinin sevgilinin güzelliğine erişemeyeceği vurgulanmaktadır.",
+            "person:zahitler": "Zahid (çoğulu zühhâd/zahitler), dünya nimetlerinden uzak durup kendini ibadete adayan, sofu/dindar kişilere divan edebiyatında verilen addır; genellikle aşk ve şarap temalı şiirlerde, hazcı âşığın karşıtı olarak katı/kuralcı bir tip şeklinde tasvir edilir. Bu kasidede zahitler, Kevser şarabını isteyenler olarak, şairin sevgilinin dudağını özleyen tutkusuyla karşılaştırılmaktadır.",
+            "place:kevser": "Kevser, İslam inancına göre cennette bulunan, Hz. Muhammed'e has özel bir havuz/nehirdir; Kur'an'da adı geçen bir sûreye de adını vermiştir. Bu kasidede Kevser, zahitlerin arzuladığı cennet nimeti olarak, şairin sevgilinin dudağına duyduğu tutkuyla karşılaştırılmaktadır.",
+            "person:ahmed-i muhtâr": "Ahmed-i Muhtâr ('seçilmiş Ahmed'), Hz. Muhammed'in güzel isimlerinden biridir; 'Ahmed' Peygamberimizin diğer bir adı, 'Muhtâr' ise 'seçilmiş' anlamına gelir. Bu kasidede su, Hz. Muhammed'in ('Ahmed-i Muhtâr'ın) yoluna uymakla temiz yaradılışını insanlara gösterdiği söylenerek methedilmektedir.",
+            "person:hz. muhammed": "Hz. Muhammed (yaklaşık 570-632), İslam dininin peygamberi olup, bu na't türü kasidenin asıl övgü konusudur. Fuzûlî'nin bu kasidesinde su, çeşitli beyitlerde Hz. Muhammed'in mucizeleri, merhameti ve yüceliğiyle ilişkilendirilerek methedilmektedir.",
+            "concept:mucizeleri": "Mucize, bir peygamberin, Allah'ın izniyle, olağan tabiat kanunlarını aşan olağanüstü bir olayı gerçekleştirmesine verilen addır; peygamberliğin doğrulanması için bir delil sayılır. Bu kasidede Hz. Muhammed'in çeşitli mucizeleri (parmaklarından su akıtması, taştan su çıkarması gibi) su imgesiyle ilişkilendirilerek övülmektedir.",
+            "concept:mucizesiyle": "Mucize, bir peygamberin, Allah'ın izniyle, olağan tabiat kanunlarını aşan olağanüstü bir olayı gerçekleştirmesine verilen addır; peygamberliğin doğrulanması için bir delil sayılır. Bu kasidede Hz. Muhammed'in çeşitli mucizeleri (parmaklarından su akıtması, taştan su çıkarması gibi) su imgesiyle ilişkilendirilerek övülmektedir.",
+            "concept:mucizesi": "Mucize, bir peygamberin, Allah'ın izniyle, olağan tabiat kanunlarını aşan olağanüstü bir olayı gerçekleştirmesine verilen addır; peygamberliğin doğrulanması için bir delil sayılır. Bu kasidede Hz. Muhammed'in çeşitli mucizeleri (parmaklarından su akıtması, taştan su çıkarması gibi) su imgesiyle ilişkilendirilerek övülmektedir.",
+            "concept:mucizeden": "Mucize, bir peygamberin, Allah'ın izniyle, olağan tabiat kanunlarını aşan olağanüstü bir olayı gerçekleştirmesine verilen addır; peygamberliğin doğrulanması için bir delil sayılır. Bu kasidede Hz. Muhammed'in çeşitli mucizeleri (parmaklarından su akıtması, taştan su çıkarması gibi) su imgesiyle ilişkilendirilerek övülmektedir.",
+            "person:ensâr": "Ensâr ('yardımcılar'), Hz. Muhammed Mekke'den Medine'ye hicret ettiğinde onu ve beraberindeki Müslümanları kabul edip destekleyen Medineli Müslümanlara verilen addır. Bu kasidede Ensâr, Hz. Muhammed'in bir susuzluk gününde parmaklarından akıttığı suyu içenler olarak anılan mucizevi bir olayla ilişkilendirilmektedir.",
+            "concept:rahmet": "Rahmet, Allah'ın kullarına gösterdiği merhamet, şefkat ve bağışlayıcılığı ifade eden bir kavramdır. Bu kasidede rahmet, Hz. Muhammed'in abdest alırken yüzüne sürdüğü her su damlasından yayıldığı söylenen ilahi bir bereket olarak tasvir edilmektedir.",
+            "concept:na'tını": "Na't, divan edebiyatında Hz. Muhammed'i övmek amacıyla yazılan şiir türüne verilen addır. Bu kaside de aslında bir na't olup, su redifi üzerinden hem aşk hem de Hz. Muhammed övgüsünü bir arada işlemektedir; şair, na'tını tekrarlamanın günahkârlar için bir çare olduğunu söylemektedir.",
+            "person:fuzûlî": "Fuzûlî (yaklaşık 1483-1556), Azerbaycan/Irak kökenli, Türk, Arap ve Fars dillerinde eser vermiş, divan edebiyatının en büyük şairlerinden biridir; bu ünlü 'Su Kasidesi'nin de yazarıdır. Şiirin son beyitlerinde şair, kendi adını anarak sözlerinin Hz. Muhammed'i övmenin bereketiyle inciye dönüştüğünü ifade etmektedir.",
+            "concept:vuslatını": "Vuslat, divan edebiyatında âşığın sevgiliye kavuşması anlamına gelir; dinî/tasavvufi şiirlerde ise kulun Allah'a veya Hz. Muhammed'e manevi kavuşmasını da ifade edebilir. Bu kasidenin son beytinde şair, kıyamet gününde Hz. Muhammed'in yüzünü görmekten mahrum kalmamayı, yani ona kavuşmayı (vuslatını) dilemektedir.",
+            "concept:şefaatini": "Şefaat, İslam inancına göre Hz. Muhammed'in veya diğer salih kulların, kıyamet gününde günahkâr müminler için Allah'tan af dilemesi/aracılık etmesidir. Bu kasidenin son beytinde şair, Hz. Muhammed'den kıyamet gününde kendisine şefaat etmesini dilemektedir."
+            },
+            word_alternatives: {},
             file: 'assets/sk.png',
             enhancedFile: 'assets/sk-enhanced.jpg',
             name: 'su_kasidesi.png',
@@ -911,6 +959,41 @@ Umduğum oldur ki rûz-ı haşr mahrûm olmayam
             }
         },
         'mdo': {
+            entity_info: {
+            "concept:gülle": "Gülle, Türkçede aslen top mermisi anlamına gelse de, mekanik düzenek ve otomat tariflerinde (hiyel kitaplarında) oluk içinde yuvarlanan küçük, yuvarlak bir bilyeyi ifade etmek için de kullanılır. Bu belgede gülle, oluğun (mizab) içine yerleştirilip yuvarlanarak düzeneği harekete geçiren parça olarak tarif edilmektedir. Metinde, güllenin oluk içindeki hareketinin kolay olması için oluğun genişliğinin güllenin çapına uygun ayarlanması gerektiği belirtilir.",
+            "concept:olukta": "Oluk (Arapça karşılığıyla mizab), bir sıvının veya katı bir cismin içinden geçerek yönlendirildiği, genellikle dar ve uzun kanal biçimindeki yapıya verilen genel addır. Bu teknik belgede oluk, güllenin (bilyenin) içinde yuvarlanarak hareket ettiği, genişliği güllenin çapına göre ayarlanması gereken ana mekanik kanalı ifade eder. Metinde, oluk üzerine konan işaretlerle güllelerin kesim/durma noktalarının nasıl belirleneceği ayrıntılı olarak anlatılmaktadır.",
+            "concept:güllelerin": "Gülle, Türkçede aslen top mermisi anlamına gelse de, mekanik düzenek ve otomat tariflerinde (hiyel kitaplarında) oluk içinde yuvarlanan küçük, yuvarlak bir bilyeyi ifade etmek için de kullanılır. Bu belgede gülle, oluğun (mizab) içine yerleştirilip yuvarlanarak düzeneği harekete geçiren parça olarak tarif edilmektedir. Metinde, güllenin oluk içindeki hareketinin kolay olması için oluğun genişliğinin güllenin çapına uygun ayarlanması gerektiği belirtilir.",
+            "concept:güllenin": "Gülle, Türkçede aslen top mermisi anlamına gelse de, mekanik düzenek ve otomat tariflerinde (hiyel kitaplarında) oluk içinde yuvarlanan küçük, yuvarlak bir bilyeyi ifade etmek için de kullanılır. Bu belgede gülle, oluğun (mizab) içine yerleştirilip yuvarlanarak düzeneği harekete geçiren parça olarak tarif edilmektedir. Metinde, güllenin oluk içindeki hareketinin kolay olması için oluğun genişliğinin güllenin çapına uygun ayarlanması gerektiği belirtilir.",
+            "concept:bıçak ağzı": "Şefre, Osmanlı teknik/hiyel literatüründe genellikle ince, keskin kenarlı bir bıçak veya bıçak ağzı biçimindeki mekanik parçaya verilen addır. Bu belgede bıçak ağzı, demirden veya bakırdan yapılan, bir mil etrafında dönerek güllenin oluk içindeki hareketini yönlendiren/durduran hareketli bir parça olarak tarif edilir. Metne göre bu parçanın sapına bir delik açılıp mil geçirilerek düzeneğe monte edilmektedir.",
+            "concept:mil": "Mil (Arapça karşılığıyla mihver), bir mekanik parçanın etrafında döndüğü ince, uzun eksen çubuğuna verilen addır. Bu belgede mil, bıçak ağzı (şefre) parçasının sapındaki delikten geçirilerek onun oluğun kenarlarındaki deliklere yerleştirilmesini ve parçanın bu eksen etrafında dönmesini sağlayan bileşen olarak geçer. Düzeneğin güllenin hareketine göre bıçak ağzını döndürüp durdurabilmesi, bu milin doğru yerleştirilmesine bağlıdır.",
+            "concept:milin": "Mil (Arapça karşılığıyla mihver), bir mekanik parçanın etrafında döndüğü ince, uzun eksen çubuğuna verilen addır. Bu belgede mil, bıçak ağzı (şefre) parçasının sapındaki delikten geçirilerek onun oluğun kenarlarındaki deliklere yerleştirilmesini ve parçanın bu eksen etrafında dönmesini sağlayan bileşen olarak geçer. Düzeneğin güllenin hareketine göre bıçak ağzını döndürüp durdurabilmesi, bu milin doğru yerleştirilmesine bağlıdır.",
+            "concept:bilye": "Bilye, küçük, yuvarlak ve sert bir topak/top şeklindeki nesnelere verilen genel addır; mekanik düzeneklerde genellikle yuvarlanarak hareket ileten bir parça olarak kullanılır. Bu belgede bilye, oluğun başına konulduğunda yuvarlanarak ilerleyen ve mekanizmayı tetikleyen küçük bir top olarak, metinde 'fındık' benzetmesiyle birlikte anılır. Düzenekteki gülle ile burada kastedilen bilye, işlevsel olarak aynı tür parçayı ifade etmektedir.",
+            "concept:ağırlık": "Ağırlık (Arapça karşılığıyla sıkale), bir mekanik düzenekte denge veya hareket sağlamak amacıyla bir parçaya asılan veya eklenen kütleye verilen addır. Bu belgede ağırlık, ikinci bıçak ağzının (şefrenin) kuyruk kısmına takılarak, bir ucu aşağı inerken diğer ucun yukarı kalkmasını sağlayan, kaldıraç mantığıyla çalışan dengeleme parçası olarak tarif edilir. Metinde, iki bıçak ağzının birbirine göre ters yönde hareket etmesi bu ağırlığın sağladığı denge sayesinde gerçekleşmektedir."
+            },
+            word_alternatives: {
+            "بونجاب": {"alternatives":[],"alternative_details":[],"origin":"Belirsiz (teknik terim, olası OCR bozulması)","ocr_form":"بونجاب"},
+            "buncab": {"alternatives":[],"alternative_details":[],"origin":"Belirsiz (teknik terim, olası OCR bozulması)","ocr_form":"بونجاب"},
+            "طوغانك": {"alternatives":[],"alternative_details":[],"origin":"Türkçe (\"doğan\" + iyelik eki)","ocr_form":"طوغانك"},
+            "toğanın": {"alternatives":[],"alternative_details":[],"origin":"Türkçe (\"doğan\" + iyelik eki)","ocr_form":"طوغانك"},
+            "doğan şeklindeki kaldıracın": {"alternatives":[],"alternative_details":[],"origin":"Türkçe (\"doğan\" + iyelik eki)","ocr_form":"طوغانك"},
+            "تیز اره": {"alternatives":[],"alternative_details":[],"origin":"Farsça-Türkçe bileşik (\"tîz\" + \"ere/eğe\")","ocr_form":"تیز اره"},
+            "tiz-ere": {"alternatives":[],"alternative_details":[],"origin":"Farsça-Türkçe bileşik (\"tîz\" + \"ere/eğe\")","ocr_form":"تیز اره"},
+            "keskin testere": {"alternatives":[],"alternative_details":[],"origin":"Farsça-Türkçe bileşik (\"tîz\" + \"ere/eğe\")","ocr_form":"تیز اره"},
+            "ياپيلمش": {"alternatives":[],"alternative_details":[],"origin":"Türkçe (\"yapmak\" fiilinin edilgen sıfat-fiili)","ocr_form":"ياپيلمش"},
+            "yapılmış": {"alternatives":[],"alternative_details":[],"origin":"Türkçe (\"yapmak\" fiilinin edilgen sıfat-fiili)","ocr_form":"ياپيلمش"},
+            "ذنبى": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"zeneb\" = kuyruk + iyelik eki)","ocr_form":"ذنبى"},
+            "ẕenebi": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"zeneb\" = kuyruk + iyelik eki)","ocr_form":"ذنبى"},
+            "kuyruğu": {"alternatives":[],"alternative_details":[],"origin":"Arapça kökenli terimin Türkçe karşılığı (\"zeneb\" = kuyruk)","ocr_form":"ذنبى"},
+            "فرودينك": {"alternatives":[],"alternative_details":[],"origin":"Farsça-Türkçe bileşik (\"ferûd\" = iniş/alt + iyelik eki)","ocr_form":"فرودينك"},
+            "ferūdīnüñ": {"alternatives":[],"alternative_details":[],"origin":"Farsça-Türkçe bileşik (\"ferûd\" = iniş/alt + iyelik eki)","ocr_form":"فرودينك"},
+            "alt kısmının": {"alternatives":[],"alternative_details":[],"origin":"Farsça-Türkçe bileşik terimin Türkçe karşılığı (\"ferûd\" = iniş/alt)","ocr_form":"فرودينك"},
+            "مسى": {"alternatives":["nühâsî"],"alternative_details":[{"text":"nühâsî","confidence":0.35,"confidence_percent":35}],"origin":"Arapça (olası \"nühâsî\" = bakırdan, kısaltılmış/bozuk okunuş)","ocr_form":"مسى"},
+            "misī": {"alternatives":["nühâsî"],"alternative_details":[{"text":"nühâsî","confidence":0.35,"confidence_percent":35}],"origin":"Arapça (olası \"nühâsî\" = bakırdan, kısaltılmış/bozuk okunuş)","ocr_form":"مسى"},
+            "bakır": {"alternatives":[],"alternative_details":[],"origin":"Arapça kökenli terimin Türkçe karşılığı (\"nühâs\" = bakır)","ocr_form":"مسى"},
+            "منخفض": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"munhafıd\" = alçalmış, indirilmiş)","ocr_form":"منخفض"},
+            "munḫafıż": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"munhafıd\" = alçalmış, indirilmiş)","ocr_form":"منخفض"},
+            "alçalmıştır": {"alternatives":[],"alternative_details":[],"origin":"Arapça kökenli terimin Türkçe karşılığı (\"munhafıd\" = alçalmış)","ocr_form":"منخفض"}
+            },
             file: 'assets/mdo.png',
             enhancedFile: 'assets/mdo-enhanced.jpg',
             name: 'mekanik_duzenek_oluk.png',
@@ -987,6 +1070,85 @@ el-ḥaḳ`,
             }
         },
         'svf': {
+            entity_info: {
+            "place:sivas": "Sivas, Orta Anadolu'da, Osmanlı döneminde önemli bir eyalet merkezi olan tarihî bir şehirdir; bölgenin idari, ticari ve dinî açıdan önde gelen merkezlerinden biriydi. Bu belgede Sivas, üzerinde Süleyman Paşa Vakfı'nın bulunduğu, vakıf yönetimiyle ilgili fermanın gönderildiği beylerbeyilik ve kadılık merkezi olarak geçmektedir.",
+            "concept:beylerbeyi": "Beylerbeyi, Osmanlı taşra teşkilatında bir eyaletin en üst düzey askerî ve idari yöneticisine verilen unvandır. Bu belgede beylerbeyi, fermanın kendisine hitaben gönderildiği, Sivas eyaletinin en yetkili yöneticisi olarak anılmaktadır.",
+            "concept:kadısı": "Kadı, Osmanlı adalet sisteminde İslam hukukuna (şer'î hukuka) göre yargı yetkisini kullanan, aynı zamanda bulunduğu kazada çeşitli idari görevleri de yürüten görevlidir. Bu belgede kadı, Sivas Beylerbeyi ile birlikte fermanın muhatabı olan, vakfın şartlarına uyulmasını denetlemekle görevli yerel yetkili olarak geçmektedir.",
+            "concept:fermanı": "Ferman, padişahın bizzat verdiği, kanun hükmünde buyruk niteliğindeki resmî emirlere verilen addır. Bu belgede ferman, Sivas'taki Süleyman Paşa Vakfı'nın yönetim ve denetim işlerinin vakfiye şartlarına uygun yürütülmesini emreden padişah buyruğunu ifade etmektedir.",
+            "person:süleyman paşa": "Bu belgede Süleyman Paşa, Sivas'ta kendi adını taşıyan vakfın (Süleyman Paşa Vakfı) banisi/kurucusu olarak anılmaktadır; kendisi hakkında metinde başka bir bilgi yer almamaktadır. Fermanın konusu, bu vakfın yönetim ve gelir şartlarının vakfiye hükümlerine uygun biçimde yürütülmesinin denetlenmesidir.",
+            "concept:vakıf": "Vakıf, bir kişinin mal varlığının bir kısmını veya tamamını, dinî, hayrî veya sosyal bir amaca sürekli olarak tahsis etmesiyle oluşan, İslam hukukuna dayanan bir kurumdur. Bu belgede vakıf, Sivas'ta Süleyman Paşa tarafından kurulan ve yönetim/gelir şartlarına titizlikle uyulması istenen Süleyman Paşa Vakfı'nı ifade etmektedir.",
+            "concept:fermanının": "Ferman, padişahın bizzat verdiği, kanun hükmünde buyruk niteliğindeki resmî emirlere verilen addır. Bu belgede ferman, Sivas'taki Süleyman Paşa Vakfı'nın yönetim ve denetim işlerinin vakfiye şartlarına uygun yürütülmesini emreden padişah buyruğunu ifade etmektedir."
+            },
+            word_alternatives: {
+            "والاحترام": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"ve\" + \"el-ihtirâm\" = ve hürmet)","ocr_form":"والاحترام"},
+            "ve'l-ihtirâm": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"ve\" + \"el-ihtirâm\" = ve hürmet)","ocr_form":"والاحترام"},
+            "معدن العز والاجلال": {"alternatives":[],"alternative_details":[],"origin":"Arapça tamlama (\"izzet ve celalin kaynağı\")","ocr_form":"معدن العز والاجلال"},
+            "ma'dinü'l-izzi ve'l-iclâl": {"alternatives":[],"alternative_details":[],"origin":"Arapça tamlama (\"izzet ve celalin kaynağı\")","ocr_form":"معدن العز والاجلال"},
+            "اولان": {"alternatives":[],"alternative_details":[],"origin":"Türkçe (sıfat-fiil eki)","ocr_form":"اولان"},
+            "olan": {"alternatives":[],"alternative_details":[],"origin":"Türkçe (sıfat-fiil eki)","ocr_form":"اولان"},
+            "قدوة الاماثل": {"alternatives":[],"alternative_details":[],"origin":"Arapça tamlama (\"emsallerin/benzerlerinin örneği\")","ocr_form":"قدوة الاماثل"},
+            "kudvetü'l-emâsil": {"alternatives":[],"alternative_details":[],"origin":"Arapça tamlama (\"emsallerin/benzerlerinin örneği\")","ocr_form":"قدوة الاماثل"},
+            "زيدت فضائله": {"alternatives":[],"alternative_details":[],"origin":"Arapça dua formülü (\"faziletleri artsın\")","ocr_form":"زيدت فضائله"},
+            "zîdet fezâilühû": {"alternatives":[],"alternative_details":[],"origin":"Arapça dua formülü (\"faziletleri artsın\")","ocr_form":"زيدت فضائله"},
+            "توقيع رفيع همایون واصل اولیجاق معلوم اولا که": {"alternatives":[],"alternative_details":[],"origin":"Arapça-Türkçe bileşik (fermanların standart açılış formülü: \"yüce padişah fermanı ulaştığında bilinsin ki\")","ocr_form":"توقيع رفيع همایون واصل اولیجاق معلوم اولا که"},
+            "tevkî'-i refî'-i hümâyûn vâsıl olıcak ma'lûm ola ki": {"alternatives":[],"alternative_details":[],"origin":"Arapça-Türkçe bileşik (fermanların standart açılış formülü: \"yüce padişah fermanı ulaştığında bilinsin ki\")","ocr_form":"توقيع رفيع همایون واصل اولیجاق معلوم اولا که"},
+            "مضمون": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"içerik, muhteva\")","ocr_form":"مضمون"},
+            "mazmûn-ı": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"içerik, muhteva\")","ocr_form":"مضمون"},
+            "حكم همایون": {"alternatives":[],"alternative_details":[],"origin":"Arapça-Farsça tamlama (\"padişah hükmü/buyruğu\")","ocr_form":"حكم همایون"},
+            "hükm-i hümâyûn": {"alternatives":[],"alternative_details":[],"origin":"Arapça-Farsça tamlama (\"padişah hükmü/buyruğu\")","ocr_form":"حكم همایون"},
+            "تولیت و نظارت": {"alternatives":[],"alternative_details":[],"origin":"Arapça (vakıf idaresinde \"yöneticilik\" ve \"denetçilik\" görevleri)","ocr_form":"تولیت و نظارت"},
+            "tevliyet ve nezâret": {"alternatives":[],"alternative_details":[],"origin":"Arapça (vakıf idaresinde \"yöneticilik\" ve \"denetçilik\" görevleri)","ocr_form":"تولیت و نظارت"},
+            "وقفیه": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"vakıf senedi/belgesi\")","ocr_form":"وقفیه"},
+            "vakfiye": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"vakıf senedi/belgesi\")","ocr_form":"وقفیه"},
+            "موجبجه": {"alternatives":[],"alternative_details":[],"origin":"Arapça kökenli (\"mûcib\" = gerek + Türkçe ek, \"gereğince\")","ocr_form":"موجبجه"},
+            "mûcebince": {"alternatives":[],"alternative_details":[],"origin":"Arapça kökenli (\"mûcib\" = gerek + Türkçe ek, \"gereğince\")","ocr_form":"موجبجه"},
+            "عمل اولنمق": {"alternatives":[],"alternative_details":[],"origin":"Arapça-Türkçe bileşik (\"amel\" = iş/eylem + \"olunmak\", \"uygulanmak\")","ocr_form":"عمل اولنمق"},
+            "amel olunmak": {"alternatives":[],"alternative_details":[],"origin":"Arapça-Türkçe bileşik (\"amel\" = iş/eylem + \"olunmak\", \"uygulanmak\")","ocr_form":"عمل اولنمق"},
+            "سلیمان پاشا": {"alternatives":[],"alternative_details":[],"origin":"Özel isim (vakfın banisi)","ocr_form":"سلیمان پاشا"},
+            "Süleyman Paşa": {"alternatives":[],"alternative_details":[],"origin":"Özel isim (vakfın banisi)","ocr_form":"سلیمان پاشا"},
+            "وقفی": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"vakıf\" + Türkçe iyelik eki)","ocr_form":"وقفی"},
+            "vakfı": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"vakıf\" + Türkçe iyelik eki)","ocr_form":"وقفی"},
+            "شروطی": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"şart\" kelimesinin çoğulu + Türkçe iyelik eki, \"şartları\")","ocr_form":"شروطی"},
+            "şurûtu": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"şart\" kelimesinin çoğulu + Türkçe iyelik eki, \"şartları\")","ocr_form":"شروطی"},
+            "ضبط اولنمق": {"alternatives":[],"alternative_details":[],"origin":"Arapça-Türkçe bileşik (\"zapt edilmek, kayıt/denetim altına alınmak\")","ocr_form":"ضبط اولنمق"},
+            "zabt olunmak": {"alternatives":[],"alternative_details":[],"origin":"Arapça-Türkçe bileşik (\"zapt edilmek, kayıt/denetim altına alınmak\")","ocr_form":"ضبط اولنمق"},
+            "مخالف": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"aykırı, karşıt\")","ocr_form":"مخالف"},
+            "muhâlif": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"aykırı, karşıt\")","ocr_form":"مخالف"},
+            "عمل اولنمامق": {"alternatives":[],"alternative_details":[],"origin":"Arapça-Türkçe bileşik (\"uygulanmamak\", olumsuz çatı)","ocr_form":"عمل اولنمامق"},
+            "amel olunmamak": {"alternatives":[],"alternative_details":[],"origin":"Arapça-Türkçe bileşik (\"uygulanmamak\", olumsuz çatı)","ocr_form":"عمل اولنمامق"},
+            "استدعا": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"talep, rica\")","ocr_form":"استدعا"},
+            "istid'â": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"talep, rica\")","ocr_form":"استدعا"},
+            "اولندقده": {"alternatives":[],"alternative_details":[],"origin":"Türkçe (\"olunduğunda\", eski yazı zarf-fiil eki)","ocr_form":"اولندقده"},
+            "olundukda": {"alternatives":[],"alternative_details":[],"origin":"Türkçe (\"olunduğunda\", eski yazı zarf-fiil eki)","ocr_form":"اولندقده"},
+            "مقتضاسنجه": {"alternatives":[],"alternative_details":[],"origin":"Arapça kökenli (\"muktezâ\" = gerek + Türkçe ek, \"gereğince, icabınca\")","ocr_form":"مقتضاسنجه"},
+            "muktezâsınca": {"alternatives":[],"alternative_details":[],"origin":"Arapça kökenli (\"muktezâ\" = gerek + Türkçe ek, \"gereğince, icabınca\")","ocr_form":"مقتضاسنجه"},
+            "عمل اولنه": {"alternatives":[],"alternative_details":[],"origin":"Arapça-Türkçe bileşik, emir kipi (\"uygulansın\")","ocr_form":"عمل اولنه"},
+            "amel oluna": {"alternatives":[],"alternative_details":[],"origin":"Arapça-Türkçe bileşik, emir kipi (\"uygulansın\")","ocr_form":"عمل اولنه"},
+            "دیو": {"alternatives":[],"alternative_details":[],"origin":"Türkçe (eski yazımla \"diye\")","ocr_form":"دیو"},
+            "deyü": {"alternatives":[],"alternative_details":[],"origin":"Türkçe (eski yazımla \"diye\")","ocr_form":"دیو"},
+            "مهر شریف": {"alternatives":[],"alternative_details":[],"origin":"Arapça tamlama (\"şerefli/kutsal mühür\", padişah mührü)","ocr_form":"مهر شریف"},
+            "mühr-i şerîf": {"alternatives":[],"alternative_details":[],"origin":"Arapça tamlama (\"şerefli/kutsal mühür\", padişah mührü)","ocr_form":"مهر شریف"},
+            "وقف شروطی": {"alternatives":[],"alternative_details":[],"origin":"Arapça-Türkçe bileşik (\"vakıf şartları\")","ocr_form":"وقف شروطی"},
+            "vakıf şurûtu": {"alternatives":[],"alternative_details":[],"origin":"Arapça-Türkçe bileşik (\"vakıf şartları\")","ocr_form":"وقف شروطی"},
+            "درباره": {"alternatives":[],"alternative_details":[],"origin":"Farsça (\"hakkında, ile ilgili\")","ocr_form":"درباره"},
+            "der-bâre-i": {"alternatives":[],"alternative_details":[],"origin":"Farsça (\"hakkında, ile ilgili\")","ocr_form":"درباره"},
+            "مخالفت": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"aykırılık, karşı çıkma\")","ocr_form":"مخالفت"},
+            "muhâlefet": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"aykırılık, karşı çıkma\")","ocr_form":"مخالفت"},
+            "جدید": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"yeni\")","ocr_form":"جدید"},
+            "cedîd": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"yeni\")","ocr_form":"جدید"},
+            "اجرا": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"icra, yürütme\")","ocr_form":"اجرا"},
+            "icrâ": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"icra, yürütme\")","ocr_form":"اجرا"},
+            "اولنمق": {"alternatives":[],"alternative_details":[],"origin":"Türkçe (edilgen fiil eki)","ocr_form":"اولنمق"},
+            "olunmak": {"alternatives":[],"alternative_details":[],"origin":"Türkçe (edilgen fiil eki)","ocr_form":"اولنمق"},
+            "في اواسط": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"-de/-da\" + \"ortalar\", \"...ayının ortalarında\")","ocr_form":"في اواسط"},
+            "fî evâsıt-ı": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"-de/-da\" + \"ortalar\", \"...ayının ortalarında\")","ocr_form":"في اواسط"},
+            "شعبان": {"alternatives":[],"alternative_details":[],"origin":"Arapça (Hicrî takvimde sekizinci ay adı)","ocr_form":"شعبان"},
+            "Şa'bân": {"alternatives":[],"alternative_details":[],"origin":"Arapça (Hicrî takvimde sekizinci ay adı)","ocr_form":"شعبان"},
+            "سنه": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"yıl, sene\")","ocr_form":"سنه"},
+            "sene": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"yıl, sene\")","ocr_form":"سنه"},
+            "تسع وتسعين": {"alternatives":[],"alternative_details":[],"origin":"Arapça sayı (\"doksan dokuz\")","ocr_form":"تسع وتسعين"},
+            "tis'a ve tis'în": {"alternatives":[],"alternative_details":[],"origin":"Arapça sayı (\"doksan dokuz\")","ocr_form":"تسع وتسعين"}
+            },
             file: 'assets/svf.png',
             enhancedFile: 'assets/svf-enhanced.jpg',
             name: 'sivas_vakif_fermani.png',
@@ -1065,6 +1227,19 @@ el-ḥaḳ`,
             }
         },
         'yeni2': {
+            entity_info: {
+            "concept:dilekçeyi": "Dilekçe (Osmanlıca karşılığıyla arzuhal), bir kişinin bir talebini, şikâyetini veya durumunu resmî bir makama yazılı olarak bildirdiği belgedir. Bu belgede dilekçe, yazarın yıllardır padişahın yüce makamına defalarca sunduğu, ancak hiçbir sonuç alamadığı başvuruları ifade etmektedir.",
+            "person:reşid paşa": "Mustafa Reşid Paşa (1800-1858), Tanzimat Fermanı'nın mimarı olarak bilinen, Osmanlı Devleti'nde birkaç kez sadrazamlık yapmış önemli bir devlet adamı ve reformcudur. Bu belgede Reşid Paşa, dilekçe sahibinin 1274 (Hicrî) yılında bizzat kendisine de bir dilekçe sunduğu, belgenin yazıldığı sırada vefat etmiş olan eski sadrazam olarak anılmaktadır.",
+            "concept:dilekçe": "Dilekçe (Osmanlıca karşılığıyla arzuhal), bir kişinin bir talebini, şikâyetini veya durumunu resmî bir makama yazılı olarak bildirdiği belgedir. Bu belgede dilekçe, yazarın yıllardır padişahın yüce makamına defalarca sunduğu, ancak hiçbir sonuç alamadığı başvuruları ifade etmektedir.",
+            "concept:dilekçem": "Dilekçe (Osmanlıca karşılığıyla arzuhal), bir kişinin bir talebini, şikâyetini veya durumunu resmî bir makama yazılı olarak bildirdiği belgedir. Bu belgede dilekçe, yazarın yıllardır padişahın yüce makamına defalarca sunduğu, ancak hiçbir sonuç alamadığı başvuruları ifade etmektedir.",
+            "concept:meclis-i vâlâ": "Meclis-i Vâlâ (Meclis-i Vâlâ-yı Ahkâm-ı Adliye), Tanzimat döneminde kurulan, kanun tasarılarını hazırlayan ve bazı yüksek yargı/idari işlere bakan üst düzey bir devlet kuruludur. Bu belgede Meclis-i Vâlâ, dilekçe sahibinin başvurularının havale edildiği, ancak sonuçlandırılmadığı merkezi kurum olarak geçmektedir.",
+            "concept:dilekçenin": "Dilekçe (Osmanlıca karşılığıyla arzuhal), bir kişinin bir talebini, şikâyetini veya durumunu resmî bir makama yazılı olarak bildirdiği belgedir. Bu belgede dilekçe, yazarın yıllardır padişahın yüce makamına defalarca sunduğu, ancak hiçbir sonuç alamadığı başvuruları ifade etmektedir.",
+            "concept:hazine-i hassa": "Hazine-i Hassa, Osmanlı Devleti'nde padişahın özel/şahsi mal varlığını ve gelirlerini yöneten hazine kurumudur. Bu belgede Hazine-i Hassa, dilekçe sahibinin başvurularının Meclis-i Vâlâ tarafından havale edildiği, ancak gerekli yanıtın hiç verilmediği kurum olarak anılmaktadır.",
+            "concept:dilekçelerime": "Dilekçe (Osmanlıca karşılığıyla arzuhal), bir kişinin bir talebini, şikâyetini veya durumunu resmî bir makama yazılı olarak bildirdiği belgedir. Bu belgede dilekçe, yazarın yıllardır padişahın yüce makamına defalarca sunduğu, ancak hiçbir sonuç alamadığı başvuruları ifade etmektedir.",
+            "concept:dilekçelerin": "Dilekçe (Osmanlıca karşılığıyla arzuhal), bir kişinin bir talebini, şikâyetini veya durumunu resmî bir makama yazılı olarak bildirdiği belgedir. Bu belgede dilekçe, yazarın yıllardır padişahın yüce makamına defalarca sunduğu, ancak hiçbir sonuç alamadığı başvuruları ifade etmektedir.",
+            "concept:tanzimat": "Tanzimat, 1839'da Gülhane Hatt-ı Hümayunu'nun ilanıyla başlayan, Osmanlı Devleti'nde hukuk, idare ve mali alanlarda köklü reformlar yapılan dönemi ifade eder. Bu belgede Tanzimat, dilekçe sahibinin daha önce bu reformlarla ilgili yaptığı açıklamaların/taleplerin de yerine getirilmesini istediği bağlamda anılmaktadır."
+            },
+            word_alternatives: {},
             file: 'assets/yeni2.png',
             enhancedFile: 'assets/yeni2-enhanced.jpg',
             name: 'cozume_kavusmayan_mesele_dilekcesi.png',
@@ -1119,6 +1294,32 @@ olmağın ol bâbda ve her halde ifade-i hâl hazret-i men lehül-emrindir.`,
             }
         },
         'hbv': {
+            entity_info: {
+            "person:tayyib baba": "Bu belgede merhum Tayyib Baba, Hacı Bayram Veli Vakfı'nın mütevellilik, şeyhlik ve zaviyedarlık görevlerini daha önce yürütmüş olan ve oğlu Seyyid Muhammed Said Baba'nın bu görevleri ondan devraldığı kişi olarak anılmaktadır; kendisi hakkında metinde başka bir bilgi yer almamaktadır.",
+            "person:seyyid muhammed said baba": "Bu belgede Seyyid Muhammed Said Baba, Tayyib Baba'nın oğlu olup, Ankara'daki Hacı Bayram Veli Vakfı'nın mütevellilik, şeyhlik ve zaviyedarlık görevlerini babasından devralan, ancak bir süre haksız yere bu görevlerden uzaklaştırılıp padişah beratıyla tekrar bu görevlere iade edilen kişidir.",
+            "place:ankara": "Ankara, İç Anadolu'da, Hacı Bayram Veli'nin türbesi ve ona bağlı vakfın bulunduğu tarihî bir şehirdir. Bu belgede Ankara, mütevellilik, şeyhlik ve zaviyedarlık görevlerine dair ihtilafın konusu olan Hacı Bayram Veli Vakfı'nın bulunduğu yer olarak anılmaktadır.",
+            "concept:vakıf": "Vakıf, bir kişinin mal varlığının bir kısmını veya tamamını dinî, hayrî veya sosyal bir amaca sürekli olarak tahsis etmesiyle oluşan, İslam hukukuna dayanan bir kurumdur. Bu belgede vakıf, Ankara'daki Hacı Bayram Veli Vakfı'nı ifade etmekte, belgenin konusu bu vakfın yönetim görevlerine (mütevellilik, şeyhlik, zaviyedarlık) ilişkin bir ihtilaftır.",
+            "person:seyyid halil baba": "Bu belgede Seyyid Halil Baba, haksız yere görev talep eden Seyyid Kasım Baba'nın babası olarak anılmaktadır; kendisi hakkında metinde başka bir bilgi yer almamaktadır.",
+            "person:seyyid kasım baba": "Bu belgede Seyyid Kasım Baba, Seyyid Halil Baba'nın oğlu olup, kendisinin Hacı Bayram Veli Vakfı görevlerine en layık evlat ve akraba olduğunu ileri sürerek çeşitli yollarla bir berat çıkarttıran ve bu sayede Seyyid Muhammed Said Baba'yı görevlerinden haksız yere uzaklaştıran kişi olarak anılmaktadır.",
+            "concept:berat": "Berat, padişahın bir kişiye belirli bir görev, unvan, imtiyaz veya gelir tahsis ettiğini bildiren resmî belgedir. Bu belgenin kendisi, Seyyid Muhammed Said Baba'ya Hacı Bayram Veli Vakfı'ndaki görevlerini iade eden bir berattır.",
+            "concept:mütevellilik": "Mütevellilik, bir vakfın idaresinden, gelirlerinin toplanıp vakfiye şartlarına göre harcanmasından sorumlu yöneticilik görevidir. Bu belgede mütevellilik, Hacı Bayram Veli Vakfı için Seyyid Muhammed Said Baba'ya babasından miras kalan ve bir süre haksız yere elinden alınan görevlerden biridir.",
+            "concept:şeyhlik": "Şeyhlik, bir tarikatın veya tekkenin manevi önderliği ve irşad görevine verilen addır. Bu belgede şeyhlik, Hacı Bayram Veli Vakfı'na bağlı tekkenin manevi önderlik görevi olarak, mütevellilik ve zaviyedarlıkla birlikte Seyyid Muhammed Said Baba'ya iade edilen görevlerden biridir.",
+            "concept:zaviyedarlık": "Zaviyedarlık, bir zaviyenin (küçük tekke/dergâh) işletilmesinden ve orada konaklayan dervişlere/yolculara hizmet edilmesinden sorumlu görevliliktir. Bu belgede zaviyedarlık, Hacı Bayram Veli Vakfı'na bağlı zaviyenin yönetim görevi olarak, mütevellilik ve şeyhlikle birlikte Seyyid Muhammed Said Baba'ya iade edilen görevlerden biridir.",
+            "concept:şeyhülislam": "Şeyhülislam, Osmanlı Devleti'nde din işlerinin en üst makamı olup, fetva verme yetkisine sahip baş müftüdür. Bu belgede Şeyhülislam Mevlânâ Ahmed Esad, Seyyid Muhammed Said Baba'nın görevlerinin iadesi konusunda görüşü alınan, kararın onaylanmasında etkili olan üst düzey din görevlisi olarak anılmaktadır.",
+            "person:mevlânâ ahmed esad": "Bu belgede Mevlânâ Ahmed Esad, dönemin Şeyhülislamı olup, büyük âlimlerin en bilgini ve takva sahiplerinin en faziletlisi olarak nitelenen, Seyyid Muhammed Said Baba'nın görevlerinin iadesi kararına işaretiyle katkıda bulunan din görevlisidir.",
+            "concept:beratımı": "Berat, padişahın bir kişiye belirli bir görev, unvan, imtiyaz veya gelir tahsis ettiğini bildiren resmî belgedir. Bu belgenin kendisi, Seyyid Muhammed Said Baba'ya Hacı Bayram Veli Vakfı'ndaki görevlerini iade eden bir berattır.",
+            "concept:beratıma": "Berat, padişahın bir kişiye belirli bir görev, unvan, imtiyaz veya gelir tahsis ettiğini bildiren resmî belgedir. Bu belgenin kendisi, Seyyid Muhammed Said Baba'ya Hacı Bayram Veli Vakfı'ndaki görevlerini iade eden bir berattır."
+            },
+            word_alternatives: {
+            "السالكين": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"tarikat yolunda ilerleyenler\")","ocr_form":"السالكين"},
+            "es-sâlikîn": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"tarikat yolunda ilerleyenler\")","ocr_form":"السالكين"},
+            "بموجب": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"gereğince, uyarınca\")","ocr_form":"بموجب"},
+            "bi-mûceb": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"gereğince, uyarınca\")","ocr_form":"بموجب"},
+            "خلیل": {"alternatives":[],"alternative_details":[],"origin":"Arapça özel isim (\"Halil\")","ocr_form":"خلیل"},
+            "Halil": {"alternatives":[],"alternative_details":[],"origin":"Arapça özel isim (\"Halil\")","ocr_form":"خلیل"},
+            "جناب": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"saygıdeğer makam/kişi\" anlamında hitap sözü)","ocr_form":"جناب"},
+            "cenâb": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"saygıdeğer makam/kişi\" anlamında hitap sözü)","ocr_form":"جناب"}
+            },
             file: 'assets/hbv.png',
             enhancedFile: 'assets/hbv-enhanced.jpg',
             name: 'haci_bayram_veli_berati.png',
@@ -1200,6 +1401,19 @@ işbu berât-ı âlî-şânım mugâyir-i ref' olunmamak takaddüm ve taraf-ı �
             }
         },
         'yeni3': {
+            entity_info: {
+            "place:rumeli": "Rumeli, Osmanlı Devleti'nin Balkanlar'daki (Avrupa yakası) topraklarına verilen genel addır; idari olarak önemli bir eyalet merkezi hâline gelmiştir. Bu belgede Rumeli, emrindeki süvari alayının sevk edilmesinden sorumlu olan valinin görev bölgesi olarak anılmaktadır.",
+            "concept:asâkir-i mansûre": "Asâkir-i Mansûre-i Muhammediyye, II. Mahmud'un 1826'da Yeniçeri Ocağı'nı kaldırmasının ardından kurduğu, Batı tarzında eğitilmiş yeni Osmanlı ordusuna verilen addır. Bu belgede Asâkir-i Mansûre, Topçu Hüseyin Bey komutasındaki ve sevk edilecek olan süvari birliklerinin bağlı olduğu ana askerî teşkilatı ifade etmektedir.",
+            "person:topçu hüseyin bey": "Bu belgede Topçu Hüseyin Bey, Rumeli Valisi'nin emrinde görevli, Asâkir-i Mansûre süvari birliklerinden bir alayın komutanı olup, belgenin konusu olan sevkiyatta bizzat alayı yönetecek kişidir; kendisi hakkında metinde başka bir bilgi yer almamaktadır.",
+            "place:veliefendi çeşmesi": "Veliefendi, İstanbul'da (günümüzde Bakırköy ilçesinde) tarihî bir semt ve mesire alanı olup, adını buradaki bir çeşmeden almaktadır. Bu belgede Veliefendi Çeşmesi, sevk edilecek süvari alayının çadır ve yüklerinin toplandığı, Büyükçekmece'ye taşınmak üzere yola çıkılacak açık arazi olarak anılmaktadır.",
+            "place:büyükçekmece": "Büyükçekmece, İstanbul'un batısında, tarihî İstanbul-Edirne yol güzergâhı üzerinde yer alan bir ilçedir. Bu belgede Büyükçekmece, Veliefendi Çeşmesi'nden yola çıkacak süvari alayının yük ve çadırlarının taşınacağı hedef nokta olarak geçmektedir.",
+            "concept:baruthâne-i âmire": "Baruthâne-i Âmire, Osmanlı Devleti'nin barut üretimi yapılan resmî imalathanesine verilen addır; İstanbul çevresinde bu amaçla kurulmuş tesisler bulunmaktaydı. Bu belgede Baruthâne-i Âmire, sevkiyat için gereken kırk arabanın yirmi beşinin temin edildiği, kendisine bağlı köylerin kaynağı olduğu kurum olarak anılmaktadır.",
+            "concept:müşirin": "Müşir, Osmanlı askerî hiyerarşisinde mareşal rütbesine karşılık gelen en yüksek askerî rütbedir. Bu belgede müşir, padişahın özel muhafız birliklerinin (Asâkir-i Hâssa-i Şâhâne) komutanı olup, sevkiyat için gereken kalan on beş arabanın temin edileceği su yolu köylerinin yönetimi kendisine bağlı olan üst düzey komutanı ifade etmektedir.",
+            "concept:müşire": "Müşir, Osmanlı askerî hiyerarşisinde mareşal rütbesine karşılık gelen en yüksek askerî rütbedir. Bu belgede müşir, padişahın özel muhafız birliklerinin (Asâkir-i Hâssa-i Şâhâne) komutanı olup, sevkiyat için gereken kalan on beş arabanın temin edileceği su yolu köylerinin yönetimi kendisine bağlı olan üst düzey komutanı ifade etmektedir.",
+            "concept:babıâli": "Babıâli, Osmanlı Devleti'nde sadrazamlık makamının ve devletin idari/bürokratik merkezinin bulunduğu kapıya/binaya verilen addır; mecazi olarak Osmanlı hükümetinin tamamını ifade etmek için de kullanılır. Bu belgede Babıâli, kalan on beş arabanın temini için gerekli bildirimin ilgili müşire iletilmesi gereken merkezi makam olarak anılmaktadır.",
+            "concept:müşir": "Müşir, Osmanlı askerî hiyerarşisinde mareşal rütbesine karşılık gelen en yüksek askerî rütbedir. Bu belgede müşir, padişahın özel muhafız birliklerinin (Asâkir-i Hâssa-i Şâhâne) komutanı olup, sevkiyat için gereken kalan on beş arabanın temin edileceği su yolu köylerinin yönetimi kendisine bağlı olan üst düzey komutanı ifade etmektedir."
+            },
+            word_alternatives: {},
             file: 'assets/yeni3.png',
             enhancedFile: 'assets/yeni3-enhanced.jpg',
             name: 'askeri_sevkiyat_araba_temini.png',
@@ -1255,6 +1469,51 @@ ta'addî arabanın yarınki gûne mahall-i mezbûrda bulunmaları hususu Bâbı�
             }
         },
         'tah': {
+            entity_info: {
+            "date:11 şevval 1277": "Hicrî 11 Şevval 1277, Miladi takvimde 21 Nisan 1861 tarihine karşılık gelir ve Sultan Abdülaziz'in saltanatının ilk yılına rastlar. Bu belgede 11 Şevval 1277, Tercümân-ı Ahvâl gazetesinin bu sayısının yayım tarihidir.",
+            "place:i̇stanbul": "İstanbul, Osmanlı Devleti'nin başkenti olup, dönemin siyasi, idari, ticari ve basın hayatının merkezidir. Bu belgede İstanbul, hem gazetenin Bahçekapısı'ndaki matbaasının bulunduğu şehir hem de abonelik ücretlerinin farklılaştığı referans nokta olarak anılmaktadır.",
+            "person:i̇smail paşa": "Bu belgede İsmail Paşa, rahatsızlığı nedeniyle İpek Teftiş Komisyonu başkanlığı görevinin Ömer Paşa'ya devredildiği devlet görevlisi olarak anılmaktadır; kendisi hakkında metinde başka bir bilgi yer almamaktadır.",
+            "place:rumeli": "Rumeli, Osmanlı Devleti'nin Balkanlar'daki topraklarına verilen genel addır. Bu belgede Rumeli, Ömer Paşa'nın müşirlik göreviyle ilişkilendirildiği bölgelerden biri olarak Balkan ile birlikte anılmaktadır.",
+            "place:balkan": "Balkan, Güneydoğu Avrupa'daki dağlık bölgeye ve bu bölgeyi kapsayan coğrafyaya verilen addır; Osmanlı Rumeli topraklarının büyük bölümünü oluşturur. Bu belgede Balkan, Ömer Paşa'nın müşirlik göreviyle ilişkilendirildiği bölgelerden biri olarak Rumeli ile birlikte anılmaktadır.",
+            "person:ömer paşa": "Bu belgede devletli Ömer Paşa, İpek Teftiş Komisyonu başkanlığı ek göreviyle birlikte Rumeli, Balkan ve Ordu-yı Hümâyun müşirliği yüksek meclislerinde görevli bulunan, kendisine ayrıca Hazine-i Hassa-i Şahane nazırlığı verilen üst düzey bir devlet görevlisi olarak anılmaktadır.",
+            "concept:hazine-i hassa-i şahane": "Hazine-i Hassa, Osmanlı Devleti'nde padişahın özel/şahsi mal varlığını ve gelirlerini yöneten hazine kurumudur. Bu belgede Hazine-i Hassa-i Şahane nazırlığı görevinin Ömer Paşa'ya verildiği, önceki nazır Hasib Paşa'nın ise Erzurum valiliğine atandığı bildirilmektedir.",
+            "person:hasib paşa": "Bu belgede devletli Hasib Paşa, Hazine-i Hassa-i Şahane nazırlığı görevinden alınıp Erzurum valiliğine atanan bir devlet görevlisi olarak anılmaktadır.",
+            "place:erzurum": "Erzurum, Doğu Anadolu'da önemli bir Osmanlı eyalet merkezidir. Bu belgede Erzurum, Hasib Paşa'nın vali olarak atandığı, önceki valisi Edhem Paşa'nın görevden ayrılması üzerine boşalan bir valilik makamı olarak geçmektedir.",
+            "person:edhem paşa": "Bu belgede devletli Edhem Paşa, Erzurum valiliği görevinden ayrılan, yerine eski Sivas valisi Hayreddin Paşa'nın atandığı bir devlet görevlisi olarak anılmaktadır.",
+            "place:sivas": "Sivas, Orta Anadolu'da önemli bir Osmanlı eyalet merkezidir. Bu belgede Sivas, Hayreddin Paşa'nın önceki valilik görevi olarak anılmakta; kendisi buradan Erzurum valiliğine atanmıştır.",
+            "person:hayreddin paşa": "Bu belgede devletli Hayreddin Paşa, eski Sivas valisi olup, Edhem Paşa'nın görevden ayrılması üzerine Erzurum valiliğine atanan bir devlet görevlisi olarak anılmaktadır.",
+            "person:rıza efendi": "Bu belgede atufetli Rıza Efendi, eski Hazine-i Hassa nazırı olup, Maliye Meclisi Tanzimat üyeliğine atanan bir devlet görevlisi olarak anılmaktadır.",
+            "concept:maliye meclisi": "Maliye Meclisi, Tanzimat döneminde Osmanlı maliye işlerini düzenlemek üzere kurulan idari kuruldur. Bu belgede Maliye Meclisi Tanzimat üyeliğine eski Hazine-i Hassa nazırı Rıza Efendi'nin atandığı bildirilmektedir.",
+            "person:emin efendi": "Bu belgede izzetli Emin Efendi, eski Rumeli muhasebecisi olup, Murtaza Ali Efendi'nin vekâleten yürüttüğü kapı kâtipliği görevi nedeniyle boşalan muhasebecilik görevine atanan bir devlet görevlisi olarak anılmaktadır.",
+            "place:halep": "Halep, günümüzde Suriye sınırları içinde yer alan, Osmanlı döneminde önemli bir eyalet ve ticaret merkezidir. Bu belgede Halep, muhasebecisi Hertin Efendi'nin görevden ayrılması üzerine yeni bir atama yapılan eyalet olarak geçmektedir.",
+            "person:seyfi efendi": "Bu belgede rıfatlı Seyfi Efendi, eski Rufe muhasebecisi olup, Hertin Efendi'nin görevden ayrılması üzerine Halep muhasebeciliğine atanan bir devlet görevlisi olarak anılmaktadır.",
+            "concept:naipler": "Naip, bir kadının görev bölgesinde onun adına ve yetkisiyle yargı işlerini yürüten vekil/yardımcı görevliye verilen addır. Bu belgede naipler, çeşitli bölgelere (Direli Debdebe, Noveberde, Sjenica, Budaközü vb.) atanan, isimleri ve görev yerleri tek tek listelenen adli görevliler olarak anılmaktadır.",
+            "concept:naip": "Naip, bir kadının görev bölgesinde onun adına ve yetkisiyle yargı işlerini yürüten vekil/yardımcı görevliye verilen addır. Bu belgede naipler, çeşitli bölgelere (Direli Debdebe, Noveberde, Sjenica, Budaközü vb.) atanan, isimleri ve görev yerleri tek tek listelenen adli görevliler olarak anılmaktadır.",
+            "person:azmi efendi": "Bu belgede Azmi Efendi, Direli Debdebe'ye naip olarak atanan bir görevli olarak anılmaktadır; kendisi hakkında metinde başka bir bilgi yer almamaktadır.",
+            "place:direli debdebe": "Bu belgede Direli Debdebe, Azmi Efendi'nin naip olarak atandığı bir yerleşim yeri olarak anılmaktadır.",
+            "person:lebib mehmed emin efendi": "Bu belgede Lebib Mehmed Emin Efendi, Kavala müftüsü olup Noveberde'ye naip olarak atanan bir din/hukuk görevlisi olarak anılmaktadır.",
+            "place:noveberde": "Bu belgede Noveberde, Kavala müftüsü Lebib Mehmed Emin Efendi'nin naip olarak atandığı bir yerleşim yeri olarak anılmaktadır.",
+            "person:ahmed şakir efendi": "Bu belgede Ahmed Şakir Efendi, Kavala Müftülüğü'nden Sultan Selim Debre-i Kefe ambarına naip olarak atanan bir görevli olarak anılmaktadır.",
+            "place:kavala": "Kavala, Ege Denizi kıyısında, günümüzde Yunanistan sınırları içinde yer alan bir Osmanlı dönemi liman şehridir. Bu belgede Kavala, Ahmed Şakir Efendi'nin müftülük görevinden Debre-i Kefe'ye naip olarak atandığı yer olarak anılmaktadır.",
+            "place:debre-i kefe": "Bu belgede Sultan Selim Debre-i Kefe ambarı, Ahmed Şakir Efendi'nin Kavala Müftülüğü'nden naip olarak atandığı yer olarak anılmaktadır.",
+            "person:ahmed şahin efendi": "Bu belgede Ahmed Şahin Efendi, Travnik'e naip olarak atanan bir görevlidir; aynı isimli (Ergirili) bir başka Ahmed Şahin Efendi ise Budaközü'ne atanmıştır — metinde iki farklı atama olarak ayrı ayrı listelenmiştir.",
+            "place:travnik": "Travnik, günümüzde Bosna-Hersek sınırları içinde yer alan bir Osmanlı dönemi kaza merkezidir. Bu belgede Travnik, Ahmed Şahin Efendi'nin naip olarak atandığı yer olarak anılmaktadır.",
+            "person:abdülkerim şemi efendi": "Bu belgede Abdülkerim Şemi Efendi, İstanbul mahkemesi kâtiplerinden olup Sjenica'ya naip olarak atanan bir görevli olarak anılmaktadır.",
+            "place:sjenica": "Sjenica, günümüzde Sırbistan sınırları içinde yer alan bir Osmanlı dönemi yerleşim yeridir. Bu belgede Sjenica, İstanbul mahkemesi kâtiplerinden Abdülkerim Şemi Efendi'nin naip olarak atandığı yer olarak anılmaktadır.",
+            "place:budaközü": "Bu belgede Budaközü, Ergirili Ahmed Şahin Efendi'nin naip olarak atandığı bir yerleşim yeri olarak anılmaktadır."
+            },
+            word_alternatives: {
+            "ایکی کونده بر کره": {"alternatives":[],"alternative_details":[],"origin":"Türkçe","ocr_form":"ایکی کونده بر کره"},
+            "iki günde bir kere": {"alternatives":[],"alternative_details":[],"origin":"Türkçe","ocr_form":"ایکی کونده بر کره"},
+            "ثلاثی": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"selâse\" = üç kökünden, \"üçer aylık\")","ocr_form":"ثلاثی"},
+            "sülâsî": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"selâse\" = üç kökünden, \"üçer aylık\")","ocr_form":"ثلاثی"},
+            "اجرا به": {"alternatives":[],"alternative_details":[],"origin":"Arapça-Farsça bileşik (\"icrâ\" = yürütme + Farsça izafet eki)","ocr_form":"اجرا به"},
+            "icrâ-yı": {"alternatives":[],"alternative_details":[],"origin":"Arapça-Farsça bileşik (\"icrâ\" = yürütme + Farsça izafet eki)","ocr_form":"اجرا به"},
+            "اولدیغنه": {"alternatives":[],"alternative_details":[],"origin":"Türkçe","ocr_form":"اولدیغنه"},
+            "olduğuna": {"alternatives":[],"alternative_details":[],"origin":"Türkçe","ocr_form":"اولدیغنه"},
+            "بالکوز": {"alternatives":[],"alternative_details":[],"origin":"Belirsiz (olası OCR bozulması, bağlamdan bürokratik bir bağlaç/ifade olduğu tahmin ediliyor)","ocr_form":"بالکوز"},
+            "balkuz": {"alternatives":[],"alternative_details":[],"origin":"Belirsiz (olası OCR bozulması, bağlamdan bürokratik bir bağlaç/ifade olduğu tahmin ediliyor)","ocr_form":"بالکوز"}
+            },
             file: 'assets/tah.png',
             enhancedFile: 'assets/tah-enhanced.jpg',
             name: 'tercuman_i_ahval_25.png',
@@ -1356,6 +1615,19 @@ Ergirili Ahmed Şâhîn Efendi - Sjenica'ya
             }
         },
         'ssp': {
+            entity_info: {
+            "concept:hazne": "Hazne, Arapça kökenli bir kelime olup Türkçede genel olarak bir sıvı veya nesnenin biriktirildiği kap, depo ya da haznedarlık görevi gören bölmeye verilen addır. Bu belgede hazne, su saati (pengâh) düzeneğinin çalışması için gerekli olan, su biriktirme işlevi gören iki kaptan biri olarak geçer. Metne göre bu haznelerden biri bakırdan yapılmış huni biçiminde bir kap olup, boyutları ve akış deliği ayrıntılı şekilde tarif edilmektedir.",
+            "concept:su saati": "Su saati (Farsça kökenli adıyla pengâh), suyun belirli bir hazneden sabit bir hızla akmasından veya boşalmasından yararlanarak zamanı ölçen, mekanik saatlerden önce kullanılan eski bir zaman ölçüm aletidir. Bu belgede su saatinin yapımı; hazne boyutları, akış deliğinin çapı ve suyun tamamen boşalma süresinin gün uzunluğuna göre nasıl ayarlanacağı teknik ayrıntılarla anlatılmaktadır. Metin, düzeneğin dördüncü iklim kuşağına (coğrafi bölgeye) göre kalibre edildiğini belirtir.",
+            "concept:iklim": "İklim kelimesi bu metinde günümüzdeki hava durumu anlamından farklı olarak, İslam coğrafya geleneğindeki yedi 'iklim kuşağı'ndan (ekvatordan kutuplara doğru enlem bantları) birini, yani belirli bir coğrafi enlem aralığını ifade eder. Bu belgede su saatinin ayarı, kurulacağı yerin hangi iklim kuşağında olduğuna göre değişmektedir; çünkü güneşin gün içindeki hareketi ve gündüzün uzunluğu enleme göre farklılaşır. Metinde, su saatinin dördüncü iklimde kurulması durumunda en uzun günün on dört buçuk saat süreceği örnek olarak verilmektedir."
+            },
+            word_alternatives: {
+            "آرشن": {"alternatives":[],"alternative_details":[],"origin":"Türkçe (Osmanlı dönemi bir uzunluk ölçü birimi, yaklaşık 68 cm)","ocr_form":"آرشن"},
+            "arşın": {"alternatives":[],"alternative_details":[],"origin":"Türkçe (Osmanlı dönemi bir uzunluk ölçü birimi, yaklaşık 68 cm)","ocr_form":"آرشن"},
+            "دلونك": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"delv\" = kova/kap + Türkçe tamlama eki)","ocr_form":"دلونك"},
+            "delvün": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"delv\" = kova/kap + Türkçe tamlama eki)","ocr_form":"دلونك"},
+            "پنگاه": {"alternatives":[],"alternative_details":[],"origin":"Farsça (bir tür su saati/düzeneği adı)","ocr_form":"پنگاه"},
+            "pengāh": {"alternatives":[],"alternative_details":[],"origin":"Farsça (bir tür su saati/düzeneği adı)","ocr_form":"پنگاه"}
+            },
             file: 'assets/ssp.png',
             enhancedFile: 'assets/ssp-enhanced.jpg',
             name: 'su_saati_pengah_risalesi.png',
@@ -1407,6 +1679,23 @@ ve nehār`,
             }
         },
         'sya': {
+            entity_info: {
+            "concept:imamlarına": "İmam, bir camide cemaate namaz kıldıran, Osmanlı taşra teşkilatında aynı zamanda mahallenin dinî ve bazen idari işlerinden de sorumlu tutulan görevliye verilen addır. Bu belgede imamlar, muhtarlarla birlikte, mahallelerindeki gençleri şehir içinde silah atma yasağı konusunda bilgilendirmekle görevlendirilen yerel sorumlular olarak geçer. Metne göre bu yasağa uyulmasını sağlamak imamların ve muhtarların sorumluluğundadır.",
+            "concept:muhtarlarına": "Muhtar, bir mahalle veya köyün idari işlerinden sorumlu, günümüzde de varlığını sürdüren yerel yönetim görevlisidir. Bu belgede muhtarlar, imamlarla birlikte, mahallelerindeki halkı şehir içinde silah atılmasının yasak olduğu ve bu yasağa uymayanların cezalandırılacağı konusunda uyarmakla yükümlü tutulan kişiler olarak anılmaktadır.",
+            "concept:kolluk kuvvetleri": "Kolluk kuvvetleri, kamu düzenini ve güvenliğini sağlamakla görevli, kanunlara aykırı davranışları önleyen ve gerektiğinde müdahale eden resmî güvenlik birimlerine verilen genel addır (günümüzdeki polis/jandarma teşkilatının tarihî karşılığı). Bu belgede kolluk kuvvetleri, şehir içinde silah atma yasağına uymayan kişileri yakalayıp cezai işlem uygulamakla görevlendirilen yürütücü güç olarak geçmektedir.",
+            "concept:para cezası": "Para cezası, bir suç veya kabahat karşılığında devlete belirli bir miktar para ödenmesini gerektiren yaptırım türüdür. Bu belgede para cezası, şehir içinde silah atma yasağını ihlal edenlere, on günlük hapis cezasının ardından ayrıca uygulanacak ikinci bir ceza olarak öngörülmektedir.",
+            "concept:vilayet i̇dare meclisi": "Vilayet İdare Meclisi, Osmanlı taşra idaresinde bir vilayetin (ilin) genel yönetim ve idari kararlarından sorumlu, valinin başkanlığında toplanan üst düzey idari kuruldur. Bu belgede, şehir içinde silah atılmasına karşı uygulanacak cezaların (on gün hapis ve para cezası) ve bu konudaki uyarıların kolluk kuvvetlerine ve mahalle görevlilerine bildirilmesi kararının Vilayet İdare Meclisi tarafından alındığı belirtilmektedir.",
+            "concept:kolluk kuvvetlerine": "Kolluk kuvvetleri, kamu düzenini ve güvenliğini sağlamakla görevli, kanunlara aykırı davranışları önleyen ve gerektiğinde müdahale eden resmî güvenlik birimlerine verilen genel addır (günümüzdeki polis/jandarma teşkilatının tarihî karşılığı). Bu belgede kolluk kuvvetleri, şehir içinde silah atma yasağına uymayan kişileri yakalayıp cezai işlem uygulamakla görevlendirilen yürütücü güç olarak geçmektedir.",
+            "concept:imam": "İmam, bir camide cemaate namaz kıldıran, Osmanlı taşra teşkilatında aynı zamanda mahallenin dinî ve bazen idari işlerinden de sorumlu tutulan görevliye verilen addır. Bu belgede imamlar, muhtarlarla birlikte, mahallelerindeki gençleri şehir içinde silah atma yasağı konusunda bilgilendirmekle görevlendirilen yerel sorumlular olarak geçer. Metne göre bu yasağa uyulmasını sağlamak imamların ve muhtarların sorumluluğundadır.",
+            "concept:muhtarların": "Muhtar, bir mahalle veya köyün idari işlerinden sorumlu, günümüzde de varlığını sürdüren yerel yönetim görevlisidir. Bu belgede muhtarlar, imamlarla birlikte, mahallelerindeki halkı şehir içinde silah atılmasının yasak olduğu ve bu yasağa uymayanların cezalandırılacağı konusunda uyarmakla yükümlü tutulan kişiler olarak anılmaktadır.",
+            "concept:para cezasıyla": "Para cezası, bir suç veya kabahat karşılığında devlete belirli bir miktar para ödenmesini gerektiren yaptırım türüdür. Bu belgede para cezası, şehir içinde silah atma yasağını ihlal edenlere, on günlük hapis cezasının ardından ayrıca uygulanacak ikinci bir ceza olarak öngörülmektedir."
+            },
+            word_alternatives: {
+            "طوتولوب": {"alternatives":[],"alternative_details":[],"origin":"Türkçe (\"tutmak\" fiilinin zarf-fiili)","ocr_form":"طوتولوب"},
+            "tutulup": {"alternatives":[],"alternative_details":[],"origin":"Türkçe (\"tutmak\" fiilinin zarf-fiili)","ocr_form":"طوتولوب"},
+            "منضبطه يه": {"alternatives":["zabıtaya"],"alternative_details":[{"text":"zabıtaya","confidence":0.55,"confidence_percent":55}],"origin":"Arapça (\"inzibat/disiplin\" kökünden, kolluk/zabıta anlamında + Türkçe hal eki)","ocr_form":"منضبطه يه"},
+            "münzâbıtaya": {"alternatives":["zabıtaya"],"alternative_details":[{"text":"zabıtaya","confidence":0.55,"confidence_percent":55}],"origin":"Arapça (\"inzibat/disiplin\" kökünden, kolluk/zabıta anlamında + Türkçe hal eki)","ocr_form":"منضبطه يه"}
+            },
             file: 'assets/sya.png',
             enhancedFile: 'assets/sya-enhanced.jpg',
             name: 'sehir_ici_silah_yasagi_ilani.png',
@@ -1468,6 +1757,17 @@ tenbîh olunur`,
             }
         },
         'gkt': {
+            entity_info: {
+            "person:kazım karabekir paşa": "Kâzım Karabekir Paşa (1882-1948), Millî Mücadele döneminde Doğu Cephesi (Şark Ordusu) komutanlığı yapmış, Ermenistan'a karşı kazandığı zaferlerle tanınan, daha sonra TBMM'nin kurucu kadrosunda ve Cumhuriyet döneminde önemli görevlerde bulunmuş bir asker ve devlet adamıdır. Bu belgede Kâzım Karabekir Paşa, Rus işgali sırasında Tiflis'e götürülen dinî kitapların geri getirilmesi talebinin iletildiği Şark Ordusu Komutanı olarak anılmaktadır.",
+            "concept:hadisi": "Hadis, İslam dininde Hz. Muhammed'in söz, fiil ve onaylarını aktaran rivayetlere verilen addır; Kur'an'dan sonra İslam hukuku ve ahlakının ikinci temel kaynağıdır. Bu belgede yazar, dilekçesine 'insanların hayırlısı, Allah'ın kendisini insanların ihtiyaçlarını karşılamak için görevlendirdiği kişidir' mealindeki bir hadisi hatırlatarak başlamaktadır.",
+            "person:ahmed ziyâeddin efendi": "Gümüşhanevî Ahmed Ziyâeddin Efendi (1813-1893), 19. yüzyılın önde gelen Nakşibendî şeyhlerinden olup, İstanbul'da bir medrese ve kütüphane kurmuş, pek çok eser kaleme almış etkili bir âlimdir. Bu belgede kendisi, Of, Rize ve Bayburt'ta bulunan ve Rus işgali sırasında yağmalanan üç kütüphanenin banisi olarak anılmaktadır.",
+            "place:rize": "Rize, Doğu Karadeniz kıyısında yer alan bir ildir. Bu belgede Rize, Gümüşhanevî Ahmed Ziyâeddin Efendi'ye ait, Rus işgali sırasında tahrip edilen üç kütüphaneden birinin bulunduğu yerlerden biri olarak Of ve Bayburt ile birlikte anılmaktadır.",
+            "place:bayburt": "Bayburt, Doğu Anadolu ile Karadeniz bölgesi arasında, tarihî İpek Yolu güzergâhında yer alan bir ildir; I. Dünya Savaşı sırasında Rus işgaline uğramıştır. Bu belgede Bayburt, Rus kuvvetlerinin kütüphaneleri tahrip ettiği ve kitapları Tiflis'e taşıdığı bölge olarak geçmektedir.",
+            "concept:kütüphanesinin": "Kütüphane, kitap ve diğer yazılı eserlerin toplandığı, korunduğu ve okuyuculara sunulduğu kurumdur. Bu belgede kütüphaneler, Gümüşhanevî Ahmed Ziyâeddin Efendi'ye ait, Of, Rize ve Bayburt'ta bulunan ve Rus işgali sırasında yağmalanıp içindeki kitapları Tiflis'e taşınan üç dinî kütüphaneyi ifade etmektedir.",
+            "place:tiflis": "Tiflis (günümüzde Tbilisi), Kafkasya'nın önemli şehirlerinden biri olup, günümüzde Gürcistan'ın başkentidir. Bu belgede Tiflis, I. Dünya Savaşı sırasında Rus kuvvetlerinin, Of-Rize-Bayburt bölgesindeki kütüphanelerden yağmaladığı dinî kitapları naklettiği şehir olarak anılmaktadır.",
+            "person:hoca ferşad i̇brahim": "Bu belgede Hoca Ferşad İbrahim, Of kazası müderrislerinden, yani Of'ta medrese hocalığı yapan bir din âlimi olup, Gümüşhanevî Ahmed Ziyâeddin Efendi'nin kütüphanelerinin başmütevellisi sıfatıyla, Rusların Tiflis'e götürdüğü kitapların geri getirilmesini Kâzım Karabekir Paşa'dan talep eden dilekçenin yazarıdır."
+            },
+            word_alternatives: {},
             file: 'assets/gkt.png',
             enhancedFile: 'assets/gkt-enhanced.jpg',
             name: 'gumushanevi_kutuphaneleri_dilekce.png',
@@ -1554,6 +1854,38 @@ Hoca Ferşad İbrahim`,
             }
         },
         'ase': {
+            entity_info: {
+            "concept:vezirlere": "Vezir, Osmanlı Devleti'nde padişahtan sonra gelen en yüksek rütbeli devlet adamlarına, özellikle divan üyesi üst düzey yöneticilere verilen unvandır. Bu belgede vezirler, orta kollarda (taşrada) görevli olup kendilerine hitaben çıkarılacak padişah emirlerinin (hatt-ı hümayun) muhatabı olan üst düzey yetkililer olarak zikredilmektedir. Metne göre bu altı adet emrin her biri ayrı ayrı vezirlere hitaben yazılacaktır.",
+            "concept:beylerbeylerine": "Beylerbeyi, Osmanlı taşra teşkilatında bir eyaletin en üst düzey askerî ve idari yöneticisine verilen unvandır; vezir rütbesindeki kişiler de genellikle beylerbeyi olarak görev yapardı. Bu belgede beylerbeyleri, vezirler, kadılar ve naiplerle birlikte, askerî sevkiyat ve asayiş düzenlemelerine dair padişah emirlerinin muhatabı olan taşra yöneticileri olarak geçmektedir.",
+            "concept:kadılara": "Kadı, Osmanlı adalet sisteminde İslam hukukuna (şer'î hukuka) göre yargı yetkisini kullanan, aynı zamanda bulunduğu kazada çeşitli idari görevleri de yürüten görevlidir. Bu belgede kadılar, askerî sevkiyatla ilgili padişah emirlerinin kendilerine de bildirildiği, bu emirlerin mahkeme sicillerine kaydedilmesinden sorumlu tutulan yerel yetkililer olarak anılmaktadır.",
+            "concept:naiplere": "Naip, bir kadının görev bölgesinde onun adına ve yetkisiyle yargı işlerini yürüten vekil/yardımcı görevliye verilen addır. Bu belgede naipler, kadılarla birlikte, padişah emirlerinin muhatabı olan ve bu emirlerin taşradaki uygulanmasında görev alan yerel adli görevliler arasında sayılmaktadır.",
+            "concept:mahkeme kayıtlarına": "Mahkeme kayıtları (sicil), kadı mahkemelerinde görülen davaların, verilen hükümlerin ve resmî belgelerin düzenli olarak kaydedildiği defterlerdir; Osmanlı hukuk ve idare tarihinin en önemli birincil kaynaklarından biridir. Bu belgede, çıkarılan padişah emirlerinin korunan ülkelerdeki şehir, köy ve kasabaların mahkeme kayıtlarına geçirilmesi ve sürekli başvurulacak bir referans olarak saklanması istenmektedir.",
+            "concept:hatt-ı hümayunların": "Hatt-ı hümayun, padişahın kendi el yazısıyla bir belge veya ferman üzerine yazdığı, o belgeye kesinlik ve resmiyet kazandıran onay/emir yazısıdır. Bu belgede hatt-ı hümayunların, altı adet şerif emrinin her birinin üzerine ayrı ayrı 'gereğince hareket edilsin' anlamında yazılması istenmekte, böylece bu emirlerin padişahın kendi iradesiyle teyit edilmiş resmî statüye kavuşması sağlanmaktadır."
+            },
+            word_alternatives: {
+            "ذخيره يدي": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"zahîre\" = erzak + \"yed\" = el)","ocr_form":"ذخيره يدي"},
+            "zahîre yedi": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"zahîre\" = erzak + \"yed\" = el)","ocr_form":"ذخيره يدي"},
+            "كل ما صدره زير بنات": {"alternatives":[],"alternative_details":[],"origin":"Arapça (ifade belirsiz, olası OCR bozulması)","ocr_form":"كل ما صدره زير بنات"},
+            "küll-i mâ sadara zîr-i binât": {"alternatives":[],"alternative_details":[],"origin":"Arapça (ifade belirsiz, olası OCR bozulması)","ocr_form":"كل ما صدره زير بنات"},
+            "بي بعض نظام": {"alternatives":[],"alternative_details":[],"origin":"Arapça-Farsça bileşik (\"bî\" = -sız + \"ba'z-ı nizâm\" = bazı düzen)","ocr_form":"بي بعض نظام"},
+            "bî-ba'z-ı nizâm": {"alternatives":[],"alternative_details":[],"origin":"Arapça-Farsça bileşik (\"bî\" = -sız + \"ba'z-ı nizâm\" = bazı düzen)","ocr_form":"بي بعض نظام"},
+            "انالطرفي": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"an\" + \"et-tarafeyn\" = iki taraftan)","ocr_form":"انالطرفي"},
+            "ani't-tarafeyn": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"an\" + \"et-tarafeyn\" = iki taraftan)","ocr_form":"انالطرفي"},
+            "بيلنك": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"beyne\" = arasında kökünden)","ocr_form":"بيلنك"},
+            "beynin": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"beyne\" = arasında kökünden)","ocr_form":"بيلنك"},
+            "اورته قوللرنده": {"alternatives":[],"alternative_details":[],"origin":"Türkçe (\"orta kol\" = taşra askeri/idari birimi + yer eki)","ocr_form":"اورته قوللرنده"},
+            "orta kullarında": {"alternatives":[],"alternative_details":[],"origin":"Türkçe (\"orta kol\" = taşra askeri/idari birimi + yer eki)","ocr_form":"اورته قوللرنده"},
+            "قطعه": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"kıt'a\" = parça, resmî evrakta \"adet\" sayaç anlamında)","ocr_form":"قطعه"},
+            "kıt'a": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"kıt'a\" = parça, resmî evrakta \"adet\" sayaç anlamında)","ocr_form":"قطعه"},
+            "سجلو نه": {"alternatives":[],"alternative_details":[],"origin":"Arapça-Türkçe bileşik (\"sicil\" + Türkçe hal eki)","ocr_form":"سجلو نه"},
+            "sicilline": {"alternatives":[],"alternative_details":[],"origin":"Arapça-Türkçe bileşik (\"sicil\" + Türkçe hal eki)","ocr_form":"سجلو نه"},
+            "بالوزرايه": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"bi\" + \"el-vüzerâ\" = vezirler ile/vasıtasıyla)","ocr_form":"بالوزرايه"},
+            "bi'l-vüzerâye": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"bi\" + \"el-vüzerâ\" = vezirler ile/vasıtasıyla)","ocr_form":"بالوزرايه"},
+            "التي": {"alternatives":["elletî"],"alternative_details":[{"text":"elletî","confidence":0.2,"confidence_percent":20}],"origin":"Türkçe sayı \"altı\" (6) — Arapça ilgi zamiri \"elletî\" (o ki) ile harf şekli benzerliği nedeniyle karıştırılabilir","ocr_form":"التي"},
+            "altı": {"alternatives":["elletî"],"alternative_details":[{"text":"elletî","confidence":0.2,"confidence_percent":20}],"origin":"Türkçe sayı \"altı\" (6) — Arapça ilgi zamiri \"elletî\" (o ki) ile harf şekli benzerliği nedeniyle karıştırılabilir","ocr_form":"التي"},
+            "هميونلري": {"alternatives":[],"alternative_details":[],"origin":"Farsça-Türkçe bileşik (\"hümâyûn\" = padişaha ait + Türkçe çoğul/iyelik eki)","ocr_form":"هميونلري"},
+            "hümâyûnları": {"alternatives":[],"alternative_details":[],"origin":"Farsça-Türkçe bileşik (\"hümâyûn\" = padişaha ait + Türkçe çoğul/iyelik eki)","ocr_form":"هميونلري"}
+            },
             file: 'assets/ase.png',
             enhancedFile: 'assets/ase-enhanced.jpg',
             name: 'askeri_sevkiyat_serif_emirler_arz.png',
@@ -1619,6 +1951,21 @@ mehâbetlü efendim veliyy-i ni'metim efendim pâdişâhım hazretlerinindir.`,
             }
         },
         'phd': {
+            entity_info: {
+            "concept:hayat dersi": "Hayat dersi, günlük yaşamdan veya bir deneyimden çıkarılan, insanı bilgece davranmaya yönlendiren öğretici bir çıkarım/ibret anlamına gelir. Bu belgede hayat dersi, bir felsefe profesörünün kavanoz deneyiyle öğrencilerine verdiği, hayattaki önceliklerin doğru sıralanması gerektiğini anlatan dersin kendisidir.",
+            "concept:felsefe": "Felsefe, varlık, bilgi, değer, akıl ve dil gibi temel konular üzerine sistemli ve eleştirel düşünme faaliyetidir. Bu belgede felsefe, hikâyedeki profesörün uzmanlık alanı olarak geçmekte, onun sınıfta alışılmadık bir yöntemle (kavanoz deneyiyle) ders vermesine bağlam oluşturmaktadır.",
+            "concept:hayatı": "Hayat, bir canlının doğumundan ölümüne kadar geçen süreç, yaşam anlamına gelir. Bu belgede hayat, kavanozun temsil ettiği kavramdır: büyük taşlar hayattaki en önemli değerleri (aile, sağlık, inanç), çakıllar ikincil öncelikleri, kum ise önemsiz ayrıntıları simgelemektedir.",
+            "concept:aileniz": "Aile, kan bağı, evlilik veya evlat edinme yoluyla birbirine bağlı, birlikte yaşayan kişilerden oluşan temel toplumsal birimdir. Bu belgede aile, profesörün kavanoz deneyinde 'büyük taşlar' ile simgelenen, hayattaki en önemli değerlerden biri olarak sayılmaktadır.",
+            "concept:hayatın": "Hayat, bir canlının doğumundan ölümüne kadar geçen süreç, yaşam anlamına gelir. Bu belgede hayat, kavanozun temsil ettiği kavramdır: büyük taşlar hayattaki en önemli değerleri (aile, sağlık, inanç), çakıllar ikincil öncelikleri, kum ise önemsiz ayrıntıları simgelemektedir.",
+            "concept:hayat": "Hayat, bir canlının doğumundan ölümüne kadar geçen süreç, yaşam anlamına gelir. Bu belgede hayat, kavanozun temsil ettiği kavramdır: büyük taşlar hayattaki en önemli değerleri (aile, sağlık, inanç), çakıllar ikincil öncelikleri, kum ise önemsiz ayrıntıları simgelemektedir.",
+            "concept:zamanınızı": "Zaman, olayların geçmişten geleceğe doğru sıralandığı, geri döndürülemeyen soyut akış anlamına gelir. Bu belgede zaman, profesörün öğrencilerine, önemsiz şeylere harcanırsa gerçekten değerli olan şeyler için yeterli kalmayacağı konusunda uyardığı kıymetli bir kaynak olarak ele alınmaktadır.",
+            "concept:enerjinizi": "Enerji, bir işi yapabilme veya bir faaliyeti sürdürebilme gücüne verilen addır; günlük kullanımda kişinin zihinsel ve bedensel gücünü de ifade eder. Bu belgede enerji, zamanla birlikte, önemsiz şeylere harcanmaması gereken, dikkatli kullanılması gereken bir kaynak olarak anılmaktadır."
+            },
+            word_alternatives: {
+            "اولجه قومی": {"alternatives":[],"alternative_details":[],"origin":"Türkçe (\"evvelce/önce\" + \"kum\" + Türkçe belirtme eki)","ocr_form":"اولجه قومی"},
+            "evvelce qumı": {"alternatives":[],"alternative_details":[],"origin":"Türkçe (\"evvelce/önce\" + \"kum\" + Türkçe belirtme eki)","ocr_form":"اولجه قومی"},
+            "önce kumu": {"alternatives":[],"alternative_details":[],"origin":"Türkçe (\"evvelce/önce\" + \"kum\" + Türkçe belirtme eki)","ocr_form":"اولجه قومی"}
+            },
             file: 'assets/phd.png',
             enhancedFile: 'assets/phd-enhanced.jpg',
             name: 'profesorun_hayat_dersi.png',
@@ -1702,6 +2049,17 @@ diqqat idiñ didi. www.osmanlicaogren.com`,
             }
         },
         'yeni1': {
+            entity_info: {
+            "concept:i̇slam": "İslam, 7. yüzyılda Hz. Muhammed tarafından tebliğ edilen, tek tanrı inancına (tevhid) dayanan ve günümüzde dünya genelinde milyarlarca mensubu bulunan bir din olup, aynı zamanda bu dine mensup toplumların oluşturduğu medeniyet ve kültür havzasını da ifade eder. Bu belgede İslam, bir zamanlar güçlü ve medeniyet bakımından ileri olan, ancak yazıldığı dönemde düşkünlük içinde tasvir edilen bir dünya/coğrafya olarak ele alınmaktadır.",
+            "concept:sefaleti": "Sefalet, aşırı yoksulluk, perişanlık ve maddi/manevi çöküntü hâline verilen addır. Bu belgede sefalet, bir zamanlar güçlü olan Müslüman toplumların yazıldığı dönemde içine düştüğü yoksulluk ve perişanlık durumunu anlatmak için tekrar tekrar kullanılan ana temalardan biridir.",
+            "concept:müslümanlar": "Müslüman, İslam dinine mensup, bu dinin inanç esaslarını benimseyen kişiye verilen addır. Bu belgede Müslümanlar, geçmişte dünyanın en güçlü ve gelişmiş milletlerinden biriyken, metnin yazıldığı dönemde sefalet, esaret ve durgunluk içinde tasvir edilen bir toplum olarak ele alınmaktadır.",
+            "concept:sefalet": "Sefalet, aşırı yoksulluk, perişanlık ve maddi/manevi çöküntü hâline verilen addır. Bu belgede sefalet, bir zamanlar güçlü olan Müslüman toplumların yazıldığı dönemde içine düştüğü yoksulluk ve perişanlık durumunu anlatmak için tekrar tekrar kullanılan ana temalardan biridir.",
+            "concept:esaretin": "Esaret, özgürlüğün kaybedilmesi, bir başkasının (kişi, güç veya devletin) boyunduruğu altına girme durumuna verilen addır. Bu belgede esaret, bir zamanlar dünyaya hükmeden Müslümanların yazıldığı dönemde düştüğü aşağılanmış ve bağımlı durumu ifade etmek için kullanılmaktadır.",
+            "concept:esaret": "Esaret, özgürlüğün kaybedilmesi, bir başkasının (kişi, güç veya devletin) boyunduruğu altına girme durumuna verilen addır. Bu belgede esaret, bir zamanlar dünyaya hükmeden Müslümanların yazıldığı dönemde düştüğü aşağılanmış ve bağımlı durumu ifade etmek için kullanılmaktadır.",
+            "concept:medeniyet": "Medeniyet, bir toplumun ulaştığı maddi ve manevi gelişmişlik düzeyini, kurduğu kurumları, bilim, sanat ve şehir hayatındaki ilerlemeyi ifade eden kavramdır. Bu belgede medeniyet, geçmişte İslam ülkelerinin her birinin birer merkezi olduğu, ancak yazıldığı dönemde harabeye döndüğü belirtilen gelişmişlik düzeyini ifade etmektedir.",
+            "concept:müslümanların": "Müslüman, İslam dinine mensup, bu dinin inanç esaslarını benimseyen kişiye verilen addır. Bu belgede Müslümanlar, geçmişte dünyanın en güçlü ve gelişmiş milletlerinden biriyken, metnin yazıldığı dönemde sefalet, esaret ve durgunluk içinde tasvir edilen bir toplum olarak ele alınmaktadır."
+            },
+            word_alternatives: {},
             file: 'assets/yeni1.png',
             enhancedFile: 'assets/yeni1-enhanced.jpg',
             name: 'islam_dunyasinin_gerilemesi.png',
@@ -1770,6 +2128,21 @@ Müslümanlar da canlı ve miskin birer cenazeye dolmuş!...`,
             }
         },
         'svs': {
+            entity_info: {
+            "person:muhammed": "Hz. Muhammed, İslam dininin peygamberi olup Mekke'de doğmuş (yaklaşık 570-632), İslam inancına göre Allah'ın son elçisidir. Bu belgede Hz. Muhammed, üzerine salavat (övgü ve rahmet duası) getirilmesi gereken, şanı ve değeri yüceltilen merkezi şahsiyet olarak anılmakta; metin onun adının anılmasıyla ilgili dinî âdâbı açıklamaktadır.",
+            "concept:ümmetinin": "Ümmet, İslam dininde bir peygambere inanan ve onun yolundan giden topluluğa, özellikle Hz. Muhammed'e inanan tüm Müslümanlara verilen addır. Bu belgede ümmet, Hz. Muhammed'in ailesinden sayılan takipçileri, yani ona ve soyuna bağlı olan mümin topluluğunu ifade etmek için kullanılmaktadır."
+            },
+            word_alternatives: {
+            "كأنه جيم": {"alternatives":[],"alternative_details":[],"origin":"Arapça (metin tenkidi notu, nüsha farkına işaret eder)","ocr_form":"كأنه جيم"},
+            "kâ-ennehu cîm": {"alternatives":[],"alternative_details":[],"origin":"Arapça (metin tenkidi notu, nüsha farkına işaret eder)","ocr_form":"كأنه جيم"},
+            "\"sanki cîm harfi gibi\"": {"alternatives":[],"alternative_details":[],"origin":"Arapça ifadenin Türkçe karşılığı (metin tenkidi notu)","ocr_form":"كأنه جيم"},
+            "لعميم": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"umûm/âmm\" kökünden, kapsamlılık anlamında)","ocr_form":"لعميم"},
+            "li-amîmi": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"umûm/âmm\" kökünden, kapsamlılık anlamında)","ocr_form":"لعميم"},
+            "geniş kapsamlı": {"alternatives":[],"alternative_details":[],"origin":"Arapça kökenli terimin Türkçe karşılığı (\"umûm/âmm\")","ocr_form":"لعميم"},
+            "نعم": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"ni'met\" = nimet)","ocr_form":"نعم"},
+            "na'm": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"ni'met\" = nimet)","ocr_form":"نعم"},
+            "nimet": {"alternatives":[],"alternative_details":[],"origin":"Arapça kökenli terimin Türkçe karşılığı (\"ni'met\")","ocr_form":"نعم"}
+            },
             file: 'assets/svs.jpg',
             enhancedFile: 'assets/svs-enhanced.jpg',
             name: 'salavat_serhi_sayfasi.jpg',
@@ -1836,6 +2209,16 @@ kalmaya`,
             }
         },
         'rzk': {
+            entity_info: {
+            "concept:rızık": "Rızık, İslami gelenekte Allah tarafından insana ve diğer canlılara bahşedilen geçim kaynağı, nasip ve yaşam için gerekli olan her türlü nimete verilen addır. Bu belgede rızık, insanın kapı kapı dolaşarak değil, yalnızca Allah'a güvenip dua ederek elde edebileceği bir lütuf olarak tasvir edilmekte, tevekkül düşüncesiyle iç içe işlenmektedir. Şiirin ana teması, rızkın gerçek kaynağının Allah olduğu ve başkalarının yalnızca görünürde bir aracı rolü oynadığıdır.",
+            "concept:dergâhına": "Dergâh, Arapça-Farsça kökenli bir kelime olup aslen bir tarikat şeyhinin/mürşidin bulunduğu tekke, manevi eğitim merkezi anlamına gelir; mecazi olarak 'yüce kapı', 'huzur' anlamında da (özellikle Allah'a veya padişaha atfen) kullanılır. Bu belgede dergâh, Allah'ın 'yüce dergâhı' anlamında, kulun yüzünü çevirip dua etmesi gereken manevi makamı ifade etmektedir."
+            },
+            word_alternatives: {
+            "یاره": {"alternatives":[],"alternative_details":[],"origin":"Farsça (\"yâr\" = dost/sevgili + Türkçe yönelme eki)","ocr_form":"یاره"},
+            "yâre": {"alternatives":[],"alternative_details":[],"origin":"Farsça (\"yâr\" = dost/sevgili + Türkçe yönelme eki)","ocr_form":"یاره"},
+            "ارزاق": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"rızk\" kelimesinin çoğulu, rızıklar)","ocr_form":"ارزاق"},
+            "erzâk": {"alternatives":[],"alternative_details":[],"origin":"Arapça (\"rızk\" kelimesinin çoğulu, rızıklar)","ocr_form":"ارزاق"}
+            },
             file: 'assets/rzk.jpg',
             enhancedFile: 'assets/rzk-enhanced.jpg',
             name: 'gulzar_i_sufiyye_rizik_manzumesi.jpg',
@@ -1902,6 +2285,14 @@ Gülzâr-ı Sûfiyye ṣ. 110`,
             }
         },
         'srg': {
+            entity_info: {
+            "place:batum": "Batum (Batumi), Karadeniz kıyısında, günümüzde Gürcistan sınırları içinde yer alan, 19. yüzyılda Osmanlı-Rus sınır bölgesinde önemli bir liman şehridir. Bu belgede Batum, köleleştirilmiş kadınları taşıyan vapurun yola çıktığı liman olarak anılmakta, dönemin Kafkasya üzerinden İstanbul'a uzanan köle ticareti güzergâhına işaret etmektedir.",
+            "place:tophane": "Tophane, İstanbul'da Boğaz kıyısında, adını Osmanlı döneminde burada bulunan top dökümhanesinden alan tarihî bir semt ve iskele bölgesidir; 19. yüzyılda önemli bir liman ve iskele noktasıydı. Bu belgede Tophane, Rusya Kumpanyası'na ait bir vapurun yanaştığı ve köleleştirilmiş kadınların karaya çıkarıldığı iskele olarak sahnenin geçtiği mekândır.",
+            "concept:çerkeslere": "Çerkesler, Kafkasya kökenli bir halktır; 19. yüzyılda Rus işgali ve sürgünleri (özellikle 1864 Çerkes Sürgünü) sonrasında çok sayıda Çerkes Osmanlı topraklarına göç etmiş, bu dönemde bazı Çerkesler köle ticaretiyle de ilişkilendirilmiştir. Bu belgede Çerkes, köleleştirilmiş kadınları vapurla getirip pazarlayan kişi olarak sahnede yer almakta; roman bu sahneyle dönemin kölelik/cariyelik kurumunu eleştirel bir gözle ele almaktadır.",
+            "concept:çerkes": "Çerkesler, Kafkasya kökenli bir halktır; 19. yüzyılda Rus işgali ve sürgünleri (özellikle 1864 Çerkes Sürgünü) sonrasında çok sayıda Çerkes Osmanlı topraklarına göç etmiş, bu dönemde bazı Çerkesler köle ticaretiyle de ilişkilendirilmiştir. Bu belgede Çerkes, köleleştirilmiş kadınları vapurla getirip pazarlayan kişi olarak sahnede yer almakta; roman bu sahneyle dönemin kölelik/cariyelik kurumunu eleştirel bir gözle ele almaktadır.",
+            "concept:köleler": "Köle, bir başkasının mülkiyeti altında, hukuki kişiliği kısıtlanmış şekilde çalıştırılan veya satılan kişiye verilen addır; Osmanlı toplumunda kölelik 19. yüzyıl sonuna kadar hukuken var olan bir kurumdu. Bu belgede köleleştirilmiş kadınlar, Batum'dan gelen bir vapurla İstanbul'a getirilip bir Çerkes tüccar tarafından teslim edilen kişiler olarak tasvir edilmekte; roman bu sahneyle kölelik kurumunu eleştirel biçimde okura tanıtmaktadır."
+            },
+            word_alternatives: {},
             file: 'assets/srg.jpg',
             enhancedFile: 'assets/srg-enhanced.jpg',
             name: 'serguzest_acilis_sahnesi.jpg',
@@ -1970,6 +2361,13 @@ Yanında kendi kavminin kalpağı, elinde bir gümüşlü kırbacı olan Çerkez
             }
         },
         'sbm': {
+            entity_info: {
+            "person:şehzade bayezid": "Şehzade Bayezid (1525-1562), Kanuni Sultan Süleyman'ın oğlu olup, ağabeyi Şehzade Selim (sonradan II. Selim) ile giriştiği taht mücadelesini kaybetmiş, Safevi topraklarına sığınmak zorunda kalmış ve 1561-1562'de babasının emriyle İran'da idam edilmiştir. Bu belgede Bayezid, babası Kanuni Sultan Süleyman'a hitaben yazdığı, masumiyetini savunduğu ve merhamet dilediği duygusal bir şiirin yazarı olarak anılmaktadır.",
+            "person:kanûnî sultan süleyman": "Kanûnî Sultan Süleyman (1494-1566), Osmanlı Devleti'nin en uzun süre tahtta kalan padişahlarından biri olup, hem askerî başarıları hem de hukuki/idari düzenlemeleriyle (kanunlarıyla) tanınır; Avrupa'da 'Muhteşem Süleyman' olarak bilinir. Bu belgede Kanûnî, oğlu Şehzade Bayezid'in taht mücadelesi sırasında kendisine yazdığı yalvarış şiirinin muhatabı olan baba/padişah figürü olarak yer almaktadır.",
+            "concept:şiirdir": "Şiir, duygu ve düşüncelerin ölçülü, kafiyeli veya belirli bir estetik düzen içinde dille ifade edildiği edebî türdür. Bu belgede şiir, Şehzade Bayezid'in babası Kanuni Sultan Süleyman'a yazdığı, masumiyetini savunan ve merhamet dileyen, her kıtası aynı nakarat mısraıyla biten duygusal bir yalvarış şiirini ifade etmektedir.",
+            "date:30 nisan 1918": "Tarih ve Edebiyat Mecmuası'nın yayımlandığı 30 Nisan 1918 tarihi, Miladi takvime göre I. Dünya Savaşı'nın son yılına, Osmanlı Devleti'nin Mondros Mütarekesi'nden birkaç ay önceki dönemine denk gelir; aynı zamanda Rumi takvimde 1334 yılına karşılık gelmektedir. Bu belgede 30 Nisan 1918, Şehzade Bayezid'in 16. yüzyılda yazdığı şiirin yeniden yayımlandığı derginin baskı tarihidir — şiirin kendisinin yazıldığı 1559-1561 taht mücadelesi dönemiyle karıştırılmamalıdır; belge aslında çok daha eski bir metnin erken 20. yüzyıldaki bir neşridir."
+            },
+            word_alternatives: {},
             file: 'assets/sbm.jpg',
             enhancedFile: 'assets/sbm-enhanced.jpg',
             name: 'sehzade_bayezid_siiri_tarih_ve_edebiyat.jpg',
@@ -2056,6 +2454,19 @@ Bî-günâhım, Hak bilür, devletlü sultânım baba
             }
         },
         'klm': {
+            entity_info: {
+            "concept:kadı": "Kadı, Osmanlı adalet sisteminde İslam hukukuna (şer'î hukuka) göre yargı yetkisini kullanan, aynı zamanda bulunduğu kazada çeşitli idari ve dinî görevleri de yürüten görevlidir. Bu belgede kadı, hem belgeyi düzenleyen Söğüt kadısı Seyyid Mehmed'i hem de genel olarak böyle bir ilâmı yazma yetkisine sahip görevliyi ifade etmektedir.",
+            "concept:arz": "Arz, Osmanlı bürokrasisinde bir alt makamdan üst makama (genellikle merkeze veya padişaha) sunulan resmî bildirim, talep veya rapor niteliğindeki yazıya verilen genel addır. Bu belgede arz, Söğüt kadısının, boşalan imamlık görevine dair durumu ve önerdiği adayı merkeze (dergâh-ı saadete) bildirdiği resmî yazıyı ifade etmektedir.",
+            "place:söğüt": "Söğüt, Bilecik ili sınırları içinde, Osmanlı Devleti'nin kuruluş yeri olarak bilinen tarihî bir kasabadır; Osman Gazi'nin beyliğini burada kurduğuna inanılır. Bu belgede Söğüt, imamlık göreviyle ilgili kadı ilâmının düzenlendiği kaza merkezi olarak geçmektedir.",
+            "place:sofular köyünde": "Bu belgede Sofular köyü, Söğüt kazasına bağlı, günlük beş akçe maaşla bir imamın görev yaptığı küçük bir yerleşim yeri olarak anılmaktadır; belgenin konusu bu köydeki imamlık görevinin boşalması ve yeniden doldurulmasıdır.",
+            "concept:akçe": "Akçe, Osmanlı Devleti'nin uzun süre temel para birimi olarak kullandığı gümüş sikkeye verilen addır. Bu belgede akçe, Sofular köyündeki imamın aldığı günlük beş akçelik maaşı ifade etmek için kullanılmaktadır.",
+            "concept:imamlık": "İmamlık, bir camide cemaate namaz kıldırma görevine ve bu görevin resmî statüsüne verilen addır; Osmanlı taşra teşkilatında imamlar genellikle vakıf veya cemaat gelirlerinden günlük/aylık bir ücretle görevlendirilirdi. Bu belgenin konusu, Sofular köyündeki imamlık görevinin, önceki imam Musa'nın vefatı üzerine boşalması ve yerine ehil görülen birinin atanması talebidir.",
+            "person:musa": "Bu belgede adı geçen Musa, Söğüt kazasına bağlı Sofular köyünde günlük beş akçe maaşla imamlık görevini yürüten, belgenin düzenlendiği 921 (1515) yılında vefat ettiği belirtilen yerel bir din görevlisidir. Belgenin konusu, onun vefatıyla boşalan imamlık görevine yeni birinin atanması talebidir; kendisi hakkında bundan başka bir bilgi metinde yer almamaktadır.",
+            "concept:kadısı": "Kadı, Osmanlı adalet sisteminde İslam hukukuna (şer'î hukuka) göre yargı yetkisini kullanan, aynı zamanda bulunduğu kazada çeşitli idari ve dinî görevleri de yürüten görevlidir. Bu belgede kadı, hem belgeyi düzenleyen Söğüt kadısı Seyyid Mehmed'i hem de genel olarak böyle bir ilâmı yazma yetkisine sahip görevliyi ifade etmektedir.",
+            "person:seyyid mehmed": "Bu belgede Seyyid Mehmed, Söğüt kadısı olarak belgeyi yazıp mühürleyen, dolayısıyla Söğüt kazasının o dönemki (921/1515) şer'î yargı ve idare işlerinden sorumlu görevlisidir. 'Seyyid' unvanı, kendisinin Hz. Muhammed soyundan geldiğine inanılan bir aileye mensup olduğunu göstermektedir.",
+            "date:921": "Hicrî 921 yılı, Miladi takvimde yaklaşık 1515 yılına karşılık gelir ve Yavuz Sultan Selim'in saltanatının (1512-1520) erken dönemine rastlar; bu dönem Osmanlı Devleti'nin Mısır ve İran seferleriyle hızla büyüdüğü yıllardır. Bu belgede 921 tarihi, Söğüt kazasındaki bir imamlık görevinin boşalması üzerine düzenlenen kadı ilâmının yazıldığı yılı, yani belgenin resmî tarihini belirtmektedir."
+            },
+            word_alternatives: {},
             file: 'assets/klm.jpg',
             enhancedFile: 'assets/klm-enhanced.jpg',
             name: 'sogud_kadisi_imamet_ilami_921.jpg',
@@ -2123,6 +2534,30 @@ Ed-dâ'î li'd-devleti'l-'aliyye es-Seyyid Muhammed el-kâdî bi-buk'ati Söğü
             }
         },
         'smt': {
+            entity_info: {
+            "concept:sinematograf": "Sinematograf, 19. yüzyılın sonunda Lumière kardeşler tarafından geliştirilen, hareketli görüntüleri hem çeken hem de gösterebilen erken dönem sinema makinesine verilen addır. Bu belgede sinematograf, bir şehirdeki olay ve toplantıları kaydeden, görüntülerinin padişaha sunulmak üzere fotoğraflara dönüştürüldüğü cihaz olarak anılmaktadır.",
+            "concept:özel kalem müdürlüğüne": "Özel Kalem Müdürlüğü (Mâbeyn-i Hümâyûn Başkitâbeti), padişahın saraydaki özel yazışma ve sekretarya işlerini yürüten, resmî yazışmaların padişaha ulaştırılmasından sorumlu birimdir. Bu belgede Özel Kalem Müdürlüğü, sinematograf görüntülerine dair fotoğrafların sunulduğu, yazının hitap ettiği makam olarak anılmaktadır.",
+            "concept:arz": "Arz, Osmanlı bürokrasisinde bir alt makamdan üst makama (genellikle padişaha) sunulan resmî bildirim veya rapor niteliğindeki yazıya verilen genel addır. Bu belgenin kendisi, sinematograf görüntülerine dair fotoğrafların padişaha sunulmasını bildiren böyle bir arzdır.",
+            "concept:fotoğraflardan": "Fotoğraf, bir görüntünün ışığa duyarlı bir yüzey üzerine kaydedilmesiyle elde edilen sabit resimdir; burada sinematograf görüntülerinden alınan kareleri ifade etmektedir. Bu belgede fotoğraflar, bir şehirdeki olaylara ve toplantılara dair sahnelerden seçilerek padişaha vekâleten sunulan görsel belgelerdir.",
+            "concept:fotoğrafların": "Fotoğraf, bir görüntünün ışığa duyarlı bir yüzey üzerine kaydedilmesiyle elde edilen sabit resimdir; burada sinematograf görüntülerinden alınan kareleri ifade etmektedir. Bu belgede fotoğraflar, bir şehirdeki olaylara ve toplantılara dair sahnelerden seçilerek padişaha vekâleten sunulan görsel belgelerdir.",
+            "concept:fotoğraflar": "Fotoğraf, bir görüntünün ışığa duyarlı bir yüzey üzerine kaydedilmesiyle elde edilen sabit resimdir; burada sinematograf görüntülerinden alınan kareleri ifade etmektedir. Bu belgede fotoğraflar, bir şehirdeki olaylara ve toplantılara dair sahnelerden seçilerek padişaha vekâleten sunulan görsel belgelerdir.",
+            "person:padişah hazretlerinin": "Bu belgede Padişah Hazretleri, sinematograf görüntülerine dair fotoğrafların vekâleten sunulduğu, bu konuda nihai karar ve emir yetkisine sahip olan hükümdar olarak anılmaktadır; belge üzerindeki mühürden dönemin padişahının Sultan Mehmed Reşad olabileceği tahmin edilmektedir.",
+            "person:padişah hazretlerine": "Bu belgede Padişah Hazretleri, sinematograf görüntülerine dair fotoğrafların vekâleten sunulduğu, bu konuda nihai karar ve emir yetkisine sahip olan hükümdar olarak anılmaktadır; belge üzerindeki mühürden dönemin padişahının Sultan Mehmed Reşad olabileceği tahmin edilmektedir.",
+            "person:padişahın baş yaveri": "Baş Yaver, padişahın maiyetinde görev yapan, onunla üst düzey komuta kademesi arasında irtibatı sağlayan en kıdemli yaver subaydır. Bu belgede Padişahın Baş Yaveri, belgeyi Ferik (tümgeneral benzeri rütbe) sıfatıyla imzalayan, ancak adı okunamayan üst düzey asker olarak anılmaktadır.",
+            "date:12 cemâziyelevvel 1328": "Hicrî 12 Cemâziyelevvel 1328, Miladi takvimde yaklaşık Mayıs-Haziran 1910 tarihine, II. Meşrutiyet döneminin ortalarına karşılık gelir. Bu belgede 12 Cemâziyelevvel 1328, arzın (resmî yazının) üzerindeki tarih olarak geçmektedir.",
+            "date:mayıs": "Mayıs, Miladi takvimin beşinci ayıdır. Bu belgede Mayıs, arzın Hicrî 12 Cemâziyelevvel 1328 tarihinin karşılığı olarak tahmin edilen 'Mayıs-Haziran 1910 civarı' ifadesinin bir parçasıdır.",
+            "date:haziran 1910": "Haziran 1910, Miladi takvimde II. Meşrutiyet döneminin ortalarına, Hicrî 12 Cemâziyelevvel 1328 tarihinin karşılığı olarak tahmin edilen döneme denk gelir. Bu belgede Haziran 1910, arzın yaklaşık yazılış tarihini belirtmek için kullanılmaktadır.",
+            "concept:ferik": "Ferik, Osmanlı askerî rütbe sisteminde günümüzün tümgeneral rütbesine karşılık gelen üst düzey bir askerî unvandır. Bu belgede Ferik, belgeyi imzalayan Padişahın Baş Yaveri'nin taşıdığı askerî rütbe olarak geçmektedir."
+            },
+            word_alternatives: {
+            "ایدیلمکده اولان": {"alternatives":[],"alternative_details":[],"origin":"Türkçe (edilgen çatı + sürerlilik eki, \"yapılmakta olan\")","ocr_form":"ایدیلمکده اولان"},
+            "edilmekte olan": {"alternatives":[],"alternative_details":[],"origin":"Türkçe (edilgen çatı + sürerlilik eki, \"yapılmakta olan\")","ocr_form":"ایدیلمکده اولان"},
+            "برقاچی": {"alternatives":[],"alternative_details":[],"origin":"Türkçe (\"birkaç\" + iyelik eki, \"birkaçı\")","ocr_form":"برقاچی"},
+            "birkaçı": {"alternatives":[],"alternative_details":[],"origin":"Türkçe (\"birkaç\" + iyelik eki, \"birkaçı\")","ocr_form":"برقاچی"},
+            "اوزره آلتی هفته ظرفنده اتمام ایدیلرک تقدیم اولنمق اوزره": {"alternatives":[],"alternative_details":[],"origin":"Arapça-Türkçe bileşik (resmî yazışma kalıbı, \"altı hafta içinde tamamlanıp sunulmak üzere\")","ocr_form":"اوزره آلتی هفته ظرفنده اتمام ایدیلرک تقدیم اولنمق اوزره"},
+            "üzere altı hafta zarfında itmâm edilerek takdîm olunmak üzere": {"alternatives":[],"alternative_details":[],"origin":"Arapça-Türkçe bileşik (resmî yazışma kalıbı, \"altı hafta içinde tamamlanıp sunulmak üzere\")","ocr_form":"اوزره آلتی هفته ظرفنده اتمام ایدیلرک تقدیم اولنمق اوزره"},
+            "[imza - okunamadı]": {"alternatives":[],"alternative_details":[],"origin":"Transkripsiyon notu (orijinal belge metni değil; belgeyi okuyanın, imza kısmının okunamadığını belirtmek için eklediği köşeli parantezli bir açıklamadır)","ocr_form":"[imza - okunamadı]"}
+            },
             file: "assets/smt.jpg",
             enhancedFile: "assets/smt-enhanced.jpg",
             name: "mabeyn_sinematograf_arzi_1328.jpg",
@@ -2471,6 +2906,7 @@ Yâver-i Hâs Hazret-i Şehriyârî Ferîk **[imza - okunamadı]**`,
         assistantMessages.innerHTML = '';
 
         state.selectedFile = file;
+        state.activeSampleKey = null;
         state.ocrText = '';
         state.transText = '';
         state.transTextEn = '';
@@ -2696,6 +3132,7 @@ Yâver-i Hâs Hazret-i Şehriyârî Ferîk **[imza - okunamadı]**`,
             const key = card.getAttribute('data-sample');
             const sample = sampleDatabase[key];
             if (sample) {
+                state.activeSampleKey = key;
                 assistantHistory.length = 0;
                 assistantSelectedContext = null;
                 assistantMessages.innerHTML = '';
@@ -3363,6 +3800,24 @@ Yâver-i Hâs Hazret-i Şehriyârî Ferîk **[imza - okunamadı]**`,
         return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
 
+    // JS'in /i (case-insensitive) regex bayrağı Türkçe'ye özgü dört harfi
+    // (İ/i noktalı, I/ı noktasız) doğru eşleştirmiyor: 'İ'.toLowerCase()
+    // düz 'i' değil, 'i' + ayrı birleştirici nokta işareti (2 karakter)
+    // veriyor; bu yüzden örn. "İklim" entity'si metinde küçük harfle geçen
+    // "iklim" ile hiç eşleşmiyordu (sessizce kırık vurgulama). Bu fonksiyon,
+    // escape edilmiş entity metnindeki i/İ/I/ı karakterlerini açık
+    // [iİ]/[Iı] karakter sınıflarına çevirerek bunu regex SEVİYESİNDE
+    // düzeltir — aranan metne (escapedText) hiç dokunulmaz, sadece
+    // buildEntityAlternationSource'un ürettiği pattern değişir. Bu yüzden
+    // SADECE trans/tr kolonundaki entity vurgulamasını etkiler; cümle
+    // bölme, TTS ve diğer regex'ler bu fonksiyonu hiç kullanmaz.
+    function turkishCaseInsensitiveSource(text) {
+        return escapeRegExp(text).replace(
+            /[iİIı]/g,
+            (ch) => (ch === 'i' || ch === 'İ') ? '[iİ]' : '[Iı]'
+        );
+    }
+
     // rawText'i, TTS'in kullandığı AYNI kurala göre (yalnızca . ! ? — satır
     // sonları sayılmaz) art arda gelen, kayıpsız birleştirilebilir (yani
     // parçaları concat edince rawText'i tam olarak veren) parçalara böler.
@@ -3558,7 +4013,7 @@ Yâver-i Hâs Hazret-i Şehriyârî Ferîk **[imza - okunamadı]**`,
     // gelen TEK type kaynağının doğru şekilde kullanılmasını garanti eder.
     function buildEntityAlternationSource(entities) {
         return entities
-            .map((e, i) => `(?<e${i}>${escapeRegExp(escapeHtml(e.text))})`)
+            .map((e, i) => `(?<e${i}>${turkishCaseInsensitiveSource(escapeHtml(e.text))})`)
             .join('|');
     }
 
@@ -3718,6 +4173,18 @@ Yâver-i Hâs Hazret-i Şehriyârî Ferîk **[imza - okunamadı]**`,
         document.body.appendChild(popover);
         positionPopoverNear(popover, targetEl);
         activeEntityPopover = popover;
+
+        // Şu an bir örnek belge açıksa ve o örneğin entity_info'sunda bu
+        // entity için statik bir metin varsa, API'ye hiç gitmeden onu
+        // göster — entityInfoCache'e yazmaya da gerek yok, kaynağı zaten
+        // sampleDatabase (bkz. state.activeSampleKey tanımı).
+        const sampleEntityInfo = state.activeSampleKey
+            ? sampleDatabase[state.activeSampleKey]?.entity_info?.[cacheKey]
+            : null;
+        if (sampleEntityInfo) {
+            contextEl.textContent = sampleEntityInfo;
+            return;
+        }
 
         // Önbellekte varsa, ağ isteği atmadan doğrudan göster.
         if (entityInfoCache[cacheKey]) {
@@ -4066,6 +4533,21 @@ Yâver-i Hâs Hazret-i Şehriyârî Ferîk **[imza - okunamadı]**`,
         document.body.appendChild(popover);
         positionPopoverNear(popover, targetEl);
         activeWordPopover = popover;
+
+        // Şu an bir örnek belge açıksa ve o örneğin word_alternatives'inde
+        // bu kelime için statik veri varsa (tam string eşleşmesi, büyük/
+        // küçük harf duyarsız), API'ye hiç gitmeden doğrudan onu göster.
+        const sampleWordAlternatives = state.activeSampleKey
+            ? sampleDatabase[state.activeSampleKey]?.word_alternatives
+            : null;
+        const sampleWordKey = sampleWordAlternatives
+            ? Object.keys(sampleWordAlternatives).find(k => k.toLowerCase() === wordText.toLowerCase())
+            : null;
+        if (sampleWordKey) {
+            renderWordAlternativesForm(popover, targetEl, sampleWordAlternatives[sampleWordKey]);
+            positionPopoverNear(popover, targetEl);
+            return;
+        }
 
         let data = null;
         let errorMessage = '';
