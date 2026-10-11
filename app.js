@@ -1008,23 +1008,23 @@ el-ḥaḳ`,
 ۱۵ **موجبجه** **عمل اولنه** **دیو** **حكم همایون**
 ۱۶ **اجرا** **اولنمق** **مخالف** **عمل اولنمامق**
 ۱۷ **في اواسط** **شعبان** **سنه** **تسع وتسعين**`,
-            tr: `1 Emirlerin emiri, kerem ve kadir sahibi büyüklerin en büyüğü, **izzet ve celal madeni**
-2 Sivas beylerbeyi **olan** **seçkinlerin örneği**
-3 Sivas kadısı -**fazileti artsın**- **yüce padişah fermanı ulaştığında malum ola ki**
-4 Yüce padişah fermanı ulaştığında malum ola ki **padişah hükmünün içeriği**
-5 **Tevliyet ve nezaret** işlerinin **vakfiye** **gereğince** **yerine getirilmesi**
-6 Sivas'ta **Süleyman Paşa** **vakfı** **şartları** **gereğince**
-7 **Zapt ve idare olunup** **aksine** **hareket olunmaması**
-8 **Vakfiye** **gereğince** **amel olunması** **talep** **olundukta**
-9 **Gereğince** **amel oluna** **diye** **padişah hükmü**
-10 **Mühr-i şerif** **gereğince** **amel oluna**
-11 **Vakıf şartları** **gereğince** **amel oluna**
-12 **Gereğince** **amel oluna** **muhalefet** **hakkında**
-13 **Yeni** **vakfiye** **gereğince** **amel oluna**
-14 **Padişah hükmünün içeriği** **gereğince** **amel oluna**
-15 **Gereğince** **amel oluna** **diye** **padişah hükmü**
-16 **Yerine getirilip** **aksine** **hareket olunmaması**
-17 **Şaban ayının ortalarında** **sene** **doksan dokuz**`,
+            tr: `1. Emirlerin emiri; cömertlik ve güç sahibi büyüklerin en büyüğü, şeref ve yüceliğin kaynağı olan...
+2. Sivas Beylerbeyi, seçkin kişilerin örneği olan...
+3. Sivas Kadısı'na — Allah faziletini artırsın.
+4. Yüce padişahın fermanı ulaştığında bilinsin ki padişahın emrinin içeriği şöyledir:
+5. Vakfın yönetim ve denetim işlerinin vakfiye hükümlerine uygun olarak yürütülmesi,
+6. Sivas'taki Süleyman Paşa Vakfı'nın vakfiye şartlarına uygun biçimde işletilmesi,
+7. Vakfın yönetilip denetlenmesi ve bu şartlara aykırı davranılmaması,
+8. Vakfiye hükümlerine uygun hareket edilmesi talep edildiğinde,
+9. Bu hükümlere uygun davranılması emredilmiştir.
+10. Padişahın kutsal mührü gereğince hareket edilsin.
+11. Vakfın şartlarına uygun hareket edilsin.
+12. Vakıf şartlarına aykırı davranılmaması konusunda...
+13. Yeni vakfiye hükümlerine uygun hareket edilsin.
+14. Padişah fermanının içeriğine uygun hareket edilsin.
+15. Bu hükümlere uygun davranılması padişahın emridir.
+16. Emir yerine getirilsin ve aksine davranılmasın.
+17. Şaban ayının ortalarında, 99 yılında...`,
             translit: `1 Emîrü'l-ümerâi'l-kirâmi'l-kibâr zevi'l-akdâr **ve'l-ihtirâm** **ma'dinü'l-izzi ve'l-iclâl**
 2 Sivas beylerbeyisi **olan** **kudvetü'l-emâsil**
 3 Sivas kadısı **zîdet fezâilühû** **tevkî'-i refî'-i hümâyûn vâsıl olıcak ma'lûm ola ki**
@@ -1055,7 +1055,7 @@ el-ḥaḳ`,
                 ],
                 people: ["Süleyman Paşa"],
                 places: ["Sivas"],
-                concepts: ["Ferman", "Vakıf", "Tevliyet", "Nezaret", "Defter-i Cedid", "Şurût-ı Vakfiye", "Beylerbeyi", "Kadı"],
+                concepts: ["Ferman", "Vakıf", "Beylerbeyi", "Kadı"],
                 script_type: "Divanî",
                 script_purpose: "Devlet kararlarının ve emirlerinin taşradaki görevlilere tebliği",
                 period_estimate: "17. Yüzyıl Sonu (Sultan II. Süleyman veya Sultan II. Ahmed dönemi)",
@@ -1064,130 +1064,58 @@ el-ḥaḳ`,
                 notes: "Belge, Sivas'taki Süleyman Paşa Vakfı'nın idari ve mali işleyişine dair padişah fermanıdır. Metinde vakfiye şartlarına uyulması ve muhalif hareket edilmemesi mükerrer şekilde vurgulanmıştır."
             }
         },
-        'sbh': {
-            file: 'assets/sbh.png',
-            enhancedFile: 'assets/sbh-enhanced.jpg',
-            name: 'sam_baalbek_halep_muhimme.png',
-            size: '0.20 MB',
-            ocr: `٤٢ شام بگلربگیسی و دفتدارنه مکتوب : حالیا صددینی عسکر **نصفندن** **محلنده** **قصر** **موقوفات** **صاحب** **کفایت**...
-يرنده دفعی مکرر اولنمش حافظ سنان کچن شهاب اوغلی قاسم نام کسه **فساد و شقاوت**...
-نامدار دفتری باشنده تفتیش ایدوب باقی قالان **اوزرنده** **قبض** **ایتدوروب**...
-سنان نايب سنان عتبان نام کسه **عمارت** **ایتدیروب**...
-قبض ایتدوروب باقیه اولنان اسامی **تفتیش** **اولنوب**...
-و نصف رومی سرحد و رومی روجالی و ددکندرلو **محللرنده** **تابع** **رعایا**...
-و نصف قلعه سنه تابع حاصل اولان **موقوفات**...
-خازندار اولان و ارباب نوبت کبی **فسادندن** **عن** **عمدة** **قاتل**...
-کامل قتل مقتدر اولان بگلر شاه و **قوزغون** **اولان** **جرملر**...
-قدر لری واقع اولur که ذکر اولنان **اشقیایه** **رحم** **اولنمیوب**...
-تربیه مأدب طوب کافر لره گوندرب **دفع** **فتنه** **اولنوب**...
-اوزرنده اولان قدر شرعی غایب اولانلر **فانی** **اولوب**...
-و کلانسی اولمیان منقضی شرعی **عادل** **اولوب**...
-كتب في اواسط جمادى الآخرة سنة ٩٨٠
-
-٤٣ بعلبك قاضيسنه و وقوفلريله كچن **قولی** **همایوننده** **مفرده** **مکتوب**...
-لأجل المصلحة ضبط ایتدرمک **و مساحه** **قیاس** **مال** **ایدیلمک**...
-و ارضی لایق اولوب **سماحتندن** **اولوب**...
-بیوردم که : وصول بولدقده **مذکور** **وقف**...
-حق اوزره و بالوجه الحسن **امورنده** **اولوب**...
-حقدار لره ویروب و ضبط **ایتدرمک**...
-مقتصد طالب و تحصیل **ایدوب**...
-عقده کوکب **و شرف**...
-رأی شریف والام **ارادت**...
-ایریوب کیم فکر **ایتدرمسی**...
-
-٤٤ حلب بگلربگيسنه مکتوب : بنده اقتضا **اولنوب** **سند** **حاکم** **اولوب**...
-محکوم و عسکر و قلاع **تفتیش** **اولنوب**...
-التمس اولنمش کاین **محلده** **تفتیش**...
-بر وجه تفتیش و بر یلغوه **کوندرلمندر**...
-کوندر لمندر ربیع الآخر **سنه** **مزبوره**...
-اربع اوزرنه اوزاق **تفتیش**...
-زید قدره **مکتوب**...`,
-            tr: `42 Şam beylerbeyi ve defterdarına mektup: Şam askerinin **yarısından** **yerinde** **vazgeçilen** **vakıfların** **yeterli** **sahibi**...
-yerinde defalarca uzaklaştırılmış olan Hafız Sinan, geçen Şihab oğlu Kasım adlı kimsenin **fesat ve eşkıyalığı**...
-defter başında teftiş edilip geri kalan miktarın **üzerine** **tahsil** **ettirilip**...
-Sinan naibi Sinan Atban adlı kimseye **imar** **ettirilip**...
-tahsil ettirilip geriye kalan isimlerin **teftiş** **olunup**...
-ve Rumi sınırının yarısı ile Rumi adamları ve Dedekenderli **yerlerindeki** **tabi** **reaya**...
-ve kalesinin yarısına tabi hasıl olan **vakıflar**...
-hazinedar olan ve nöbet ehli gibi **fesadından** **dolayı** **katil**...
-tamamen katle muktedir olan beyler, şah ve **kuzgun** **olan** **cerimeler**...
-durumları vaki olur ki zikredilen **eşkıyaya** **merhamet** **edilmeyip**...
-terbiye edilerek kafirlere gönderilip **fitnenin** **ortadan** **kaldırılması**...
-üzerinde olan şer'i miktar, kayıp olanlar **yok** **olup**...
-ve geriye kalanı olmayan şer'i süresi dolmuş olanlar **adil** **olup**...
-980 yılı Cemaziyelahir ayının ortalarında yazılmıştır.
-
-43 Baalbek kadısına ve vakıf durumlarına dair **padişahın fermanı uyarınca yazılan mektup**...
-Maslahat gereği kontrol altına alınması **ve arazinin ölçülerek değerinin belirlenmesi**...
-ve arazisi uygun olup **cömertliğinden** **olup**...
-buyurdum ki: ulaştığında **adı geçen** **vakıf**...
-hak üzere ve en iyi şekilde **işleriyle** **ilgilenip**...
-hak sahiplerine verip ve kontrolünü **sağlamak**...
-tasarruflu talep eden ve tahsil **edip**...
-yıldızların düğümü **ve şerefi**...
-yüce ve şerefli görüşümün **iradesi**...
-ulaşıp kimin fikir **yürütmesi**...
-
-44 Halep beylerbeyine mektup: bende gereklilik **görülüp** **belge** **hakim** **olup**...
-hüküm giyenler, askerler ve kaleler **teftiş** **edilip**...
-talep edilmiş olan mevcut **yerinde** **teftiş**...
-bir teftiş yöntemi ve bir emir **gönderilmelidir**...
-adı geçen yılın Rebiülahir ayında **gönderilmelidir**...
-dört üzerine uzak **teftiş**...
-adı geçen kişiye **mektup**...`,
-            translit: `42 Şam beglerbegisi ve defterdarına mektub : haliyen saddedini asker **nısfından** **mahallinde** **kasr** **mevkufat** **sahib** **kifayet**...
-yerinde def'i mükerrer olunmuş hafız Sinan geçen Şihab oğlu Kasım nam kimesne **fesad ve şekavet**...
-namdar defteri başında teftiş idüb baki kalan **üzerinde** **kabz** **itdirüb**...
-Sinan naib Sinan 'Atban nam kimesne **'imaret** **itdirüb**...
-kabz itdirdüb bakiye olunan esami **teftiş** **olunub**...
-ve nısf-ı Rumi serhad ve Rumi ricali ve Dedekenderlü **mahallerinde** **tabi'** **re'aya**...
-ve nısf-ı kal'asına tabi' hasıl olan **mevkufat**...
-hazinedar olan ve erbab-ı nevbet gibi **fesadından** **'an** **'umdet** **katil**...
-kamil katl muktedir olan begler şah ve **kuzgun** **olan** **cerimeler**...
-kaderleri vaki' olur ki zikr olunan **eşkiyaya** **rahm** **olunmayub**...
-terbiye-i mü'eddeb tob kafirlere gönderüb **def'-i** **fitne** **olunub**...
-üzerinde olan kader-i şer'i gayib olanlar **fani** **olub**...
-ve kalanı olmayan münkazı-i şer'i **'adil** **olub**...
-Kütibe fi evasıt-ı Cemaziye'l-Ahire sene 980
-
-43 Ba'lebek kadısına ve vukuflarıyla geçen **kavli hümayununda müfrede mektub**...
-li-ecli'l-maslaha zabt itdirmek **ve mesaha** **kıyas** **mal** **idilmek**...
-ve arzı layık olub **semahâtından** **olub**...
-buyurdum ki : vusul buldukda **mezkur** **vakıf**...
-hakk üzere ve bi'l-vechi'l-hasen **umurunda** **olub**...
-hakdarlara virüb ve zabt **itdirmek**...
-muktesid talib ve tahsil **idüb**...
-'ukde-i kevkeb **ve şeref**...
-re'y-i şerif-i vâlâm **iradet**...
-iriyüb kim fikr **itdirmesi**...
-
-44 Haleb beglerbegisine mektub : bende iktiza **olunub** **sened** **hakim** **olub**...
-mahkum ve asker ve kıla' **teftiş** **olunub**...
-iltimas olunmuş kâyin **mahallinde** **teftiş**...
-bir vech-i teftiş ve bir yelgove **gönderilmelidir**...
-gönderilmelidir Rebi'ü'l-Ahir **sene** **mezbure**...
-erba' üzerine uzak **teftiş**...
-zeyd kadre **mektub**...`,
+        'yeni2': {
+            file: 'assets/yeni2.png',
+            enhancedFile: 'assets/yeni2-enhanced.jpg',
+            name: 'cozume_kavusmayan_mesele_dilekcesi.png',
+            size: '0.69 MB',
+            ocr: `بو عبد كمزلری یتمش بر دیتمش اوچ تاریخلرنده ركاب قریاب حضرت شهناهیه اوچ قطعه عی محال تقدیم زارلغی سنیهلری سنوح ایتمش ایسه بر كونه نمره حاصلهسی مشاهده اولنامامش و یتمش درت اریخنده دخی صدر سابق
+متوفی رسشید پاشایه دفعه بر قطعه عرضحان تقدیم ایله سنه جاله ماه صفرالخیرینك طقوزی تاریخنده مجلس والایه لدی الحواله ماه مذكورك اون وردی تاریخنده مذكور درت قطعه عرضحالین عاج انم
+خنینه خاصهیه حواله بیورولمش ایسه ده الی الان اجویه الازمهسی تریر اولنمیهرق عرضحالات مزبوره عبداندن دسترس اولنامامش و خصوصات واقعه چكانم نه صورت كسب ایدهجكی معلوم اولارقن
+و حكهیی نوالری ایسه مصلح واقنه عاجرانهنك امر تسیهسی ضمننده اوچ درت سنه مدور اوغراشمقده و سفیلا و ذلیلا خان كوسهلرنده سورتمكده بولنمش اولدیغم حاكده
+خصوصات عاجزانهنك بو وجهیله مدت مدینده عدم روی و تسیسی حق عاجرانهمده غدر كلییی بوجب و قیون كیرهیه وجار اولمقلغمی مستوجب اولمش و بوكا
+مراحم عالیه صدارتپناهیلری بر وجهله قایل اولهجغی امر بریهسی بولنمش اولدیغندن عرضحالات مزبوره بینكانهنك ظاهره اخراجیله
+رویت و یسوسی حقنده مساعفه علیه خدیوانهلرینك معطوف و پشایانی ویاخود قلمه فرمان بیورلری و تنظیماتجه
+و قوعبولان افادات بندكانهنك امراجر اسی بابنده هم جلیله افانهلرینك منذول و سزاواربورهسی
+معرفتنده مذكره اكتدازم تاقیم و خاكیلای حاجنرری داورانهلرینه تقدیم قلنمش
+اولمین اول بابده و هر حرلره امادمان حضرت من لهلامركدر۔`,
+            tr: `Bu dilekçeyi, 1271 ve 1273 yıllarında padişahın yüce makamına üç ayrı kez sunmuş olmama rağmen herhangi bir sonuç alamadım. 1274 yılında da eski sadrazam merhum Reşid Paşa'ya bir dilekçe daha verdim. Bu dilekçem, aynı yılın Safer ayının dokuzuncu günü Meclis-i Vâlâ'ya gönderildi. Ardından, ayın on dördünde, daha önce sunduğum dört dilekçenin Hazine-i Hassa'ya iletilmesi emredildi. Ancak bugüne kadar gerekli cevaplar yazılmadığı için dilekçelerime ilişkin herhangi bir sonuç elde edemedim.
+İçinde bulunduğum durumun nasıl sonuçlanacağı hâlâ belirsizdir. Oysa söz konusu sorunun çözüme kavuşturulması için üç dört yıldır uğraşmakta, han köşelerinde sefil ve perişan bir hâlde yaşamaktayım.
+Sorunumun bu kadar uzun süre ele alınmaması ve sonuçlandırılmaması, benim için büyük bir haksızlığa yol açmış; beni ve ailemi ciddi sıkıntılara sürüklemiştir. Bu durumun daha fazla devam etmesi, çok sayıda insanın mağdur olmasına da neden olacaktır.
+Bu nedenle, yüce makamınızın merhametine sığınarak daha önce sunduğum dilekçelerin yeniden ortaya çıkarılmasını, incelenmesini ve gerekli işlemlerin tamamlanmasını saygıyla arz ederim. Ayrıca, Tanzimat işleriyle ilgili daha önce yaptığım açıklamaların yerine getirilmesi için de gerekli emirlerin verilmesini ve bu konuda gereken desteğin sağlanmasını rica ederim.
+Bu dilekçem, durumumun değerlendirilmesi ve gereğinin yapılması amacıyla yüksek makamınıza sunulmuştur.
+Bu konuda karar ve emir, yetkili makamınıza aittir.`,
+            translit: `bu abd-i gümrükleri yetmiş bir ve yetmiş üç tarihlerinde rikâb-ı kudret-yâb-ı hazret-i şehinşâhîye üç kıta mahal takdim-zârlığı seniyyeleri sünûh etmiş ise bir gûne semere-i hâsılası müşahede olunamamış ve yetmiş dört tarihinde dahi sadr-ı sâbık
+müteveffâ Reşid Paşaya defa bir kıta arzuhâl takdim ile sene-i celîle mâh-ı Saferül-hayrının dokuzu tarihinde Meclis-i Vâlâya ledel-havale mâh-ı mezkûrun on dördü tarihinde mezkûr dört kıta arzuhâlin âcizânem
+Hazine-i Hassaya havale buyurulmuş ise de ile'l-ân ecvibe-i lâzımesi tahrir olunmayarak arzuhâlât-ı mezbûre ubeydânemden dest-res olunamamış ve hususât-ı vâkı'a-i çâkerânem ne suret kesb edeceği malum olarak
+ve hâk-i pâ-yı nevâları ise maslahat-ı vâkıa-i âcizânenin emr-i tesviyesi zımnında üç dört sene müdevver uğraşmakda ve sefilen ve zelilen han köşelerinde sürünmekde bulunmuş olduğum hâlde
+husûsât-ı âcizânenin bu vechile müddet-i medîde adem-i rü'yet ve tesessüsü hakk-ı âcizânemde gadr-ı küllîyi mûcib ve koyun-ı kesîreye vâcib olmaklığımı müstevcib olmuş ve buna
+merâhim-i aliyye-i Sadâret-penâhîleri bir vechile kâbil olacağı emr-i berriyesi bulunmuş olduğundan arzuhâlât-ı mezbûre-i bendegânenin zâhire ihracıyla
+rü'yet ve tesviyesi hakkında müsâafe-i aliyye-i hidivânelerinin ma'tûf ve şâyânı veyahud kaleme fermân buyurulması ve Tanzimatça
+vukû' bulan ifâdât-ı bendegânenin emr-i icrâsı bâbında himem-i celîle-i âsafânelerinin mebzûl ve sezâvâr-pûresi
+marifetiyle müzekkire-i iktidârım terkîm ve hâk-i pây-ı hâcet-redîf-i dâverânelerine takdim kılınmış
+olmağın ol bâbda ve her halde ifade-i hâl hazret-i men lehül-emrindir.`,
             analysis: {
-                document_type: "Resmî Yazı",
-                confidence: 85,
-                style: "Resmî, bürokratik ve hukuki Osmanlı diplomatik dili",
-                summary: "Belge, Şam, Baalbek ve Halep bölgelerindeki idari, mali ve asayiş konularına ilişkin divan kararlarını içermektedir. Özellikle Şam'da asayişi bozan eşkıyalık faaliyetlerinin önlenmesi, vakıf gelirlerinin denetlenmesi ve bölgedeki şer'i davaların adilce çözülmesi emredilmektedir.",
+                document_type: "Dilekçe (Arzuhal)",
+                confidence: 75,
+                style: "Resmî, bürokratik arzuhal üslubu; mağduriyet bildiren ricacı bir dil",
+                summary: "Dilekçe sahibi, 1271, 1273 ve 1274 (Hicrî) yıllarında padişahın yüce makamına defalarca başvurduğunu, dilekçelerinin Meclis-i Vâlâ ve Hazine-i Hassa'ya havale edildiğini ancak yıllardır hiçbir sonuç alamadığını anlatmaktadır. Üç dört yıldır perişan bir hâlde beklediğini belirterek, daha önceki dilekçelerinin yeniden incelenmesini ve Tanzimat'la ilgili taleplerinin yerine getirilmesini saygıyla rica etmektedir.",
                 key_points: [
-                    "Şam beylerbeyi ve defterdarına gönderilen hükümde, bölgedeki askerlerin ve vakıf gelirlerinin durumu ele alınmaktadır.",
-                    "Hafız Sinan ve Şihab oğlu Kasım gibi şahısların çıkardığı fesat ve eşkıyalık olaylarının bastırılması emredilmiştir.",
-                    "Baalbek kadısına yönelik hükümde, vakıf arazilerinin tespiti ve adil paylaşımı üzerinde durulmaktadır.",
-                    "Halep beylerbeyine yazılan hükümde ise askeri ve idari teftişlerin yapılması talep edilmektedir."
+                    "Dilekçe sahibi, 1271 ve 1273 yıllarında üç kez padişaha başvurmuş, sonuç alamamıştır.",
+                    "1274 yılında eski sadrazam merhum Reşid Paşa'ya ayrıca bir dilekçe daha sunmuştur.",
+                    "Dilekçeler Meclis-i Vâlâ üzerinden Hazine-i Hassa'ya havale edilmiş, ancak gerekli cevaplar hiç yazılmamıştır.",
+                    "Başvuru sahibi üç dört yıldır sorununun çözümünü beklediğini ve bu süreçte perişan bir hâlde yaşadığını belirtmektedir.",
+                    "Dilekçelerinin yeniden incelenmesini ve Tanzimat'la ilgili taleplerinin yerine getirilmesini rica etmektedir."
                 ],
-                people: ["Hafız Sinan", "Kasım", "Sinan Atban"],
-                places: ["Şam", "Baalbek", "Halep"],
-                concepts: ["Beylerbeyi", "Defterdar", "Qadi", "Mevkufat", "Teftiş"],
-                script_type: "Divanî",
-                script_purpose: "Mühimme Defteri Kaydı",
-                period_estimate: "16. Yüzyıl (II. Selim Dönemi)",
-                date_hijri: "Cemaziyelahir 980",
-                date_gregorian: "Ekim 1572",
-                notes: "Belge, 16. yüzyıl Osmanlı eyalet idaresindeki asayiş sorunlarını, vakıf denetimlerini ve yerel yöneticilerin sorumluluklarını gösteren önemli bir arşiv kaydıdır."
+                people: ["Reşid Paşa"],
+                places: [],
+                concepts: ["Meclis-i Vâlâ", "Hazine-i Hassa", "Tanzimat", "dilekçe"],
+                script_type: "Rik'a",
+                script_purpose: "Şikâyet/talep dilekçesi (arzuhal) — üst makama mağduriyet arzı",
+                period_estimate: "Tanzimat Dönemi",
+                date_hijri: "1271-1274 (metinde adı geçen yıllar)",
+                date_gregorian: "1854-1858 civarı (tahminî)",
+                notes: "Dilekçenin kendisi, metinde adı geçen 1271/1273/1274 (Hicrî) tarihlerinden sonra, yazarın 'üç dört yıldır uğraştığını' belirtmesinden hareketle daha geç bir tarihte kaleme alınmış olmalıdır; ancak kesin yazılış tarihi metinde belirtilmemiştir. Görsel, el yazısı (rik'a) bir arzuhal örneğidir."
             }
         },
         'hbv': {
@@ -1217,7 +1145,16 @@ zeyd kadre **mektub**...`,
 بوندن اول جهات مذکوره نك وظیفه معینه لرینه توجهله متصرف اولدقدن
 ینه اولو جهله وظیفه معینه لرینی اوقاف مزبوره محصولندن الوب متصرف اولوب
 اشبو برات عالیشانم مغایر رفع اولنمامق تقدم و طرف اخر دن هیچ فرد...`,
-            tr: `Hacı Bayram Veli yolunda, bu yüce padişahlık nişanını taşıyan, salihlerin **ve süluk edenlerin** örneği, müteveffa Tayyib Baba'nın oğlu es-Seyyid Muhammed Said Baba, zamanımızda en layık ve olgun olanlardan olup, takvasının temizliğiyle Divan-ı Hümayun'a dilekçe sunup Ankara'da bulunan Hacı Bayram Veli Vakfı'nın belirlenmiş vazife ile tevliyet ve meşihatına ve belirlenmiş vazife ile zaviyedarlığına önceden beri şart koşulduğu üzere babasının gelirinden tasarruf etmekte iken ve görevden alınmasını gerektirecek hiçbir hareketi yokken, garaz sahiplerinden es-Seyyid **Halil** Baba'nın oğlu es-Seyyid Kasım Baba en layık evlat ve akraba olduğunu iddia ederek bir yolunu bulup berat ve fetva ile hatt-ı hümayun çıkarttırıp **tarafından** tamamen görevden alınmasına ve ailesiyle perişan olmasına sebep olduğundan, tevliyet, meşihat ve zaviyedarlığın **tarafından** önceden olduğu gibi kendisine ve babasının naiplerine verilmesi ricasıyla lütuf talep etmiştir. Adı geçenin talebi üzerine müsamaha gösterilmesi hususunda padişahın iradesi çıktığından, dilekçesi doğrultusunda işlem yapılmak üzere, derin alimlerin en bilgini, takva sahiplerinin en faziletlisi olan fiilen Şeyhülislam Mevlana Ahmed Esad (Allah faziletlerini daim etsin) işaret ettiğinden, bu işaret uyarınca görevin iade edilmesi fermanım olmuştur. Kendisine padişahlık lütfumun bir nişanesi olarak bin iki yüz yirmi üç senesi Receb ayının dokuzuncu günü tarihiyle tarihlenen ve rûs-ı hümayunum gereğince bu berat-ı hümayunumu verdim ve buyurdum ki: Adı geçenin evlatlarından en olgun ve layık olan müteveffa Tayyib Baba oğlu es-Seyyid Muhammed Said Baba gidip adı geçen vakfın dörtte bir ve yarım hisselerinin tevliyet, meşihat ve zaviyedarlığına şart koşulduğu üzere tasarruf edip hizmetini yerine getirdikten sonra, bundan önce söz konusu görevlerin belirlenmiş maaşlarını alarak tasarruf ettiği gibi yine aynı şekilde belirlenmiş maaşlarını adı geçen vakıfların gelirinden alıp tasarruf ede ve bu yüce beratıma aykırı olarak görevden el çektirilmeye, başkaları tarafından hiçbir müdahale olunmaya...`,
+            tr: `Hacı Bayram Veli'nin yolundan giden, bu yüce padişahlık belgesini taşıyan, salih ve tasavvuf yolunda ilerleyen kişilerin örneği olan merhum Tayyib Baba'nın oğlu Seyyid Muhammed Said Baba, zamanının en liyakatli ve olgun kişilerinden biridir.
+Kendisi, takvası ve dürüstlüğüyle Divan-ı Hümayun'a bir dilekçe sunmuştur. Ankara'da bulunan Hacı Bayram Veli Vakfı'nın, önceden belirlenmiş ücret karşılığında mütevelliliğini (vakfın yöneticiliğini), şeyhliğini ve zaviyedarlığını (tekkenin yönetimini) yürütmekteydi. Bu görevleri, daha önce belirlenen şartlar doğrultusunda babasından devralmış ve vakıf gelirlerinden yararlanmıştı. Görevden alınmasını gerektirecek herhangi bir davranışı da bulunmuyordu.
+Ancak kötü niyetli kişilerden Seyyid Halil Baba'nın oğlu Seyyid Kasım Baba, kendisinin bu görevlere en layık evlat ve akraba olduğunu ileri sürerek çeşitli yollarla bir berat, fetva ve padişah fermanı çıkarttırmıştır. Bunun sonucunda Seyyid Muhammed Said Baba görevlerinden tamamen uzaklaştırılmış ve ailesiyle birlikte zor durumda kalmıştır.
+Bunun üzerine Seyyid Muhammed Said Baba, vakfın mütevellilik, şeyhlik ve zaviyedarlık görevlerinin, eskiden olduğu gibi kendisine ve babasının vekillerine verilmesini talep ederek padişahın lütfunu istemiştir.
+Adı geçen kişinin talebi üzerine kendisine kolaylık gösterilmesi yönünde padişahın iradesi ortaya çıkmıştır. Bu nedenle dilekçesinde belirttiği hususların yerine getirilmesi amacıyla, büyük âlimlerin en bilgini ve takva sahiplerinin en faziletlisi olan, görevdeki Şeyhülislam Mevlânâ Ahmed Esad'ın (Allah onun faziletlerini daim kılsın) da görüşü alınmıştır.
+Onun işareti doğrultusunda, söz konusu görevlerin Seyyid Muhammed Said Baba'ya geri verilmesi emredilmiştir.
+Padişahlık lütfumun bir göstergesi olarak, 1223 yılı Recep ayının dokuzuncu günü tarihini taşıyan ve hükümdarlık mührümü içeren bu yüce beratımı kendisine verdim ve şöyle buyurdum:
+Merhum Tayyib Baba'nın oğlu Seyyid Muhammed Said Baba, adı geçen vakfın dörtte bir ve yarım hisselerine ilişkin mütevellilik, şeyhlik ve zaviyedarlık görevlerini, vakfın belirlenmiş şartlarına uygun biçimde yürütecektir.
+Görevlerini ve hizmetlerini yerine getirdikten sonra, daha önce bu görevleri yürütürken aldığı belirlenmiş maaşları nasıl vakıf gelirlerinden alıyorsa, bundan sonra da aynı şekilde almaya devam edecektir.
+Bu yüce beratıma aykırı olarak kendisi görevden uzaklaştırılamaz ve başkaları tarafından görevlerine herhangi bir müdahalede bulunulamaz.`,
             translit: `Hacı Bayram Veli silkinde işbu rafi'-i tevkî'-i refî'-i şân-ı hakanî kudvetü's-sulehâ **es-sâlikîn**
 es-Seyyid Muhammed Said Baba veled-i müteveffa Tayyib Baba 'an aslah ve arşad olanlar gıbbe zamânınâ ileyhi **bi-mûceb**
 zübdetü takvâh dîvân-ı hümâyûna arz-ı hâl idüb Ankara'da vâki' Hacı Bayram Veli vakfının
@@ -1251,9 +1188,9 @@ işbu berât-ı âlî-şânım mugâyir-i ref' olunmamak takaddüm ve taraf-ı �
                     "Şeyhülislam Ahmed Esad Efendi'nin işareti ve padişahın iradesiyle görevler eski sahibi es-Seyyid Muhammed Said Baba'ya iade edilmiştir.",
                     "Karar, 9 Receb 1223 tarihinde berat-ı hümayun ile tescil edilmiştir."
                 ],
-                people: ["Mevlana Ahmed Esad", "es-Seyyid Muhammed Said Baba", "Tayyib Baba", "es-Seyyid Kasım Baba", "es-Seyyid Halil Baba"],
+                people: ["Mevlânâ Ahmed Esad", "Seyyid Muhammed Said Baba", "Tayyib Baba", "Seyyid Kasım Baba", "Seyyid Halil Baba"],
                 places: ["Ankara"],
-                concepts: ["tevliyet", "meşihat", "zâviyedarlık", "berât-ı hümâyûn", "vakıf", "Şeyhülislâm"],
+                concepts: ["mütevellilik", "şeyhlik", "zaviyedarlık", "berat", "vakıf", "Şeyhülislam"],
                 script_type: "Dîvânî",
                 script_purpose: "Atama ve Hak İadesi Beratı",
                 period_estimate: "II. Mahmud Dönemi",
@@ -1262,205 +1199,59 @@ işbu berât-ı âlî-şânım mugâyir-i ref' olunmamak takaddüm ve taraf-ı �
                 notes: "Belge, Hacı Bayram Veli soyundan gelenler arasındaki vakıf görevleri ihtilafını ve Şeyhülislamın müdahalesiyle hakkın iade edilmesini konu almaktadır."
             }
         },
-        'hmg': {
-            file: 'assets/hmg.png',
-            enhancedFile: 'assets/hmg-enhanced.jpg',
-            name: 'hanimlara_mahsus_gazete.png',
-            size: '0.04 MB',
-            ocr: `خاتونلره مخصوص غزته‌نك
-خانملره مخصوص
-قسمی
-نومرو ٣     فی ٥ مارت سنه ٣١٣
-غزته‌مزك بوقسمی «ابكار و امهات» ه خدمت مخصوصه اولمق اوزره تشكيل ايدلمشدر
-اعتلاى امتك سرمايه‌سى دختران معرفت آثاردور
-**شهير مجموعه الايكاددر مانكيزيك فضائلى ارات**
-
-منكشه
-اى رنك روى بهار اولان منكشه
-بودر فضيلت و محجوبيت
-حزين بر قلبك مؤثر و طاتلى بر خيالى
-بكرسين!!.. شو چمنلر آره سندن
-نشر ايلديكك رايحه لطيفه انسايه تازه،
-طاتلى حيات بخش ايدييور. يشيل بر
-ميشه آغاجنك سايه صفا آورنده
-نظر تحسيندن كيزلنمك ايچون جلا
-ساز عيون اولان صيق چمنلر آره سنه
-صوقيلورسين! فقط نشر ايتديکك
-كوزل قوقولرله معطر هواى نسيمى
-بكا بولديغك محلى درعقب اخطار
-و افهام ايدييور!.
-قورقمه! قورقمه! بن سنك يالكز
-مفتون لطافت و حقارتكم، چمنلر
-اوزرنده كى مناظر طبيعه نك بنى دها
-زياده مفتون ايده بيليور. بن سنك
-قيمتكى تقدير ايتديكم ايچون بهار حياتكه
-صاله دست غدر ايتمكى مصماً روا
-كورمهم. بك ضعیف اولان جسمكله
-انسانلرك روح و فكرينه القا ايلديكك
-حسيات لطيفه حقيقةً بك فوق العاده،
-بك شاعرانه در.
-سنك مزيت و خدمتك حق بين
-اولانلر نزدنده محافظه حياتكى تأمين
-ايدر. عمر طبيعندن استفاده ايده
-مييلر هيچ بر مزيته. بو قيمته مالك
-اولميانلردر.
-كافة ذيروحك نباتاتدن هيچ بر
-فرقى يوقدر. هم نوعنه خدمت ايتمك
-ايچون كوچكلکنده چاليشه‌رق حليه
-فضل و كمال ايله تزيين ذات و صفات
-ايدن انسانلرك سنك كبى قوقولى و
-لطيف چيچكلردن فرقى يوقدر. جاهل
-و قسمت معارفدن محروم قالانلر ايسه
-احاله نظره بيله تنزل ايدلمين خار
-و خاشاك مثلندندر
-سيروزلو رجائى خليل حلوى
-افندى كريمه‌سى
-لمان
-
-ایکی محرره بیننده مکالمه
-خديجه خانم ايله سميحه خانم
-خ — همشهريم كچن هفته غالباً
-سهو ترتيب اوله‌رق سوزلرمز بربرينه
-قاريشدى.
-س — اويله اولمش اما ضررى
-يوق، مقصدينه يتدى. همده بنده كز
-والده كزك او كوزل سوزينه قارشى`,
-            tr: `Hatunlara mahsus gazetenin
-Hanımlara Mahsus
-Kısmı
-Numara 3     5 Mart sene 1313
-Gazetemizin bu kısmı "genç kızlar ve anneler"e özel hizmet etmek üzere oluşturulmuştur.
-Milletin yükselmesinin sermayesi, marifet eserleri gösteren kızlardır.
-**Şehir mecmuası el-İkad'dır mankizik fezaili erat**
-
-Menekşe
-Ey baharın yüzünün rengi olan menekşe!
-Budur fazilet ve mahcubiyet.
-Hüzünlü bir kalbin etkileyici ve tatlı bir hayali gibi
-Beklersin!!.. Şu çimenler arasından
-Yaydığın o hoş koku insana taze,
-Tatlı bir hayat bahşediyor. Yeşil bir
-Meşe ağacının safa veren gölgesinde,
-Beğeni dolu bakışlardan gizlenmek için gözleri süsleyen
-Sık çimenler arasına
-Sokulursun! Fakat yaydığın
-Güzel kokularla bezenmiş rüzgarın havası,
-Bana bulunduğun yeri hemen haber veriyor
-Ve anlatıyor!.
-Korkma! Korkma! Ben senin yalnızca
-Güzelliğine ve alçakgönüllülüğüne hayranım; çimenler
-Üzerindeki doğal manzaralar beni daha
-Çok büyüleyebilir. Ben senin
-Değerini takdir ettiğim için, hayatının baharına
-Haksızlık elini uzatmayı asla uygun
-Görmem. Pek zayıf olan bedeninle
-İnsanların ruhuna ve fikrine aşıladığın
-O hoş duygular gerçekten pek fevkalade,
-Pek şairanedir.
-Senin meziyetin ve hizmetin, hakkı görenler
-Nezdinde hayatının korunmasını temin
-Eder. Doğal ömründen istifade edemeyenler
-Hiçbir meziyete, bu değere sahip
-Olmayanlardır.
-Bütün canlıların bitkilerden hiçbir
-Farkı yoktur. Kendi türüne hizmet etmek
-İçin küçüklüğünde çalışarak erdem ve olgunluk
-Süsüyle kendi zatını ve sıfatlarını süsleyen
-İnsanların, senin gibi kokulu ve
-Hoş çiçeklerden farkı yoktur. Cahil
-Ve bilgi nasibinden mahrum kalanlar ise,
-Bakmaya bile tenezzül edilmeyen diken
-Ve çer çöp gibidir.
-Sirozlu Recai Halil Halvi
-Efendi'nin kızı
-Leman
-
-İki Kadın Yazar Arasında Konuşma
-Hatice Hanım ile Semiha Hanım
-H — Hemşehrim, geçen hafta galiba
-Dizgi hatası olarak sözlerimiz birbirine
-Karıştı.
-S — Öyle olmuş ama zararı
-Yok, amacına ulaştı. Hem de bendeniz
-Annenizin o güzel sözüne karşı`,
-            translit: `Hatunlara mahsus gazetenin
-Hanımlara Mahsus
-Kısmı
-Numara 3     Fi 5 Mart sene 313
-Gazetemizin bu kısmı "ebkâr ve ümmehât"a hizmet-i mahsusa olmak üzere teşkil edilmiştir
-İ'tilâ-yı ümmetin sermayesi duhterân-ı ma'rifet-âsârdır
-**Şehir mecmuası el-İkad'dır mankizik fezaili erat**
-
-Menekşe
-Ey reng-i rû-yı bahar olan menekşe
-Budur fazilet ve mahcubiyet
-Hazin bir kalbin müessir ve tatlı bir hayali
-Beklersin!!.. Şu çemenler arasından
-Neşr eylediğin rayiha-i latife insana taze,
-Tatlı hayat bahş ediyor. Yeşil bir
-Meşe ağacının saye-i safa-âverinde
-Nazar-ı tahsinden gizlenmek için cilâ
-Sâz-ı uyûn olan sık çemenler arasına
-Sokulursun! Fakat neşr ettiğin
-Güzel kokularla muattar havâ-yı nesîmi
-Bana bulduğun mahalli der-akab ihtar
-Ve ifham ediyor!.
-Korkma! Korkma! Ben senin yalnız
-Meftun-ı letafet ve hakaretinim, çemenler
-Üzerindeki menâzır-ı tabiiyenin beni daha
-Ziyade meftun edebiliyor. Ben senin
-Kıymetini takdir ettiğim için bahar-ı hayatına
-Sâle-i dest-i gadr etmeyi musammem-i revâ
-Görmem. Pek zaif olan cisminle
-İnsanların ruh ve fikrine ilka eylediğin
-Hissiyat-ı latife hakikaten pek fevkalade,
-Pek şairanedir.
-Senin meziyet ve hizmetin hak-bîn
-Olanlar nezdinde muhafaza-i hayatını temin
-Eder. Ömr-i tabiinden istifade ede
-meyeler hiçbir meziyete. Bu kıymete malik
-Olmayanlardır.
-Kâffe-i zî-rûhun nebatattan hiçbir
-Farkı yoktur. Hem-nev'ine hizmet etmek
-İçin küçüklüğünde çalışarak hilye-i
-Fazl u kemal ile tezyin-i zat ve sıfat
-Eden insanların senin gibi kokulu ve
-Latif çiçeklerden farkı yoktur. Cahil
-Ver kısmet-i maariften mahrum kalanlar ise
-İhale-i nazara bile tenezzül edilmeyen har
-Ve haşak mislindendir
-Sirozlu Recai Halil Halvi
-Efendi kerimesi
-Leman
-
-İki muharrire beyninde mükâleme
-Hatice Hanım ile Semiha Hanım
-Ha — Hemşehrim geçen hafta galiba
-Sehv-i tertib olarak sözlerimiz birbirine
-Karıştı.
-Se — Öyle olmuş ama zararı
-Yok, maksadına yetti. Hem de bendeniz
-Validenizin o güzel sözüne karşı`,
+        'yeni3': {
+            file: 'assets/yeni3.png',
+            enhancedFile: 'assets/yeni3-enhanced.jpg',
+            name: 'askeri_sevkiyat_araba_temini.png',
+            size: '0.22 MB',
+            ocr: `سی الهجما دولتلو عنایتلو عاطفتلو افندیم
+بااراده سنیه دولتلو روم ایلی والیسی حضرتلری معیتنه مامور نیمارلی سوارنی عساكر منصوره الایلرندن طوپل حین بك قوماند
+ب اه
+لای سواری عساكر منصوره ایله بنه تعلی یازنكی كونه اخراج و اعظام اولنهجق اولدیغندن الاس مذكورك چادر و سایر احمال
+و انقالنی ولی افندی چشمسنی صحراسندن چكمجه كبییره نقل ایتمك اوزره بافزمان علی ترتیب بیوریلان قرق عدد عربهنك
+یكرمی بشی عددی باروتخانه عامرهیه مربوط قریهلردن تداركیله محل مذكورده موجود بولنملری خصوصی مهمات حربیه
+نافلری عطوفتلو افندی بندهلری معرفتیله اجرا قلنمش و قصور اون بش عددی دخی صو یولی كویلرندن مرتب اولوب اشبو
+صو یولی كویلری دولتلو مشیر عساكر خاصه شاهانه حضرتلری طرفلرندن اداره اولنمقده اولوب مذكور عربهلرك تداركی
+خصوصنك طرف مخلصیده اشعار اولنمسی مشار الیه حضرتلری بروزیر عالشان اولهرق یاردج دت ككندن مذكور اون بش
+تعدی عربهنك بارنكی كونه محل مزبورده بولنملری خصوصنی باب عالیدن مشارالیه خضرتلرینه اشعار بیتورلمس منوط همت بهلریدر افندیم`,
+            tr: `Saygıdeğer, yardımsever ve merhametli efendim,
+Padişahın emriyle Rumeli Valisi'nin emrinde görevlendirilen, Asâkir-i Mansûre süvari birliklerinden Topçu Hüseyin Bey'in komutasındaki alay, Allah'ın izniyle yarın yola çıkarılacaktır.
+Söz konusu alayın çadırlarını ve diğer yüklerini Veliefendi Çeşmesi civarındaki açık araziden Büyükçekmece'ye taşımak için, üst makamın emriyle toplam kırk araba tahsis edilmiştir.
+Bu arabaların yirmi beşi, Baruthâne-i Âmire'ye bağlı köylerden temin edilerek belirtilen yerde hazır bulundurulmuştur. Bu işlem, askerî mühimmat işlerinden sorumlu görevlinin aracılığıyla gerçekleştirilmiştir.
+Geriye kalan on beş arabanın ise su yollarına bağlı köylerden sağlanması kararlaştırılmıştır. Ancak söz konusu köyler, padişahın özel muhafız birliklerinin komutanı olan müşirin yönetimi altındadır.
+Bu nedenle, kalan on beş arabanın da yarın belirtilen yerde hazır bulundurulabilmesi için gerekli bildirimin ilgili müşire Babıâli tarafından yapılması gerekmektedir.
+Sözü edilen müşir yüksek rütbeli bir devlet adamı olduğundan, bu talebin kendisine resmî olarak iletilmesi, yüce makamınızın desteğine ve takdirine bağlıdır.
+Efendim, gereğinin yapılmasını saygılarımla arz ederim.`,
+            translit: `Seniyyül-himemâ Devletlü İnâyetlü Âtufetlü Efendim
+Bâ-irâde-i seniyye devletlü Rumeli valisi hazretleri maiyetine memur timarlı süvari Asâkir-i Mansûre alaylarından Topçu Hüseyin Bey kumanda
+b ah
+alay süvari-i asâkir-i mansûre ile bi-mennihi teâlâ yarınki güne ihraç ve izâm olunacak olduğundan alay-ı mezkûrun çadır ve sair ahmâl
+ve eskalini Veliefendi Çeşmesi sahrasından Çekmece-i Kebîre nakletmek üzere bâ-fermân-ı âlî tertip buyrulan kırk adet arabanın
+yirmi beş adedi Baruthâne-i Âmireye merbût karyelerden tedarikiyle mahal-i mezkûrda mevcut bulunmaları hususu mühimmât-ı harbiye
+sâkinleri atûfetli efendi bendeleri marifetiyle icra kılınmış ve kusur on beş adedi dahi su yolu köylerinden mürettep olup işbu
+su yolu köyleri devletli müşir asâkir-i hâssa-i şâhâne hazretleri taraflarından idare olunmakta olup mezkûr arabaların tedariki
+husûsunun taraf-ı muhlisîde işâr olunması müşârun-ileyh hazretleri bir vezîr-i âlîşân olarak Barut demekle mezkûr on beş
+ta'addî arabanın yarınki gûne mahall-i mezbûrda bulunmaları hususu Bâbıâliden müşârunileyh hazretlerine iş'âr buyurulması menût-ı himmet-i behiyyeleridir efendim.`,
             analysis: {
-                document_type: "Gazete / Dergi",
-                confidence: 92,
-                style: "Edebi, öğretici ve söyleşi tarzında kaleme alınmış bir dille yazılmıştır.",
-                summary: "Hanımlara Mahsus Gazete'nin bu ekinde genç kızlar ve anneler için eğitici ve edebi yazılar sunulmaktadır. Sayfada Leman Hanım'ın ahlaki ve felsefi çıkarımlar içeren 'Menekşe' başlıklı yazısı ile Hatice Hanım ve Semiha Hanım arasındaki edebi söyleşi yer almaktadır.",
+                document_type: "Arz / Resmî Askerî Yazışma",
+                confidence: 82,
+                style: "Resmî, saray/divan yazışma üslubu — üst makama arz",
+                summary: "Belge, Rumeli Valisi'nin emrindeki Topçu Hüseyin Bey komutasında yarın yola çıkacak bir süvari alayının çadır ve yüklerinin Veliefendi Çeşmesi'nden Büyükçekmece'ye taşınması için kırk araba tahsis edildiğini, bunun yirmi beşinin hazır olduğunu, kalan on beşinin ise su yolu köylerini yöneten bir müşirin yetkisi altında olduğundan Babıâli aracılığıyla talep edilmesi gerektiğini bildiren resmî bir arzdır.",
                 key_points: [
-                    "Gazetenin bu özel bölümü genç kızların ve annelerin eğitimine katkı sağlamak amacıyla çıkarılmıştır.",
-                    "Leman Hanım, menekşe çiçeği üzerinden alçakgönüllülük, erdem ve cehalet kavramlarını sorgulamaktadır.",
-                    "Eğitimden mahrum kalan cahil insanlar, doğadaki değersiz diken ve çer çöpe benzetilmiştir.",
-                    "Hatice Hanım ve Semiha Hanım arasındaki diyalogda bir önceki sayıdaki dizgi hatasından bahsedilmektedir."
+                    "Rumeli Valisi'nin emrindeki Topçu Hüseyin Bey komutasında bir süvari alayı ertesi gün sevk edilecektir.",
+                    "Alayın yük ve çadırlarının Veliefendi Çeşmesi'nden Büyükçekmece'ye taşınması için toplam kırk araba tahsis edilmiştir.",
+                    "Bu arabaların yirmi beşi Baruthâne-i Âmire'ye bağlı köylerden temin edilip hazırlanmıştır.",
+                    "Kalan on beş araba su yolu köylerinden sağlanacak, ancak bu köyler bir müşirin yönetimi altında olduğundan talebin Babıâli üzerinden iletilmesi istenmektedir."
                 ],
-                people: ["Leman", "Recai Halil Halvi Efendi", "Hatice Hanım", "Semiha Hanım"],
-                places: ["Siroz"],
-                concepts: ["ebkâr ve ümmehât", "maarif", "fazl u kemal"],
-                script_type: "Matbu",
-                script_purpose: "Süreli Yayın / Gazete",
-                period_estimate: "II. Abdülhamid Dönemi",
+                people: ["Topçu Hüseyin Bey"],
+                places: ["Rumeli", "Veliefendi Çeşmesi", "Büyükçekmece"],
+                concepts: ["Asâkir-i Mansûre", "Baruthâne-i Âmire", "Babıâli", "müşir"],
+                script_type: "Rik'a",
+                script_purpose: "Askerî sevkiyat için nakliye (araba) temini arzı",
+                period_estimate: "Belirtilmemiş",
                 date_hijri: "Belirtilmemiş",
-                date_gregorian: "17 Mart 1898",
-                notes: "Belgenin sağ tarafındaki dikey dize oldukça yıpranmış ve silik olduğundan tahmini olarak okunmuştur."
+                date_gregorian: "Belirtilmemiş",
+                notes: "Metinde belirli bir tarih verilmemiştir; 'Asâkir-i Mansûre' adlandırması belgeyi genel olarak 19. yüzyıl Osmanlı askerî teşkilatlanma dönemine yerleştirmekle birlikte, kesin yıl metinden çıkarılamamaktadır."
             }
         },
         'tah': {
@@ -1489,27 +1280,37 @@ Validenizin o güzel sözüne karşı`,
 منوفاق احمد شاکر افندی - تراویکه
 ارکیر یلی احمد شاهین افندی - سنکه
 استانبول محکمه سی کتبه سندن عبدالکریم شمی افندی - بوداق اوزی یه`,
-            tr: `Tercüman-ı Ahval
-11 Şevval Pazar 1277 Sayı 25
-İşbu gazete iç ve dış her türlü haberler ile fen ve sanayiye dair konuları içerecek şekilde **iki günde bir** pazar, salı ve perşembe günleri çıkar. Abonelik isteyenler İstanbul'da Bahçekapısı üzerinde bulunan matbaasına müracaat etsinler. İstanbul için **üç aylığı** (150) ve altı aylığı (80) kuruştur. Taşra için postahane ücreti de eklenir. Bir nüshası (40) paradır.
+            tr: `Tercümân-ı Ahvâl Gazetesi
+11 Şevval 1277, Pazar — Sayı: 25
+Bu gazete; yurt içinden ve yurt dışından haberlerin yanı sıra bilim, teknik ve sanayiyle ilgili konuları da içerecek şekilde bundan böyle iki günde bir, pazar, salı ve perşembe günleri yayımlanacaktır.
+Abone olmak isteyenler, İstanbul'da Bahçekapısı'nda bulunan matbaamıza başvurabilirler.
+İstanbul için üç aylık abonelik bedeli 150 kuruş, altı aylık abonelik bedeli ise 80 kuruştur. Taşraya gönderilecek nüshalar için posta ücreti ayrıca eklenir. Gazetenin tek nüshası 40 paradır.
+Not: Üç aylık abonelik ücretinin altı aylık ücretten yüksek görünmesi, kaynak metindeki bir yazım veya aktarım hatasından kaynaklanıyor olabilir.
 
 İç Haberler
-Tercüman-ı Ahval şimdiye kadar haftada bir kere olarak çıkarılmış ise de bu gazetenin ortaya çıkışından beri diğer yerel gazetelerde görülen ilerleme eserlerine bakılarak bundan sonra bizim bu durumda devam etmemiz uygun görülmez. Haftada bir kere yayınlanması yeterli olamayacağından daha sık çıkarılması gerekmiştir. Çünkü medeniyet eserlerini en yüksek dereceye ulaştırarak geçmiş asırlara her bakımdan üstünlüğü açık olan zamanımızda, telgraf odası vasıtasıyla dünyanın her tarafından alınan önemli siyasi haberlerin yayınlanmasının hafta başına kadar geciktirilmesi faydalı işler hakkında bir haksızlık olmaktadır. İşte bu genel faydaya dayanarak bundan böyle Tercüman-ı Ahval'in de haftada üç kere yani pazar, salı ve perşembe günleri çıkarılması ve bazı dostlarımızın yardımıyla yazım ve düzenlenmesine eskisinden daha fazla dikkat edilmesi bir görev sayılmıştır. Bu şekilde basılarak **okunmasına** ilgi gösteren kişilerin memnuniyetinin kazanılması en büyük amacımızdır.
+Tercümân-ı Ahvâl şimdiye kadar haftada bir kez yayımlanıyordu. Ancak gazetemizin yayımlanmaya başlamasından bu yana diğer yerel gazetelerde görülen gelişmeler dikkate alındığında, bundan sonra aynı şekilde haftada bir kez yayımlanmaya devam etmemizin uygun olmayacağı düşünülmüştür.
+Gazetenin haftada bir kez yayımlanması yeterli olmadığından, daha sık çıkarılması gerekli görülmüştür.
+Çünkü medeniyetin gelişmişlik bakımından en yüksek seviyeye ulaştığı ve geçmiş yüzyıllara her açıdan üstünlüğünü açıkça gösterdiği günümüzde, telgraf aracılığıyla dünyanın dört bir yanından alınan önemli siyasi haberlerin yayımlanmasının haftanın sonuna kadar geciktirilmesi, kamu yararına yönelik çalışmalar açısından doğru değildir.
+Bu genel yarar göz önünde bulundurularak Tercümân-ı Ahvâl gazetesinin bundan böyle haftada üç kez, yani pazar, salı ve perşembe günleri yayımlanmasına karar verilmiştir.
+Ayrıca bazı dostlarımızın yardımlarıyla gazetenin yazımına ve düzenlenmesine eskisinden daha fazla özen gösterilmesi de görev kabul edilmiştir.
+Böylece gazetemizin, onu okumaya ilgi gösteren kişilerin memnuniyetini kazanması en büyük amacımızdır.
 
 Atamalar
-Devletli İsmail Paşa hazretlerinin rahatsız **olduğuna** dayanarak bu sene İpek Teftiş Komisyonu başkanlığı ek göreviyle Rumeli ve Balkan ve Ordu-yı Hümayun müşirliği yüksek meclislerine memur devletli refetli Ömer Paşa hazretlerine
-Hazine-i Hassa-i Şahane bakanlığı devletli Hasib Paşa hazretlerine
-Erzurum valisi devletli Edhem Paşa hazretlerinin görevden ayrılması üzerine adı geçen eyalete ve **tamamen** eski Sivas valisi devletli Hayreddin Paşa hazretlerine
-Maliye Meclisi Tanzimat üyeliği eski Hazine-i Hassa bakanı atufetli Rıza Efendi hazretlerine
-Kapı kâtipliği Murtaza Ali Efendi tarafından vekaleten yürütüldüğünden, söz konusu muhasebeciliğe eski Rumeli muhasebecisi izzetli Emin Efendi'ye
-Halep muhasebecisi izzetli Hertin Efendi'nin görevden ayrılmasıyla adı geçen muhasebeciliğe eski Rufe muhasebecisi rıfatlı Seyfi Efendi'ye
+Devletli İsmail Paşa Hazretleri'nin rahatsızlığı nedeniyle, bu yıl İpek Teftiş Komisyonu başkanlığı ek göreviyle birlikte Rumeli, Balkan ve Ordu-yı Hümâyun müşirliği yüksek meclislerinde görevli bulunan devletli Ömer Paşa Hazretleri'ne Hazine-i Hassa-i Şahane nazırlığı görevi verilmiştir.
+Devletli Hasib Paşa Hazretleri, Erzurum valisi olarak atanmıştır.
+Devletli Edhem Paşa Hazretleri'nin görevinden ayrılması üzerine, adı geçen eyalete eski Sivas valisi devletli Hayreddin Paşa Hazretleri atanmıştır.
+Eski Hazine-i Hassa nazırı atufetli Rıza Efendi Hazretleri, Maliye Meclisi Tanzimat üyeliğine atanmıştır.
+Kapı kâtipliği görevi Murtaza Ali Efendi tarafından vekâleten yürütüldüğünden, söz konusu muhasebecilik görevine eski Rumeli muhasebecisi izzetli Emin Efendi atanmıştır.
+Halep muhasebecisi izzetli Hertin Efendi'nin görevinden ayrılması üzerine, söz konusu muhasebeciliğe eski Rufe muhasebecisi rıfatlı Seyfi Efendi atanmıştır.
 
-(Bazı yerlere memur edilen naipler)
-Direli Debdebe Azmi Efendi - Noveberde'ye
-Kavala müftüsü Lebib Mehmed Emin Efendi - Sultan Selim Debre-i Kefe ambarına
-Menufak Ahmed Şakir Efendi - Travnik'e
-Ergirili Ahmed Şahin Efendi - Sjenica'ya
-İstanbul mahkemesi kâtiplerinden Abdülkerim Şemi Efendi - Budaközü'ne`,
+Bazı Yerlere Atanan Naipler
+Aşağıdaki kişilerin çeşitli bölgelere naip olarak atandığı bildirilmektedir:
+- Azmi Efendi: Direli Debdebe'ye.
+- Lebib Mehmed Emin Efendi: Noveberde'ye.
+- Ahmed Şakir Efendi: Kavala Müftülüğü'nden Sultan Selim Debre-i Kefe ambarına.
+- Ahmed Şahin Efendi: Travnik'e.
+- Abdülkerim Şemi Efendi: Sjenica'ya. Kendisi İstanbul mahkemesi kâtiplerindendir.
+- Ergirili Ahmed Şahin Efendi: Budaközü'ne.`,
             translit: `Tercümân-ı Ahvâl
 11 Şevvâl Bâzâr 1277 Numara 25
 İşbu gazete dâhiliyye ve hâriciyye her dürlü havâdis ile fünûn ve sanâyi'e dâir mebâhisi şâmil olarak **iki günde bir kere** bâzâr ve salı ve pençşenbih günleri çıkar. Abonelik istemek diyenler İstanbul'da Bahçekapısı üzerinde kâin matbaasına mürâca'at ola. Der-sa'âdet içün **sülâsî** (150) ve altı aylığı (80) kuruşdur. Taşra içün postahâne ücreti dahi olunur. Bir nüshası (40) parayadır.
@@ -1544,8 +1345,8 @@ Ergirili Ahmed Şâhîn Efendi - Sjenica'ya
                     "Çeşitli bölgelere yeni kadılar ve naipler tayin edilmiştir."
                 ],
                 people: ["İsmail Paşa", "Ömer Paşa", "Hasib Paşa", "Edhem Paşa", "Hayreddin Paşa", "Rıza Efendi", "Emin Efendi", "Seyfi Efendi", "Azmi Efendi", "Lebib Mehmed Emin Efendi", "Ahmed Şakir Efendi", "Ahmed Şahin Efendi", "Abdülkerim Şemi Efendi"],
-                places: ["İstanbul", "Rumeli", "Balkan", "Erzurum", "Sivas", "Halep", "Kavala", "Travnik", "Budaközü"],
-                concepts: ["Havadis-i Dahiliye", "Tevcihat", "Hazine-i Hassa-i Şahane", "Meclis-i Maliye", "Nâib"],
+                places: ["İstanbul", "Rumeli", "Balkan", "Erzurum", "Sivas", "Halep", "Kavala", "Travnik", "Budaközü", "Direli Debdebe", "Noveberde", "Sjenica", "Debre-i Kefe"],
+                concepts: ["Hazine-i Hassa-i Şahane", "Maliye Meclisi", "naip"],
                 script_type: "Matbu",
                 script_purpose: "Haber ve İlan",
                 period_estimate: "Osmanlı Tanzimat Dönemi",
@@ -1569,9 +1370,10 @@ Ergirili Ahmed Şâhîn Efendi - Sjenica'ya
 اطول نهارى مدت ساعاتنده اول ثقبه دن تمام چقمق لازمدر **پنگاه** اقليم
 رابعه ده وضع اولونسه كه انك اطول نهارى اون درت بجق عدد
 و نهار`,
-            tr: `Gecede tam on iki cam ışık bulup aydınlanır ve adı geçen şekillerin hepsi bu şekildedir ki gelecek sayfada resmedilmiş ve yazılmıştır.
-
-İkinci fasıl, sözü edilen işler için gerekli olan hazne, iki kase ve memleketlerin durumunu açıklar; öncelikle gerekli olan huni (kap) bakırdan yapılmış olup boğazındaki uzunluğu altmış **arşın** ve genişliği beş karış olup, adı geçen kabın alt tarafında bir delik vardır ki o kapta dolu olan suyun, **kovanın** enleminin en uzun gününün saatleri süresince o delikten tamamen çıkması lazımdır; **su saati** dördüncü iklimde kurulursa, onun en uzun günü on dört buçuk saat ve gündüzdür.`,
+            tr: `Gece boyunca tam on iki kandil yanarak ortamı aydınlatır. Sözü edilen şekillerin tamamı, bir sonraki sayfada çizilmiş ve açıklanmıştır.
+İkinci bölüm: Bu bölümde, anlatılan işlemler için gerekli olan hazne, iki kap ve farklı bölgelerin özellikleri açıklanmaktadır.
+Öncelikle gerekli olan huni biçimindeki kap bakırdan yapılmıştır. Bu kabın boğaz kısmının uzunluğu altmış arşın, genişliği ise beş karıştır. Kabın alt kısmında bir delik bulunmaktadır. Kabın içinde bulunan suyun, en uzun gündüzün saatleri boyunca bu delikten tamamen akıp boşalması gerekir.
+Su saati dördüncü iklim bölgesine kurulursa, bu bölgedeki en uzun gündüz yaklaşık on dört buçuk saat sürer.`,
             translit: `Leylde temām on iki cām ziyā bulub münevver olur ve cümle eşkāl-i mezkūre
 bu vech üzere dir ki sahīfe-i ātiyede tasvīr ve tahrīr olundı
 
@@ -1595,7 +1397,7 @@ ve nehār`,
                 ],
                 people: [],
                 places: [],
-                concepts: ["Pengâh", "Su Saati", "Hazne", "İklim", "Hiyel"],
+                concepts: ["Su Saati", "Hazne", "İklim"],
                 script_type: "Nesih",
                 script_purpose: "Bilimsel ve teknik bilgi aktarımı",
                 period_estimate: "Osmanlı Dönemi (18. veya 19. yüzyıl)",
@@ -1624,21 +1426,11 @@ ve nehār`,
 اولسون سلاح اتلميه جكنی وشايد اتان اولورسه حبس
 وجزا اولنه جغنی كوزلجه اكلادوب ممنوعيته دقت ايتمه لری
 تنبيه اولنور`,
-            tr: `İlan
-
-Şehir içinde silah atılmasının kanunen yasak olduğu bilinmektedir.
-Halbuki özel günlerde bu yasağın aksine silah
-atılmaktadır, bunun zararları ise ortadadır. Bu sebeple
-şimdiden bütün mahallelerin imam ve muhtarlarına gerekli uyarıların
-yapılmasıyla bayramda ve diğer günlerde hiçbir kimsenin şenlik için (silah)
-atmaması ve şayet atan olursa zabıtaca **tutulup**
-on gün hapsedildikten sonra para cezası da
-alınarak cezalandırılması Vilayet İdare Meclisi'nden bildirilerek
-**kolluk kuvvetlerine** emredilip tebliğ edilmiş olmakla, ona göre bütün imam ve muhtarların
-mahallelerindeki delikanlılara bundan sonra hangi gün olursa
-olsun silah atılmayacağını ve şayet atan olursa hapis
-ve ceza uygulanacağını güzelce anlatıp yasağa dikkat etmeleri
-tembih olunur.`,
+            tr: `Duyuru
+Şehir içinde silah atmanın kanunen yasak olduğu bilinmektedir. Ancak özel günlerde bu yasağa uyulmayarak silah atılmaktadır. Bunun yol açtığı zararlar da açıkça ortadadır.
+Bu nedenle, bütün mahallelerin imamlarına ve muhtarlarına şimdiden gerekli uyarıların yapılmasına karar verilmiştir. Bayramlarda ve diğer günlerde eğlence amacıyla hiç kimsenin silah atmaması gerekmektedir.
+Bu yasağa uymayıp silah atan kişiler, kolluk kuvvetleri tarafından yakalanacak ve on gün hapis cezasına çarptırıldıktan sonra kendilerinden ayrıca para cezası alınacaktır. Bu karar, Vilayet İdare Meclisi tarafından bildirilmiş, kolluk kuvvetlerine de emir verilerek duyurulmuştur.
+Bu doğrultuda bütün imam ve muhtarların, mahallelerindeki gençlere hangi gün olursa olsun bundan sonra silah atmanın yasak olduğunu açıkça anlatmaları; yasağa uymayanların hapis ve para cezasıyla cezalandırılacağını bildirmeleri ve herkesin bu yasağa uymasını sağlamaları önemle duyurulur.`,
             translit: `İ'lân
 
 Şehir içinde silâh atması nizâmen memnû' olduğu ma'lûmdur
@@ -1666,7 +1458,7 @@ tenbîh olunur`,
                 ],
                 people: [],
                 places: [],
-                concepts: ["Meclis-i İdâre-i Vilâyet", "münzâbıta", "imâm", "muhtâr", "cezâ-yı nakdî"],
+                concepts: ["Vilayet İdare Meclisi", "kolluk kuvvetleri", "imam", "muhtar", "para cezası"],
                 script_type: "Matbu",
                 script_purpose: "Kamuoyunu bilgilendirme ve uyarı",
                 period_estimate: "Geç Osmanlı Dönemi",
@@ -1705,16 +1497,15 @@ tenbîh olunur`,
 ٥ قاسم ١٩٢١
 اوف قضاسى مدرسلرندن
 خواجه فرشاد ابراهيم`,
-            tr: `Şark Ordusu Kumandanı Devletlü Kazım Karabekir Paşa Hazretlerine
-
-Devletlü Efendim Hazretleri,
-'İnsanların hayırlısı, Cenâb-ı Hakk'ın kendisini ümmetin ihtiyaçlarında istihdam ettiği kimsedir' mealindeki hadîs-i şerîfi yüksek hatırınıza getirmek suretiyle arz-ı hâl ve içimdeki istirhamı sunmaya başlarım.
-Gümüşhanevî Ahmed Ziyâeddin Efendi (kuddise sırruhû) hazretlerinin Of, Rize ve Bayburt memleketlerinde bulunan üç adet kütüphanesinin başmütevellîsi olan duacınız, son işgal sırasında bu kasabaların Bayburt tarafında bulunan Ruslar tarafından tahrip edildiğini ve kitapların tamamen Tiflis'e nakledildiğini son araştırmalarımla ortaya çıkarmış bulunmaktayım. Bu kitaplar dinî kitaplar olduğundan ve Müslümanlarca kutsal/saygın kabul edildiğinden, geri getirilerek yeniden istifadeye sunulması ve adı geçen Şeyh Hazretlerinin kitaplarının her hâlükârda büyük gayretlere muhtaç olduğu görülmüştür.
-Allah'ın yardımının, O'nun dinine yardım edeceklerle beraber olduğu herkesçe bilinen bir gerçektir. Bu arz edilen meselenin hayırla sonuçlanması, yüce gayretlerin en çok hak ettiği bir durum olduğu duacınızca bilindiğinden, söz konusu kitapların Tiflis'ten geri getirilmesi için gerekli girişimlerin tamamlanmasını rica ve niyaz ederim. Fermân [efendimindir].
-5 Teşrîn-i Sânî 1336
-5 Kasım 1921
-Of kazası müderrislerinden
-Hoca Ferşad İbrahim`,
+            tr: `Şark Ordusu Komutanı Kazım Karabekir Paşa Hazretlerine
+Saygıdeğer Paşam,
+"İnsanların en hayırlısı, Allah'ın kendisini insanların ihtiyaçlarını karşılamak için görevlendirdiği kişidir." anlamındaki hadisi hatırlatarak durumumu arz etmeye ve içten dileğimi sunmaya başlıyorum.
+Gümüşhanevî Ahmed Ziyâeddin Efendi'nin (Allah sırrını kutsal kılsın) Of, Rize ve Bayburt'ta bulunan üç kütüphanesinin başmütevellisi, yani en yetkili yöneticisi olan ben, son araştırmalarım sonucunda bu kasabaların, son işgal sırasında Bayburt yönünde bulunan Rus kuvvetleri tarafından tahrip edildiğini ve kütüphanelerdeki kitapların tamamının Tiflis'e götürüldüğünü öğrenmiş bulunuyorum.
+Söz konusu kitaplar dinî eserler olduğundan Müslümanlar tarafından kutsal ve saygın kabul edilmektedir. Bu nedenle kitapların geri getirilerek insanların yeniden yararlanmasına sunulması büyük önem taşımaktadır. Ayrıca adı geçen Şeyh Hazretleri'nin kitaplarının korunması ve kurtarılması için her türlü gayretin gösterilmesi gerektiği açıktır.
+Allah'ın yardımının, O'nun dinine yardım edenlerle birlikte olduğu herkesçe bilinen bir gerçektir. Bu meselenin hayırlı bir şekilde sonuçlandırılmasının büyük bir çabayı hak ettiğine inandığımdan, söz konusu kitapların Tiflis'ten geri getirilmesi için gerekli girişimlerin tamamlanmasını saygıyla arz ve rica ederim.
+Emir ve takdir yüce makamınıza aittir.
+5 Teşrin-i Sânî 1336
+Of kazası müderrislerinden Hoca Ferşad İbrahim`,
             translit: `Şark Ordusu Kumandanı Devletlü Kazım Karabekir Paşa
 Hazretlerine
 
@@ -1753,7 +1544,7 @@ Hoca Ferşad İbrahim`,
                 ],
                 people: ["Kazım Karabekir Paşa", "Ahmed Ziyâeddin Efendi", "Hoca Ferşad İbrahim"],
                 places: ["Of", "Rize", "Bayburt", "Tiflis"],
-                concepts: ["hadîs-i şerîf", "kütüphane", "mütevellî", "müderris"],
+                concepts: ["hadis", "kütüphane", "mütevelli", "müderris"],
                 script_type: "Nesih",
                 script_purpose: "Resmî yazışma ve dilekçe",
                 period_estimate: "Milli Mücadele Dönemi",
@@ -1782,21 +1573,14 @@ Hoca Ferşad İbrahim`,
 لامع النور شاهانه‌لري قيلنمشدر منظور و معلوم **هميونلري** بيورلدقده بشقه بشقه هر برينك **بالوزرايه**
 موجبجه عمل اولنه ديو مبارك خط همايونلري كشيده بيورلمق بابنده امر و فرمان شوكتلو كرامتلو
 مهابتلو افندم ولينعمم افندم پادشاهم حضرتلرينكدر`,
-            tr: `Gereğince amel olunsun
-diye emredilmiştir.
-
-Padişahım
-
-Şevketli, kerametli, heybetli efendim, velinimetim efendim,
-Allah'ın yardımı ve inayetiyle bundan böyle belirli ve izinli askerlerin sefere **yiyecek tedarikiyle** sevk ve gönderilmesi sağlanacaktır.
-Askeri sınıfların **ortaya çıkan tüm meselelerde temel** ve karar birliğiyle ittifak halinde ve tamamen gerçekleştirdiği işlerin **bazı nizamsızlıklardan**
-ve her iki tarafı da içeren şartlardan uzak, aralarında anlaşmazlık olmaksızın, düzgün ve güvenilir bir şekilde yürütülmesi için, orta kollarında bulunan yüce vezirler, beylerbeyleri,
-askeri zabitler, kadılar ve naiblere hitaben çıkarılmış ve ifade edilmiş olan şerif emirlerin, korunan memleketlerde bulunan
-şehir, köy ve kasabalardaki mahkeme **sicillerine** kaydedilmesi ve daima kılavuz edinilmesi amacıyla, vezirlere hitaben
-padişahın hatt-ı hümayununun yazılması gerektiğinden, bahsedilen **altı** adet şerif emrin padişahın
-nurlu huzuruna sunulduğu, padişahın bilgisi dahilinde olduğunda her birinin vezirlere hitaben ayrı ayrı
-"gereğince amel olunsun" şeklinde mübarek hatt-ı hümayunlarının yazılması hususunda emir ve ferman şevketli, kerametli,
-heybetli efendim, velinimetim efendim padişahım hazretlerinindir.`,
+            tr: `Emredilen hükümlere uygun hareket edilsin.
+Padişahım,
+Şanlı, yüce, heybetli ve keramet sahibi efendim; velinimetim, padişahım!
+Allah'ın yardımı ve desteğiyle bundan böyle sefere gönderilecek askerlerin gerekli yiyecek ve erzakları sağlanarak sevk edilmeleri temin edilecektir.
+Askerî birliklerin karşılaştıkları meselelerde ortak kararlar alarak uzlaşma içinde hareket etmeleri ve yapılması gereken işleri eksiksiz yerine getirmeleri amaçlanmaktadır. Bu işlerin düzensizliklerden, anlaşmazlıklardan ve taraflar arasında sorunlara yol açabilecek durumlardan uzak, düzenli ve güvenilir bir biçimde yürütülmesi gerekmektedir.
+Bu amaçla, askerlerin bulunduğu orta kollardaki vezirlere, beylerbeylerine, askerî görevlilere, kadılara ve naiplere hitaben çıkarılan altı adet padişah emrinin, korunan ülkelerdeki şehirlerin, köylerin ve kasabalarının mahkeme kayıtlarına geçirilmesi ve sürekli olarak başvurulacak bir rehber olarak kullanılması istenmektedir.
+Söz konusu emirlerin uygulanmasını güvence altına almak amacıyla, vezirlere hitaben padişahın kendi el yazısıyla yazılmış hatt-ı hümayunlarının hazırlanması gerekmektedir.
+Bu altı adet padişah emri yüce padişahın huzuruna sunulmuştur. Padişahın bilgisine arz edildikten sonra, her bir emrin vezirlere ayrı ayrı hitaben düzenlenmesi ve üzerlerine "Gereğince hareket edilsin" anlamındaki mübarek hatt-ı hümayunların yazılması hususunda emir ve ferman, şanlı, yüce ve heybetli efendim, velinimetim ve padişahım hazretlerinindir.`,
             translit: `Mûcebince amel oluna
 deyu emr olunmuşdur
 
@@ -1825,7 +1609,7 @@ mehâbetlü efendim veliyy-i ni'metim efendim pâdişâhım hazretlerinindir.`,
                 ],
                 people: [],
                 places: [],
-                concepts: ["hatt-ı hümayun", "vezirler", "beylerbeyleri", "sicil", "kadılar", "naibler"],
+                concepts: ["hatt-ı hümayun", "vezirler", "beylerbeyleri", "mahkeme kayıtları", "kadılar", "naipler"],
                 script_type: "Rik'a",
                 script_purpose: "Padişaha sunulan arz ve üzerine yazılan hatt-ı hümayun",
                 period_estimate: "18. veya 19. Yüzyıl",
@@ -1917,53 +1701,72 @@ diqqat idiñ didi. www.osmanlicaogren.com`,
                 notes: "Metin, modern dönemde basılmış bir Osmanlıca okuma kitabından alınmış son derece net ve okunaklı bir matbu metindir."
             }
         },
-        'tfh': {
-            file: 'assets/tfh.jpg',
-            enhancedFile: 'assets/tfh-enhanced.jpg',
-            name: 'gulhane_hatti_humayunu.jpg',
-            size: '1.02 MB',
-            ocr: `نشان همايون اولدر كه
-جمله عالمه معلومدر كه دولت عليه مزك ابتدای ظهوریندن بری
-احكام جليله قرآنیه و قوانين شرعیه كمالیله رعایت اولندیغندن
-دولتمزك قوت و شوكتی و جمله رعایاسنك رفاه و مأموریتی
-نهایت درجه یی بولمش ایكن، یوز ایللی سنه دن بری
-بر طاقم حوادث و اسباب متنوعه تأثيریله نه شرع شریفه
-و نه قوانین منیفه یه ریعایت اولنمیوب، اولكی قوت و
-مأموریت یرینه ضعف و فقر حاصل اولمشدر.
-بوندن بویله دولت علیه و ممالك محروسه مزك حسن
-اداره سی بعض قوانین جدیده ایله قابل اولاجغی ظاهردر.
-بنابرین جان و مال و ناموس امنیتی و وركینك موزون
-صورتده طرحی و تحصیلی و عسكرلك مادسنك اصوله
-وضعی كبی مهم مقاصد ایچون یكیدن قوانین وضع و
-ایجاد اولنمه سی مقرردر.`,
-            tr: `Hümâyun fermandır ki,
-Herkesçe bilinmektedir ki, yüce devletimizin ortaya çıkışından beri Kur'an'ın yüce hükümlerine ve şer'î kanunlara eksiksiz uyulduğu için devletimizin gücü ve haşmeti, bütün tebaasının refahı ve bayındırlığı en üst noktasına ulaşmışken; yüz elli yıldan beri çeşitli olayların ve sebeplerin etkisiyle ne şeriata ne de yüce kanunlara uyulmaz olmuş, eski güç ve bayındırlık yerini zayıflık ve yoksulluğa bırakmıştır.
-Bundan böyle yüce devletimizin ve korunan topraklarımızın iyi yönetilmesinin bazı yeni kanunlarla mümkün olacağı açıktır. Bu sebeple can, mal ve namus güvenliğinin sağlanması, verginin düzenli bir biçimde belirlenip toplanması ve askerlik işinin usule bağlanması gibi önemli amaçlar için yeni kanunlar konulması kararlaştırılmıştır.`,
-            translit: `Nişân-ı hümâyûn oldur ki,
-Cümle-i âleme ma'lûmdur ki, devlet-i aliyyemizin ibtidâ-i zuhûrundan beri ahkâm-ı celîle-i Kur'âniyye ve kavânîn-i şer'iyyeye kemâliyle riâyet olunduğundan devletimizin kuvvet ü şevketi ve cümle re'âyâsının refâh u me'mûriyyeti nihâyet derecesini bulmuş iken, yüz elli seneden beri bir tâkım havâdis ü esbâb-ı mütenevvia te'sîriyle ne şer'-i şerîfe ve ne kavânîn-i münîfeye riâyet olunmayub, evvelki kuvvet ü me'mûriyyet yerine za'f u fakr hâsıl olmuşdur.
-Bundan böyle devlet-i aliyye ve memâlik-i mahrûsamızın hüsn-i idâresi ba'zı kavânîn-i cedîde ile kâbil olacağı zâhirdir. Binâberîn cân u mâl u nâmûs emniyyeti ve verginin mevzûn sûretde tarh u tahsîli ve askerlik maddesinin usûlü vaz'ı gibi mühim makâsıd içün yeniden kavânîn vaz' u îcâd olunması mukarrerdir.`,
+        'yeni1': {
+            file: 'assets/yeni1.png',
+            enhancedFile: 'assets/yeni1-enhanced.jpg',
+            name: 'islam_dunyasinin_gerilemesi.png',
+            size: '0.06 MB',
+            ocr: `باشلا نفیج
+اسلام نامی التنده یاشایان كتله بشریهنك سفالت حیاتیهسنی
+كورون، انین و ایسیننی دیكلهین متحس بر وجدان تصور
+ایدیلهمز كه بو فجیعهلره قارشی لاقید قالهبیلسون، اوانینلره
+معكس اولان دماغنده قوپان طوقانلرله موجودیتنك صارصیلدیغنی
+حس ایتمسون!
+بر وقتلر جهانك اك حاكم و اك مترقی بر ملتی حالنده یاشامش
+اولان مسلمانلر، بوكون، ذلیل و سفیل چامورلرده سورونیور،
+حقیر و اسیر طوقانلر التنده ایكلیورلر!
+بر زمانلر دنیایه شانلر یاغدیران رایت اسلام، بوكون
+سرنكون اولمش، عصرلرجه جهانلری تیترهتن مسامانلر، بوكون
+تخت اسارت و ذلته سقوط ایتمشلر!۔
+ماضیده هر بری بر معموره مدنیت اولان بلاد اسلامیه؛
+بوكون، قسوت انكیز برر خرابه حالنی المش، قوای طبیعیهیه
+میدان اوقویهجق قدر شهامت كوسترن مسامانلرك حفیدلری اك
+ملوث سفالت چامورلرینه دوشمشلر، اك قورقویج عطالت
+كردابلرینه یووارلاتمشلر! بر حالده كه دیار اسلام واسع بر مزارستانه،
+مسلمانلرده جانلی و مسكین برر جنازهیه دولمش!۔۔۔`,
+            tr: `İslam adı altında yaşayan insanların içinde bulunduğu sefaleti gören, feryatlarını duyan ve bu acıları yüreğinde hisseden duyarlı bir insanın, yaşanan bu korkunç olaylara kayıtsız kalması mümkün değildir. Bu feryatların zihninde yarattığı sarsıntılar karşısında kendi varlığının da sarsıldığını hissetmemesi düşünülemez!
+Bir zamanlar dünyanın en güçlü ve en gelişmiş milletlerinden biri olan Müslümanlar, bugün aşağılanmış ve perişan bir hâlde sefalet içinde yaşamaktadır. Hor görülmenin ve esaretin ağır darbeleri altında ezilmektedirler.
+Bir zamanlar dünyaya şan ve şeref kazandıran İslam bayrağı, bugün yere düşmüştür. Yüzyıllar boyunca dünyaya hükmeden ve herkese gücünü hissettiren Müslümanlar, artık esaret ve aşağılanma içinde yaşamaktadır.
+Geçmişte her biri birer medeniyet merkezi olan İslam ülkeleri, bugün içler acısı birer harabeye dönüşmüştür. Bir zamanlar doğanın güçlerine bile meydan okuyacak kadar cesur olan Müslümanların torunları, bugün en ağır yoksulluk ve sefalet koşulları içinde yaşamaktadır. Üstelik toplum, insanları hareketsizliğe ve gelişememeye sürükleyen korkunç bir durgunluğun içine düşmüştür.
+Öyle bir noktaya gelinmiştir ki İslam ülkeleri uçsuz bucaksız bir mezarlığı, Müslümanlar ise hayatta oldukları hâlde hiçbir şey yapamayan, umudunu ve hareket gücünü kaybetmiş insanları andırmaktadır.`,
+            translit: `başla nefy
+İslâm namı altında yaşayan kitle-i beşeriyenin sefalet-i hayatiyesini
+gören, enîn ü enînini dinleyen mütehassis bir vicdân-ı tasavvur
+edilemez ki bu fecîalara karşı lâkayd kalabilsin, o enînlere
+makes olan dimâğında kopan tokatlarla mevcûdiyetinin sarsıldığını
+his itmesin !
+bir vakitler cihânın en hâkim ve en müterakkî bir milleti hâlinde yaşamış
+olan Müslümanlar, bugün, zelil ve sefil çamurlarda sürünüyor,
+hakîr ve esîr tokatlar altında iniliyorlar!
+Bir zamanlar dünyaya şanlar yağdıran râyet-i İslâm, bugün
+ser-nigûn olmuş, asırlarca cihanları titreten müsâmanlar, bugün
+taht-ı esâret ve zillete sukût etmişler!
+mâzîde her biri bir mamûre-i medeniyet olan bilâd-ı İslâmiye;
+bugün, kasvet-engîz birer harâbe hâlini almış, kuvâ-yı tabîiyeye
+meydan okuyacak kadar şehâmet gösteren müsâmanların hafitleri en
+mülevves sefâlet çamurlarına düşmüşler, en korkunç atâlet
+girdâblarına yuvarlatmışlar! Bir halde ki diyâr-ı İslâm vâsi bir mezaristana,
+Müslümanlar da canlı ve miskin birer cenazeye dolmuş!...`,
             analysis: {
-                document_type: "Ferman / Reform Fermanı",
-                confidence: 95,
-                style: "Resmî, ağır ve nizamnâme üslubunda, gerekçeli bir devlet fermanı dili",
-                summary: "3 Kasım 1839'da Mustafa Reşid Paşa tarafından Gülhane Parkı'nda okunan bu ferman, Tanzimat reformlarının başlangıcını ilan eder. Belge, devletin eski gücünü yitirmesinin nedenlerini özetledikten sonra, tüm tebaa için can, mal ve namus güvenliğinin garanti altına alınacağını, vergilerin düzenli ve adil toplanacağını ve askerlik hizmetinin usule bağlanacağını duyurur.",
+                document_type: "Matbu Makale / Deneme",
+                confidence: 78,
+                style: "Hitabet üslubu, duygusal ve eleştirel bir deneme/makale dili",
+                summary: "Metin, İslam dünyasının ve Müslümanların geçmişteki güç ve medeniyet düzeyiyle içinde bulunduğu dönemin düşkünlüğünü karşılaştıran, hüzünlü ve eleştirel bir deneme/makaledir. Bir zamanlar dünyaya hükmeden Müslümanların bugün sefalet, esaret ve durgunluk içinde olduğu, eski medeniyet merkezlerinin harabeye döndüğü vurgulanmaktadır.",
                 key_points: [
-                    "Ferman, 3 Kasım 1839'da Gülhane'de Sadrazam Mustafa Reşid Paşa tarafından okunmuştur.",
-                    "Devletin gücünü kaybetmesinin sebebi olarak şer'î ve kanunî düzenlemelere uyulmaması gösterilmektedir.",
-                    "Tüm tebaa için can, mal ve namus güvenliğinin sağlanacağı vaat edilmektedir.",
-                    "Vergilerin keyfî değil, düzenli ve ölçülü biçimde toplanacağı belirtilmektedir.",
-                    "Askerlik hizmetinin belirli bir usule bağlanacağı ilan edilmektedir.",
-                    "Bu ferman, Tanzimat Dönemi'nin (1839-1876) resmî başlangıcı kabul edilir."
+                    "Yazar, İslam adı altında yaşayan toplumun içinde bulunduğu sefalete duyarsız kalınamayacağını vurgulamaktadır.",
+                    "Bir zamanlar dünyanın en güçlü milletlerinden olan Müslümanların bugün aşağılanmış ve esaret altında yaşadığı anlatılmaktadır.",
+                    "Geçmişte birer medeniyet merkezi olan İslam ülkelerinin bugün harabeye döndüğü belirtilmektedir.",
+                    "Metin, toplumun içine düştüğü durgunluk ve gelişememe durumunu bir 'mezaristan' benzetmesiyle anlatmaktadır."
                 ],
-                people: ["Sultan Abdülmecid", "Mustafa Reşid Paşa"],
-                places: ["Gülhane", "İstanbul"],
-                concepts: ["Tanzimat", "kanun", "eşitlik", "vergi", "askerlik", "can mal namus güvenliği"],
-                script_type: "Matbu / Divanî",
-                script_purpose: "Resmî devlet fermanı, siyasi reform ilanı",
-                period_estimate: "Tanzimat Dönemi Başlangıcı",
-                date_hijri: "26 Şaban 1255",
-                date_gregorian: "3 Kasım 1839",
-                notes: "Metin, Tanzimat Fermanı'nın en çok alıntılanan giriş ve gerekçe bölümünden bir özettir; belgenin tamamı çok daha uzundur."
+                people: [],
+                places: [],
+                concepts: ["İslam", "Müslüman", "sefalet", "esaret", "medeniyet"],
+                script_type: "Matbu",
+                script_purpose: "Siyasi-sosyal eleştiri içeren makale/deneme",
+                period_estimate: "Belirtilmemiş",
+                date_hijri: "Belirtilmemiş",
+                date_gregorian: "Belirtilmemiş",
+                notes: "Verilen metinde yazar adı ve tarih bilgisi yer almamaktadır. OCR çıktısında bazı kelimeler (örn. 'مسامانلر') muhtemelen 'مسلمانلر' (Müslümanlar) kelimesinin hatalı okunmuş hâlidir; transkripsiyonda bu tutarsızlık korunmuştur."
             }
         },
         'svs': {
@@ -2048,17 +1851,12 @@ kalmaya`,
 که حقیقتده مدار رزق - او ایدر عالمی انچق **ارزاق**
 غیری یی مانع و معطی صانما - ظاهر هر حاله باقوب المدام
 گلزار صوفیه ص ١١٠`,
-            tr: `O (Allah)
-Rızık elde etmek için kapı kapı dolaşma; Allah'ın lütuf kapısı en güzel kapıdır.
-Yüzünü o yüce dergaha sür ve gönülden bir saygıyla Allah'a yalvar.
-Her zaman Allah'a güvenip dayan; **başkasına** yönelip sığınma.
-Eğer bir iyilik gelecekse bu Allah'ın lütfudur, başkasından bekleme; çünkü hükümdarlar da dilenciler de O'na muhtaçtır.
-Herkesin aciz birer kul olduğunu bil; rızık vermeye kimse engel olamaz.
-Görünüşte rızkına başkaları aracı veya sebep olsa bile, iyilik ve lütuf her zaman Allah'ındır.
-Allah'ın güzel isimlerine sığınarak dua etmek gerekir; ancak bu konudaki inancın tam ve kesin olmalıdır.
-Çünkü gerçekte rızkın kaynağı O'dur; bütün dünyayı ancak O **rızıklandırır**.
-Başkalarını rızka engel olan veya rızkı veren olarak görme; her olayın sadece dış görünüşüne bakıp aldanma.
-Gülzâr-ı Sûfiyye, sayfa 110.`,
+            tr: `Rızık elde etmek için insanları kapı kapı dolaşma. Allah'ın lütuf kapısı, kapıların en güzelidir. Yüzünü O'nun yüce dergâhına çevir ve içtenlikle Allah'a dua et.
+Her zaman Allah'a güven ve O'na dayan; başkalarına sığınıp onlardan medet umma. Bir iyilik elde edeceksen bunun Allah'ın lütfu olduğunu bil ve iyiliği başkalarından bekleme. Çünkü hükümdarlar da dilenciler de Allah'a muhtaçtır.
+Herkesin aciz birer kul olduğunu bil. Hiç kimse Allah'ın vereceği rızka engel olamaz. Görünüşte rızkının başkaları aracılığıyla geldiğini düşünsen bile, asıl iyilik ve lütfun Allah'tan geldiğini unutma.
+Allah'ın güzel isimlerini anarak dua etmelisin; ancak bu konudaki inancın kesin ve sağlam olmalıdır. Çünkü rızkın gerçek kaynağı Allah'tır ve bütün dünyayı rızıklandıran O'dur.
+Başkalarını rızık veren veya rızka engel olan kişiler olarak görme. Olayların yalnızca görünen yönüne bakarak yanılgıya düşme.
+Kaynak: Gülzâr-ı Sûfiyye, s. 110.`,
             trans_en: `He (God)
 Do not wander from door to door for sustenance; the door of God's bounty is the best of doors.
 Rub your face against that great threshold and pray to God with deep humility.
@@ -2094,7 +1892,7 @@ Gülzâr-ı Sûfiyye ṣ. 110`,
                 ],
                 people: [],
                 places: [],
-                concepts: ["tevekkül", "rızık", "ihsan", "dergah", "esma", "itikat"],
+                concepts: ["rızık", "dergâh"],
                 script_type: "Rik'a",
                 script_purpose: "Edebi/Tasavvufi Metin Kaydı",
                 period_estimate: "Geç Osmanlı Dönemi",
@@ -2123,21 +1921,17 @@ Gülzâr-ı Sûfiyye ṣ. 110`,
 چرکز، اسیرلردن برینی گوستردەرک: شو مائی گوزلره باق! بر پاشا بونا بر خزینە ویرر.
 
 چرکزله بو هرِف بر سندلە، جاریەلر ده دیگرینە بینەرک توپخانە اسکلسنه دوغرو وپوردن آچلدیلر.`,
-            tr: `Rusya Kumpanyası'nın Batum'dan gelen bir vapuru Tophane'nin önüne yanaştığı sırada, denizin üzerinde sabırsızlıkla bekleyen birkaç kişi sandallardan vapurun içine atılmışlardı.
-
-Bunlardan biri uzun boylu, geniş omuzlu, seyrek siyah bıyıklıydı; etekleri ayaklarına kadar uzun, beli oldukça dar bir Çerkes paltosu giymişti.
-
-Yanında kendi kavminin kalpağı, elinde gümüşlü bir kırbaç bulunan Çerkes'e:
-
-— Hoş geldiniz. Cariyeler nerede?
+            tr: `Rusya Kumpanyası'na ait, Batum'dan gelen bir vapur Tophane'nin önüne yanaştığında, denizde bekleyen birkaç kişi sabırsızlıkla sandallardan vapura atladı.
+Bunlardan biri uzun boylu, geniş omuzlu ve seyrek siyah bıyıklıydı. Ayaklarına kadar uzanan etekleri ve oldukça dar beli olan, Çerkeslere özgü bir palto giyiyordu.
+Başında kendi halkına özgü bir kalpak, elinde ise gümüş işlemeli bir kırbaç vardı. Çerkes'e şöyle seslendiler:
+— Hoş geldiniz. Kadın köleler nerede?
 — İşte burada...
-— Kaç tane?
+— Kaç kişiler?
 — Üç...
-— Güzel mi?
-
-Çerkes, esirlerden birini göstererek: Şu mavi gözlere bak! Bir paşa bunun için bir hazine verir.
-
-Çerkes'le bu adam bir sandala, cariyeler de diğerine binerek Tophane İskelesi'ne doğru vapurdan ayrıldılar.`,
+— Güzeller mi?
+Çerkes, köleleştirilmiş kadınlardan birini göstererek şöyle dedi:
+— Şu mavi gözlere bak! Bir paşa bu kadın için bir hazine verir.
+Çerkes ile diğer adam bir sandala, köleleştirilmiş kadınlar ise başka bir sandala bindiler. Ardından vapurdan ayrılarak Tophane İskelesi'ne doğru ilerlediler.`,
             translit: `Rusya kumpanyasının Batum'dan gelen bir vapuru Tophane'nin önüne yanaştığı zaman denizin üzerinde sabırsızlıkla bekleyen birkaç kişi sandallardan vapurun içine atılmışlardı.
 
 Bunlardan birisi uzun boylu, geniş omuzlu, seyrek siyah bıyıklı, etekleri ayaklarına kadar uzun, beli gayet dar bir Çerkez paltosu giymiş...
@@ -2164,9 +1958,9 @@ Yanında kendi kavminin kalpağı, elinde bir gümüşlü kırbacı olan Çerkez
                     "Roman, dönemin kölelik/cariyelik kurumunu eleştirel bir gözle ele alması bakımından Tanzimat sonrası Türk edebiyatında önemli bir dönüm noktasıdır.",
                     "Sahnedeki diyalog, cariyelerin bir mal gibi alınıp satılmasını ve güzelliklerinin bir pazarlık unsuru olarak konuşulmasını doğrudan okura aktarır."
                 ],
-                people: ["Samipaşazade Sezai"],
-                places: ["Tophane", "Batum", "İstanbul"],
-                concepts: ["cariyelik", "kölelik", "realizm", "Tanzimat edebiyatı", "roman"],
+                people: [],
+                places: ["Tophane", "Batum"],
+                concepts: ["köle", "Çerkes"],
                 script_type: "Matbu",
                 script_purpose: "Edebî eser / roman",
                 period_estimate: "Tanzimat Sonrası Dönem (1888)",
@@ -2203,26 +1997,20 @@ Yanında kendi kavminin kalpağı, elinde bir gümüşlü kırbacı olan Çerkez
 
 [١] شهزاده بایزید، شهزاده جم و شهزاده قورقودکی شعرای شهزادگان خاندان عثمانیه‌دندر؛ مخلص نجیبانه‌لری (شاهی) در ترکی و فارسی ایکی عدد دیوان اشعار بلیغانه‌لری ومتفرق بعض آثاری وبرکتاب ظهرنده خط دست عارفانه‌لری ملت کتبخانه‌سنده موجوددر معارف‌پرور بر شهزاده اولدیغندن نامیلرینه بك چوق کتابلر تألیف وترکجه یه ترجمه اولنمشدر.`,
             tr: `Tarih ve Edebiyat Mecmuası
-1. Yıl — 30 Nisan 1334 — Sayı: 2
-
-Şehzade Bayezid'in babası Kanûnî Sultan Süleyman Han Hazretleri'ne gönderdiği manzumedir [1]
-
-Ey baştan başa bütün âlemin sultanı olan Süleyman'ım, babam
-Bedenimde canım, canımın içindeki sevgilim (cânânım) olan babam
-Benim canım babam, Bayezid'ine kıyar mısın?
-Ben günahsızım; Allah biliyor, ey devletli sultanım, babam
-
-Peygamberlerin başı, yani Âdem hakkı için
-Hem Musa ile İsa ve Meryem hakkı için
-Kâinatın efendisi, o yüce ruh (Hz. Muhammed) hakkı için
-Ben günahsızım; Allah biliyor, ey devletli sultanım, babam
-
-Sanki Mecnun'um; dağ başları bana mesken oldu
-Bütün malımdan ve mülkümden ayrılıp uzaklara düştüm
-Gözyaşı döküyorum; "Ah hasret, ey ayrılık, imdat!" diyerek
-Ben günahsızım; Allah biliyor, ey devletli sultanım, babam
-
-[1] Şehzade Bayezid, Şehzade Cem ve Şehzade Korkud gibi Osmanlı hanedanından şehzade şairlerin asil mahlaslarından olan "Şâhî" mahlasıyla şiir yazmıştır; Türkçe ve Farsça iki divanı, çeşitli dağınık eserleri ve bir kitabın arka kapağında el yazısı Millet Kütüphanesi'nde mevcuttur. Kültüre düşkün bir şehzade olduğundan, adına pek çok kitap yazılmış ve Türkçeye çevrilmiştir.`,
+1. Yıl — 30 Nisan 1918 — Sayı: 2
+Şehzade Bayezid'in babası Kanûnî Sultan Süleyman Han'a gönderdiği şiirdir.
+Ey bütün dünyanın hükümdarı olan Süleyman'ım, babam!
+Bedenimdeki canım, canımın içindeki sevgilim olan babam!
+Canım babam, kendi oğlun Bayezid'e kıyar mısın?
+Ben suçsuzum; Allah biliyor, ey yüce sultanım, babam!
+Peygamberlerin ilki olan Âdem'in hatırı için,
+Musa, İsa ve Meryem'in hatırı için,
+Bütün kâinatın efendisi Hz. Muhammed'in yüce ruhu hatırı için,
+Ben suçsuzum; Allah biliyor, ey yüce sultanım, babam!
+Tıpkı Mecnun gibi, dağ başları benim yuvam oldu.
+Bütün malımdan ve mülkümden ayrılarak uzaklara düştüm.
+Gözyaşları döküyor, "Ah, özlem! Ey ayrılık, yetiş imdadıma!" diye feryat ediyorum.
+Ben suçsuzum; Allah biliyor, ey yüce sultanım, babam!`,
             translit: `Târîh ve Edebiyât Mecmû'ası
 Sene: 1 — 30 Nisan 1334 — Aded: 2
 
@@ -2256,9 +2044,9 @@ Bî-günâhım, Hak bilür, devletlü sultânım baba
                     "Dipnotta, Bayezid'in 'Şâhî' mahlasıyla şiirler yazdığı, Türkçe ve Farsça iki divanının bulunduğu ve el yazısının Millet Kütüphanesi'nde korunduğu belirtilmektedir.",
                     "Sayfa, 'Tarih ve Edebiyat Mecmuası'nın 30 Nisan 1334 (1918) tarihli 2. sayısından alınmıştır; üzerinde Büyük Millet Meclisi Kütüphanesi mührü bulunmaktadır."
                 ],
-                people: ["Şehzade Bayezid", "Kanuni Sultan Süleyman"],
+                people: ["Şehzade Bayezid", "Kanûnî Sultan Süleyman"],
                 places: [],
-                concepts: ["şehzade", "taht kavgası", "manzume", "Osmanlı hanedanı", "Millet Kütüphanesi"],
+                concepts: ["şehzade", "şiir"],
                 script_type: "Matbu (nesih dizgi)",
                 script_purpose: "Tarihî belge yayını / edebiyat mecmuası",
                 period_estimate: "Yayın: 1334 (1918) — Şiirin aslı: 1559-1561 taht mücadelesi dönemi",
@@ -2287,21 +2075,15 @@ Bî-günâhım, Hak bilür, devletlü sultânım baba
 درگاه سعادته معلومدر تحریراً فی اواسط المحرم الحرام سنه احدی و عشرین و تسعمائة (٩٢١)
 
 الداعی للدولة العلیة السید محمد القاضی ببقعة سگود`,
-            tr: `O (Allah)
-
-İşleme alındı / Kadı İ'lâmı (Raporu)
-
-Şanı daim olsun, yüce ve yüksek makama değersiz ve mütevazı kulunuzun sunduğu arzıdır ki:
-
-Söğüt kazasında Sofular adlı köyde günlük beş akçe ile imamlık yapan Musa vefat etmiş olup,
-
-adı geçen imamlık görevi boş kaldığından, bu kulluk dilekçesini getiren, sadakati ve dürüstlüğü sabit olan kişi,
-
-bu mahalle ve bölge için gerekli ehliyete sahip görülerek saadet kapısına (merkeze) arz edildi; geri kalanı
-
-yüce ve saadetli dergâhın bileceği bir husustur. Muharrem-i haram ayının ortalarında, dokuz yüz yirmi bir (921) senesinde yazılmıştır.
-
-Yüce devlete dua eden, Söğüt beldesinin kadısı Seyyid Mehmed.`,
+            tr: `(Allah'ın adıyla)
+İşleme alınmıştır – Kadı Raporu
+Allah'ın şanı daim olsun. Yüce makama, değersiz ve mütevazı kulunuz tarafından arz olunur ki:
+Söğüt kazasının Sofular köyünde günlük beş akçe karşılığında imamlık yapan Musa vefat etmiştir.
+Söz konusu imamlık görevi boş kaldığından, bu dilekçeyi sunan ve doğruluğu ile güvenilirliği bilinen kişi, söz konusu mahalle ve bölgenin ihtiyaçlarını karşılayabilecek yeterlilikte görülerek merkeze arz edilmiştir.
+Bu konudaki nihai karar, yüce ve kutlu makama aittir.
+Bu belge, 921 yılı Muharrem ayının ortalarında (1515 yılı) yazılmıştır.
+Söğüt kadısı Seyyid Mehmed
+Yüce devlete dua eder.`,
             translit: `Hû
 
 Der-dest / İ'lâm
@@ -2329,9 +2111,9 @@ Ed-dâ'î li'd-devleti'l-'aliyye es-Seyyid Muhammed el-kâdî bi-buk'ati Söğü
                     "Belge, Hicrî 921 (Milâdî 1515) yılında Söğüt kadısı Seyyid Mehmed tarafından yazılıp mühürlenmiştir.",
                     "Söğüt, Osmanlı Devleti'nin kuruluş yeri olarak bilinir; bu belge, kuruluşun hemen ardından bölgedeki idarî-dinî teşkilatlanmanın küçük ölçekli bir örneğidir."
                 ],
-                people: ["Musa (müteveffa imam)", "Seyyid Mehmed (Söğüt Kadısı)"],
+                people: ["Musa", "Seyyid Mehmed"],
                 places: ["Söğüt", "Sofular köyü"],
-                concepts: ["kadı ilâmı", "imamet", "arz", "akçe", "göreve tayin"],
+                concepts: ["kadı", "imamlık", "arz", "akçe"],
                 script_type: "Divânî/Rik'a karışımı el yazısı",
                 script_purpose: "Hukukî-idarî arz / tayin belgesi",
                 period_estimate: "Yavuz Sultan Selim Dönemi (Erken 16. Yüzyıl)",
@@ -2362,23 +2144,14 @@ Ed-dâ'î li'd-devleti'l-'aliyye es-Seyyid Muhammed el-kâdî bi-buk'ati Söğü
 امر و اراده حضرت ولی‌الامرندر. فی ۱۲ جمادی‌الاولی سنه ۱۳۲۸
 
 یاور خاص حضرت شهریاری فریق **[imza - okunamadı]**`,
-            tr: `Mâbeyn-i Hümâyûn Yüce Başkitâbetine (Özel Kalem Müdürlüğüne),
-
-Lütufkâr Efendim Hazretleri,
-
-Sinematograf makinesi aracılığıyla seyirlik sahneye konulmakta olan görüntülerin, adı geçen şehirdeki durumlar ve toplantı haberleşmelerine dair
-
-çeşitli manzaralarının resim ve fotoğraflarından birkaçının vekâleten sunulduğu, Halife Padişah Hazretlerinin yüce iradesinin gereği
-
-olduğu bildirilip yüce yazışmalarına hürmet nişanesi olarak, bütün durum ve haberleşmelere dair fotoğraflardan birer örneğinin
-
-arandığı, fakat bulundurulamadığından önemli olanlarının ilişikte sunulduğu, bunlardan seçim yapılması durumunda
-
-derhal gerekli işlemin yapılması için altı hafta içinde tamamlanıp sunulmak üzere arz olunmakla, bu hususta
-
-emir ve ferman, buyruk sahibi Padişah Hazretlerinindir. 12 Cemâziyelevvel 1328 (Mayıs/Haziran 1910 civarı) tarihlidir.
-
-Padişahın Has Yaveri Ferik [imza - okunamadı]`,
+            tr: `Yüce Padişahın Özel Kalem Müdürlüğüne,
+Saygıdeğer Efendim,
+Sinematograf makinesiyle halka gösterilen görüntüler arasında, adı geçen şehirdeki olayları ve toplantıları anlatan çeşitli sahnelere ait resim ve fotoğraflardan birkaçının vekâleten sunulduğu bildirilmiştir. Bunun, Halife ve Padişah Hazretlerinin isteği doğrultusunda yapıldığı belirtilmiştir.
+Yüce makama saygı göstergesi olarak, olayları ve haberleri anlatan fotoğrafların her birinden birer örnek temin edilmeye çalışılmış; ancak bunların tamamı bulunamamıştır. Bu nedenle, önemli görülen fotoğraflar yazının ekinde sunulmuştur.
+Sunulan fotoğraflar arasından seçim yapılması hâlinde, gerekli işlemlerin hemen başlatılarak altı hafta içinde tamamlanması ve sonuçların sunulması hususu bilgilerinize arz olunur.
+Bu konuda karar verme ve emir buyurma yetkisi Padişah Hazretlerine aittir.
+Tarih: 12 Cemâziyelevvel 1328 (Miladi takvimde Mayıs-Haziran 1910 civarı)
+İmzalayan: Padişahın Baş Yaveri, Ferik (korgeneral rütbesine karşılık gelen askerî rütbe)`,
             translit: `Mâbeyn-i Hümâyûn Başkitâbet-i Celîlesine
 
 Âtıfetlü Efendim Hazretleri
@@ -2402,9 +2175,9 @@ Yâver-i Hâs Hazret-i Şehriyârî Ferîk **[imza - okunamadı]**`,
                 style: "Resmî saray yazışma üslubu, Rık'a hattı",
                 summary: "12 Cemâziyelevvel 1328 (y. 1910) tarihli bu belge, bir şehirde sinematograf makinesiyle gösterime konan görüntülere ve toplumsal olaylara dair fotoğrafların vekâleten padişaha sunulduğunu, eksik kalanların altı hafta içinde tamamlanıp gönderilmesinin istendiğini bildiren, Mâbeyn-i Hümâyûn Başkitâbeti'ne yazılmış resmî bir arzdır. Padişahın Has Yaveri bir Ferik tarafından imzalanmıştır.",
                 key_points: ["Belge, Mâbeyn-i Hümâyûn Başkitâbeti'ne (Saray Özel Kalemi) hitaben yazılmış resmî bir arz/üst yazıdır.", "Sinematograf (sinema) makinesiyle gösterime konan görüntülerin, bir şehirdeki olaylar ve toplantılarla ilgili çeşitli fotoğraflarının vekâleten (temsilen) padişaha sunulduğu bildirilmektedir.", "Bu sunumun, halifelik makamındaki padişahın yüksek iradesi gereği yapıldığı vurgulanmaktadır.", "Tüm olaylara dair fotoğraflardan birer örneğin arandığı, bulunamayanlar yerine önemli görülenlerin ilişikte gönderildiği belirtilmektedir.", "Seçim yapılması hâlinde gerekli işlemin altı hafta içinde tamamlanarak sunulması isteniyor; belge Padişahın Has Yaveri bir Ferik (Tümgeneral) tarafından imzalanmıştır.", "Belge, 12 Cemâziyelevvel 1328 (1910 civarı) tarihli olup erken dönem sinema/fotoğraf malzemesinin saray tarafından nasıl denetlendiğine/takip edildiğine dair bir örnektir."],
-                people: ["Halife Padişah Hazretleri (dönemin sultanı — mühürden Sultan Mehmed Reşad olduğu tahmin ediliyor)", "Yâver-i Hâs, Ferik rütbeli imza sahibi (adı okunamadı)"],
-                places: ["Belde-i mezkûre (adı belirtilmeyen bir şehir)"],
-                concepts: ["sinematograf", "mâbeyn-i hümâyûn", "başkitâbet", "yâver-i hâs", "arz", "fotoğraf/suver", "irade-i seniyye"],
+                people: ["Padişah Hazretleri", "Padişahın Baş Yaveri"],
+                places: [],
+                concepts: ["sinematograf", "Özel Kalem Müdürlüğü", "arz", "fotoğraf", "Ferik"],
                 script_type: "Rık'a (saray yazışma hattı)",
                 script_purpose: "Resmî saray/mâbeyn yazışması — arz tezkiresi",
                 period_estimate: "II. Meşrutiyet Dönemi, muhtemelen Sultan Mehmed Reşad saltanatı (Erken 20. Yüzyıl)",
@@ -4804,7 +4577,7 @@ Yâver-i Hâs Hazret-i Şehriyârî Ferîk **[imza - okunamadı]**`,
     }
 
     ttsBtn.addEventListener('click', () => handleTtsToggle({
-        getText: () => transTextDisplay.textContent.normalize('NFC').replace(/[\u0300-\u036f]/g, ''),
+        getText: () => expandAbbreviationsForTts(transTextDisplay.textContent).normalize('NFC').replace(/[\u0300-\u036f]/g, ''),
         lang: 'tr-TR',
         displays: [transTextDisplay],
         buttons: [ttsBtn],
@@ -4817,8 +4590,24 @@ Yâver-i Hâs Hazret-i Şehriyârî Ferîk **[imza - okunamadı]**`,
     // ṣ, ṭ, ñ vb.) TTS motorunun tanıyabildiği düz Türkçe harflere çevirir.
     // Standart Türkçe harfler (ü, ö, ç, ş, ı, İ) dokunulmadan kalır. Bu
     // sadece TTS'e giden metni etkiler, ekranda hiçbir şey değişmez.
+    // Ekranda "Hz." ve "s.a.v." aynen görünmeye devam eder — bu sadece
+    // TTS'e giden metni etkiler. Cümle bölme (splitIntoSentences/
+    // partitionSentencesRaw) "." işaretini cümle sonu sayıyor; "Hz." ve
+    // "s.a.v." içindeki noktalar bu yüzden gereksiz duraksamalara yol
+    // açıyordu. Üç TTS kanalının (trans, osmanli, en) PAYLAŞTIĞI tek
+    // nokta burası — her kanalın kendi normalize/diyakritik temizliğinden
+    // ÖNCE çağrılarak, nokta içeren kısaltmalar cümle bölünmeden önce
+    // noktasız karşılıklarına dönüştürülmüş olur.
+    function expandAbbreviationsForTts(text) {
+        if (!text) return text;
+        return text
+            .replace(/\bs\.a\.v\.\s*/gi, 'sallallahu aleyhi ve sellem ')
+            .replace(/\bHz\.\s*/gi, 'Hazreti ');
+    }
+
     function cleanTranslitForTts(text) {
         if (!text) return text;
+        text = expandAbbreviationsForTts(text);
         // â/û/î gibi harflerin NFD (ayrışık: harf + birleştirici işaret)
         // biçiminde gelip TTS motoru tarafından sessizce atlanma
         // ihtimaline karşı önce NFC'ye normalize edilir. Ardından, modelin
@@ -4882,7 +4671,7 @@ Yâver-i Hâs Hazret-i Şehriyârî Ferîk **[imza - okunamadı]**`,
     // boşsa) diğer iki dilden bağımsız, ayrı bir uyarı gösterir (bkz.
     // handleTtsToggle'daki emptyMessage kontrolü).
     enTtsBtn.addEventListener('click', () => handleTtsToggle({
-        getText: () => enTextDisplay.textContent.normalize('NFC').replace(/[\u0300-\u036f]/g, ''),
+        getText: () => expandAbbreviationsForTts(enTextDisplay.textContent).normalize('NFC').replace(/[\u0300-\u036f]/g, ''),
         lang: 'en-US',
         displays: [enTextDisplay],
         buttons: [enTtsBtn],
