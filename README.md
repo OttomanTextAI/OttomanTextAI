@@ -16,19 +16,22 @@ Kullanıcı, OCR, transkripsiyon ve sadeleştirme çıktılarını inceleyebilir
 * 📱 **Uçtan Uca Mobil Deneyim:** React Native (Expo) ile geliştirilmiş, hızlı ve kullanıcı dostu arayüz.
 
 ## 🏗️ Sistem Mimarisi 
-<<<<<<< Updated upstream
+
+```text
 data/
 └── raw/
     ├── ground_truth/
-    │   ├── dergi_ornek_1.jpg   # Az önce gösterdiğin çevirili dergi görseli
-    │   └── dergi_ornek_1.txt   # O dergi sayfasının sağındaki hazır Latin metni
+    │   ├── dergi_ornek_1.jpg   # Latin harfli çevirisi bilinen örnek dergi sayfası
+    │   └── dergi_ornek_1.txt   # Bu sayfanın doğrulanmış Latin harfli metni
     │
     └── unlabelled/
-        ├── ham_dergi_sayfasi_1.jpg  # Sadece Osmanlıca metin olan dergi görseli
+        ├── ham_dergi_sayfasi_1.jpg  # Etiketsiz Osmanlıca dergi sayfası
         └── ham_dergi_sayfasi_2.jpg
+```
 
+### Görüntü İyileştirme Akışı
 
-Image Enhancement Pipeline
+```text
 Image
   │
 Perspective Correction
@@ -42,6 +45,7 @@ CLAHE
 Threshold
   │
 Enhanced Image
+```
 
 ## 🛠️ Technologies
 
@@ -92,6 +96,3 @@ Docker ile çalıştırmak için:
 docker compose build
 docker compose up
 ```
-=======
-find . -not -path '*/.*'
->>>>>>> Stashed changes
